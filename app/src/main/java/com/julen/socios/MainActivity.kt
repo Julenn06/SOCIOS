@@ -14,6 +14,7 @@ import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
+import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.Lifecycle
@@ -163,9 +164,22 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        ViewCompat.setOnApplyWindowInsetsListener(binding.main) { v, insets ->
+        ViewCompat.setOnApplyWindowInsetsListener(binding.main) { _, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
+
+            val fabMargin = (20 * resources.displayMetrics.density).toInt()
+            val fabParams = binding.fabAddSocio.layoutParams as CoordinatorLayout.LayoutParams
+            fabParams.bottomMargin = fabMargin + systemBars.bottom
+            binding.fabAddSocio.layoutParams = fabParams
+
+            val extraBottomPadding = systemBars.bottom + (80 * resources.displayMetrics.density).toInt()
+            binding.nestedScrollView.setPadding(
+                binding.nestedScrollView.paddingLeft,
+                binding.nestedScrollView.paddingTop,
+                binding.nestedScrollView.paddingRight,
+                extraBottomPadding
+            )
+
             insets
         }
 

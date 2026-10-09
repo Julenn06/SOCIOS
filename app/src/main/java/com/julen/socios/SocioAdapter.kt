@@ -22,6 +22,10 @@ class SocioAdapter(
     private val onDelete: (Socio) -> Unit
 ) : ListAdapter<Socio, SocioAdapter.SocioViewHolder>(SocioDiffCallback()) {
 
+    companion object {
+        private const val PAYLOAD_HECHO_CHANGED = "PAYLOAD_HECHO_CHANGED"
+    }
+
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): SocioViewHolder {
         val binding = ItemSocioBinding.inflate(LayoutInflater.from(parent.context), parent, false)
         return SocioViewHolder(binding)
@@ -29,6 +33,22 @@ class SocioAdapter(
 
     override fun onBindViewHolder(holder: SocioViewHolder, position: Int) {
         holder.bind(getItem(position))
+    }
+
+    override fun onBindViewHolder(
+        holder: SocioViewHolder,
+        position: Int,
+        payloads: MutableList<Any>
+    ) {
+        if (payloads.isNotEmpty()) {
+            for (payload in payloads) {
+                if (payload == PAYLOAD_HECHO_CHANGED) {
+                    holder.updateHechoState(getItem(position))
+                }
+            }
+        } else {
+            super.onBindViewHolder(holder, position, payloads)
+        }
     }
 
     override fun onViewRecycled(holder: SocioViewHolder) {
@@ -72,20 +92,7 @@ class SocioAdapter(
                 binding.tvNotas.visibility = View.GONE
             }
 
-            // Estado
-            binding.switchHecho.setOnCheckedChangeListener(null)
-            binding.switchHecho.isChecked = socio.hecho
-
-            val targetColor = if (socio.hecho) {
-                binding.tvEstadoTexto.text =
-                    context.getString(R.string.socio_status_conseguido, baseX2.toInt())
-                ContextCompat.getColor(context, R.color.primary)
-            } else {
-                binding.tvEstadoTexto.text = context.getString(R.string.socio_status_pendiente)
-                ContextCompat.getColor(context, R.color.orange_pending)
-            }
-
-            animateTextColor(binding.tvEstadoTexto, targetColor)
+            updateHechoState(socio)
 
             // Listeners
             binding.switchHecho.setOnClickListener { view ->
@@ -102,6 +109,27 @@ class SocioAdapter(
                 HapticUtils.performClick(view)
                 onDelete(socio)
             }
+        }
+
+        fun updateHechoState(socio: Socio) {
+            val context = binding.root.context
+            val baseX2 = CalculoComisiones.calcularBaseX2(socio.colaboracion)
+
+            binding.switchHecho.setOnCheckedChangeListener(null)
+            if (binding.switchHecho.isChecked != socio.hecho) {
+                binding.switchHecho.isChecked = socio.hecho
+            }
+
+            val targetColor = if (socio.hecho) {
+                binding.tvEstadoTexto.text =
+                    context.getString(R.string.socio_status_conseguido, baseX2.toInt())
+                ContextCompat.getColor(context, R.color.primary)
+            } else {
+                binding.tvEstadoTexto.text = context.getString(R.string.socio_status_pendiente)
+                ContextCompat.getColor(context, R.color.orange_pending)
+            }
+
+            animateTextColor(binding.tvEstadoTexto, targetColor)
         }
 
         private fun animateTextColor(textView: TextView, targetColor: Int) {
@@ -131,6 +159,14 @@ class SocioAdapter(
 
         override fun areContentsTheSame(oldItem: Socio, newItem: Socio): Boolean {
             return oldItem == newItem
+        }
+
+        override fun getChangePayload(oldItem: Socio, newItem: Socio): Any? {
+            return if (oldItem.copy(hecho = newItem.hecho) == newItem) {
+                PAYLOAD_HECHO_CHANGED
+            } else {
+                super.getChangePayload(oldItem, newItem)
+            }
         }
     }
 }
