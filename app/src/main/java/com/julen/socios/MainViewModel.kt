@@ -10,9 +10,12 @@ import com.julen.socios.model.Socio
 import com.julen.socios.util.CalculoComisiones
 import com.julen.socios.util.DateUtils
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.stateIn
@@ -26,8 +29,7 @@ data class MainUiState(
     val sociosFiltrados: List<Socio> = emptyList(),
     val bonoInfoSemana: BonoRegaloInfo? = null,
     val resumenSemana: CalculoComisiones.ResumenCalculo? = null,
-    val rangoTexto: String = DateUtils.getRangoSemanaTexto(0),
-    val messageEvent: String? = null,
+    val rangoTexto: String = DateUtils.getRangoSemanaTexto(0)
 )
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -38,10 +40,14 @@ class MainViewModel(
 
     private val _weekOffset = MutableStateFlow(0)
     private val _selectedDiaFiltroId = MutableStateFlow<Int?>(null)
-    private val _messageEvent = MutableStateFlow<String?>(null)
 
-    fun clearMessageEvent() {
-        _messageEvent.value = null
+    private val _messageEvent = MutableSharedFlow<String>()
+    val messageEvent: SharedFlow<String> = _messageEvent.asSharedFlow()
+
+    private fun sendMessage(message: String) {
+        viewModelScope.launch {
+            _messageEvent.emit(message)
+        }
     }
 
     val uiState: StateFlow<MainUiState> =
@@ -70,8 +76,7 @@ class MainViewModel(
                 sociosFiltrados = filtrados,
                 bonoInfoSemana = bonoInfo,
                 resumenSemana = resumen,
-                rangoTexto = rangoTexto,
-                messageEvent = _messageEvent.value,
+                rangoTexto = rangoTexto
             )
         }.stateIn(
             scope = viewModelScope,
@@ -96,43 +101,42 @@ class MainViewModel(
     fun toggleSocioHecho(socioId: String) {
         viewModelScope.launch {
             val nuevoEstado = socioRepository.toggleSocioHecho(socioId)
-            _messageEvent.value =
-                if (nuevoEstado) "✓ Socio marcado como HECHO" else "⏳ Socio marcado como NO HECHO"
+            sendMessage(if (nuevoEstado) "✓ Socio marcado como HECHO" else "⏳ Socio marcado como NO HECHO")
         }
     }
 
     fun addSocio(socio: Socio) {
         viewModelScope.launch {
             socioRepository.addSocio(socio)
-            _messageEvent.value = "¡Socio registrado con éxito!"
+            sendMessage("¡Socio registrado con éxito!")
         }
     }
 
     fun updateSocio(socio: Socio) {
         viewModelScope.launch {
             socioRepository.updateSocio(socio)
-            _messageEvent.value = "Socio actualizado"
+            sendMessage("Socio actualizado")
         }
     }
 
     fun deleteSocio(socioId: String) {
         viewModelScope.launch {
             socioRepository.deleteSocio(socioId)
-            _messageEvent.value = "Socio eliminado"
+            sendMessage("Socio eliminado")
         }
     }
 
     fun saveBonoRegalo(bonoInfo: BonoRegaloInfo) {
         viewModelScope.launch {
             bonoRegaloRepository.saveBonoRegalo(bonoInfo)
-            _messageEvent.value = "¡Bonus actualizado!"
+            sendMessage("¡Bonus actualizado!")
         }
     }
 
     fun deleteBonoRegalo(semanaKey: String) {
         viewModelScope.launch {
             bonoRegaloRepository.deleteBonoRegalo(semanaKey)
-            _messageEvent.value = "Bonus restablecido a automático"
+            sendMessage("Bonus restablecido a automático")
         }
     }
 
@@ -143,11 +147,13 @@ class MainViewModel(
                 bonoRegaloRepository.saveBonoRegalo(bono)
             }
             val countBonos = bonosRegalo.size
-            _messageEvent.value = if (countBonos > 0) {
-                "✓ Se han importado $countSocios socios y $countBonos bonos de regalo"
-            } else {
-                "✓ Se han importado $countSocios socios correctamente"
-            }
+            sendMessage(
+                if (countBonos > 0) {
+                    "✓ Se han importado $countSocios socios y $countBonos bonos de regalo"
+                } else {
+                    "✓ Se han importado $countSocios socios correctamente"
+                }
+            )
         }
     }
 

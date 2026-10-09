@@ -6,7 +6,9 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 
 @Database(
-    entities = [SocioEntity::class, BonoRegaloEntity::class], version = 3, exportSchema = false
+    entities = [SocioEntity::class, BonoRegaloEntity::class],
+    version = 3,
+    exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
     abstract fun socioDao(): SocioDao
@@ -19,8 +21,12 @@ abstract class AppDatabase : RoomDatabase() {
         fun getDatabase(context: Context): AppDatabase {
             return INSTANCE ?: synchronized(this) {
                 val instance = Room.databaseBuilder(
-                    context.applicationContext, AppDatabase::class.java, "socios_database"
-                ).fallbackToDestructiveMigration(true).build()
+                    context.applicationContext,
+                    AppDatabase::class.java,
+                    "socios_database"
+                )
+                    .fallbackToDestructiveMigrationOnDowngrade(dropAllTables = true)
+                    .build()
                 INSTANCE = instance
                 instance
             }

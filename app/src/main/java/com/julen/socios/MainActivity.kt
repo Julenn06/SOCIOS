@@ -186,8 +186,15 @@ class MainActivity : AppCompatActivity() {
         // Observar estado del ViewModel reactivamente
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
-                viewModel.uiState.collect { state ->
-                    renderUiState(state)
+                launch {
+                    viewModel.uiState.collect { state ->
+                        renderUiState(state)
+                    }
+                }
+                launch {
+                    viewModel.messageEvent.collect { message ->
+                        Snackbar.make(binding.root, message, Snackbar.LENGTH_SHORT).show()
+                    }
                 }
             }
         }
@@ -293,12 +300,6 @@ class MainActivity : AppCompatActivity() {
         val hechosFiltrados = state.sociosFiltrados.count { it.hecho }
         binding.tvListaResumenDia.text =
             "$hechosFiltrados hechos / ${state.sociosFiltrados.size} reg."
-
-        // Mostrar mensajes
-        state.messageEvent?.let { message ->
-            Snackbar.make(binding.root, message, Snackbar.LENGTH_SHORT).show()
-            viewModel.clearMessageEvent()
-        }
     }
 
     private fun setupGestureDetector() {
