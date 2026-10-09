@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="primary">#059669</color>
+    <color name="primary_variant">#047857</color>
+    <color name="primary_container">#D1FAE5</color>
+    <color name="on_primary_container">#022C22</color>
+
+    <color name="accent_blue">#2563EB</color>
+    <color name="accent_blue_container">#DBEAFE</color>
+
+    <color name="orange_pending">#EA580C</color>
+    <color name="orange_pending_container">#FFEDD5</color>
+
+    <color name="gold_bonus">#D97706</color>
+    <color name="gold_bonus_container">#FEF3C7</color>
+
+    <color name="bg_light">#F1F5F9</color>
+    <color name="surface_card">#FFFFFF</color>
+    <color name="text_main">#0F172A</color>
+    <color name="text_sub">#475569</color>
+
+    <color name="red_irpf">#DC2626</color>
+    <color name="red_irpf_bg">#FEE2E2</color>
+</resources>

@@ -1,0 +1,102 @@
+<resources>
+    <string name="app_name">socios</string>
+
+    <!-- General Actions -->
+    <string name="action_cancel">Cancelar</string>
+    <string name="action_save">Guardar</string>
+    <string name="action_delete">Eliminar</string>
+    <string name="action_close">Cerrar</string>
+    <string name="action_edit">Editar</string>
+
+    <!-- Main Navigation & Titles -->
+    <string name="title_app_bar">Gestión de Socios</string>
+    <string name="subtitle_current_week">Semana actual (Lunes a Viernes)</string>
+    <string name="title_week_format">Semana %s</string>
+    <string name="title_socios_day_format">Socios del %s</string>
+    <string name="title_socios_week">Socios de la semana</string>
+    <string name="title_add_socio">Añadir Nuevo Socio</string>
+    <string name="title_edit_socio">Editar Registro de Socio</string>
+    <string name="subtitle_add_socio">Introduce la colaboración y asigna el día</string>
+
+    <!-- Financial Headers -->
+    <string name="label_neto_ganado">Neto Ganado</string>
+    <string name="label_base_x2">Base (Cuotas x2)</string>
+    <string name="label_bonus_auto">Bonus Socios ✏️</string>
+    <string name="label_bonus_manual">Bonus (Manual) ✏️</string>
+    <string name="label_irpf_retencion">IRPF (21,48%)</string>
+
+    <!-- Bonus Card -->
+    <string name="bonus_level_title">🏆 Bonus Nivel: +%1$d € (%2$d socios hechos)</string>
+    <string name="bonus_progress_format">%1$d / %2$d socios</string>
+    <string name="bonus_next_goal_singular">¡Haz 1 socio más para alcanzar el Bonus de +%d €!</string>
+    <string name="bonus_next_goal_plural">¡Haz %1$d socios más para alcanzar el Bonus de +%2$d €!</string>
+    <string name="bonus_max_goal_reached">¡Enhorabuena! Has alcanzado el nivel de bonus máximo para este tramo.</string>
+
+    <!-- Socio Item Status -->
+    <string name="socio_status_conseguido">✓ Socio Conseguido (+%d€ base)</string>
+    <string name="socio_status_pendiente">⏳ No Hecho (Pendiente)</string>
+    <string name="socio_status_badge_conseguido">✓ Conseguido</string>
+    <string name="socio_status_badge_pendiente">⏳ Pendiente</string>
+    <string name="socio_default_name">Socio %d€</string>
+    <string name="socio_base_format">+%d € base</string>
+    <string name="socio_note_format">Nota: %s</string>
+    <string name="preview_base_format">+%1$s (Cuota %2$s x2)</string>
+
+    <!-- Add Socio Bottom Sheet Labels -->
+    <string name="preview_ganancia_label">VISTA PREVIA DE GANANCIA</string>
+    <string name="section_cuota_label">1. Cuota de Colaboración (€/mes)</string>
+    <string name="cd_add_icon">Añadir socio</string>
+    <string name="chip_10">10 €</string>
+    <string name="chip_12">12 €</string>
+    <string name="chip_15">15 €</string>
+    <string name="chip_18">18 €</string>
+    <string name="chip_20">20 €</string>
+    <string name="chip_25">25 €</string>
+    <string name="chip_30">30 €</string>
+    <string name="chip_otro">Otro…</string>
+    <string name="hint_custom_amount">Cantidad personalizada (€)</string>
+    <string name="section_dia_label">2. Asignar Día de la Semana</string>
+    <string name="section_estado_label">3. Estado del Registro</string>
+    <string name="switch_socio_hecho_label">Socio hecho / conseguido (sumar a ganancias)</string>
+    <string name="section_adicional_label">4. Información Adicional (Opcional)</string>
+    <string name="hint_nombre_socio">Nombre del socio o identificador</string>
+    <string name="hint_notas">Notas o comentarios</string>
+    <string name="action_save_socio">Guardar Socio</string>
+
+    <!-- UI Chips & Details -->
+    <string name="chip_todos_format">Todos (%d)</string>
+    <string name="chip_day_format">%1$s (%2$d)</string>
+
+    <!-- Lists & Summaries -->
+    <string name="list_summary_day_format">%1$d hechos / %2$d reg.</string>
+    <string name="global_history_count_singular">Acumulado en 1 semana registrada</string>
+    <string name="global_history_count_plural">Acumulado en %d semanas registradas</string>
+    <string name="irpf_breakdown_count">Basado en %1$d socios hechos (%2$d registrados)</string>
+    <string name="irpf_amount_format">IRPF: %s</string>
+
+    <!-- Snackbar Messages -->
+    <string name="msg_socio_hecho">✓ Socio marcado como HECHO</string>
+    <string name="msg_socio_pendiente">⏳ Socio marcado como NO HECHO</string>
+    <string name="msg_socio_saved">¡Socio registrado con éxito!</string>
+    <string name="msg_socio_updated">Socio actualizado</string>
+    <string name="msg_socio_deleted">Socio eliminado</string>
+    <string name="msg_bonus_updated">¡Bonus actualizado!</string>
+    <string name="msg_bonus_reset">Bonus restablecido a automático</string>
+    <string name="msg_semana_cleared">Semana vaciada</string>
+    <string name="msg_import_success">✓ Se han importado %d socios correctamente</string>
+    <string name="msg_file_saved">¡Archivo guardado correctamente!</string>
+    <string name="msg_error_file_save">Error al guardar el archivo: %s</string>
+
+    <!-- Dialogs -->
+    <string name="dialog_delete_socio_title">Eliminar Socio</string>
+    <string name="dialog_delete_socio_msg">¿Estás seguro de que deseas eliminar este registro de %d€?</string>
+    <string name="dialog_clear_week_title">Limpiar semana</string>
+    <string name="dialog_clear_week_msg">¿Deseas borrar todos los socios de la semana %s?</string>
+
+    <!-- Days of the week -->
+    <string name="day_lunes">Lunes</string>
+    <string name="day_martes">Martes</string>
+    <string name="day_miercoles">Miércoles</string>
+    <string name="day_jueves">Jueves</string>
+    <string name="day_viernes">Viernes</string>
+</resources>

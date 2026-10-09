@@ -1,0 +1,271 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@color/surface_card"
+    android:forceDarkAllowed="false"
+    android:orientation="vertical"
+    android:padding="20dp"
+    tools:targetApi="q">
+
+    <!-- Handle drag bar -->
+    <View
+        android:layout_width="40dp"
+        android:layout_height="4dp"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginBottom="16dp"
+        android:background="#D0D0D0" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="📊 Desglose de Ganancias e IRPF"
+        android:textColor="@color/text_main"
+        android:textSize="20sp"
+        android:textStyle="bold" />
+
+    <TextView
+        android:id="@+id/tvBreakdownRangoSemana"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="2dp"
+        android:textColor="@color/text_sub"
+        android:textSize="13sp"
+        tools:text="Semana del 24 de Feb. al 28 de Feb." />
+
+    <!-- Card Gran Total Neto -->
+    <com.google.android.material.card.MaterialCardView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        app:cardBackgroundColor="#E8F5E9"
+        app:cardCornerRadius="16dp"
+        app:strokeColor="#C8E6C9"
+        app:strokeWidth="1dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:orientation="vertical"
+            android:padding="20dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="GANANCIA NETA FINAL"
+                android:textColor="#2E7D32"
+                android:textSize="12sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/tvBreakdownNetoBig"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:textColor="#1B5E20"
+                android:textSize="32sp"
+                android:textStyle="bold"
+                tools:text="424,01 €" />
+
+            <TextView
+                android:id="@+id/tvBreakdownSociosCount"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:textColor="#388E3C"
+                android:textSize="13sp"
+                tools:text="Basado en 10 socios hechos esta semana" />
+        </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
+
+    <!-- Tabla / Lista de cálculo -->
+    <com.google.android.material.card.MaterialCardView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        app:cardBackgroundColor="@color/surface_card"
+        app:cardCornerRadius="16dp"
+        app:strokeColor="#E0E0E0"
+        app:strokeWidth="1dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="16dp">
+
+            <!-- Fila 1: Suma Cuotas Base -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="1. Suma de colaboraciones"
+                    android:textColor="@color/text_main"
+                    android:textSize="14sp" />
+
+                <TextView
+                    android:id="@+id/tvBreakdownSumaCuotas"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/text_main"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    tools:text="200,00 €" />
+            </LinearLayout>
+
+            <!-- Fila 2: Base x2 -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="2. Ganancias Base (Cuotas x2)"
+                    android:textColor="@color/text_main"
+                    android:textSize="14sp" />
+
+                <TextView
+                    android:id="@+id/tvBreakdownBaseX2"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="#1565C0"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    tools:text="+400,00 €" />
+            </LinearLayout>
+
+            <!-- Fila 3: Bonus por número de socios -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/tvBreakdownBonusLabel"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="3. Bonus semanal por socios"
+                    android:textColor="@color/text_main"
+                    android:textSize="14sp" />
+
+                <TextView
+                    android:id="@+id/tvBreakdownBonusValue"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="#E65100"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    tools:text="+140,00 €" />
+            </LinearLayout>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_marginVertical="12dp"
+                android:background="#E0E0E0" />
+
+            <!-- Fila 4: Total Bruto -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="TOTAL BRUTO"
+                    android:textColor="@color/text_main"
+                    android:textSize="15sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/tvBreakdownBruto"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/text_main"
+                    android:textSize="15sp"
+                    android:textStyle="bold"
+                    tools:text="540,00 €" />
+            </LinearLayout>
+
+            <!-- Fila 5: Retención IRPF (21.48%) -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Retención IRPF (21,48%)"
+                    android:textColor="#C62828"
+                    android:textSize="14sp" />
+
+                <TextView
+                    android:id="@+id/tvBreakdownIrpf"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="#C62828"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    tools:text="-115,99 €" />
+            </LinearLayout>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="2dp"
+                android:layout_marginVertical="12dp"
+                android:background="#2E7D32" />
+
+            <!-- Fila 6: TOTAL NETO FINAL -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="TOTAL NETO A COBRAR"
+                    android:textColor="#1B5E20"
+                    android:textSize="16sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/tvBreakdownNetoSmall"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="#1B5E20"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    tools:text="424,01 €" />
+            </LinearLayout>
+        </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
+
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnCerrarBreakdown"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:text="Entendido" />
+</LinearLayout>

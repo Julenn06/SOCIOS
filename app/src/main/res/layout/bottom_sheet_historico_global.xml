@@ -1,0 +1,185 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@color/surface_card"
+    android:forceDarkAllowed="false"
+    android:orientation="vertical"
+    android:padding="20dp"
+    tools:targetApi="q">
+
+    <!-- Handle drag bar -->
+    <View
+        android:layout_width="40dp"
+        android:layout_height="4dp"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginBottom="16dp"
+        android:background="#D0D0D0" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="📈 Histórico Acumulado Global"
+        android:textColor="@color/text_main"
+        android:textSize="20sp"
+        android:textStyle="bold" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="2dp"
+        android:text="Suma total de IRPF retenido y ganancias de todas tus semanas"
+        android:textColor="@color/text_sub"
+        android:textSize="13sp" />
+
+    <!-- Card IRPF Retenido Acumulado -->
+    <com.google.android.material.card.MaterialCardView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        app:cardBackgroundColor="#FFEBEE"
+        app:cardCornerRadius="16dp"
+        app:strokeColor="#FFCDD2"
+        app:strokeWidth="1dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:orientation="vertical"
+            android:padding="18dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="TOTAL IRPF RETENIDO (QUITADO)"
+                android:textColor="#C62828"
+                android:textSize="12sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/tvGlobalIrpfTotal"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:textColor="#B71C1C"
+                android:textSize="30sp"
+                android:textStyle="bold"
+                tools:text="-204,69 €" />
+
+            <TextView
+                android:id="@+id/tvGlobalSemanasCount"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:textColor="#D32F2F"
+                android:textSize="12sp"
+                tools:text="Acumulado en 3 semanas de trabajo" />
+        </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
+
+    <!-- Grid de Totales Acumulados -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:baselineAligned="false"
+        android:orientation="horizontal">
+
+        <!-- Total Neto -->
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="6dp"
+            android:layout_weight="1"
+            app:cardBackgroundColor="#E8F5E9"
+            app:cardCornerRadius="12dp"
+            app:strokeWidth="0dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="12dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Neto Cobrado"
+                    android:textColor="#2E7D32"
+                    android:textSize="11sp" />
+
+                <TextView
+                    android:id="@+id/tvGlobalNetoTotal"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:textColor="#1B5E20"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    tools:text="+748,31 €" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- Total Bonus -->
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="6dp"
+            android:layout_weight="1"
+            app:cardBackgroundColor="#FFFDE7"
+            app:cardCornerRadius="12dp"
+            app:strokeWidth="0dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="12dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Bonus Totales"
+                    android:textColor="#F57F17"
+                    android:textSize="11sp" />
+
+                <TextView
+                    android:id="@+id/tvGlobalBonusTotal"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:textColor="#E65100"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    tools:text="+280,00 €" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+    </LinearLayout>
+
+    <!-- Encabezado de la lista de semanas -->
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="18dp"
+        android:text="Desglose por semanas pasadas:"
+        android:textColor="@color/text_main"
+        android:textSize="15sp"
+        android:textStyle="bold" />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rvSemanasHistoricas"
+        android:layout_width="match_parent"
+        android:layout_height="220dp"
+        android:layout_marginTop="8dp"
+        tools:listitem="@layout/item_semana_historica" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnCerrarHistorico"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:text="Cerrar" />
+</LinearLayout>

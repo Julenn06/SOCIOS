@@ -1,0 +1,524 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/bg_light"
+    android:forceDarkAllowed="false"
+    tools:context=".MainActivity"
+    tools:targetApi="q">
+
+    <com.google.android.material.appbar.AppBarLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/bg_light"
+        app:elevation="0dp">
+
+        <com.google.android.material.appbar.MaterialToolbar
+            android:id="@+id/toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            app:title="Gestión de Socios"
+            app:titleTextColor="@color/text_main" />
+
+        <!-- Selector de Semana -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingHorizontal="12dp"
+            android:paddingBottom="8dp">
+
+            <!-- Botón Hoy a la Izquierda (Aparece al mirar semanas futuras) -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnHoyLeft"
+                style="@style/Widget.Material3.Button.TonalButton"
+                android:layout_width="wrap_content"
+                android:layout_height="36dp"
+                android:layout_marginEnd="6dp"
+                android:paddingHorizontal="12dp"
+                android:text="Hoy"
+                android:textColor="#0D47A1"
+                android:textSize="12sp"
+                android:textStyle="bold"
+                android:visibility="gone"
+                app:backgroundTint="#E3F2FD"
+                app:cornerRadius="18dp"
+                app:icon="@drawable/ic_chevron_left"
+                app:iconTint="#0D47A1"
+                tools:visibility="visible" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnSemanaAnterior"
+                style="@style/Widget.Material3.Button.IconButton"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                app:icon="@drawable/ic_chevron_left"
+                app:iconTint="@color/text_main" />
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/tvRangoSemana"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/text_main"
+                    android:textSize="15sp"
+                    android:textStyle="bold"
+                    tools:text="24 de Feb. - 28 de Feb. (2025)" />
+
+                <TextView
+                    android:id="@+id/tvSemanaSubtitulo"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/text_sub"
+                    android:textSize="11sp"
+                    tools:text="Semana actual (Lunes a Viernes)" />
+            </LinearLayout>
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnSemanaSiguiente"
+                style="@style/Widget.Material3.Button.IconButton"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                app:icon="@drawable/ic_chevron_right"
+                app:iconTint="@color/text_main" />
+
+            <!-- Botón Hoy a la Derecha (Aparece al mirar semanas pasadas) -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnHoyRight"
+                style="@style/Widget.Material3.Button.TonalButton"
+                android:layout_width="wrap_content"
+                android:layout_height="36dp"
+                android:layout_marginStart="6dp"
+                android:paddingHorizontal="12dp"
+                android:text="Hoy"
+                android:textColor="#0D47A1"
+                android:textSize="12sp"
+                android:textStyle="bold"
+                android:visibility="gone"
+                app:backgroundTint="#E3F2FD"
+                app:cornerRadius="18dp"
+                app:icon="@drawable/ic_chevron_right"
+                app:iconGravity="end"
+                app:iconTint="#0D47A1"
+                tools:visibility="visible" />
+        </LinearLayout>
+    </com.google.android.material.appbar.AppBarLayout>
+
+    <androidx.core.widget.NestedScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingBottom="88dp">
+
+            <!-- Card Resumen Financiero Ejecutivo -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/cardHeaderFinanciero"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="12dp"
+                android:layout_marginTop="4dp"
+                app:cardCornerRadius="20dp"
+                app:cardElevation="3dp"
+                app:strokeWidth="0dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/bg_gradient_header"
+                    android:orientation="vertical"
+                    android:padding="20dp">
+
+                    <!-- Encabezado Neto -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="vertical">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="GANANCIA NETO SEMANAL"
+                                android:textColor="#B3E5FC"
+                                android:textSize="11sp"
+                                android:textStyle="bold" />
+
+                            <TextView
+                                android:id="@+id/tvNetoHeader"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="2dp"
+                                android:textColor="@android:color/white"
+                                android:textSize="32sp"
+                                android:textStyle="bold"
+                                tools:text="424,01 €" />
+                        </LinearLayout>
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btnVerDesglose"
+                            style="@style/Widget.Material3.Button.TonalButton"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Ver IRPF"
+                            android:textColor="#0D47A1"
+                            android:textSize="12sp"
+                            app:backgroundTint="#E3F2FD"
+                            app:icon="@drawable/ic_info"
+                            app:iconTint="#0D47A1" />
+                    </LinearLayout>
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+                        android:layout_marginVertical="14dp"
+                        android:background="#40FFFFFF" />
+
+                    <!-- Stats Grid Row -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:baselineAligned="false"
+                        android:orientation="horizontal">
+
+                        <!-- Base x2 -->
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="vertical">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Base (Cuotas x2)"
+                                android:textColor="#E0F7FA"
+                                android:textSize="11sp" />
+
+                            <TextView
+                                android:id="@+id/tvBaseHeader"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:textColor="@android:color/white"
+                                android:textSize="15sp"
+                                android:textStyle="bold"
+                                tools:text="+400,00 €" />
+                        </LinearLayout>
+
+                        <!-- Bonus (Clickable) -->
+                        <LinearLayout
+                            android:id="@+id/containerBonusHeader"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:background="?attr/selectableItemBackground"
+                            android:clickable="true"
+                            android:focusable="true"
+                            android:orientation="vertical">
+
+                            <TextView
+                                android:id="@+id/tvBonusHeaderLabel"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Bonus Socios ✏️"
+                                android:textColor="#FFF9C4"
+                                android:textSize="11sp" />
+
+                            <TextView
+                                android:id="@+id/tvBonusHeader"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:textColor="#FFEE58"
+                                android:textSize="15sp"
+                                android:textStyle="bold"
+                                tools:text="+140,00 €" />
+                        </LinearLayout>
+
+                        <!-- IRPF -->
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="vertical">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="IRPF (-21,48%)"
+                                android:textColor="#FFCDD2"
+                                android:textSize="11sp" />
+
+                            <TextView
+                                android:id="@+id/tvIrpfHeader"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:textColor="#FFEBEE"
+                                android:textSize="15sp"
+                                android:textStyle="bold"
+                                tools:text="-115,99 €" />
+                        </LinearLayout>
+                    </LinearLayout>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Card Progreso de Bonus Nivel -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/cardProgresoBonus"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="12dp"
+                android:layout_marginTop="10dp"
+                app:cardBackgroundColor="@color/surface_card"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="2dp"
+                app:strokeColor="#E0E0E0"
+                app:strokeWidth="1dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
+
+                        <TextView
+                            android:id="@+id/tvBonusTitle"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:textColor="@color/text_main"
+                            android:textSize="15sp"
+                            android:textStyle="bold"
+                            tools:text="🏆 Bonus Nivel: +100 € (7 socios)" />
+
+                        <TextView
+                            android:id="@+id/tvBonusProgressCount"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textColor="@color/primary"
+                            android:textSize="13sp"
+                            android:textStyle="bold"
+                            tools:text="7 / 10 socios" />
+                    </LinearLayout>
+
+                    <com.google.android.material.progressindicator.LinearProgressIndicator
+                        android:id="@+id/progressBonus"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+                        app:indicatorColor="@color/primary"
+                        app:trackCornerRadius="4dp"
+                        app:trackThickness="8dp"
+                        tools:progress="70" />
+
+                    <TextView
+                        android:id="@+id/tvBonusSiguienteMeta"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:textColor="@color/text_sub"
+                        android:textSize="12sp"
+                        tools:text="¡Haz 3 socios más para alcanzar el Bonus de +140 €!" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Selector de Días de la Semana (Horizontal Scroll Chips) -->
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="16dp"
+                android:layout_marginTop="16dp"
+                android:text="Filtrar por día (Lunes a Viernes):"
+                android:textColor="@color/text_sub"
+                android:textSize="13sp"
+                android:textStyle="bold" />
+
+            <HorizontalScrollView
+                android:id="@+id/scrollDiasFiltro"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:clipToPadding="false"
+                android:paddingHorizontal="12dp"
+                android:scrollbars="none">
+
+                <com.google.android.material.chip.ChipGroup
+                    android:id="@+id/chipGroupDiasFiltro"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    app:singleLine="true"
+                    app:singleSelection="true">
+
+                    <com.google.android.material.chip.Chip
+                        android:id="@+id/chipFiltroTodos"
+                        style="@style/Widget.Material3.Chip.Filter"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:checked="true"
+                        android:text="Todos (0)" />
+
+                    <com.google.android.material.chip.Chip
+                        android:id="@+id/chipFiltroLun"
+                        style="@style/Widget.Material3.Chip.Filter"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Lun (0)" />
+
+                    <com.google.android.material.chip.Chip
+                        android:id="@+id/chipFiltroMar"
+                        style="@style/Widget.Material3.Chip.Filter"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Mar (0)" />
+
+                    <com.google.android.material.chip.Chip
+                        android:id="@+id/chipFiltroMie"
+                        style="@style/Widget.Material3.Chip.Filter"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Mié (0)" />
+
+                    <com.google.android.material.chip.Chip
+                        android:id="@+id/chipFiltroJue"
+                        style="@style/Widget.Material3.Chip.Filter"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Jue (0)" />
+
+                    <com.google.android.material.chip.Chip
+                        android:id="@+id/chipFiltroVie"
+                        style="@style/Widget.Material3.Chip.Filter"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Vie (0)" />
+                </com.google.android.material.chip.ChipGroup>
+            </HorizontalScrollView>
+
+            <!-- Encabezado de la Lista de Socios -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="16dp"
+                android:layout_marginTop="12dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/tvListaTitulo"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:textColor="@color/text_main"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    tools:text="Socios de la semana" />
+
+                <TextView
+                    android:id="@+id/tvListaResumenDia"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/primary"
+                    android:textSize="13sp"
+                    android:textStyle="bold"
+                    tools:text="5 hechos" />
+            </LinearLayout>
+
+            <!-- Estado Vacío (Empty State) -->
+            <LinearLayout
+                android:id="@+id/containerEmptyState"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="20dp"
+                android:layout_marginTop="24dp"
+                android:gravity="center"
+                android:orientation="vertical"
+                android:padding="24dp"
+                android:visibility="gone"
+                tools:visibility="visible">
+
+                <ImageView
+                    android:layout_width="64dp"
+                    android:layout_height="64dp"
+                    android:src="@drawable/ic_add"
+                    app:tint="#BDBDBD" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:text="No hay socios para este día/semana"
+                    android:textColor="@color/text_main"
+                    android:textSize="16sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:gravity="center"
+                    android:text="Pulsa el botón '+' para añadir tu primer socio registrado."
+                    android:textColor="@color/text_sub"
+                    android:textSize="13sp" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnAddSocioEmpty"
+                    style="@style/Widget.Material3.Button.TonalButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:text="Añadir Socio"
+                    app:icon="@drawable/ic_add" />
+            </LinearLayout>
+
+            <!-- RecyclerView de Socios -->
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rvSocios"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:layoutAnimation="@anim/layout_animation_fall_down"
+                android:nestedScrollingEnabled="false"
+                tools:itemCount="3"
+                tools:listitem="@layout/item_socio" />
+        </LinearLayout>
+    </androidx.core.widget.NestedScrollView>
+
+    <!-- Floating Action Button (+ Nuevo Socio) -->
+    <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
+        android:id="@+id/fabAddSocio"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|end"
+        android:layout_margin="20dp"
+        android:text="Nuevo Socio"
+        android:textColor="@android:color/white"
+        app:backgroundTint="@color/primary"
+        app:icon="@drawable/ic_add"
+        app:iconTint="@android:color/white" />
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>
