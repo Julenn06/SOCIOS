@@ -9,6 +9,7 @@ import com.julen.socios.util.toFormattedEuros
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
+import java.util.Locale
 
 class ExampleUnitTest {
 
@@ -142,8 +143,14 @@ class ExampleUnitTest {
 
     @Test
     fun testNumberExtensionsFormatting() {
-        val amount = 123.456
-        assertEquals("123,46 €", amount.toFormattedEuros())
-        assertEquals("+123,46 €", amount.toCurrencyString(prefix = "+"))
+        val previousLocale = Locale.getDefault()
+        Locale.setDefault(Locale.forLanguageTag("es-ES"))
+        try {
+            val amount = 123.456
+            assertEquals("123,46 €", amount.toFormattedEuros())
+            assertEquals("+123,46 €", amount.toCurrencyString(prefix = "+"))
+        } finally {
+            Locale.setDefault(previousLocale)
+        }
     }
 }
