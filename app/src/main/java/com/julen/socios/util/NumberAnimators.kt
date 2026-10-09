@@ -9,6 +9,7 @@ import kotlin.math.abs
 
 object NumberAnimators {
 
+    private val spanishLocale = Locale.forLanguageTag("es-ES")
     private val activeAnimators = mutableMapOf<TextView, ValueAnimator>()
 
     fun animateCurrency(
@@ -46,7 +47,7 @@ object NumberAnimators {
 
     private fun formatValue(value: Double, prefix: String, suffix: String, decimals: Int): String {
         val formatStr = "%.${decimals}f"
-        val formatted = String.format(Locale.getDefault(), formatStr, value)
+        val formatted = String.format(spanishLocale, formatStr, value)
         return "$prefix$formatted$suffix"
     }
 }

@@ -5,7 +5,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
-import androidx.appcompat.app.AlertDialog
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.julen.socios.databinding.BottomSheetExportImportBinding
 import com.julen.socios.util.DateUtils
@@ -129,7 +129,7 @@ class ExportImportBottomSheetDialog(
             selectedSemanasKeys.contains(todasLasSemanasKeys[i])
         }
 
-        AlertDialog.Builder(requireContext()).setTitle("Seleccionar semanas a exportar")
+        MaterialAlertDialogBuilder(requireContext()).setTitle("Seleccionar semanas a exportar")
             .setMultiChoiceItems(itemsText, checkedItems) { _, which, isChecked ->
                 val key = todasLasSemanasKeys[which]
                 if (isChecked) {

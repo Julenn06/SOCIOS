@@ -11,17 +11,16 @@ import android.view.animation.OvershootInterpolator
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
-import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.coordinatorlayout.widget.CoordinatorLayout
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.snackbar.Snackbar
 import com.julen.socios.data.BonoRegaloRepository
 import com.julen.socios.data.SocioRepository
@@ -386,15 +385,14 @@ class MainActivity : AppCompatActivity() {
         binding.rvSocios.layoutManager = LinearLayoutManager(this)
         binding.rvSocios.adapter = adapter
 
-        binding.rvSocios.addOnScrollListener(object : RecyclerView.OnScrollListener() {
-            override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
-                if (dy > 8 && binding.fabAddSocio.isExtended) {
-                    binding.fabAddSocio.shrink()
-                } else if (dy < -8 && !binding.fabAddSocio.isExtended) {
-                    binding.fabAddSocio.extend()
-                }
+        binding.nestedScrollView.setOnScrollChangeListener { _, _, scrollY, _, oldScrollY ->
+            val dy = scrollY - oldScrollY
+            if (dy > 12 && binding.fabAddSocio.isExtended) {
+                binding.fabAddSocio.shrink()
+            } else if ((dy < -12 || scrollY == 0) && !binding.fabAddSocio.isExtended) {
+                binding.fabAddSocio.extend()
             }
-        })
+        }
     }
 
     private fun setupWeekNavigation() {
@@ -474,11 +472,14 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun confirmDeleteSocio(socio: Socio) {
-        AlertDialog.Builder(this).setTitle(getString(R.string.dialog_delete_socio_title))
+        MaterialAlertDialogBuilder(this)
+            .setTitle(getString(R.string.dialog_delete_socio_title))
             .setMessage(getString(R.string.dialog_delete_socio_msg, socio.colaboracion.toInt()))
             .setPositiveButton(getString(R.string.action_delete)) { _, _ ->
                 viewModel.deleteSocio(socio.id)
-            }.setNegativeButton(getString(R.string.action_cancel), null).show()
+            }
+            .setNegativeButton(getString(R.string.action_cancel), null)
+            .show()
     }
 
     private fun mostrarDesgloseIrpf() {
@@ -598,7 +599,7 @@ class MainActivity : AppCompatActivity() {
             }
 
             val opciones = arrayOf("Compartir con otra app", "Guardar en el dispositivo")
-            AlertDialog.Builder(this@MainActivity)
+            MaterialAlertDialogBuilder(this@MainActivity)
                 .setTitle("Exportar ${tipo.uppercase(Locale.getDefault())}")
                 .setItems(opciones) { _, which ->
                     if (which == 0) {
