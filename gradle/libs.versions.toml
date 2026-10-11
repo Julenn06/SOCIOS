@@ -1,6 +1,7 @@
 [versions]
 agp = "9.4.1"
-# Debe coincidir con la versión de Kotlin que trae AGP (o superarla, que entonces es la que se usa).
+# Plugin de serialización: igual a la versión de Kotlin que trae AGP. Si se sube, todo el proyecto
+# pasa a compilarse con esa versión de Kotlin.
 kotlin = "2.2.10"
 ksp = "2.3.12"
 coreKtx = "1.19.1"

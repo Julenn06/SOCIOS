@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<lint>
+    <!-- El plugin de serialización va con la versión de Kotlin que trae AGP. Dependabot ya propone
+         las versiones nuevas; subirlo cambia el compilador de Kotlin de todo el proyecto. -->
+    <issue id="NewerVersionAvailable">
+        <ignore regexp="org\.jetbrains\.kotlin\.plugin\.serialization" />
+    </issue>
+</lint>
