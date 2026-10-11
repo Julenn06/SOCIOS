@@ -94,9 +94,14 @@ class MainActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         ViewCompat.setOnApplyWindowInsetsListener(binding.main) { _, insets ->
-            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+            val systemBars = insets.getInsets(
+                WindowInsetsCompat.Type.systemBars() or WindowInsetsCompat.Type.displayCutout()
+            )
             val density = resources.displayMetrics.density
 
+            // La barra superior empieza debajo de la de estado: si no, sus botones quedan en la franja
+            // donde el sistema recoge el gesto de bajar las notificaciones y cuesta pulsarlos.
+            binding.appBar.updatePadding(top = systemBars.top)
             binding.fabAddSocio.updateLayoutParams<CoordinatorLayout.LayoutParams> {
                 bottomMargin = (20 * density).toInt() + systemBars.bottom
             }
