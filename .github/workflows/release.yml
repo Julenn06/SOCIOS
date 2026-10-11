@@ -84,7 +84,7 @@ jobs:
           cp app/build/outputs/apk/debug/app-debug.apk "socios-${SOCIOS_VERSION_NAME}-debug.apk"
 
       - name: Upload APK artifact
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: socios-${{ env.SOCIOS_VERSION_NAME }}
           path: socios-*.apk
