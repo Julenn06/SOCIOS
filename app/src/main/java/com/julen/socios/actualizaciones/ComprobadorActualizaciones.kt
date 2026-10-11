@@ -73,10 +73,10 @@ class ComprobadorActualizaciones(
 }
 
 /** Última release del repositorio en GitHub, mediante su API pública (no necesita token). */
-class GitHubReleases(private val urlApi: String = URL_API) : FuenteVersiones {
+class GitHubReleases : FuenteVersiones {
 
     override suspend fun ultimaPublicada(): VersionPublicada = withContext(Dispatchers.IO) {
-        val conexion = URL(urlApi).openConnection() as HttpURLConnection
+        val conexion = URL(URL_API).openConnection() as HttpURLConnection
         try {
             conexion.connectTimeout = TIMEOUT_MS
             conexion.readTimeout = TIMEOUT_MS
