@@ -37,6 +37,10 @@ Los esquemas de Room se exportan a `app/schemas/`. Al cambiar una entidad hay qu
 Los push a `main` solo generan el APK como artefacto del workflow, sin publicar release. El
 `versionCode` es el número de ejecución del workflow, así que cada APK es una actualización del anterior.
 
+La app consulta la última release de GitHub al abrirse (como mucho una vez al día, y también desde
+"Acerca de") y avisa si hay una versión nueva. Para que pueda compararlas, los tags tienen que seguir el
+formato `vX.Y.Z`.
+
 ### Clave de firma (configuración única)
 
 Todos los APK deben firmarse con la **misma** clave; si cambia, Android obliga a desinstalar la app y se

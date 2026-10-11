@@ -1,5 +1,6 @@
 package com.julen.socios
 
+import android.content.ActivityNotFoundException
 import android.content.ClipData
 import android.content.Intent
 import android.os.Bundle
@@ -19,6 +20,7 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.content.pm.ShortcutManagerCompat
+import androidx.core.net.toUri
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.isVisible
@@ -56,6 +58,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var gestureDetector: GestureDetector
 
     private val viewModel: MainViewModel by viewModels { MainViewModel.Factory }
+    private val actualizaciones: ActualizacionesViewModel by viewModels { ActualizacionesViewModel.Factory }
 
     private val chipsFiltroDia: Map<DiaSemana, Chip> by lazy {
         DiaSemana.entries.zip(
@@ -130,6 +133,7 @@ class MainActivity : AppCompatActivity() {
                 launch { viewModel.events.collect(::manejarEvento) }
                 launch { viewModel.exportPendienteDeDestino.collect(::mostrarDialogoDestinoExport) }
                 launch { viewModel.importPendiente.collect(::mostrarDialogoConfirmarImport) }
+                launch { actualizaciones.events.collect(::manejarEventoActualizacion) }
             }
         }
 
@@ -275,6 +279,31 @@ class MainActivity : AppCompatActivity() {
                 Snackbar.make(binding.root, R.string.msg_socio_deleted, Snackbar.LENGTH_LONG)
                     .setAction(R.string.action_deshacer) { viewModel.restaurarSocio(evento.socio) }
                     .show()
+        }
+    }
+
+    private fun manejarEventoActualizacion(evento: ActualizacionesViewModel.Evento) {
+        when (evento) {
+            is ActualizacionesViewModel.Evento.Mensaje ->
+                Snackbar.make(binding.root, evento.texto.resolver(this), Snackbar.LENGTH_LONG).show()
+
+            is ActualizacionesViewModel.Evento.NuevaVersion -> {
+                val texto = getString(
+                    R.string.actualizacion_disponible, evento.publicada.version.toString(), evento.instalada
+                )
+                // Más tiempo que un aviso normal: es fácil no verlo al abrir la app.
+                Snackbar.make(binding.root, texto, DURACION_AVISO_VERSION_MS)
+                    .setAction(R.string.action_descargar) { abrirEnNavegador(evento.publicada.url) }
+                    .show()
+            }
+        }
+    }
+
+    private fun abrirEnNavegador(url: String) {
+        try {
+            startActivity(Intent(Intent.ACTION_VIEW, url.toUri()))
+        } catch (e: ActivityNotFoundException) {
+            Snackbar.make(binding.root, R.string.msg_sin_navegador, Snackbar.LENGTH_LONG).show()
         }
     }
 
@@ -492,6 +521,11 @@ class MainActivity : AppCompatActivity() {
             .show(supportFragmentManager, BonoRegaloBottomSheetDialog.TAG)
     }
 
+    private fun mostrarAcercaDe() {
+        if (supportFragmentManager.findFragmentByTag(AcercaDeDialogFragment.TAG) != null) return
+        AcercaDeDialogFragment().show(supportFragmentManager, AcercaDeDialogFragment.TAG)
+    }
+
     private fun mostrarDialogoExportImport() {
         if (supportFragmentManager.findFragmentByTag(ExportImportBottomSheetDialog.TAG) != null) return
         ExportImportBottomSheetDialog().show(supportFragmentManager, ExportImportBottomSheetDialog.TAG)
@@ -514,6 +548,11 @@ class MainActivity : AppCompatActivity() {
                 true
             }
 
+            R.id.action_acerca_de -> {
+                mostrarAcercaDe()
+                true
+            }
+
             else -> super.onOptionsItemSelected(item)
         }
     }
@@ -522,5 +561,7 @@ class MainActivity : AppCompatActivity() {
         // Deben coincidir con res/xml/shortcuts.xml.
         const val ACTION_NUEVO_SOCIO = "com.julen.socios.action.NUEVO_SOCIO"
         const val ATAJO_NUEVO_SOCIO = "nuevo_socio"
+
+        const val DURACION_AVISO_VERSION_MS = 10_000
     }
 }

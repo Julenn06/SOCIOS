@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
+    <!-- Solo para comprobar en GitHub si hay una versión nueva de la app. -->
+    <uses-permission android:name="android.permission.INTERNET" />
+
     <application
         android:name=".SociosApp"
         android:allowBackup="true"

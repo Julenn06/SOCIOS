@@ -2,6 +2,9 @@ package com.julen.socios
 
 import android.app.Application
 import android.content.Context
+import com.julen.socios.actualizaciones.ComprobadorActualizaciones
+import com.julen.socios.actualizaciones.GitHubReleases
+import com.julen.socios.actualizaciones.RegistroEnPreferencias
 import com.julen.socios.data.BackupRepository
 import com.julen.socios.data.BonoRegaloRepository
 import com.julen.socios.data.IrpfRepository
@@ -25,6 +28,12 @@ class AppContainer(context: Context) {
         database.socioDao(), database.bonoRegaloDao(), database.irpfVigenciaDao(), RoomTransactionRunner(database)
     )
     val exportService: ExportService = ExportadorArchivos(context, clock)
+    val comprobadorActualizaciones = ComprobadorActualizaciones(
+        fuente = GitHubReleases(),
+        registro = RegistroEnPreferencias(context),
+        versionInstalada = BuildConfig.VERSION_NAME,
+        clock = clock
+    )
 }
 
 class SociosApp : Application() {

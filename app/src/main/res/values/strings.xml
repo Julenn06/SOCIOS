@@ -24,6 +24,18 @@
     <string name="menu_historico">📈 Histórico Acumulado</string>
     <string name="menu_export_import">💾 Exportar / Importar Datos</string>
 
+    <string name="menu_acerca_de">Acerca de</string>
+
+    <!-- Acerca de y versiones nuevas -->
+    <string name="acerca_de_mensaje">Versión %1$s\n\nAl abrirse, la app comprueba como mucho una vez al día si hay una versión nueva en GitHub.</string>
+    <string name="action_buscar_actualizaciones">Buscar actualizaciones</string>
+    <string name="actualizacion_disponible">Hay una versión nueva: %1$s (tienes la %2$s)</string>
+    <string name="action_descargar">Descargar</string>
+    <string name="actualizacion_al_dia">Tienes la última versión (%s)</string>
+    <string name="actualizacion_ultima_publicada">La última versión publicada es la %s</string>
+    <string name="actualizacion_error">No se ha podido comprobar si hay versiones nuevas. Revisa la conexión a internet.</string>
+    <string name="msg_sin_navegador">No hay ninguna app para abrir el enlace</string>
+
     <!-- Atajo al mantener pulsado el icono de la app (la etiqueta corta admite unos 10 caracteres) -->
     <string name="atajo_nuevo_socio_corto">Nuevo socio</string>
     <string name="atajo_nuevo_socio_largo">Añadir un socio</string>

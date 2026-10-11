@@ -49,6 +49,8 @@ android {
     }
     buildFeatures {
         viewBinding = true
+        // VERSION_NAME para mostrar la versión y compararla con la última publicada.
+        buildConfig = true
     }
     testOptions {
         unitTests.isReturnDefaultValues = true

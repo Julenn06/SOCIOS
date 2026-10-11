@@ -16,4 +16,9 @@
         android:title="@string/menu_export_import"
         app:contentDescription="@string/menu_export_import_a11y"
         app:showAsAction="never" />
+
+    <item
+        android:id="@+id/action_acerca_de"
+        android:title="@string/menu_acerca_de"
+        app:showAsAction="never" />
 </menu>
