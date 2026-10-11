@@ -25,6 +25,7 @@
         android:orientation="horizontal">
 
         <ImageView
+            android:importantForAccessibility="no"
             android:layout_width="28dp"
             android:layout_height="28dp"
             android:src="@drawable/ic_export"
@@ -118,6 +119,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="@string/export_seccion_exportar"
+        android:contentDescription="@string/export_seccion_exportar_a11y"
         android:textColor="@color/text_main"
         android:textSize="14sp"
         android:textStyle="bold" />
@@ -184,6 +186,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
         android:text="@string/export_seccion_importar"
+        android:contentDescription="@string/export_seccion_importar_a11y"
         android:textColor="@color/text_main"
         android:textSize="14sp"
         android:textStyle="bold" />

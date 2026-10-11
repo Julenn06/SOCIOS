@@ -6,11 +6,13 @@
         android:id="@+id/action_ver_historico"
         android:icon="@drawable/ic_info"
         android:title="@string/menu_historico"
+        app:contentDescription="@string/menu_historico_a11y"
         app:showAsAction="always" />
 
     <item
         android:id="@+id/action_export_import"
         android:icon="@drawable/ic_export"
         android:title="@string/menu_export_import"
+        app:contentDescription="@string/menu_export_import_a11y"
         app:showAsAction="never" />
 </menu>

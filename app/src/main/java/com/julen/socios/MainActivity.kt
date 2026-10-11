@@ -44,6 +44,7 @@ import com.julen.socios.util.HapticUtils
 import com.julen.socios.util.NumberAnimators
 import com.julen.socios.util.toEurosCompacto
 import com.julen.socios.util.toPorcentajeString
+import com.julen.socios.util.setTextoAccesible
 import kotlin.math.abs
 import kotlinx.coroutines.launch
 
@@ -181,16 +182,18 @@ class MainActivity : AppCompatActivity() {
         )
         NumberAnimators.animateCurrency(binding.tvIrpfHeader, resumen.retencionIrpf, prefix = "-")
 
-        binding.tvBonusHeaderLabel.text = getString(
-            if (resumen.esBonoRegaloAplicado) R.string.label_bonus_manual else R.string.label_bonus_auto
+        binding.tvBonusHeaderLabel.setTextoAccesible(
+            getString(if (resumen.esBonoRegaloAplicado) R.string.label_bonus_manual else R.string.label_bonus_auto)
         )
         binding.tvIrpfHeaderLabel.text = getString(R.string.label_irpf_header, resumen.porcentajeIrpf.toPorcentajeString())
 
         val hechos = resumen.totalSociosHechos
         val metaSocios = resumen.siguienteMetaSocios
 
-        binding.tvBonusTitle.text = resources.getQuantityString(
-            R.plurals.bonus_level_title, hechos, hechos, resumen.bonusSemanal.toEurosCompacto(prefix = "+")
+        binding.tvBonusTitle.setTextoAccesible(
+            resources.getQuantityString(
+                R.plurals.bonus_level_title, hechos, hechos, resumen.bonusSemanal.toEurosCompacto(prefix = "+")
+            )
         )
         binding.tvBonusProgressCount.text = getString(R.string.bonus_progress_format, hechos, metaSocios)
 

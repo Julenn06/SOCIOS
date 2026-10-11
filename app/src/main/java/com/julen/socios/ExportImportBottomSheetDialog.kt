@@ -17,6 +17,7 @@ import com.julen.socios.export.AlcanceExport
 import com.julen.socios.export.ExportFormat
 import com.julen.socios.export.ImportFormat
 import com.julen.socios.util.DateUtils
+import com.julen.socios.util.setTextoAccesible
 import kotlinx.coroutines.launch
 
 class ExportImportBottomSheetDialog : BottomSheetDialogFragment() {
@@ -89,13 +90,14 @@ class ExportImportBottomSheetDialog : BottomSheetDialogFragment() {
 
     private fun actualizarBotonSemanas() {
         val seleccion = semanasSeleccionadas.orEmpty()
-        binding.btnElegirSemanas.text = if (seleccion.isEmpty()) {
+        val texto = if (seleccion.isEmpty()) {
             getString(R.string.export_elegir_semanas_vacio)
         } else {
             resources.getQuantityString(
                 R.plurals.export_semanas_seleccionadas, seleccion.size, seleccion.size, seleccion.first()
             )
         }
+        binding.btnElegirSemanas.setTextoAccesible(texto)
     }
 
     private fun mostrarDialogoSeleccionarSemanas() {

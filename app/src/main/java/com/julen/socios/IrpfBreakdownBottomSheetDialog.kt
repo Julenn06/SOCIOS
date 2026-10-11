@@ -20,6 +20,7 @@ import com.julen.socios.util.toCurrencyString
 import com.julen.socios.util.toFormattedEuros
 import com.julen.socios.util.toImporteInput
 import com.julen.socios.util.toPorcentajeString
+import com.julen.socios.util.setTextoAccesible
 import kotlinx.coroutines.launch
 
 /** Desglose de la semana visible. Observa el ViewModel, así se actualiza solo y sobrevive a recreaciones. */
@@ -112,13 +113,14 @@ class IrpfBreakdownBottomSheetDialog : BottomSheetDialogFragment() {
         binding.tvBreakdownSumaCuotas.text = resumen.sumaColaboracionesBase.toFormattedEuros()
         binding.tvBreakdownBaseX2.text = resumen.gananciasBaseX2.toCurrencyString(prefix = "+")
         binding.tvBreakdownBonusValue.text = resumen.bonusSemanal.toCurrencyString(prefix = "+")
-        binding.tvBreakdownBonusLabel.text = if (resumen.esBonoRegaloAplicado) {
+        val etiquetaBonus = if (resumen.esBonoRegaloAplicado) {
             getString(R.string.irpf_fila_bonus_manual, resumen.bonusAutomatico.toFormattedEuros())
         } else {
             resources.getQuantityString(
                 R.plurals.irpf_fila_bonus_auto, resumen.totalSociosHechos, resumen.totalSociosHechos
             )
         }
+        binding.tvBreakdownBonusLabel.setTextoAccesible(etiquetaBonus)
         val motivo = state.bonoInfoSemana?.motivo?.takeIf { resumen.esBonoRegaloAplicado }
         binding.tvBreakdownBonusNota.isVisible = motivo != null
         binding.tvBreakdownBonusNota.text = motivo?.let { getString(R.string.irpf_bonus_motivo, it) }

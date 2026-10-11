@@ -14,6 +14,7 @@ import com.julen.socios.model.Socio
 import com.julen.socios.util.CalculoComisiones
 import com.julen.socios.util.HapticUtils
 import com.julen.socios.util.toEurosCompacto
+import com.julen.socios.util.setTextoAccesible
 
 class SocioAdapter(
     private val onCambiarHecho: (Socio, Boolean) -> Unit,
@@ -106,11 +107,12 @@ class SocioAdapter(
 
             val targetColor = if (socio.hecho) {
                 val baseX2 = CalculoComisiones.calcularBaseX2(socio.colaboracion)
-                binding.tvEstadoTexto.text =
+                binding.tvEstadoTexto.setTextoAccesible(
                     context.getString(R.string.socio_status_conseguido, baseX2.toEurosCompacto())
+                )
                 ContextCompat.getColor(context, R.color.primary)
             } else {
-                binding.tvEstadoTexto.text = context.getString(R.string.socio_status_pendiente)
+                binding.tvEstadoTexto.setTextoAccesible(context.getString(R.string.socio_status_pendiente))
                 ContextCompat.getColor(context, R.color.orange_pending)
             }
 

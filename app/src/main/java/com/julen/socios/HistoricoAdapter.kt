@@ -7,6 +7,7 @@ import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.julen.socios.databinding.ItemSemanaHistoricaBinding
 import com.julen.socios.util.toCurrencyString
+import com.julen.socios.util.setTextoAccesible
 
 /** Una fila del histórico: una semana, un mes o un año. Solo las semanas ([semanaKey]) se pueden abrir. */
 data class FilaHistorico(
@@ -45,7 +46,7 @@ class HistoricoAdapter(
 
         fun bind(fila: FilaHistorico) {
             binding.tvSemanaItemTitulo.text = fila.titulo
-            binding.tvSemanaItemSociosCount.text = fila.detalle
+            binding.tvSemanaItemSociosCount.setTextoAccesible(fila.detalle)
             binding.tvSemanaItemNeto.text = fila.neto.toCurrencyString(prefix = "+")
             binding.tvSemanaItemIrpf.text = binding.root.context.getString(
                 R.string.irpf_amount_format, fila.irpf.toCurrencyString(prefix = "-")

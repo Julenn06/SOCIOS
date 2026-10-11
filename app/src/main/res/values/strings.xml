@@ -70,7 +70,6 @@
     <!-- Add Socio Bottom Sheet Labels -->
     <string name="preview_ganancia_label">VISTA PREVIA DE GANANCIA</string>
     <string name="section_cuota_label">1. Cuota de Colaboración (€/mes)</string>
-    <string name="cd_add_icon">Añadir socio</string>
     <string name="chip_otro">Otro…</string>
     <string name="hint_custom_amount">Cantidad personalizada (€)</string>
     <string name="section_dia_label">2. Asignar Día de la Semana</string>
@@ -256,8 +255,8 @@
     <string name="pdf_pagina">Página %d</string>
 
     <!-- Snackbar Messages -->
-    <string name="msg_socio_hecho">✓ Socio marcado como HECHO</string>
-    <string name="msg_socio_pendiente">⏳ Socio marcado como NO HECHO</string>
+    <string name="msg_socio_hecho">Socio marcado como hecho</string>
+    <string name="msg_socio_pendiente">Socio marcado como pendiente</string>
     <string name="msg_socio_saved">¡Socio registrado con éxito!</string>
     <string name="msg_socio_updated">Socio actualizado</string>
     <string name="msg_socio_deleted">Socio eliminado</string>
@@ -280,4 +279,16 @@
         <item quantity="other">✓ Importados %1$d socios (%2$d bonus, %3$d cambios de IRPF)</item>
     </plurals>
 
+
+    <!-- Accesibilidad: textos que lee TalkBack en lugar de iconos o títulos con emoji -->
+    <string name="cd_semana_anterior">Semana anterior</string>
+    <string name="cd_semana_siguiente">Semana siguiente</string>
+    <string name="cd_editar_socio">Editar socio</string>
+    <string name="cd_eliminar_socio">Eliminar socio</string>
+    <string name="irpf_titulo_a11y">Desglose de ganancias e IRPF</string>
+    <string name="historico_titulo_a11y">Histórico acumulado global</string>
+    <string name="export_seccion_exportar_a11y">Exportar datos</string>
+    <string name="export_seccion_importar_a11y">Importar datos</string>
+    <string name="menu_historico_a11y">Histórico acumulado</string>
+    <string name="menu_export_import_a11y">Exportar o importar datos</string>
 </resources>

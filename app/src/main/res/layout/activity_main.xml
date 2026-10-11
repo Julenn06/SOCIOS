@@ -53,6 +53,7 @@
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnSemanaAnterior"
+                android:contentDescription="@string/cd_semana_anterior"
                 style="@style/Widget.Material3.Button.IconButton"
                 android:layout_width="40dp"
                 android:layout_height="40dp"
@@ -86,6 +87,7 @@
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnSemanaSiguiente"
+                android:contentDescription="@string/cd_semana_siguiente"
                 style="@style/Widget.Material3.Button.IconButton"
                 android:layout_width="40dp"
                 android:layout_height="40dp"
@@ -463,6 +465,7 @@
                 tools:visibility="visible">
 
                 <ImageView
+                    android:importantForAccessibility="no"
                     android:layout_width="64dp"
                     android:layout_height="64dp"
                     android:src="@drawable/ic_add"

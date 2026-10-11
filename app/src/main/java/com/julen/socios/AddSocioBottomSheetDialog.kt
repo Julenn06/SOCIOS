@@ -23,6 +23,7 @@ import com.julen.socios.util.parseImporte
 import com.julen.socios.util.toEurosCompacto
 import com.julen.socios.util.toFormattedEuros
 import com.julen.socios.util.toImporteInput
+import com.julen.socios.util.setTextoAccesible
 
 /**
  * Alta o edición de un socio. Recibe sus datos por argumentos (no por constructor) para que el sistema
@@ -169,10 +170,10 @@ class AddSocioBottomSheetDialog : BottomSheetDialogFragment() {
 
         val context = requireContext()
         if (binding.switchSocioHechoAdd.isChecked) {
-            binding.tvPreviewEstadoBadge.text = getString(R.string.socio_status_badge_conseguido)
+            binding.tvPreviewEstadoBadge.setTextoAccesible(getString(R.string.socio_status_badge_conseguido))
             binding.tvPreviewEstadoBadge.setTextColor(ContextCompat.getColor(context, R.color.primary))
         } else {
-            binding.tvPreviewEstadoBadge.text = getString(R.string.socio_status_badge_pendiente)
+            binding.tvPreviewEstadoBadge.setTextoAccesible(getString(R.string.socio_status_badge_pendiente))
             binding.tvPreviewEstadoBadge.setTextColor(ContextCompat.getColor(context, R.color.orange_pending))
         }
         binding.tvPreviewEstadoBadge.backgroundTintList = ContextCompat.getColorStateList(context, R.color.bg_light)

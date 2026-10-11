@@ -139,6 +139,7 @@
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnEditar"
+                android:contentDescription="@string/cd_editar_socio"
                 style="@style/Widget.Material3.Button.IconButton"
                 android:layout_width="40dp"
                 android:layout_height="40dp"
@@ -147,6 +148,7 @@
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnEliminar"
+                android:contentDescription="@string/cd_eliminar_socio"
                 style="@style/Widget.Material3.Button.IconButton"
                 android:layout_width="40dp"
                 android:layout_height="40dp"
