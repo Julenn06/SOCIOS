@@ -172,6 +172,19 @@
                     tools:text="+140,00 €" />
             </LinearLayout>
 
+            <!-- Motivo del bonus manual, si se indicó -->
+            <TextView
+                android:id="@+id/tvBreakdownBonusNota"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:textColor="@color/text_sub"
+                android:textSize="12sp"
+                android:textStyle="italic"
+                android:visibility="gone"
+                tools:text="«Regalo de la jefa por buen trabajo»"
+                tools:visibility="visible" />
+
             <View
                 android:layout_width="match_parent"
                 android:layout_height="1dp"

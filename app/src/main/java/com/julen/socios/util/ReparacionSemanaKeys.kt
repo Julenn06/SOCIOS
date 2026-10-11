@@ -24,9 +24,7 @@ object ReparacionSemanaKeys {
         val socios: Map<String, String>,
         /** clave antigua del bono → clave corregida. */
         val bonos: Map<String, String>
-    ) {
-        val estaVacio: Boolean get() = socios.isEmpty() && bonos.isEmpty()
-    }
+    )
 
     fun calcular(
         socios: List<SocioRef>,

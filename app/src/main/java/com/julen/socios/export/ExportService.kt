@@ -28,7 +28,7 @@ interface ExportService {
     /** Genera el archivo en la caché privada y devuelve una URI de FileProvider para compartirlo. */
     suspend fun crearArchivoCompartible(request: ExportRequest, datos: DatosBackup): Uri
 
-    suspend fun leerImportacion(uri: Uri, formato: ExportFormat): ResultadoLectura
+    suspend fun leerImportacion(uri: Uri, formato: ImportFormat): ResultadoLectura
 }
 
 class ExportadorArchivos(
@@ -63,15 +63,14 @@ class ExportadorArchivos(
             FileProvider.getUriForFile(appContext, "${appContext.packageName}.fileprovider", archivo)
         }
 
-    override suspend fun leerImportacion(uri: Uri, formato: ExportFormat): ResultadoLectura =
+    override suspend fun leerImportacion(uri: Uri, formato: ImportFormat): ResultadoLectura =
         withContext(Dispatchers.IO) {
             val input = appContext.contentResolver.openInputStream(uri)
                 ?: throw IOException("No se pudo abrir el archivo seleccionado")
             input.use {
                 when (formato) {
-                    ExportFormat.JSON -> BackupJson.leer(it)
-                    ExportFormat.CSV -> BackupCsv.leer(it)
-                    ExportFormat.PDF -> throw IllegalArgumentException("Los PDF no se pueden importar")
+                    ImportFormat.JSON -> BackupJson.leer(it)
+                    ImportFormat.CSV -> BackupCsv.leer(it)
                 }
             }
         }

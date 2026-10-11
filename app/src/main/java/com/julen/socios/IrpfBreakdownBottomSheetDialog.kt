@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.view.isVisible
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
@@ -72,6 +73,9 @@ class IrpfBreakdownBottomSheetDialog : BottomSheetDialogFragment() {
                 R.plurals.irpf_fila_bonus_auto, resumen.totalSociosHechos, resumen.totalSociosHechos
             )
         }
+        val motivo = state.bonoInfoSemana?.motivo?.takeIf { resumen.esBonoRegaloAplicado }
+        binding.tvBreakdownBonusNota.isVisible = motivo != null
+        binding.tvBreakdownBonusNota.text = motivo?.let { getString(R.string.irpf_bonus_motivo, it) }
 
         binding.tvBreakdownBruto.text = resumen.totalBruto.toFormattedEuros()
         binding.tvBreakdownIrpfLabel.text =

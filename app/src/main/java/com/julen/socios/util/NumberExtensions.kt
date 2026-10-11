@@ -8,17 +8,17 @@ private val spanishLocale = Locale.forLanguageTag("es-ES")
 /**
  * Formats a Double as a currency string (e.g., "12,50 €", "+12,50 €", "-12,50 €").
  */
-fun Double.toCurrencyString(decimals: Int = 2, prefix: String = "", suffix: String = " €"): String {
+fun Double.toCurrencyString(decimals: Int = 2, prefix: String = ""): String {
     val formatStr = "%.${decimals}f"
     val formatted = String.format(spanishLocale, formatStr, this)
-    return "$prefix$formatted$suffix"
+    return "$prefix$formatted €"
 }
 
 /**
  * Formats a Double as euros (e.g., "12,50 €").
  */
 fun Double.toFormattedEuros(decimals: Int = 2): String {
-    return this.toCurrencyString(decimals = decimals, prefix = "", suffix = " €")
+    return this.toCurrencyString(decimals = decimals)
 }
 
 /**

@@ -6,6 +6,9 @@ enum class ExportFormat(val extension: String, val mimeType: String) {
     JSON("json", "application/json")
 }
 
+/** Formatos que se pueden volver a importar (un PDF es solo un informe). */
+enum class ImportFormat { JSON, CSV }
+
 sealed interface AlcanceExport {
     data class Semanas(val semanaKeys: Set<String>) : AlcanceExport
     data object Historico : AlcanceExport

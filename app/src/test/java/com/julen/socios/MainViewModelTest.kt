@@ -9,6 +9,7 @@ import com.julen.socios.data.local.SocioEntity
 import com.julen.socios.export.AlcanceExport
 import com.julen.socios.export.ExportFormat
 import com.julen.socios.export.ExportRequest
+import com.julen.socios.export.ImportFormat
 import com.julen.socios.fakes.FakeBonoRegaloDao
 import com.julen.socios.fakes.FakeExportService
 import com.julen.socios.fakes.FakeIrpfVigenciaDao
@@ -199,7 +200,7 @@ class MainViewModelTest {
             descartados = 2
         )
 
-        viewModel.prepararImportacion(lectura, ExportFormat.JSON)
+        viewModel.prepararImportacion(lectura, ImportFormat.JSON)
 
         assertEquals(ImportPreview(1, 1, 0, 0, 2), viewModel.importPendiente.value)
         assertEquals(1, socioDao.socios.value.size)
@@ -223,7 +224,7 @@ class MainViewModelTest {
             DatosBackup(socios = listOf(Socio(colaboracion = 20.0, dia = DiaSemana.LUNES, semanaKey = semanaActual)))
         )
 
-        viewModel.prepararImportacion(lectura, ExportFormat.CSV)
+        viewModel.prepararImportacion(lectura, ImportFormat.CSV)
         viewModel.cancelarImport()
         viewModel.confirmarImport()
 

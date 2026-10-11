@@ -18,6 +18,7 @@ import com.julen.socios.export.AlcanceExport
 import com.julen.socios.export.ExportFormat
 import com.julen.socios.export.ExportRequest
 import com.julen.socios.export.ExportService
+import com.julen.socios.export.ImportFormat
 import com.julen.socios.model.BonoRegaloInfo
 import com.julen.socios.model.DiaSemana
 import com.julen.socios.model.ImportPreview
@@ -65,7 +66,7 @@ sealed interface MainEvent {
     data class Compartir(val uri: Uri, val formato: ExportFormat) : MainEvent {
         val mimeType: String get() = formato.mimeType
     }
-    data class SeleccionarArchivoImport(val formato: ExportFormat) : MainEvent
+    data class SeleccionarArchivoImport(val formato: ImportFormat) : MainEvent
 }
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -258,9 +259,9 @@ class MainViewModel(
 
     // --- Importación ---
 
-    fun solicitarImport(formato: ExportFormat) = enviar(MainEvent.SeleccionarArchivoImport(formato))
+    fun solicitarImport(formato: ImportFormat) = enviar(MainEvent.SeleccionarArchivoImport(formato))
 
-    fun onArchivoImportSeleccionado(uri: Uri?, formato: ExportFormat) {
+    fun onArchivoImportSeleccionado(uri: Uri?, formato: ImportFormat) {
         if (uri == null) return
         lanzar(R.string.msg_error_import) {
             prepararImportacion(exportService.leerImportacion(uri, formato), formato)
@@ -269,7 +270,7 @@ class MainViewModel(
 
     /** Valida lo leído y deja la importación pendiente de confirmar por el usuario. */
     @VisibleForTesting
-    internal suspend fun prepararImportacion(lectura: ResultadoLectura, formato: ExportFormat) {
+    internal suspend fun prepararImportacion(lectura: ResultadoLectura, formato: ImportFormat) {
         if (lectura.datos.estaVacio) {
             mensajeLargo(R.string.msg_import_vacio, formato.name)
             return

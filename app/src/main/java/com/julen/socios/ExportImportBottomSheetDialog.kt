@@ -15,6 +15,7 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.julen.socios.databinding.BottomSheetExportImportBinding
 import com.julen.socios.export.AlcanceExport
 import com.julen.socios.export.ExportFormat
+import com.julen.socios.export.ImportFormat
 import com.julen.socios.util.DateUtils
 import kotlinx.coroutines.launch
 
@@ -56,8 +57,8 @@ class ExportImportBottomSheetDialog : BottomSheetDialogFragment() {
         binding.btnExportCsv.setOnClickListener { exportar(ExportFormat.CSV) }
         binding.btnExportJson.setOnClickListener { exportar(ExportFormat.JSON) }
 
-        binding.btnImportJson.setOnClickListener { importar(ExportFormat.JSON) }
-        binding.btnImportCsv.setOnClickListener { importar(ExportFormat.CSV) }
+        binding.btnImportJson.setOnClickListener { importar(ImportFormat.JSON) }
+        binding.btnImportCsv.setOnClickListener { importar(ImportFormat.CSV) }
 
         binding.btnCerrar.setOnClickListener { dismiss() }
 
@@ -134,7 +135,7 @@ class ExportImportBottomSheetDialog : BottomSheetDialogFragment() {
         dismiss()
     }
 
-    private fun importar(formato: ExportFormat) {
+    private fun importar(formato: ImportFormat) {
         viewModel.solicitarImport(formato)
         dismiss()
     }

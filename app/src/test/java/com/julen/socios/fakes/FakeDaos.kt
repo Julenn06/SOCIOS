@@ -8,7 +8,7 @@ import com.julen.socios.data.local.IrpfVigenciaEntity
 import com.julen.socios.data.local.SocioDao
 import com.julen.socios.data.local.SocioEntity
 import com.julen.socios.data.local.TransactionRunner
-import com.julen.socios.export.ExportFormat
+import com.julen.socios.export.ImportFormat
 import com.julen.socios.export.ExportRequest
 import com.julen.socios.export.ExportService
 import com.julen.socios.model.DatosBackup
@@ -56,7 +56,6 @@ class FakeSocioDao : SocioDao {
 class FakeBonoRegaloDao : BonoRegaloDao {
     val bonos = MutableStateFlow<Map<String, BonoRegaloEntity>>(emptyMap())
 
-    override suspend fun getBonoRegalo(semanaKey: String) = bonos.value[semanaKey]
     override fun getBonoRegaloFlow(semanaKey: String): Flow<BonoRegaloEntity?> = bonos.map { it[semanaKey] }
     override suspend fun getAllBonosRegalo() = bonos.value.values.filter { it.activo }
     override fun getAllBonosRegaloFlow(): Flow<List<BonoRegaloEntity>> = bonos.map { m -> m.values.filter { it.activo } }
@@ -102,6 +101,6 @@ class FakeExportService : ExportService {
     override suspend fun crearArchivoCompartible(request: ExportRequest, datos: DatosBackup): Uri =
         throw UnsupportedOperationException("No se puede crear una Uri en tests JVM")
 
-    override suspend fun leerImportacion(uri: Uri, formato: ExportFormat): ResultadoLectura =
+    override suspend fun leerImportacion(uri: Uri, formato: ImportFormat): ResultadoLectura =
         throw UnsupportedOperationException("No se puede crear una Uri en tests JVM")
 }

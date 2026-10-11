@@ -9,9 +9,6 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 interface BonoRegaloDao {
     @Query("SELECT * FROM bonos_regalo WHERE semanaKey = :semanaKey LIMIT 1")
-    suspend fun getBonoRegalo(semanaKey: String): BonoRegaloEntity?
-
-    @Query("SELECT * FROM bonos_regalo WHERE semanaKey = :semanaKey LIMIT 1")
     fun getBonoRegaloFlow(semanaKey: String): Flow<BonoRegaloEntity?>
 
     @Query("SELECT * FROM bonos_regalo WHERE activo = 1")

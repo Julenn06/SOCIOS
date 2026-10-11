@@ -99,7 +99,7 @@
     <string name="bono_chip_otro">Otros…</string>
     <string name="bono_hint_monto">Importe del bonus (€)</string>
     <string name="bono_restablecer">Restablecer a automático</string>
-    <string name="bono_nota_manual">Ajustado a mano</string>
+    <string name="bono_hint_nota">Motivo del ajuste (opcional)</string>
     <string name="msg_bono_monto_invalido">Por favor selecciona o introduce un importe de bonus</string>
 
     <!-- Desglose IRPF -->
@@ -118,6 +118,7 @@
         <item quantity="other">3. Bonus semanal por socios (%1$d hechos)</item>
     </plurals>
     <string name="irpf_fila_bonus_manual">3. Bonus ajustado a mano 🎁 (automático: %s)</string>
+    <string name="irpf_bonus_motivo">«%s»</string>
     <string name="irpf_total_bruto">TOTAL BRUTO</string>
     <string name="irpf_retencion_label">Retención IRPF (%s)</string>
     <string name="irpf_total_neto">TOTAL NETO A COBRAR</string>
@@ -201,7 +202,8 @@
     <string name="pdf_kpi_bonus_manual">Bonus (Manual)</string>
     <string name="pdf_kpi_bonus_total">Bonus Total</string>
     <string name="pdf_kpi_neto">Ganancia Neta</string>
-    <string name="pdf_detalle_semana">Bruto: %1$s  •  IRPF (%2$s): -%3$s</string>
+    <string name="pdf_detalle_semana">"Bruto: %1$s  •  IRPF (%2$s): -%3$s"</string>
+    <string name="pdf_detalle_motivo">"  •  Bonus manual: «%s»"</string>
     <plurals name="pdf_detalle_varias_semanas">
         <item quantity="one">Bruto: %1$s  •  IRPF retenido: -%2$s  •  %3$d semana</item>
         <item quantity="many">Bruto: %1$s  •  IRPF retenido: -%2$s  •  %3$d semanas</item>

@@ -33,6 +33,7 @@ import com.google.android.material.snackbar.Snackbar
 import com.julen.socios.databinding.ActivityMainBinding
 import com.julen.socios.export.ExportFormat
 import com.julen.socios.export.ExportRequest
+import com.julen.socios.export.ImportFormat
 import com.julen.socios.model.DiaSemana
 import com.julen.socios.model.ImportPreview
 import com.julen.socios.model.Socio
@@ -78,11 +79,11 @@ class MainActivity : AppCompatActivity() {
     }
 
     private val importJsonLauncher = registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
-        viewModel.onArchivoImportSeleccionado(uri, ExportFormat.JSON)
+        viewModel.onArchivoImportSeleccionado(uri, ImportFormat.JSON)
     }
 
     private val importCsvLauncher = registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
-        viewModel.onArchivoImportSeleccionado(uri, ExportFormat.CSV)
+        viewModel.onArchivoImportSeleccionado(uri, ImportFormat.CSV)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -250,9 +251,8 @@ class MainActivity : AppCompatActivity() {
             }
 
             is MainEvent.SeleccionarArchivoImport -> when (evento.formato) {
-                ExportFormat.JSON -> importJsonLauncher.launch("application/json")
-                ExportFormat.CSV -> importCsvLauncher.launch("*/*")
-                ExportFormat.PDF -> Unit
+                ImportFormat.JSON -> importJsonLauncher.launch("application/json")
+                ImportFormat.CSV -> importCsvLauncher.launch("*/*")
             }
         }
     }

@@ -129,7 +129,6 @@
 
             <!-- Card Resumen Financiero Ejecutivo -->
             <com.google.android.material.card.MaterialCardView
-                android:id="@+id/cardHeaderFinanciero"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginHorizontal="12dp"
@@ -286,7 +285,6 @@
 
             <!-- Card Progreso de Bonus Nivel -->
             <com.google.android.material.card.MaterialCardView
-                android:id="@+id/cardProgresoBonus"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginHorizontal="12dp"

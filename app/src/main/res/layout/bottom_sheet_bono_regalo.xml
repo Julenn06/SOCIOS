@@ -38,7 +38,6 @@
             android:orientation="vertical">
 
             <TextView
-                android:id="@+id/tvTitleBonoRegalo"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/bono_titulo"
@@ -91,7 +90,6 @@
             android:textStyle="bold" />
 
         <com.google.android.material.chip.ChipGroup
-            android:id="@+id/chipGroupModoBono"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="6dp"
@@ -117,7 +115,6 @@
 
         <!-- Selección de Importe (los importes predefinidos se añaden desde ImportesPredefinidos.BONUS) -->
         <TextView
-            android:id="@+id/tvLabelMonto"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="@string/bono_label_monto"
@@ -163,6 +160,22 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:inputType="numberDecimal" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- Motivo del ajuste (se muestra en el desglose de IRPF) -->
+        <com.google.android.material.textfield.TextInputLayout
+            style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:hint="@string/bono_hint_nota">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/etNotaBono"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="textCapSentences"
+                android:maxLines="2" />
         </com.google.android.material.textfield.TextInputLayout>
     </LinearLayout>
 

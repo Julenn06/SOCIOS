@@ -13,11 +13,11 @@ object AnimationExtensions {
      * Adds a touch scaling animation to the view so it shrinks slightly when pressed and springs back when released.
      */
     @SuppressLint("ClickableViewAccessibility")
-    fun setupPressScaleAnimation(view: View, scaleFactor: Float = 0.96f) {
+    fun setupPressScaleAnimation(view: View) {
         view.setOnTouchListener { v, event ->
             when (event.action) {
                 MotionEvent.ACTION_DOWN -> {
-                    v.animate().scaleX(scaleFactor).scaleY(scaleFactor).setDuration(80).start()
+                    v.animate().scaleX(0.96f).scaleY(0.96f).setDuration(80).start()
                 }
 
                 MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
@@ -33,11 +33,11 @@ object AnimationExtensions {
      * Smoothly animates progress of a ProgressBar with OvershootInterpolator for a springy feel.
      */
     fun animateProgressSmooth(
-        progressBar: ProgressBar, targetProgress: Int, duration: Long = 500L
+        progressBar: ProgressBar, targetProgress: Int
     ) {
         val animation =
             ObjectAnimator.ofInt(progressBar, "progress", progressBar.progress, targetProgress)
-        animation.duration = duration
+        animation.duration = 500L
         animation.interpolator = OvershootInterpolator(1.2f)
         animation.start()
     }

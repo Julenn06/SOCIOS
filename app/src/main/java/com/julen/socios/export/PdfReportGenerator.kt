@@ -189,16 +189,19 @@ class PdfReportGenerator(private val context: Context) {
             val semanaKey = semanas.firstOrNull()
             val porcentaje = semanaKey?.let { CalculoComisiones.irpfParaSemana(it, datos.irpfVigencias) }
                 ?: CalculoComisiones.IRPF_POR_DEFECTO
-            val r = CalculoComisiones.calcularResumenSemana(datos.socios, semanaKey?.let(bonos::get), porcentaje)
+            val bono = semanaKey?.let(bonos::get)
+            val r = CalculoComisiones.calcularResumenSemana(datos.socios, bono, porcentaje)
             val bonusLabel = if (r.esBonoRegaloAplicado) R.string.pdf_kpi_bonus_manual else R.string.pdf_kpi_bonus_semanal
+            val detalle = context.getString(
+                R.string.pdf_detalle_semana,
+                r.totalBruto.toFormattedEuros(),
+                r.porcentajeIrpf.toPorcentajeString(),
+                r.retencionIrpf.toFormattedEuros()
+            )
+            val motivo = bono?.motivo?.let { context.getString(R.string.pdf_detalle_motivo, it) }.orEmpty()
             return Resumen(
                 kpis = kpis(r.totalSociosHechos, r.totalSociosRegistrados, r.gananciasBaseX2, bonusLabel, r.bonusSemanal, r.totalNeto),
-                detalle = context.getString(
-                    R.string.pdf_detalle_semana,
-                    r.totalBruto.toFormattedEuros(),
-                    r.porcentajeIrpf.toPorcentajeString(),
-                    r.retencionIrpf.toFormattedEuros()
-                )
+                detalle = detalle + motivo
             )
         }
 

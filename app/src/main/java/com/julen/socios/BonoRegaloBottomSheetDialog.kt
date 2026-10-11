@@ -51,6 +51,7 @@ class BonoRegaloBottomSheetDialog : BottomSheetDialogFragment() {
             binding.chipModoSumar.isChecked = !binding.chipModoFijo.isChecked
             val monto = args.getDouble(ARG_MONTO)
             if (tieneBono && monto > 0) selectMonto(monto)
+            binding.etNotaBono.setText(args.getString(ARG_MOTIVO).orEmpty())
         } else {
             // Los chips de importe se crean en código con ids nuevos: su selección se restaura a mano.
             chipsMonto.getOrNull(savedInstanceState.getInt(STATE_MONTO_INDEX, -1))?.isChecked = true
@@ -137,7 +138,7 @@ class BonoRegaloBottomSheetDialog : BottomSheetDialogFragment() {
                 activo = true,
                 esMontoFijo = binding.chipModoFijo.isChecked,
                 monto = monto,
-                nota = getString(R.string.bono_nota_manual)
+                nota = binding.etNotaBono.text?.toString()?.trim().orEmpty()
             )
         )
         dismiss()
@@ -156,6 +157,7 @@ class BonoRegaloBottomSheetDialog : BottomSheetDialogFragment() {
         private const val ARG_ACTIVO = "activo"
         private const val ARG_MONTO_FIJO = "esMontoFijo"
         private const val ARG_MONTO = "monto"
+        private const val ARG_MOTIVO = "motivo"
         private const val STATE_MONTO_INDEX = "montoIndex"
 
         fun newInstance(semanaKey: String, rangoTexto: String, bonoActual: BonoRegaloInfo?) =
@@ -166,6 +168,7 @@ class BonoRegaloBottomSheetDialog : BottomSheetDialogFragment() {
                     putBoolean(ARG_ACTIVO, bonoActual?.activo == true)
                     putBoolean(ARG_MONTO_FIJO, bonoActual?.esMontoFijo ?: true)
                     putDouble(ARG_MONTO, bonoActual?.monto ?: 0.0)
+                    putString(ARG_MOTIVO, bonoActual?.motivo)
                 }
             }
     }

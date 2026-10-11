@@ -1,15 +1,6 @@
-# Add project specific R8 rules here.
-# AGP will combine all keep rule files in src/main/keepRules to pass to R8
-#
-# For more details, see
-#   https://d.android.com/r/tools/r8/keep-rules
+# Reglas de R8 del proyecto. AGP combina todos los ficheros de src/main/keepRules.
+# Ver https://d.android.com/r/tools/r8/keep-rules
 
-# If your project uses WebView with JS, uncomment the following
-# and specify the fully qualified class name to the JavaScript interface
-# class:
-#-keepclassmembers class fqcn.of.javascript.interface.for.webview {
-#   public *;
-#}
 # Las copias de seguridad se (de)serializan con Gson por reflexión: si algún día se activa R8,
 # los DTO deben conservar sus nombres de campo y constructores.
 -keep class com.julen.socios.data.backup.** { <fields>; <init>(...); }
