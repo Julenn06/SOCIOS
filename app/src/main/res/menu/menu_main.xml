@@ -5,12 +5,12 @@
     <item
         android:id="@+id/action_ver_historico"
         android:icon="@drawable/ic_info"
-        android:title="📈 Histórico Acumulado"
+        android:title="@string/menu_historico"
         app:showAsAction="always" />
 
     <item
         android:id="@+id/action_export_import"
         android:icon="@drawable/ic_export"
-        android:title="💾 Exportar / Importar Datos"
+        android:title="@string/menu_export_import"
         app:showAsAction="never" />
 </menu>

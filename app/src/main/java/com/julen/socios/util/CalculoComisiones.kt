@@ -1,10 +1,14 @@
 package com.julen.socios.util
 
 import com.julen.socios.model.BonoRegaloInfo
+import com.julen.socios.model.IrpfVigencia
 import com.julen.socios.model.Socio
+import java.math.BigDecimal
+import java.math.RoundingMode
 
 object CalculoComisiones {
-    const val IRPF_PORCENTAJE = 0.2148 // 21,48% IRPF
+    /** Retención aplicada a las semanas anteriores a cualquier vigencia configurada. */
+    const val IRPF_POR_DEFECTO = 21.48
 
     /**
      * Retorna la ganancia base (colaboración x2).
@@ -51,18 +55,27 @@ object CalculoComisiones {
         }
     }
 
+    /** Porcentaje de IRPF vigente en [semanaKey]: el de la vigencia más reciente que empiece en o antes de esa semana. */
+    fun irpfParaSemana(semanaKey: String, vigencias: List<IrpfVigencia>): Double =
+        vigencias.filter { it.desdeSemanaKey <= semanaKey }
+            .maxByOrNull { it.desdeSemanaKey }
+            ?.porcentaje ?: IRPF_POR_DEFECTO
+
+    /** Redondea un importe a céntimos (mitad hacia arriba), como en una nómina. */
+    fun redondearCentimos(importe: Double): Double =
+        BigDecimal.valueOf(importe).setScale(2, RoundingMode.HALF_UP).toDouble()
+
     data class ResumenCalculo(
         val totalSociosRegistrados: Int,
         val totalSociosHechos: Int,
         val sumaColaboracionesBase: Double, // Suma de cuotas
         val gananciasBaseX2: Double,        // Suma de cuotas x2
         val bonusSemanal: Double,           // Bonus total acumulado (automático o ajustado)
-        val bonusAutomatico: Double = 0.0,  // Bonus automático sin ajuste
-        val esBonoRegaloAplicado: Boolean = false,
-        val montoBonoRegaloExtra: Double = 0.0,
-        val bonoRegaloNota: String = "",
+        val bonusAutomatico: Double,        // Bonus que correspondería sin ajuste manual
+        val esBonoRegaloAplicado: Boolean,
         val totalBruto: Double,             // Base x2 + Bonus
-        val retencionIrpf: Double,          // Bruto * 0.2148
+        val porcentajeIrpf: Double,         // Porcentaje de IRPF aplicado a la semana
+        val retencionIrpf: Double,          // Bruto * porcentaje, redondeado a céntimos
         val totalNeto: Double,              // Bruto - Retención IRPF
         val siguienteMetaSocios: Int,
         val siguienteMetaBonus: Double,
@@ -77,106 +90,92 @@ object CalculoComisiones {
         val totalIrpfRetenidoAcumulado: Double,
         val totalNetoAcumulado: Double,
         val totalBrutoAcumulado: Double,
+        val totalBaseX2Acumulado: Double,
         val totalBonusAcumulado: Double,
         val totalSociosHechosAcumulado: Int,
+        val totalSociosRegistradosAcumulado: Int,
         val semanasHistoricas: List<SemanaHistoricaItem>
     )
 
     fun calcularResumenSemana(
-        socios: List<Socio>, bonoRegalo: BonoRegaloInfo? = null
+        socios: List<Socio>,
+        bonoRegalo: BonoRegaloInfo? = null,
+        porcentajeIrpf: Double = IRPF_POR_DEFECTO
     ): ResumenCalculo {
         val hechos = socios.filter { it.hecho }
         val countHechos = hechos.size
-        val countTotal = socios.size
 
-        val sumaCuotas = hechos.sumOf { it.colaboracion }
-        val baseX2 = sumaCuotas * 2.0
+        val sumaCuotas = redondearCentimos(hechos.sumOf { it.colaboracion })
+        val baseX2 = redondearCentimos(sumaCuotas * 2.0)
         val bonusAuto = calcularBonusSemanal(countHechos)
 
-        var bonusFinal = bonusAuto
-        var esRegaloAplicado = false
-        var extraRegalo = 0.0
-
-        if (bonoRegalo != null && bonoRegalo.activo) {
-            esRegaloAplicado = true
-            bonusFinal = if (bonoRegalo.esMontoFijo) {
-                bonoRegalo.monto
-            } else {
-                bonusAuto + bonoRegalo.monto
-            }
-            extraRegalo = (bonusFinal - bonusAuto).coerceAtLeast(0.0)
+        val bonoAplicado = bonoRegalo?.takeIf { it.activo }
+        val bonusFinal = when {
+            bonoAplicado == null -> bonusAuto
+            bonoAplicado.esMontoFijo -> bonoAplicado.monto
+            else -> bonusAuto + bonoAplicado.monto
         }
 
-        val bruto = baseX2 + bonusFinal
-        val irpf = bruto * IRPF_PORCENTAJE
-        val neto = bruto - irpf
+        val bruto = redondearCentimos(baseX2 + bonusFinal)
+        val irpf = redondearCentimos(bruto * porcentajeIrpf / 100.0)
+        val neto = redondearCentimos(bruto - irpf)
 
         val (siguienteMeta, siguienteBonus) = obtenerSiguienteMetaBonus(countHechos)
-        val faltantes = (siguienteMeta - countHechos).coerceAtLeast(0)
 
         return ResumenCalculo(
-            totalSociosRegistrados = countTotal,
+            totalSociosRegistrados = socios.size,
             totalSociosHechos = countHechos,
             sumaColaboracionesBase = sumaCuotas,
             gananciasBaseX2 = baseX2,
             bonusSemanal = bonusFinal,
             bonusAutomatico = bonusAuto,
-            esBonoRegaloAplicado = esRegaloAplicado,
-            montoBonoRegaloExtra = extraRegalo,
-            bonoRegaloNota = bonoRegalo?.nota.orEmpty(),
+            esBonoRegaloAplicado = bonoAplicado != null,
             totalBruto = bruto,
+            porcentajeIrpf = porcentajeIrpf,
             retencionIrpf = irpf,
             totalNeto = neto,
             siguienteMetaSocios = siguienteMeta,
             siguienteMetaBonus = siguienteBonus,
-            sociosFaltantesParaSiguienteMeta = faltantes
+            sociosFaltantesParaSiguienteMeta = (siguienteMeta - countHechos).coerceAtLeast(0)
         )
     }
 
     /**
-     * Calcula el total acumulado de IRPF retenido, Neto ganado y Bonus en TODAS las semanas registradas.
+     * Calcula el total acumulado de IRPF retenido, Neto ganado y Bonus en TODAS las semanas recibidas.
+     * Cada semana se calcula por separado (su propio tramo de bonus, bono manual e IRPF) y después se suma.
      */
     fun calcularResumenHistoricoGlobal(
-        todosLosSocios: List<Socio>, bonosRegaloMap: Map<String, BonoRegaloInfo> = emptyMap()
+        todosLosSocios: List<Socio>,
+        bonosRegaloMap: Map<String, BonoRegaloInfo> = emptyMap(),
+        irpfVigencias: List<IrpfVigencia> = emptyList()
     ): ResumenHistoricoGlobal {
         val sociosPorSemana = todosLosSocios.groupBy { it.semanaKey }
 
-        var totalIrpf = 0.0
-        var totalNeto = 0.0
-        var totalBruto = 0.0
-        var totalBonus = 0.0
-        var totalSociosHechos = 0
+        // Combinar todas las semanas presentes en socios O con un bono activo
+        val todasLasSemanas = (sociosPorSemana.keys + bonosRegaloMap.filterValues { it.activo }.keys)
+            .distinct()
+            .sortedDescending()
 
-        val itemsSemanas = mutableListOf<SemanaHistoricaItem>()
-
-        // Combinar todas las semanas presentes en socios O en bonosRegaloMap
-        val todasLasSemanas =
-            (sociosPorSemana.keys + bonosRegaloMap.keys).distinct().sortedDescending()
-
-        for (semanaKey in todasLasSemanas) {
-            val sociosDeSemana = sociosPorSemana[semanaKey] ?: emptyList()
-            val bonoInfo = bonosRegaloMap[semanaKey]
-            val resumenSemana = calcularResumenSemana(sociosDeSemana, bonoInfo)
-
-            totalIrpf += resumenSemana.retencionIrpf
-            totalNeto += resumenSemana.totalNeto
-            totalBruto += resumenSemana.totalBruto
-            totalBonus += resumenSemana.bonusSemanal
-            totalSociosHechos += resumenSemana.totalSociosHechos
-
-            itemsSemanas.add(
-                SemanaHistoricaItem(
-                    semanaKey = semanaKey, resumenSemana = resumenSemana
+        val itemsSemanas = todasLasSemanas.map { semanaKey ->
+            SemanaHistoricaItem(
+                semanaKey = semanaKey,
+                resumenSemana = calcularResumenSemana(
+                    socios = sociosPorSemana[semanaKey].orEmpty(),
+                    bonoRegalo = bonosRegaloMap[semanaKey],
+                    porcentajeIrpf = irpfParaSemana(semanaKey, irpfVigencias)
                 )
             )
         }
+        val resumenes = itemsSemanas.map { it.resumenSemana }
 
         return ResumenHistoricoGlobal(
-            totalIrpfRetenidoAcumulado = totalIrpf,
-            totalNetoAcumulado = totalNeto,
-            totalBrutoAcumulado = totalBruto,
-            totalBonusAcumulado = totalBonus,
-            totalSociosHechosAcumulado = totalSociosHechos,
+            totalIrpfRetenidoAcumulado = redondearCentimos(resumenes.sumOf { it.retencionIrpf }),
+            totalNetoAcumulado = redondearCentimos(resumenes.sumOf { it.totalNeto }),
+            totalBrutoAcumulado = redondearCentimos(resumenes.sumOf { it.totalBruto }),
+            totalBaseX2Acumulado = redondearCentimos(resumenes.sumOf { it.gananciasBaseX2 }),
+            totalBonusAcumulado = redondearCentimos(resumenes.sumOf { it.bonusSemanal }),
+            totalSociosHechosAcumulado = resumenes.sumOf { it.totalSociosHechos },
+            totalSociosRegistradosAcumulado = resumenes.sumOf { it.totalSociosRegistrados },
             semanasHistoricas = itemsSemanas
         )
     }

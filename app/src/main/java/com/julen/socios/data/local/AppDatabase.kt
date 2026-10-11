@@ -6,30 +6,22 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 
 @Database(
-    entities = [SocioEntity::class, BonoRegaloEntity::class],
-    version = 3,
-    exportSchema = false
+    entities = [SocioEntity::class, BonoRegaloEntity::class, IrpfVigenciaEntity::class],
+    version = 4,
+    exportSchema = true
 )
 abstract class AppDatabase : RoomDatabase() {
     abstract fun socioDao(): SocioDao
     abstract fun bonoRegaloDao(): BonoRegaloDao
+    abstract fun irpfVigenciaDao(): IrpfVigenciaDao
 
     companion object {
-        @Volatile
-        private var INSTANCE: AppDatabase? = null
+        const val NOMBRE = "socios_database"
 
-        fun getDatabase(context: Context): AppDatabase {
-            return INSTANCE ?: synchronized(this) {
-                val instance = Room.databaseBuilder(
-                    context.applicationContext,
-                    AppDatabase::class.java,
-                    "socios_database"
-                )
-                    .fallbackToDestructiveMigrationOnDowngrade(dropAllTables = true)
-                    .build()
-                INSTANCE = instance
-                instance
-            }
-        }
+        fun crear(context: Context): AppDatabase =
+            Room.databaseBuilder(context.applicationContext, AppDatabase::class.java, NOMBRE)
+                .addMigrations(Migracion3a4())
+                .fallbackToDestructiveMigrationOnDowngrade(dropAllTables = true)
+                .build()
     }
 }

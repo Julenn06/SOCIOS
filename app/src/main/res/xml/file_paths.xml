@@ -1,9 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <paths>
-    <external-files-path
-        name="external_documents"
-        path="Documents" />
+    <!-- Archivos temporales para compartir con otras apps (ver ExportadorArchivos). -->
     <cache-path
-        name="cache"
-        path="." />
+        name="exports"
+        path="exports/" />
 </paths>

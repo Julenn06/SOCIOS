@@ -1,0 +1,115 @@
+{
+  "formatVersion": 1,
+  "database": {
+    "version": 3,
+    "identityHash": "649924d3d15d2f39e9b5e922c61591db",
+    "entities": [
+      {
+        "tableName": "socios",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `colaboracion` REAL NOT NULL, `hecho` INTEGER NOT NULL, `diaSemanaId` INTEGER NOT NULL, `semanaKey` TEXT NOT NULL, `nombreSocio` TEXT NOT NULL, `notas` TEXT NOT NULL, `timestamp` INTEGER NOT NULL, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "colaboracion",
+            "columnName": "colaboracion",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "hecho",
+            "columnName": "hecho",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "diaSemanaId",
+            "columnName": "diaSemanaId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "semanaKey",
+            "columnName": "semanaKey",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "nombreSocio",
+            "columnName": "nombreSocio",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "notas",
+            "columnName": "notas",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "timestamp",
+            "columnName": "timestamp",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        }
+      },
+      {
+        "tableName": "bonos_regalo",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`semanaKey` TEXT NOT NULL, `activo` INTEGER NOT NULL, `esMontoFijo` INTEGER NOT NULL, `monto` REAL NOT NULL, `nota` TEXT NOT NULL, PRIMARY KEY(`semanaKey`))",
+        "fields": [
+          {
+            "fieldPath": "semanaKey",
+            "columnName": "semanaKey",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "activo",
+            "columnName": "activo",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "esMontoFijo",
+            "columnName": "esMontoFijo",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "monto",
+            "columnName": "monto",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "nota",
+            "columnName": "nota",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "semanaKey"
+          ]
+        }
+      }
+    ],
+    "setupQueries": [
+      "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '649924d3d15d2f39e9b5e922c61591db')"
+    ]
+  }
+}

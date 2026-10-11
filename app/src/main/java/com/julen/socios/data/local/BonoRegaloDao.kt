@@ -17,8 +17,17 @@ interface BonoRegaloDao {
     @Query("SELECT * FROM bonos_regalo WHERE activo = 1")
     suspend fun getAllBonosRegalo(): List<BonoRegaloEntity>
 
+    @Query("SELECT * FROM bonos_regalo WHERE activo = 1")
+    fun getAllBonosRegaloFlow(): Flow<List<BonoRegaloEntity>>
+
+    @Query("SELECT semanaKey FROM bonos_regalo WHERE activo = 1")
+    fun getSemanaKeysFlow(): Flow<List<String>>
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun saveBonoRegalo(bono: BonoRegaloEntity)
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun saveBonosRegalo(bonos: List<BonoRegaloEntity>)
 
     @Query("DELETE FROM bonos_regalo WHERE semanaKey = :semanaKey")
     suspend fun deleteBonoRegalo(semanaKey: String)

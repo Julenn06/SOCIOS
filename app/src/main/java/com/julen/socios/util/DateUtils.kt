@@ -1,106 +1,82 @@
 package com.julen.socios.util
 
-import java.text.SimpleDateFormat
-import java.util.Calendar
+import com.julen.socios.model.DiaSemana
+import java.time.Clock
+import java.time.DayOfWeek
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
+import java.time.temporal.ChronoUnit
+import java.time.temporal.IsoFields
 import java.util.Locale
 
+/**
+ * Utilidades de semanas ISO-8601 (lunes a domingo, la semana 1 es la que contiene el primer jueves).
+ *
+ * La clave de semana usa el año de la semana ISO, no el año natural: del 29 al 31 de diciembre de 2025
+ * pertenecen a la semana "2026-W01".
+ */
 object DateUtils {
 
-    /**
-     * Retorna una clave única de semana en formato YYYY-Www (ej. "2025-W09").
-     */
-    fun getSemanaKey(weekOffset: Int = 0): String {
-        val cal = Calendar.getInstance()
-        cal.firstDayOfWeek = Calendar.MONDAY
-        cal.add(Calendar.WEEK_OF_YEAR, weekOffset)
-        val year = cal.get(Calendar.YEAR)
-        val week = cal.get(Calendar.WEEK_OF_YEAR)
-        return String.format(Locale.getDefault(), "%d-W%02d", year, week)
+    private val LOCALE_ES: Locale = Locale.forLanguageTag("es-ES")
+    private val FORMATO_DIA: DateTimeFormatter = DateTimeFormatter.ofPattern("d 'de' MMM", LOCALE_ES)
+    private val PATRON_SEMANA_KEY = Regex("""(\d{4})-W(\d{2})""")
+
+    /** Lunes de la semana actual desplazada [weekOffset] semanas. */
+    fun lunesDeSemana(weekOffset: Int = 0, clock: Clock = Clock.systemDefaultZone()): LocalDate =
+        LocalDate.now(clock).with(DayOfWeek.MONDAY).plusWeeks(weekOffset.toLong())
+
+    /** Retorna la clave de semana en formato YYYY-Www (ej. "2025-W09"). */
+    fun getSemanaKey(weekOffset: Int = 0, clock: Clock = Clock.systemDefaultZone()): String =
+        semanaKeyDe(lunesDeSemana(weekOffset, clock))
+
+    /** Clave de la semana ISO a la que pertenece [fecha]. */
+    fun semanaKeyDe(fecha: LocalDate): String = String.format(
+        Locale.ROOT,
+        "%04d-W%02d",
+        fecha.get(IsoFields.WEEK_BASED_YEAR),
+        fecha.get(IsoFields.WEEK_OF_WEEK_BASED_YEAR)
+    )
+
+    /** Lunes de la semana representada por [semanaKey], o null si la clave no es una semana ISO válida. */
+    fun lunesDeSemanaKey(semanaKey: String): LocalDate? {
+        val match = PATRON_SEMANA_KEY.matchEntire(semanaKey) ?: return null
+        val anio = match.groupValues[1].toInt()
+        val semana = match.groupValues[2].toLong()
+        // El 4 de enero siempre pertenece a la semana 1 de su año ISO.
+        val referencia = LocalDate.of(anio, 1, 4)
+        if (!referencia.range(IsoFields.WEEK_OF_WEEK_BASED_YEAR).isValidValue(semana)) return null
+        return referencia.with(IsoFields.WEEK_OF_WEEK_BASED_YEAR, semana).with(DayOfWeek.MONDAY)
     }
 
-    /**
-     * Calcula el offset de semana respecto a la semana actual a partir de la clave semanaKey.
-     */
-    fun getWeekOffsetFromKey(semanaKey: String): Int {
-        try {
-            val currentKey = getSemanaKey(0)
-            if (semanaKey == currentKey) return 0
+    fun esSemanaKeyValida(semanaKey: String): Boolean = lunesDeSemanaKey(semanaKey) != null
 
-            val parts = semanaKey.split("-W")
-            if (parts.size == 2) {
-                val targetYear = parts[0].toInt()
-                val targetWeek = parts[1].toInt()
-
-                val nowCal = Calendar.getInstance()
-                nowCal.firstDayOfWeek = Calendar.MONDAY
-
-                val currentYear = nowCal.get(Calendar.YEAR)
-                val currentWeek = nowCal.get(Calendar.WEEK_OF_YEAR)
-                val estimatedOffset = (targetYear - currentYear) * 52 + (targetWeek - currentWeek)
-
-                // Refinar en un entorno cercano (+/- 5 semanas)
-                for (offset in (estimatedOffset - 5)..(estimatedOffset + 5)) {
-                    if (getSemanaKey(offset) == semanaKey) {
-                        return offset
-                    }
-                }
-            }
-        } catch (_: Exception) {
-        }
-
-        // Búsqueda de respaldo ampliada a 10 años
-        for (offset in -520..520) {
-            if (getSemanaKey(offset) == semanaKey) {
-                return offset
-            }
-        }
-        return 0
-    }
+    /** Número de semanas ISO que tiene el año ISO [anio] (52 o 53). */
+    fun semanasEnAnio(anio: Int): Int =
+        LocalDate.of(anio, 1, 4).range(IsoFields.WEEK_OF_WEEK_BASED_YEAR).maximum.toInt()
 
     /**
-     * Retorna una cadena de texto legible para el rango de la semana (Lunes a Viernes).
+     * Desplazamiento en semanas de [semanaKey] respecto a la semana actual,
+     * o null si la clave no es válida.
      */
-    fun getRangoSemanaTexto(weekOffset: Int = 0): String {
-        val cal = Calendar.getInstance()
-        cal.firstDayOfWeek = Calendar.MONDAY
-        cal.add(Calendar.WEEK_OF_YEAR, weekOffset)
-
-        cal.set(Calendar.DAY_OF_WEEK, Calendar.MONDAY)
-        val lunesDate = cal.time
-
-        cal.set(Calendar.DAY_OF_WEEK, Calendar.FRIDAY)
-        val viernesDate = cal.time
-
-        val localeEs = Locale.forLanguageTag("es-ES")
-        val sdf = SimpleDateFormat("d 'de' MMM", localeEs)
-        val yearSdf = SimpleDateFormat("yyyy", localeEs)
-
-        return "${sdf.format(lunesDate)} - ${sdf.format(viernesDate)} (${yearSdf.format(lunesDate)})"
+    fun getWeekOffsetFromKey(semanaKey: String, clock: Clock = Clock.systemDefaultZone()): Int? {
+        val lunes = lunesDeSemanaKey(semanaKey) ?: return null
+        return ChronoUnit.WEEKS.between(lunesDeSemana(0, clock), lunes).toInt()
     }
 
-    /**
-     * Retorna el texto legible del rango de fechas a partir de la clave semanaKey (ej. "2025-W09").
-     */
-    fun getRangoSemanaTextoFromKey(semanaKey: String): String {
-        val offset = getWeekOffsetFromKey(semanaKey)
-        return getRangoSemanaTexto(offset)
+    /** Texto legible del rango de la semana de lunes a viernes, ej. "24 de feb. - 28 de feb. (2025)". */
+    fun getRangoSemanaTexto(weekOffset: Int = 0, clock: Clock = Clock.systemDefaultZone()): String =
+        rangoTextoDe(lunesDeSemana(weekOffset, clock))
+
+    /** Texto legible del rango de la semana [semanaKey], o la propia clave si no es válida. */
+    fun getRangoSemanaTextoFromKey(semanaKey: String): String =
+        lunesDeSemanaKey(semanaKey)?.let(::rangoTextoDe) ?: semanaKey
+
+    private fun rangoTextoDe(lunes: LocalDate): String {
+        val viernes = lunes.plusDays(4)
+        return "${FORMATO_DIA.format(lunes)} - ${FORMATO_DIA.format(viernes)} (${lunes.year})"
     }
 
-    /**
-     * Retorna el ID del día actual (1=Lunes..5=Viernes).
-     * Si es sábado o domingo, mapea por defecto al Lunes o Viernes.
-     */
-    fun getDiaSemanaActualId(): Int {
-        val cal = Calendar.getInstance()
-        return when (cal.get(Calendar.DAY_OF_WEEK)) {
-            Calendar.MONDAY -> 1
-            Calendar.TUESDAY -> 2
-            Calendar.WEDNESDAY -> 3
-            Calendar.THURSDAY -> 4
-            Calendar.FRIDAY -> 5
-            Calendar.SATURDAY -> 5
-            Calendar.SUNDAY -> 1
-            else -> 1
-        }
-    }
+    /** Día laborable de hoy; el fin de semana se asigna al viernes (sábado) o al lunes (domingo). */
+    fun getDiaSemanaActual(clock: Clock = Clock.systemDefaultZone()): DiaSemana =
+        DiaSemana.desde(LocalDate.now(clock).dayOfWeek)
 }

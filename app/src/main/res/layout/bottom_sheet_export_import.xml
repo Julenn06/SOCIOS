@@ -40,7 +40,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Exportar / Importar Datos"
+                android:text="@string/export_titulo"
                 android:textColor="@color/text_main"
                 android:textSize="18sp"
                 android:textStyle="bold" />
@@ -48,7 +48,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Genera informes o restaura copias de seguridad"
+                android:text="@string/export_subtitulo"
                 android:textColor="@color/text_sub"
                 android:textSize="12sp" />
         </LinearLayout>
@@ -59,7 +59,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
-        android:text="Selecciona el alcance de los datos:"
+        android:text="@string/export_alcance_label"
         android:textColor="@color/text_sub"
         android:textSize="12sp"
         android:textStyle="bold" />
@@ -77,21 +77,21 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:checked="true"
-            android:text="Semana activa" />
+            android:text="@string/export_alcance_semana" />
 
         <com.google.android.material.chip.Chip
             android:id="@+id/chipAlcanceSeleccion"
             style="@style/Widget.Material3.Chip.Filter"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Elegir semanas..." />
+            android:text="@string/export_alcance_elegir" />
 
         <com.google.android.material.chip.Chip
             android:id="@+id/chipAlcanceHistorico"
             style="@style/Widget.Material3.Chip.Filter"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Histórico completo" />
+            android:text="@string/export_alcance_historico" />
     </com.google.android.material.chip.ChipGroup>
 
     <!-- Botón Selección de Semanas Específicas -->
@@ -102,7 +102,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="6dp"
         android:gravity="start|center_vertical"
-        android:text="📅 Seleccionar semanas específicas"
+        tools:text="📅 1 semana seleccionada (2026-W41)"
         android:textColor="@color/primary"
         android:visibility="gone"
         tools:visibility="visible" />
@@ -117,7 +117,7 @@
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="📤 Exportar Datos"
+        android:text="@string/export_seccion_exportar"
         android:textColor="@color/text_main"
         android:textSize="14sp"
         android:textStyle="bold" />
@@ -144,7 +144,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:gravity="start|center_vertical"
-                android:text="Exportar Informe PDF"
+                android:text="@string/export_pdf"
                 android:textColor="#0D47A1"
                 app:backgroundTint="#E3F2FD"
                 app:icon="@drawable/ic_file"
@@ -157,7 +157,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="6dp"
                 android:gravity="start|center_vertical"
-                android:text="Exportar Hoja de Cálculo CSV"
+                android:text="@string/export_csv"
                 android:textColor="#1B5E20"
                 app:backgroundTint="#E8F5E9"
                 app:icon="@drawable/ic_export"
@@ -170,7 +170,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="6dp"
                 android:gravity="start|center_vertical"
-                android:text="Exportar Copia JSON"
+                android:text="@string/export_json"
                 android:textColor="#E65100"
                 app:backgroundTint="#FFF3E0"
                 app:icon="@drawable/ic_export"
@@ -183,7 +183,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
-        android:text="📥 Importar Datos"
+        android:text="@string/export_seccion_importar"
         android:textColor="@color/text_main"
         android:textSize="14sp"
         android:textStyle="bold" />
@@ -210,7 +210,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:gravity="start|center_vertical"
-                android:text="Importar desde JSON"
+                android:text="@string/import_json"
                 app:icon="@drawable/ic_import" />
 
             <com.google.android.material.button.MaterialButton
@@ -220,7 +220,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="6dp"
                 android:gravity="start|center_vertical"
-                android:text="Importar desde CSV"
+                android:text="@string/import_csv"
                 app:icon="@drawable/ic_import" />
         </LinearLayout>
     </com.google.android.material.card.MaterialCardView>
@@ -232,6 +232,6 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
-        android:text="Cerrar" />
+        android:text="@string/action_close" />
 
 </LinearLayout>

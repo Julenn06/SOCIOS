@@ -2,22 +2,21 @@ package com.julen.socios
 
 import android.animation.ValueAnimator
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.core.content.ContextCompat
+import androidx.core.view.isVisible
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.julen.socios.databinding.ItemSocioBinding
-import com.julen.socios.model.DiaSemana
 import com.julen.socios.model.Socio
 import com.julen.socios.util.CalculoComisiones
 import com.julen.socios.util.HapticUtils
-import com.julen.socios.util.toFormattedEuros
+import com.julen.socios.util.toEurosCompacto
 
 class SocioAdapter(
-    private val onToggleHecho: (Socio) -> Unit,
+    private val onCambiarHecho: (Socio, Boolean) -> Unit,
     private val onEdit: (Socio) -> Unit,
     private val onDelete: (Socio) -> Unit
 ) : ListAdapter<Socio, SocioAdapter.SocioViewHolder>(SocioDiffCallback()) {
@@ -40,12 +39,8 @@ class SocioAdapter(
         position: Int,
         payloads: MutableList<Any>
     ) {
-        if (payloads.isNotEmpty()) {
-            for (payload in payloads) {
-                if (payload == PAYLOAD_HECHO_CHANGED) {
-                    holder.updateHechoState(getItem(position))
-                }
-            }
+        if (PAYLOAD_HECHO_CHANGED in payloads) {
+            holder.updateHechoState(getItem(position))
         } else {
             super.onBindViewHolder(holder, position, payloads)
         }
@@ -61,68 +56,58 @@ class SocioAdapter(
 
         private var textColorAnimator: ValueAnimator? = null
 
-        fun bind(socio: Socio) {
-            val context = binding.root.context
-
-            // Importes
-            val colaboracionFormatted = socio.colaboracion.toFormattedEuros(0)
-            val baseX2 = CalculoComisiones.calcularBaseX2(socio.colaboracion)
-            val baseX2Formatted = context.getString(R.string.socio_base_format, baseX2.toInt())
-
-            binding.tvColaboracionAmount.text = colaboracionFormatted
-            binding.tvBaseX2Amount.text = baseX2Formatted
-
-            // Día de la semana
-            val diaSemana = DiaSemana.fromId(socio.diaSemanaId)
-            binding.tvDiaBadge.text = diaSemana.nombreCompleto
-
-            // Nombre
-            if (socio.nombreSocio.isNotBlank()) {
-                binding.tvNombreSocio.text = socio.nombreSocio
-            } else {
-                binding.tvNombreSocio.text =
-                    context.getString(R.string.socio_default_name, socio.colaboracion.toInt())
-            }
-
-            // Notas
-            if (socio.notas.isNotBlank()) {
-                binding.tvNotas.visibility = View.VISIBLE
-                binding.tvNotas.text = context.getString(R.string.socio_note_format, socio.notas)
-            } else {
-                binding.tvNotas.visibility = View.GONE
-            }
-
-            updateHechoState(socio)
-
-            // Listeners
+        init {
+            // Los listeners se registran una sola vez y leen el socio actual de la lista en el momento
+            // del clic. Si capturasen el socio del último bind, tras una actualización parcial (payload)
+            // editarían una copia obsoleta y podrían deshacer el cambio de "hecho".
             binding.switchHecho.setOnClickListener { view ->
                 HapticUtils.performToggle(view)
-                onToggleHecho(socio)
+                socioActual()?.let { onCambiarHecho(it, binding.switchHecho.isChecked) }
             }
 
             binding.btnEditar.setOnClickListener { view ->
                 HapticUtils.performClick(view)
-                onEdit(socio)
+                socioActual()?.let(onEdit)
             }
 
             binding.btnEliminar.setOnClickListener { view ->
                 HapticUtils.performClick(view)
-                onDelete(socio)
+                socioActual()?.let(onDelete)
             }
+        }
+
+        private fun socioActual(): Socio? =
+            bindingAdapterPosition.takeIf { it != RecyclerView.NO_POSITION }?.let(::getItem)
+
+        fun bind(socio: Socio) {
+            val context = binding.root.context
+            val baseX2 = CalculoComisiones.calcularBaseX2(socio.colaboracion)
+
+            binding.tvColaboracionAmount.text = socio.colaboracion.toEurosCompacto()
+            binding.tvBaseX2Amount.text = context.getString(R.string.socio_base_format, baseX2.toEurosCompacto())
+            binding.tvDiaBadge.text = socio.dia.nombreCompleto
+
+            binding.tvNombreSocio.text = socio.nombreSocio.ifBlank {
+                context.getString(R.string.socio_default_name, socio.colaboracion.toEurosCompacto())
+            }
+
+            binding.tvNotas.isVisible = socio.notas.isNotBlank()
+            binding.tvNotas.text = context.getString(R.string.socio_note_format, socio.notas)
+
+            updateHechoState(socio)
         }
 
         fun updateHechoState(socio: Socio) {
             val context = binding.root.context
-            val baseX2 = CalculoComisiones.calcularBaseX2(socio.colaboracion)
 
-            binding.switchHecho.setOnCheckedChangeListener(null)
             if (binding.switchHecho.isChecked != socio.hecho) {
                 binding.switchHecho.isChecked = socio.hecho
             }
 
             val targetColor = if (socio.hecho) {
+                val baseX2 = CalculoComisiones.calcularBaseX2(socio.colaboracion)
                 binding.tvEstadoTexto.text =
-                    context.getString(R.string.socio_status_conseguido, baseX2.toInt())
+                    context.getString(R.string.socio_status_conseguido, baseX2.toEurosCompacto())
                 ContextCompat.getColor(context, R.color.primary)
             } else {
                 binding.tvEstadoTexto.text = context.getString(R.string.socio_status_pendiente)

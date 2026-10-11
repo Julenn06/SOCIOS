@@ -10,3 +10,6 @@
 #-keepclassmembers class fqcn.of.javascript.interface.for.webview {
 #   public *;
 #}
+# Las copias de seguridad se (de)serializan con Gson por reflexión: si algún día se activa R8,
+# los DTO deben conservar sus nombres de campo y constructores.
+-keep class com.julen.socios.data.backup.** { <fields>; <init>(...); }

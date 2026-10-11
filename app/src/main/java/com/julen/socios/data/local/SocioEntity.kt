@@ -1,10 +1,12 @@
 package com.julen.socios.data.local
 
 import androidx.room.Entity
+import androidx.room.Index
 import androidx.room.PrimaryKey
+import com.julen.socios.model.DiaSemana
 import com.julen.socios.model.Socio
 
-@Entity(tableName = "socios")
+@Entity(tableName = "socios", indices = [Index("semanaKey")])
 data class SocioEntity(
     @PrimaryKey val id: String,
     val colaboracion: Double,
@@ -20,7 +22,7 @@ data class SocioEntity(
             id = id,
             colaboracion = colaboracion,
             hecho = hecho,
-            diaSemanaId = diaSemanaId,
+            dia = DiaSemana.fromId(diaSemanaId),
             semanaKey = semanaKey,
             nombreSocio = nombreSocio,
             notas = notas,
@@ -34,7 +36,7 @@ data class SocioEntity(
                 id = socio.id,
                 colaboracion = socio.colaboracion,
                 hecho = socio.hecho,
-                diaSemanaId = socio.diaSemanaId,
+                diaSemanaId = socio.dia.id,
                 semanaKey = socio.semanaKey,
                 nombreSocio = socio.nombreSocio,
                 notas = socio.notas,

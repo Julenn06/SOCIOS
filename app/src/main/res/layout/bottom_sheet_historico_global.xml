@@ -21,7 +21,7 @@
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="📈 Histórico Acumulado Global"
+        android:text="@string/historico_titulo"
         android:textColor="@color/text_main"
         android:textSize="20sp"
         android:textStyle="bold" />
@@ -30,7 +30,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="2dp"
-        android:text="Suma total de IRPF retenido y ganancias de todas tus semanas"
+        android:text="@string/historico_subtitulo"
         android:textColor="@color/text_sub"
         android:textSize="13sp" />
 
@@ -54,7 +54,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="TOTAL IRPF RETENIDO (QUITADO)"
+                android:text="@string/historico_irpf_label"
                 android:textColor="#C62828"
                 android:textSize="12sp"
                 android:textStyle="bold" />
@@ -107,7 +107,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Neto Cobrado"
+                    android:text="@string/historico_neto_label"
                     android:textColor="#2E7D32"
                     android:textSize="11sp" />
 
@@ -142,7 +142,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Bonus Totales"
+                    android:text="@string/historico_bonus_label"
                     android:textColor="#F57F17"
                     android:textSize="11sp" />
 
@@ -164,7 +164,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="18dp"
-        android:text="Desglose por semanas pasadas:"
+        android:text="@string/historico_lista_label"
         android:textColor="@color/text_main"
         android:textSize="15sp"
         android:textStyle="bold" />
@@ -181,5 +181,5 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
-        android:text="Cerrar" />
+        android:text="@string/action_close" />
 </LinearLayout>

@@ -12,14 +12,20 @@ interface SocioDao {
     @Query("SELECT * FROM socios ORDER BY timestamp DESC")
     suspend fun getAllSocios(): List<SocioEntity>
 
-    @Query("SELECT * FROM socios WHERE semanaKey = :semanaKey ORDER BY timestamp DESC")
-    suspend fun getSociosPorSemana(semanaKey: String): List<SocioEntity>
+    @Query("SELECT * FROM socios ORDER BY timestamp DESC")
+    fun getAllSociosFlow(): Flow<List<SocioEntity>>
+
+    @Query("SELECT * FROM socios WHERE semanaKey IN (:semanaKeys) ORDER BY timestamp DESC")
+    suspend fun getSociosPorSemanas(semanaKeys: List<String>): List<SocioEntity>
 
     @Query("SELECT * FROM socios WHERE semanaKey = :semanaKey ORDER BY timestamp DESC")
     fun getSociosPorSemanaFlow(semanaKey: String): Flow<List<SocioEntity>>
 
-    @Query("SELECT * FROM socios WHERE id = :socioId LIMIT 1")
-    suspend fun getSocioById(socioId: String): SocioEntity?
+    @Query("SELECT DISTINCT semanaKey FROM socios")
+    fun getSemanaKeysFlow(): Flow<List<String>>
+
+    @Query("SELECT id FROM socios")
+    suspend fun getAllIds(): List<String>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertSocio(socio: SocioEntity)
@@ -29,6 +35,10 @@ interface SocioDao {
 
     @Update
     suspend fun updateSocio(socio: SocioEntity)
+
+    /** Fija el estado en lugar de alternarlo: dos pulsaciones seguidas no pueden desincronizar la BD y el switch. */
+    @Query("UPDATE socios SET hecho = :hecho WHERE id = :socioId")
+    suspend fun setHecho(socioId: String, hecho: Boolean): Int
 
     @Query("DELETE FROM socios WHERE id = :socioId")
     suspend fun deleteSocio(socioId: String)

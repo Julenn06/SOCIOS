@@ -162,56 +162,7 @@
                 app:singleLine="true"
                 app:singleSelection="true">
 
-                <com.google.android.material.chip.Chip
-                    android:id="@+id/chip10"
-                    style="@style/Widget.Material3.Chip.Filter"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/chip_10" />
-
-                <com.google.android.material.chip.Chip
-                    android:id="@+id/chip12"
-                    style="@style/Widget.Material3.Chip.Filter"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/chip_12" />
-
-                <com.google.android.material.chip.Chip
-                    android:id="@+id/chip15"
-                    style="@style/Widget.Material3.Chip.Filter"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/chip_15" />
-
-                <com.google.android.material.chip.Chip
-                    android:id="@+id/chip18"
-                    style="@style/Widget.Material3.Chip.Filter"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/chip_18" />
-
-                <com.google.android.material.chip.Chip
-                    android:id="@+id/chip20"
-                    style="@style/Widget.Material3.Chip.Filter"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:checked="true"
-                    android:text="@string/chip_20" />
-
-                <com.google.android.material.chip.Chip
-                    android:id="@+id/chip25"
-                    style="@style/Widget.Material3.Chip.Filter"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/chip_25" />
-
-                <com.google.android.material.chip.Chip
-                    android:id="@+id/chip30"
-                    style="@style/Widget.Material3.Chip.Filter"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/chip_30" />
-
+                <!-- Las cuotas predefinidas se añaden desde ImportesPredefinidos.CUOTAS -->
                 <com.google.android.material.chip.Chip
                     android:id="@+id/chipOtro"
                     style="@style/Widget.Material3.Chip.Filter"

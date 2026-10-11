@@ -41,7 +41,7 @@
                 android:id="@+id/tvTitleBonoRegalo"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Ajustar Bonus de la Semana"
+                android:text="@string/bono_titulo"
                 android:textColor="@color/text_main"
                 android:textSize="18sp"
                 android:textStyle="bold" />
@@ -67,7 +67,7 @@
         android:id="@+id/switchActivarBono"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Ajustar bonus manualmente"
+        android:text="@string/bono_switch"
         android:textColor="@color/text_main"
         android:textSize="15sp"
         android:textStyle="bold" />
@@ -81,12 +81,46 @@
         android:visibility="gone"
         tools:visibility="visible">
 
-        <!-- Selección de Importe -->
+        <!-- Modo de aplicación -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/bono_modo_label"
+            android:textColor="@color/text_sub"
+            android:textSize="12sp"
+            android:textStyle="bold" />
+
+        <com.google.android.material.chip.ChipGroup
+            android:id="@+id/chipGroupModoBono"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:layout_marginBottom="10dp"
+            app:selectionRequired="true"
+            app:singleSelection="true">
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/chipModoFijo"
+                style="@style/Widget.Material3.Chip.Filter"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:checked="true"
+                android:text="@string/bono_modo_fijo" />
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/chipModoSumar"
+                style="@style/Widget.Material3.Chip.Filter"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/bono_modo_sumar" />
+        </com.google.android.material.chip.ChipGroup>
+
+        <!-- Selección de Importe (los importes predefinidos se añaden desde ImportesPredefinidos.BONUS) -->
         <TextView
             android:id="@+id/tvLabelMonto"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Selecciona el bonus a aplicar:"
+            android:text="@string/bono_label_monto"
             android:textColor="@color/text_sub"
             android:textSize="12sp"
             android:textStyle="bold" />
@@ -105,32 +139,11 @@
                 app:singleSelection="true">
 
                 <com.google.android.material.chip.Chip
-                    android:id="@+id/chipBonus50"
-                    style="@style/Widget.Material3.Chip.Filter"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="50 €" />
-
-                <com.google.android.material.chip.Chip
-                    android:id="@+id/chipBonus100"
-                    style="@style/Widget.Material3.Chip.Filter"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="100 €" />
-
-                <com.google.android.material.chip.Chip
-                    android:id="@+id/chipBonus140"
-                    style="@style/Widget.Material3.Chip.Filter"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="140 €" />
-
-                <com.google.android.material.chip.Chip
                     android:id="@+id/chipBonusOtro"
                     style="@style/Widget.Material3.Chip.Filter"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Otros..." />
+                    android:text="@string/bono_chip_otro" />
             </com.google.android.material.chip.ChipGroup>
         </HorizontalScrollView>
 
@@ -141,7 +154,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
-            android:hint="Importe del bonus (€)"
+            android:hint="@string/bono_hint_monto"
             android:visibility="gone"
             app:suffixText="€">
 
@@ -165,7 +178,7 @@
             style="@style/Widget.Material3.Button"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Aceptar" />
+            android:text="@string/action_accept" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnEliminarBono"
@@ -173,7 +186,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="6dp"
-            android:text="Restablecer a automático"
+            android:text="@string/bono_restablecer"
             android:visibility="gone"
             tools:visibility="visible" />
 
@@ -183,7 +196,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="4dp"
-            android:text="Cancelar" />
+            android:text="@string/action_cancel" />
     </LinearLayout>
 
 </LinearLayout>

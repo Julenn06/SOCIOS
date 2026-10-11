@@ -1,7 +1,12 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.ksp)
+    alias(libs.plugins.room)
 }
+
+// Firma de release: la CI (o tu entorno local) define estas variables. Sin ellas,
+// assembleRelease genera un APK sin firmar en lugar de usar una clave cualquiera.
+val releaseKeystorePath = providers.environmentVariable("SOCIOS_KEYSTORE_PATH").orNull
 
 android {
     namespace = "com.julen.socios"
@@ -11,14 +16,27 @@ android {
         applicationId = "com.julen.socios"
         minSdk = 26
         targetSdk = 35
-        versionCode = 1
-        versionName = "1.0.0"
+        // La CI pasa el número de ejecución para que cada APK publicado sea una actualización real.
+        versionCode = providers.environmentVariable("SOCIOS_VERSION_CODE").orNull?.toInt() ?: 1
+        versionName = providers.environmentVariable("SOCIOS_VERSION_NAME").orNull ?: "1.0.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
+    signingConfigs {
+        if (releaseKeystorePath != null) {
+            create("release") {
+                storeFile = file(releaseKeystorePath)
+                storePassword = providers.environmentVariable("SOCIOS_KEYSTORE_PASSWORD").orNull
+                keyAlias = providers.environmentVariable("SOCIOS_KEY_ALIAS").orNull
+                keyPassword = providers.environmentVariable("SOCIOS_KEY_PASSWORD").orNull
+            }
+        }
+    }
+
     buildTypes {
         release {
+            signingConfig = signingConfigs.findByName("release")
             optimization {
                 enable = false
             }
@@ -31,20 +49,41 @@ android {
     buildFeatures {
         viewBinding = true
     }
+    testOptions {
+        unitTests.isReturnDefaultValues = true
+    }
+}
+
+room {
+    schemaDirectory("$projectDir/schemas")
 }
 
 dependencies {
     implementation(libs.androidx.activity.ktx)
     implementation(libs.androidx.appcompat)
     implementation(libs.androidx.core.ktx)
+    implementation(libs.androidx.fragment.ktx)
+    implementation(libs.androidx.lifecycle.runtime.ktx)
+    implementation(libs.androidx.lifecycle.viewmodel.ktx)
+    implementation(libs.androidx.lifecycle.viewmodel.savedstate)
+    implementation(libs.androidx.recyclerview)
+    implementation(libs.androidx.coordinatorlayout)
     implementation(libs.material)
+    implementation(libs.kotlinx.coroutines.android)
     implementation(libs.gson)
+    // androidx.savedstate trae la 1.7.3; room-testing necesita 1.8.x y los tests instrumentados usan
+    // la versión de la app, así que se alinea aquí.
+    implementation(libs.kotlinx.serialization.core)
 
     implementation(libs.androidx.room.runtime)
     implementation(libs.androidx.room.ktx)
     ksp(libs.androidx.room.compiler)
 
     testImplementation(libs.junit)
-    androidTestImplementation(libs.androidx.espresso.core)
+    testImplementation(libs.kotlinx.coroutines.test)
+
     androidTestImplementation(libs.androidx.junit)
+    androidTestImplementation(libs.androidx.espresso.core)
+    androidTestImplementation(libs.androidx.room.testing)
+    androidTestImplementation(libs.kotlinx.coroutines.test)
 }
