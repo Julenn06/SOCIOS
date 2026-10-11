@@ -1,17 +1,23 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <!-- Base application theme. -->
-    <style name="Base.Theme.Socios" parent="Theme.Material3.Light.NoActionBar">
+    <!-- Tema claro y oscuro (sigue al sistema). Los colores cambian solos con values-night/colors.xml. -->
+    <style name="Base.Theme.Socios" parent="Theme.Material3.DayNight.NoActionBar">
+        <!-- El tema oscuro es propio: que el sistema no oscurezca la app por su cuenta. -->
         <item name="android:forceDarkAllowed" tools:targetApi="q">false</item>
         <item name="colorPrimary">@color/primary</item>
-        <item name="colorOnPrimary">@android:color/white</item>
+        <item name="colorOnPrimary">@color/on_primary</item>
         <item name="colorPrimaryContainer">@color/primary_container</item>
         <item name="colorOnPrimaryContainer">@color/on_primary_container</item>
         <item name="colorSecondary">@color/accent_blue</item>
         <item name="colorSurface">@color/surface_card</item>
+        <item name="colorOnSurface">@color/text_main</item>
+        <item name="colorOnSurfaceVariant">@color/text_sub</item>
         <item name="colorSurfaceContainerLow">@color/surface_card</item>
         <item name="colorSurfaceContainer">@color/surface_card</item>
         <item name="colorSurfaceContainerHigh">@color/surface_card</item>
         <item name="colorSurfaceContainerHighest">@color/surface_card</item>
+        <item name="colorOutline">@color/stroke</item>
+        <item name="colorOutlineVariant">@color/divider</item>
+        <item name="android:colorBackground">@color/bg_light</item>
         <item name="android:windowBackground">@color/bg_light</item>
         <item name="bottomSheetDialogTheme">@style/CustomBottomSheetDialogTheme</item>
     </style>

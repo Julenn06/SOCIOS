@@ -41,14 +41,14 @@
                 android:layout_marginEnd="6dp"
                 android:paddingHorizontal="12dp"
                 android:text="@string/btn_hoy"
-                android:textColor="#0D47A1"
+                android:textColor="@color/blue_text"
                 android:textSize="12sp"
                 android:textStyle="bold"
                 android:visibility="gone"
-                app:backgroundTint="#E3F2FD"
+                app:backgroundTint="@color/blue_container"
                 app:cornerRadius="18dp"
                 app:icon="@drawable/ic_chevron_left"
-                app:iconTint="#0D47A1"
+                app:iconTint="@color/blue_text"
                 tools:visibility="visible" />
 
             <com.google.android.material.button.MaterialButton
@@ -103,15 +103,15 @@
                 android:layout_marginStart="6dp"
                 android:paddingHorizontal="12dp"
                 android:text="@string/btn_hoy"
-                android:textColor="#0D47A1"
+                android:textColor="@color/blue_text"
                 android:textSize="12sp"
                 android:textStyle="bold"
                 android:visibility="gone"
-                app:backgroundTint="#E3F2FD"
+                app:backgroundTint="@color/blue_container"
                 app:cornerRadius="18dp"
                 app:icon="@drawable/ic_chevron_right"
                 app:iconGravity="end"
-                app:iconTint="#0D47A1"
+                app:iconTint="@color/blue_text"
                 tools:visibility="visible" />
         </LinearLayout>
     </com.google.android.material.appbar.AppBarLayout>
@@ -163,7 +163,7 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="@string/header_neto_semanal"
-                                android:textColor="#B3E5FC"
+                                android:textColor="@color/header_label_neto"
                                 android:textSize="11sp"
                                 android:textStyle="bold" />
 
@@ -184,18 +184,18 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="@string/action_ver_irpf"
-                            android:textColor="#0D47A1"
+                            android:textColor="@color/header_button_text"
                             android:textSize="12sp"
-                            app:backgroundTint="#E3F2FD"
+                            app:backgroundTint="@color/header_button_bg"
                             app:icon="@drawable/ic_info"
-                            app:iconTint="#0D47A1" />
+                            app:iconTint="@color/header_button_text" />
                     </LinearLayout>
 
                     <View
                         android:layout_width="match_parent"
                         android:layout_height="1dp"
                         android:layout_marginVertical="14dp"
-                        android:background="#40FFFFFF" />
+                        android:background="@color/header_divider" />
 
                     <!-- Stats Grid Row -->
                     <LinearLayout
@@ -215,7 +215,7 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="@string/label_base_x2"
-                                android:textColor="#E0F7FA"
+                                android:textColor="@color/header_label_base"
                                 android:textSize="11sp" />
 
                             <TextView
@@ -244,14 +244,14 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="@string/label_bonus_auto"
-                                android:textColor="#FFF9C4"
+                                android:textColor="@color/header_label_bonus"
                                 android:textSize="11sp" />
 
                             <TextView
                                 android:id="@+id/tvBonusHeader"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:textColor="#FFEE58"
+                                android:textColor="@color/header_bonus"
                                 android:textSize="15sp"
                                 android:textStyle="bold"
                                 tools:text="+140,00 €" />
@@ -269,14 +269,14 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 tools:text="IRPF (-21,48 %)"
-                                android:textColor="#FFCDD2"
+                                android:textColor="@color/header_label_irpf"
                                 android:textSize="11sp" />
 
                             <TextView
                                 android:id="@+id/tvIrpfHeader"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:textColor="#FFEBEE"
+                                android:textColor="@color/header_irpf"
                                 android:textSize="15sp"
                                 android:textStyle="bold"
                                 tools:text="-115,99 €" />
@@ -294,7 +294,7 @@
                 app:cardBackgroundColor="@color/surface_card"
                 app:cardCornerRadius="16dp"
                 app:cardElevation="2dp"
-                app:strokeColor="#E0E0E0"
+                app:strokeColor="@color/divider"
                 app:strokeWidth="1dp">
 
                 <LinearLayout
@@ -469,7 +469,7 @@
                     android:layout_width="64dp"
                     android:layout_height="64dp"
                     android:src="@drawable/ic_add"
-                    app:tint="#BDBDBD" />
+                    app:tint="@color/icon_muted" />
 
                 <TextView
                     android:layout_width="wrap_content"
@@ -520,9 +520,9 @@
         android:layout_gravity="bottom|end"
         android:layout_margin="20dp"
         android:text="@string/fab_nuevo_socio"
-        android:textColor="@android:color/white"
+        android:textColor="@color/on_primary"
         app:backgroundTint="@color/primary"
         app:icon="@drawable/ic_add"
-        app:iconTint="@android:color/white" />
+        app:iconTint="@color/on_primary" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

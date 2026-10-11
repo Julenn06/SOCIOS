@@ -2,7 +2,6 @@ package com.julen.socios
 
 import android.app.Application
 import android.content.Context
-import androidx.appcompat.app.AppCompatDelegate
 import com.julen.socios.data.BackupRepository
 import com.julen.socios.data.BonoRegaloRepository
 import com.julen.socios.data.IrpfRepository
@@ -35,8 +34,6 @@ class SociosApp : Application() {
 
     override fun onCreate() {
         super.onCreate()
-        // La app solo tiene tema claro.
-        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
         container = AppContainer(this)
     }
 }

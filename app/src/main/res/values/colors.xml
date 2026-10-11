@@ -1,15 +1,57 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- Paleta del tema claro. Las versiones para el tema oscuro están en values-night/colors.xml. -->
 <resources>
     <color name="primary">#059669</color>
+    <color name="on_primary">#FFFFFF</color>
     <color name="primary_container">#D1FAE5</color>
     <color name="on_primary_container">#022C22</color>
 
     <color name="accent_blue">#2563EB</color>
-
     <color name="orange_pending">#EA580C</color>
 
+    <!-- Neutros -->
     <color name="bg_light">#F1F5F9</color>
     <color name="surface_card">#FFFFFF</color>
+    <color name="surface_muted">#F8FAFC</color>
     <color name="text_main">#0F172A</color>
     <color name="text_sub">#475569</color>
+    <color name="icon_muted">#BDBDBD</color>
+    <color name="divider">#E2E8F0</color>
+    <color name="stroke">#CBD5E1</color>
+    <color name="handle">#D0D0D0</color>
+
+    <!-- Acentos: texto e iconos sobre la superficie, y fondo/borde suave para tarjetas y botones tonales -->
+    <color name="blue_text">#0D47A1</color>
+    <color name="blue_text_soft">#1565C0</color>
+    <color name="blue_container">#E3F2FD</color>
+    <color name="green_text">#1B5E20</color>
+    <color name="green_text_soft">#2E7D32</color>
+    <color name="green_container">#E8F5E9</color>
+    <color name="green_stroke">#C8E6C9</color>
+    <color name="red_text">#C62828</color>
+    <color name="red_text_strong">#B71C1C</color>
+    <color name="red_container">#FFEBEE</color>
+    <color name="red_stroke">#FFCDD2</color>
+    <color name="orange_text">#E65100</color>
+    <color name="orange_container">#FFF3E0</color>
+    <color name="amber_text">#F57F17</color>
+    <color name="amber_container">#FFFDE7</color>
+
+    <!-- Cabecera con degradado azul: igual en los dos temas porque ya es oscura y lleva texto claro -->
+    <color name="header_gradient_start">#1976D2</color>
+    <color name="header_gradient_end">#0D47A1</color>
+    <color name="header_label_neto">#B3E5FC</color>
+    <color name="header_label_base">#E0F7FA</color>
+    <color name="header_label_bonus">#FFF9C4</color>
+    <color name="header_bonus">#FFEE58</color>
+    <color name="header_label_irpf">#FFCDD2</color>
+    <color name="header_irpf">#FFEBEE</color>
+    <color name="header_divider">#40FFFFFF</color>
+    <color name="header_button_bg">#E3F2FD</color>
+    <color name="header_button_text">#0D47A1</color>
+
+    <!-- Insignia verde del importe en cada socio: igual en los dos temas -->
+    <color name="badge_gradient_start">#107C41</color>
+    <color name="badge_gradient_end">#0B5A2F</color>
+    <color name="badge_text_sub">#E8F5E9</color>
 </resources>

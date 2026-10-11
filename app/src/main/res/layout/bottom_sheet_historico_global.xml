@@ -16,7 +16,7 @@
         android:layout_height="4dp"
         android:layout_gravity="center_horizontal"
         android:layout_marginBottom="16dp"
-        android:background="#D0D0D0" />
+        android:background="@color/handle" />
 
     <TextView
         android:layout_width="match_parent"
@@ -40,9 +40,9 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
-        app:cardBackgroundColor="#FFEBEE"
+        app:cardBackgroundColor="@color/red_container"
         app:cardCornerRadius="16dp"
-        app:strokeColor="#FFCDD2"
+        app:strokeColor="@color/red_stroke"
         app:strokeWidth="1dp">
 
         <LinearLayout
@@ -56,7 +56,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/historico_irpf_label"
-                android:textColor="#C62828"
+                android:textColor="@color/red_text"
                 android:textSize="12sp"
                 android:textStyle="bold" />
 
@@ -65,7 +65,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="4dp"
-                android:textColor="#B71C1C"
+                android:textColor="@color/red_text_strong"
                 android:textSize="30sp"
                 android:textStyle="bold"
                 tools:text="-204,69 €" />
@@ -75,7 +75,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="2dp"
-                android:textColor="#D32F2F"
+                android:textColor="@color/red_text"
                 android:textSize="12sp"
                 tools:text="Acumulado en 3 semanas de trabajo" />
         </LinearLayout>
@@ -95,7 +95,7 @@
             android:layout_height="wrap_content"
             android:layout_marginEnd="6dp"
             android:layout_weight="1"
-            app:cardBackgroundColor="#E8F5E9"
+            app:cardBackgroundColor="@color/green_container"
             app:cardCornerRadius="12dp"
             app:strokeWidth="0dp">
 
@@ -109,7 +109,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/historico_neto_label"
-                    android:textColor="#2E7D32"
+                    android:textColor="@color/green_text_soft"
                     android:textSize="11sp" />
 
                 <TextView
@@ -117,7 +117,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="2dp"
-                    android:textColor="#1B5E20"
+                    android:textColor="@color/green_text"
                     android:textSize="16sp"
                     android:textStyle="bold"
                     tools:text="+748,31 €" />
@@ -130,7 +130,7 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="6dp"
             android:layout_weight="1"
-            app:cardBackgroundColor="#FFFDE7"
+            app:cardBackgroundColor="@color/amber_container"
             app:cardCornerRadius="12dp"
             app:strokeWidth="0dp">
 
@@ -144,7 +144,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/historico_bonus_label"
-                    android:textColor="#F57F17"
+                    android:textColor="@color/amber_text"
                     android:textSize="11sp" />
 
                 <TextView
@@ -152,7 +152,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="2dp"
-                    android:textColor="#E65100"
+                    android:textColor="@color/orange_text"
                     android:textSize="16sp"
                     android:textStyle="bold"
                     tools:text="+280,00 €" />

@@ -16,7 +16,7 @@
         android:layout_height="4dp"
         android:layout_gravity="center_horizontal"
         android:layout_marginBottom="16dp"
-        android:background="#D0D0D0" />
+        android:background="@color/handle" />
 
     <TextView
         android:layout_width="match_parent"
@@ -41,9 +41,9 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
-        app:cardBackgroundColor="#E8F5E9"
+        app:cardBackgroundColor="@color/green_container"
         app:cardCornerRadius="16dp"
-        app:strokeColor="#C8E6C9"
+        app:strokeColor="@color/green_stroke"
         app:strokeWidth="1dp">
 
         <LinearLayout
@@ -57,7 +57,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/irpf_neto_final"
-                android:textColor="#2E7D32"
+                android:textColor="@color/green_text_soft"
                 android:textSize="12sp"
                 android:textStyle="bold" />
 
@@ -66,7 +66,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="4dp"
-                android:textColor="#1B5E20"
+                android:textColor="@color/green_text"
                 android:textSize="32sp"
                 android:textStyle="bold"
                 tools:text="424,01 €" />
@@ -76,7 +76,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="4dp"
-                android:textColor="#388E3C"
+                android:textColor="@color/green_text_soft"
                 android:textSize="13sp"
                 tools:text="Basado en 10 socios hechos esta semana" />
         </LinearLayout>
@@ -89,7 +89,7 @@
         android:layout_marginTop="16dp"
         app:cardBackgroundColor="@color/surface_card"
         app:cardCornerRadius="16dp"
-        app:strokeColor="#E0E0E0"
+        app:strokeColor="@color/divider"
         app:strokeWidth="1dp">
 
         <LinearLayout
@@ -141,7 +141,7 @@
                     android:id="@+id/tvBreakdownBaseX2"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:textColor="#1565C0"
+                    android:textColor="@color/blue_text_soft"
                     android:textSize="14sp"
                     android:textStyle="bold"
                     tools:text="+400,00 €" />
@@ -167,7 +167,7 @@
                     android:id="@+id/tvBreakdownBonusValue"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:textColor="#E65100"
+                    android:textColor="@color/orange_text"
                     android:textSize="14sp"
                     android:textStyle="bold"
                     tools:text="+140,00 €" />
@@ -190,7 +190,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="1dp"
                 android:layout_marginVertical="12dp"
-                android:background="#E0E0E0" />
+                android:background="@color/divider" />
 
             <!-- Fila 4: Total Bruto -->
             <LinearLayout
@@ -230,14 +230,14 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     tools:text="Retención IRPF (21,48 %)"
-                    android:textColor="#C62828"
+                    android:textColor="@color/red_text"
                     android:textSize="14sp" />
 
                 <TextView
                     android:id="@+id/tvBreakdownIrpf"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:textColor="#C62828"
+                    android:textColor="@color/red_text"
                     android:textSize="14sp"
                     android:textStyle="bold"
                     tools:text="-115,99 €" />
@@ -247,7 +247,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="2dp"
                 android:layout_marginVertical="12dp"
-                android:background="#2E7D32" />
+                android:background="@color/green_text_soft" />
 
             <!-- Fila 6: TOTAL NETO FINAL -->
             <LinearLayout
@@ -260,7 +260,7 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:text="@string/irpf_total_neto"
-                    android:textColor="#1B5E20"
+                    android:textColor="@color/green_text"
                     android:textSize="16sp"
                     android:textStyle="bold" />
 
@@ -268,7 +268,7 @@
                     android:id="@+id/tvBreakdownNetoSmall"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:textColor="#1B5E20"
+                    android:textColor="@color/green_text"
                     android:textSize="16sp"
                     android:textStyle="bold"
                     tools:text="424,01 €" />

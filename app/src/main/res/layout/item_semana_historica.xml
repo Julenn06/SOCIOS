@@ -9,7 +9,7 @@
     app:cardBackgroundColor="@color/surface_card"
     app:cardCornerRadius="14dp"
     app:cardElevation="1dp"
-    app:strokeColor="#E0E0E0"
+    app:strokeColor="@color/divider"
     app:strokeWidth="1dp">
 
     <LinearLayout
@@ -59,7 +59,7 @@
                     android:id="@+id/tvSemanaItemNeto"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:textColor="#2E7D32"
+                    android:textColor="@color/green_text_soft"
                     android:textSize="16sp"
                     android:textStyle="bold"
                     tools:text="+324,50 €" />
@@ -69,7 +69,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="2dp"
-                    android:textColor="#C62828"
+                    android:textColor="@color/red_text"
                     android:textSize="11sp"
                     tools:text="IRPF: -88,70 €" />
             </LinearLayout>
