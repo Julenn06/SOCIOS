@@ -1,12 +1,15 @@
 package com.julen.socios.data.backup
 
+import kotlinx.serialization.Serializable
+
 /*
  * Formato de las copias de seguridad, separado del modelo de dominio para que renombrar un campo del
- * modelo no rompa los archivos ya exportados. Todos los campos son anulables: Gson no respeta la
- * nulabilidad ni los valores por defecto de Kotlin, así que un campo ausente llega como null y se
- * valida en [ConversionBackup] en lugar de provocar un NullPointerException al guardar.
+ * modelo no rompa los archivos ya exportados. Todos los campos son anulables: un campo ausente o nulo
+ * llega como null y se valida en [ConversionBackup], que descarta el registro o pone un valor por
+ * defecto, en lugar de rechazar el archivo entero.
  */
 
+@Serializable
 data class BackupDto(
     val version: Int? = null,
     val timestamp: Long? = null,
@@ -15,6 +18,7 @@ data class BackupDto(
     val irpfVigencias: List<IrpfVigenciaDto?>? = null
 )
 
+@Serializable
 data class SocioDto(
     val id: String? = null,
     val colaboracion: Double? = null,
@@ -26,6 +30,7 @@ data class SocioDto(
     val timestamp: Long? = null
 )
 
+@Serializable
 data class BonoRegaloDto(
     val semanaKey: String? = null,
     val activo: Boolean? = null,
@@ -34,6 +39,7 @@ data class BonoRegaloDto(
     val nota: String? = null
 )
 
+@Serializable
 data class IrpfVigenciaDto(
     val desdeSemanaKey: String? = null,
     val porcentaje: Double? = null

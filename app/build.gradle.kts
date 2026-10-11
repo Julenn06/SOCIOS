@@ -2,6 +2,7 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.ksp)
     alias(libs.plugins.room)
+    alias(libs.plugins.kotlin.serialization)
 }
 
 // Firma de release: la CI (o tu entorno local) define estas variables. Sin ellas,
@@ -70,10 +71,9 @@ dependencies {
     implementation(libs.androidx.coordinatorlayout)
     implementation(libs.material)
     implementation(libs.kotlinx.coroutines.android)
-    implementation(libs.gson)
-    // androidx.savedstate trae la 1.7.3; room-testing necesita 1.8.x y los tests instrumentados usan
-    // la versión de la app, así que se alinea aquí.
-    implementation(libs.kotlinx.serialization.core)
+    // Copias de seguridad JSON. Además fija kotlinx-serialization-core: androidx.savedstate trae la 1.7.3,
+    // room-testing necesita una más reciente y los tests instrumentados usan la versión de la app.
+    implementation(libs.kotlinx.serialization.json)
 
     implementation(libs.androidx.room.runtime)
     implementation(libs.androidx.room.ktx)

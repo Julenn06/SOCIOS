@@ -1,12 +1,12 @@
 package com.julen.socios.data.backup
 
-import com.google.gson.JsonParseException
 import com.julen.socios.model.BonoRegaloInfo
 import com.julen.socios.model.DatosBackup
 import com.julen.socios.model.DiaSemana
 import com.julen.socios.model.IrpfVigencia
 import com.julen.socios.model.Socio
 import java.io.ByteArrayOutputStream
+import kotlinx.serialization.SerializationException
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertThrows
 import org.junit.Assert.assertTrue
@@ -36,7 +36,7 @@ class BackupJsonTest {
 
     @Test
     fun losCamposAusentesTomanValoresPorDefectoEnVezDeRomperLaApp() {
-        // Antes, Gson dejaba nombreSocio/notas/id a null y la app se cerraba al guardar.
+        // Con Gson, nombreSocio/notas/id llegaban a null y la app se cerraba al guardar.
         val resultado = leer("""{"socios":[{"colaboracion":20.0,"diaSemanaId":2,"semanaKey":"2026-W10"}]}""")
 
         val socio = resultado.datos.socios.single()
@@ -80,8 +80,79 @@ class BackupJsonTest {
     }
 
     @Test
+    fun leeUnaCopiaExportadaPorLasVersionesQueUsabanGson() {
+        // Salida literal de la v1.3.0: Gson escapa ' = < > & como \u00XX y sangra con dos espacios.
+        val resultado = leer(
+            """
+            {
+              "version": 2,
+              "timestamp": 1760000000002,
+              "socios": [
+                {
+                  "id": "s1",
+                  "colaboracion": 18.5,
+                  "hecho": false,
+                  "diaSemanaId": 4,
+                  "semanaKey": "2026-W10",
+                  "nombreSocio": "Íñigo O'Neil",
+                  "notas": "a=b <c> & \"d\"\nLínea 2 €",
+                  "timestamp": 1760000000000
+                }
+              ],
+              "bonosRegalo": [
+                {
+                  "semanaKey": "2026-W10",
+                  "activo": true,
+                  "esMontoFijo": false,
+                  "monto": 25.0,
+                  "nota": "Campaña"
+                }
+              ],
+              "irpfVigencias": [
+                {
+                  "desdeSemanaKey": "2026-W01",
+                  "porcentaje": 15.5
+                }
+              ]
+            }
+            """.trimIndent()
+        )
+
+        val esperado = DatosBackup(
+            socios = listOf(
+                Socio(
+                    id = "s1", colaboracion = 18.5, hecho = false, dia = DiaSemana.JUEVES, semanaKey = "2026-W10",
+                    nombreSocio = "Íñigo O'Neil", notas = "a=b <c> & \"d\"\nLínea 2 €", timestamp = 1760000000000
+                )
+            ),
+            bonosRegalo = listOf(
+                BonoRegaloInfo("2026-W10", activo = true, esMontoFijo = false, monto = 25.0, nota = "Campaña")
+            ),
+            irpfVigencias = listOf(IrpfVigencia("2026-W01", 15.5))
+        )
+        assertEquals(esperado, resultado.datos)
+        assertEquals(0, resultado.descartados)
+    }
+
+    @Test
+    fun toleraLoMismoQueGson() {
+        // Números y booleanos entre comillas, un número donde se espera texto y campos desconocidos.
+        val resultado = leer(
+            """{"socios":[{"id":"x","colaboracion":"12.5","hecho":"false","diaSemanaId":"3",""" +
+                """"semanaKey":"2026-W10","nombreSocio":123,"campoNuevo":{"a":1}}],"otraCosa":true}"""
+        )
+
+        val socio = resultado.datos.socios.single()
+        assertEquals(12.5, socio.colaboracion, 0.0)
+        assertEquals(false, socio.hecho)
+        assertEquals(DiaSemana.MIERCOLES, socio.dia)
+        assertEquals("123", socio.nombreSocio)
+    }
+
+    @Test
     fun unJsonMalFormadoLanzaUnErrorControlado() {
-        assertThrows(JsonParseException::class.java) { leer("{esto no es json") }
-        assertThrows(JsonParseException::class.java) { leer("42") }
+        assertThrows(SerializationException::class.java) { leer("{esto no es json") }
+        assertThrows(SerializationException::class.java) { leer("42") }
+        assertThrows(SerializationException::class.java) { leer("""{"socios":{"no":"es una lista"}}""") }
     }
 }

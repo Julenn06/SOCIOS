@@ -1,6 +1,0 @@
-# Reglas de R8 del proyecto. AGP combina todos los ficheros de src/main/keepRules.
-# Ver https://d.android.com/r/tools/r8/keep-rules
-
-# Las copias de seguridad se (de)serializan con Gson por reflexión: si algún día se activa R8,
-# los DTO deben conservar sus nombres de campo y constructores.
--keep class com.julen.socios.data.backup.** { <fields>; <init>(...); }
