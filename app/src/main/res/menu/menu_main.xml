@@ -4,11 +4,11 @@
 
     <item
         android:id="@+id/action_ver_historico"
-        android:icon="@drawable/ic_info"
+        android:icon="@drawable/ic_history"
         app:iconTint="@color/text_main"
         android:title="@string/menu_historico"
         app:contentDescription="@string/menu_historico_a11y"
-        app:showAsAction="always" />
+        app:showAsAction="ifRoom" />
 
     <item
         android:id="@+id/action_export_import"
