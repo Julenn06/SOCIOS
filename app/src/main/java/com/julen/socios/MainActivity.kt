@@ -299,12 +299,15 @@ class MainActivity : AppCompatActivity() {
         if (dialogoConfirmarImport?.isShowing == true) return
 
         val mensaje = buildString {
-            append(
-                getString(
-                    R.string.import_confirmar_msg,
-                    preview.sociosNuevos, preview.sociosSobrescritos, preview.bonos, preview.irpfVigencias
-                )
-            )
+            append(getString(R.string.import_confirmar_cabecera))
+            listOf(
+                R.plurals.import_linea_nuevos to preview.sociosNuevos,
+                R.plurals.import_linea_sobrescritos to preview.sociosSobrescritos,
+                R.plurals.import_linea_bonus to preview.bonos,
+                R.plurals.import_linea_irpf to preview.irpfVigencias
+            ).forEach { (plural, cantidad) ->
+                append("\n• ").append(resources.getQuantityString(plural, cantidad, cantidad))
+            }
             if (preview.descartados > 0) {
                 append(resources.getQuantityString(R.plurals.import_descartados, preview.descartados, preview.descartados))
             }

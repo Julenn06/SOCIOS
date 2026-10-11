@@ -201,7 +201,27 @@
         <item quantity="other">%d semanas seleccionadas</item>
     </plurals>
     <string name="import_confirmar_titulo">Importar datos</string>
-    <string name="import_confirmar_msg">Se van a importar:\n• %1$d socios nuevos\n• %2$d socios que ya existen y se sobrescribirán\n• %3$d bonus manuales\n• %4$d tramos de IRPF</string>
+    <string name="import_confirmar_cabecera">Se van a importar:</string>
+    <plurals name="import_linea_nuevos">
+        <item quantity="one">%d socio nuevo</item>
+        <item quantity="many">%d socios nuevos</item>
+        <item quantity="other">%d socios nuevos</item>
+    </plurals>
+    <plurals name="import_linea_sobrescritos">
+        <item quantity="one">%d socio que ya existe y se sobrescribirá</item>
+        <item quantity="many">%d socios que ya existen y se sobrescribirán</item>
+        <item quantity="other">%d socios que ya existen y se sobrescribirán</item>
+    </plurals>
+    <plurals name="import_linea_bonus">
+        <item quantity="one">%d bonus manual</item>
+        <item quantity="many">%d bonus manuales</item>
+        <item quantity="other">%d bonus manuales</item>
+    </plurals>
+    <plurals name="import_linea_irpf">
+        <item quantity="one">%d cambio de IRPF</item>
+        <item quantity="many">%d cambios de IRPF</item>
+        <item quantity="other">%d cambios de IRPF</item>
+    </plurals>
     <plurals name="import_descartados">
         <item quantity="one">\n\n%d registro no válido se ignorará.</item>
         <item quantity="many">\n\n%d registros no válidos se ignorarán.</item>
@@ -255,9 +275,9 @@
     <string name="msg_import_vacio">El archivo %s no contiene datos válidos</string>
     <string name="msg_error_generico">Se ha producido un error: %s</string>
     <plurals name="msg_import_resultado">
-        <item quantity="one">✓ Importado %1$d socio (%2$d bonus, %3$d tramos de IRPF)</item>
-        <item quantity="many">✓ Importados %1$d socios (%2$d bonus, %3$d tramos de IRPF)</item>
-        <item quantity="other">✓ Importados %1$d socios (%2$d bonus, %3$d tramos de IRPF)</item>
+        <item quantity="one">✓ Importado %1$d socio (%2$d bonus, %3$d cambios de IRPF)</item>
+        <item quantity="many">✓ Importados %1$d socios (%2$d bonus, %3$d cambios de IRPF)</item>
+        <item quantity="other">✓ Importados %1$d socios (%2$d bonus, %3$d cambios de IRPF)</item>
     </plurals>
 
 </resources>
