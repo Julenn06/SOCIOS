@@ -15,7 +15,7 @@ android {
     defaultConfig {
         applicationId = "com.julen.socios"
         minSdk = 26
-        targetSdk = 36
+        targetSdk = 37
         // La CI pasa el número de ejecución para que cada APK publicado sea una actualización real.
         versionCode = providers.environmentVariable("SOCIOS_VERSION_CODE").orNull?.toInt() ?: 1
         versionName = providers.environmentVariable("SOCIOS_VERSION_NAME").orNull ?: "1.0.0"
