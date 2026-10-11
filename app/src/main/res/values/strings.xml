@@ -24,6 +24,10 @@
     <string name="menu_historico">📈 Histórico Acumulado</string>
     <string name="menu_export_import">💾 Exportar / Importar Datos</string>
 
+    <!-- Atajo al mantener pulsado el icono de la app (la etiqueta corta admite unos 10 caracteres) -->
+    <string name="atajo_nuevo_socio_corto">Nuevo socio</string>
+    <string name="atajo_nuevo_socio_largo">Añadir un socio</string>
+
     <!-- Financial Headers -->
     <string name="header_neto_semanal">GANANCIA NETO SEMANAL</string>
     <string name="action_ver_irpf">Ver IRPF</string>

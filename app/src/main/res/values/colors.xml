@@ -54,4 +54,7 @@
     <color name="badge_gradient_start">#107C41</color>
     <color name="badge_gradient_end">#0B5A2F</color>
     <color name="badge_text_sub">#E8F5E9</color>
+
+    <!-- Icono del atajo "Nuevo socio": va sobre la placa blanca del icono, igual en claro y en oscuro. -->
+    <color name="icono_atajo">#059669</color>
 </resources>

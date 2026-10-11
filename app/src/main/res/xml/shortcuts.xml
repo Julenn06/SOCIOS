@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Atajos al mantener pulsado el icono de la app. El sistema abre MainActivity en una tarea nueva. -->
+<shortcuts xmlns:android="http://schemas.android.com/apk/res/android">
+    <shortcut
+        android:icon="@mipmap/ic_atajo_nuevo_socio"
+        android:shortcutId="nuevo_socio"
+        android:shortcutLongLabel="@string/atajo_nuevo_socio_largo"
+        android:shortcutShortLabel="@string/atajo_nuevo_socio_corto">
+        <intent
+            android:action="com.julen.socios.action.NUEVO_SOCIO"
+            android:targetClass="com.julen.socios.MainActivity"
+            android:targetPackage="com.julen.socios" />
+    </shortcut>
+</shortcuts>

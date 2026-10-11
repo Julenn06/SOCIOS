@@ -18,6 +18,7 @@ import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.coordinatorlayout.widget.CoordinatorLayout
+import androidx.core.content.pm.ShortcutManagerCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.isVisible
@@ -130,6 +131,13 @@ class MainActivity : AppCompatActivity() {
                 launch { viewModel.exportPendienteDeDestino.collect(::mostrarDialogoDestinoExport) }
                 launch { viewModel.importPendiente.collect(::mostrarDialogoConfirmarImport) }
             }
+        }
+
+        // Atajo "Nuevo socio" del icono de la app. Solo en un arranque nuevo: tras girar la pantalla o
+        // volver a la app, el formulario ya se restaura solo si seguía abierto.
+        if (savedInstanceState == null && intent?.action == ACTION_NUEVO_SOCIO) {
+            ShortcutManagerCompat.reportShortcutUsed(this, ATAJO_NUEVO_SOCIO)
+            openAddEditDialog(null)
         }
     }
 
@@ -508,5 +516,11 @@ class MainActivity : AppCompatActivity() {
 
             else -> super.onOptionsItemSelected(item)
         }
+    }
+
+    private companion object {
+        // Deben coincidir con res/xml/shortcuts.xml.
+        const val ACTION_NUEVO_SOCIO = "com.julen.socios.action.NUEVO_SOCIO"
+        const val ATAJO_NUEVO_SOCIO = "nuevo_socio"
     }
 }
