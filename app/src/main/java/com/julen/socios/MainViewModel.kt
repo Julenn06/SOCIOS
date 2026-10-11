@@ -67,6 +67,9 @@ sealed interface MainEvent {
         val mimeType: String get() = formato.mimeType
     }
     data class SeleccionarArchivoImport(val formato: ImportFormat) : MainEvent
+
+    /** Se ha borrado un socio: la vista ofrece deshacerlo con [MainViewModel.restaurarSocio]. */
+    data class SocioEliminado(val socio: Socio) : MainEvent
 }
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -200,9 +203,15 @@ class MainViewModel(
         }
     }
 
-    fun eliminarSocio(socioId: String) = lanzar {
-        socioRepository.deleteSocio(socioId)
-        mensaje(R.string.msg_socio_deleted)
+    fun eliminarSocio(socio: Socio) = lanzar {
+        socioRepository.deleteSocio(socio.id)
+        enviar(MainEvent.SocioEliminado(socio))
+    }
+
+    /** Vuelve a guardar un socio recién borrado, con el mismo id y fecha de alta. */
+    fun restaurarSocio(socio: Socio) = lanzar {
+        socioRepository.addSocio(socio)
+        mensaje(R.string.msg_socio_restaurado)
     }
 
     fun guardarBono(bono: BonoRegaloInfo) = lanzar {

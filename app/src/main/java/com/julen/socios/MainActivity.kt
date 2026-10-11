@@ -254,6 +254,11 @@ class MainActivity : AppCompatActivity() {
                 ImportFormat.JSON -> importJsonLauncher.launch("application/json")
                 ImportFormat.CSV -> importCsvLauncher.launch("*/*")
             }
+
+            is MainEvent.SocioEliminado ->
+                Snackbar.make(binding.root, R.string.msg_socio_deleted, Snackbar.LENGTH_LONG)
+                    .setAction(R.string.action_deshacer) { viewModel.restaurarSocio(evento.socio) }
+                    .show()
         }
     }
 
@@ -389,7 +394,7 @@ class MainActivity : AppCompatActivity() {
         adapter = SocioAdapter(
             onCambiarHecho = { socio, hecho -> viewModel.setSocioHecho(socio.id, hecho) },
             onEdit = { socio -> openAddEditDialog(socio) },
-            onDelete = { socio -> confirmDeleteSocio(socio) }
+            onDelete = { socio -> viewModel.eliminarSocio(socio) }
         )
         binding.rvSocios.layoutManager = LinearLayoutManager(this)
         binding.rvSocios.adapter = adapter
@@ -448,15 +453,6 @@ class MainActivity : AppCompatActivity() {
             AddSocioBottomSheetDialog.nuevo(state.semanaKey, state.diaFiltro ?: DateUtils.getDiaSemanaActual())
         }
         dialog.show(supportFragmentManager, AddSocioBottomSheetDialog.TAG)
-    }
-
-    private fun confirmDeleteSocio(socio: Socio) {
-        MaterialAlertDialogBuilder(this)
-            .setTitle(R.string.dialog_delete_socio_title)
-            .setMessage(getString(R.string.dialog_delete_socio_msg, socio.colaboracion.toEurosCompacto()))
-            .setPositiveButton(R.string.action_delete) { _, _ -> viewModel.eliminarSocio(socio.id) }
-            .setNegativeButton(R.string.action_cancel, null)
-            .show()
     }
 
     private fun mostrarDesgloseIrpf() {

@@ -226,6 +226,8 @@
     <string name="msg_socio_saved">¡Socio registrado con éxito!</string>
     <string name="msg_socio_updated">Socio actualizado</string>
     <string name="msg_socio_deleted">Socio eliminado</string>
+    <string name="msg_socio_restaurado">Socio restaurado</string>
+    <string name="action_deshacer">Deshacer</string>
     <string name="msg_bonus_updated">¡Bonus actualizado!</string>
     <string name="msg_bonus_reset">Bonus restablecido a automático</string>
     <string name="msg_irpf_actualizado">IRPF del %1$s aplicado desde la semana %2$s</string>
@@ -242,7 +244,4 @@
         <item quantity="other">✓ Importados %1$d socios (%2$d bonus, %3$d tramos de IRPF)</item>
     </plurals>
 
-    <!-- Dialogs -->
-    <string name="dialog_delete_socio_title">Eliminar Socio</string>
-    <string name="dialog_delete_socio_msg">¿Estás seguro de que deseas eliminar este registro de %s?</string>
 </resources>

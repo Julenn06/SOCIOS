@@ -162,6 +162,23 @@ class MainViewModelTest {
     }
 
     @Test
+    fun borrarUnSocioSePuedeDeshacerConSusMismosDatos() = runTest(dispatcher) {
+        socioDao.socios.value = listOf(entidad("a", semanaActual, DiaSemana.JUEVES, hecho = false, cuota = 18.0))
+        val viewModel = crearViewModel()
+        val eventos = observar(viewModel)
+        val socio = viewModel.uiState.value.todosSociosSemana.single()
+
+        viewModel.eliminarSocio(socio)
+
+        assertTrue(viewModel.uiState.value.todosSociosSemana.isEmpty())
+        assertEquals(MainEvent.SocioEliminado(socio), eventos.last())
+
+        viewModel.restaurarSocio((eventos.last() as MainEvent.SocioEliminado).socio)
+
+        assertEquals(listOf(socio), viewModel.uiState.value.todosSociosSemana)
+    }
+
+    @Test
     fun elIrpfSoloCambiaDesdeLaSemanaIndicada() = runTest(dispatcher) {
         socioDao.socios.value = listOf(entidad("a", semanaActual), entidad("b", semanaSiguiente))
         val viewModel = crearViewModel()
