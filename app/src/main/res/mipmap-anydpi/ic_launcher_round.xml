@@ -6,9 +6,10 @@
             android:drawable="@drawable/icono"
             android:inset="16%" />
     </foreground>
+    <!-- Iconos temáticos (Android 13+): solo la silueta del dibujo, sin la placa blanca. -->
     <monochrome>
         <inset
-            android:drawable="@drawable/icono"
+            android:drawable="@drawable/icono_monocromo"
             android:inset="16%" />
     </monochrome>
 </adaptive-icon>
