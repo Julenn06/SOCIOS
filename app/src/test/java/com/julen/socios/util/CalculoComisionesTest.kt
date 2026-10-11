@@ -134,6 +134,32 @@ class CalculoComisionesTest {
     }
 
     @Test
+    fun agrupaPorMesYAnioSegunElJuevesDeCadaSemana() {
+        val historico = CalculoComisiones.calcularResumenHistoricoGlobal(
+            socios(5, "2025-W52") +  // 22-26 dic 2025 → diciembre 2025
+                socios(5, "2026-W01") +  // 29 dic 2025 - 2 ene 2026, jueves 1 ene → enero 2026
+                socios(10, "2026-W02") + // 5-9 ene 2026 → enero 2026
+                socios(5, "2026-W40")    // 28 sep - 2 oct 2026, jueves 1 oct → octubre 2026
+        )
+
+        val meses = CalculoComisiones.agruparPorPeriodo(historico.semanasHistoricas, CalculoComisiones.Periodo.MES)
+        assertEquals(listOf(2026 to 10, 2026 to 1, 2025 to 12), meses.map { it.anio to it.mes })
+
+        val enero = meses[1]
+        assertEquals(2, enero.semanas)
+        assertEquals(15, enero.sociosHechos)
+        assertEquals(190.0, enero.bonus, 0.0) // 50 + 140, cada semana con su tramo
+        assertEquals(790.0, enero.bruto, 0.0)
+        assertEquals(53.70 + 115.99, enero.irpf, 0.001)
+
+        val anios = CalculoComisiones.agruparPorPeriodo(historico.semanasHistoricas, CalculoComisiones.Periodo.ANIO)
+        assertEquals(listOf(2026, 2025), anios.map { it.anio })
+        assertEquals(listOf(null, null), anios.map { it.mes })
+        assertEquals(3, anios[0].semanas)
+        assertEquals(historico.totalBrutoAcumulado, anios.sumOf { it.bruto }, 0.001)
+    }
+
+    @Test
     fun redondeoMitadHaciaArriba() {
         assertEquals(0.13, CalculoComisiones.redondearCentimos(0.125), 0.0)
         assertEquals(2.68, CalculoComisiones.redondearCentimos(2.675), 0.0)

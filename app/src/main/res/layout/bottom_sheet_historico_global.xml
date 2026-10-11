@@ -159,7 +159,7 @@
         </com.google.android.material.card.MaterialCardView>
     </LinearLayout>
 
-    <!-- Encabezado de la lista de semanas -->
+    <!-- Encabezado de la lista y agrupación -->
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -168,6 +168,48 @@
         android:textColor="@color/text_main"
         android:textSize="15sp"
         android:textStyle="bold" />
+
+    <com.google.android.material.chip.ChipGroup
+        android:id="@+id/chipGroupAgrupacion"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        app:selectionRequired="true"
+        app:singleLine="true"
+        app:singleSelection="true">
+
+        <com.google.android.material.chip.Chip
+            android:id="@+id/chipPorSemana"
+            style="@style/Widget.Material3.Chip.Filter"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:checked="true"
+            android:text="@string/historico_por_semana" />
+
+        <com.google.android.material.chip.Chip
+            android:id="@+id/chipPorMes"
+            style="@style/Widget.Material3.Chip.Filter"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/historico_por_mes" />
+
+        <com.google.android.material.chip.Chip
+            android:id="@+id/chipPorAnio"
+            style="@style/Widget.Material3.Chip.Filter"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/historico_por_anio" />
+    </com.google.android.material.chip.ChipGroup>
+
+    <TextView
+        android:id="@+id/tvNotaAgrupacion"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/historico_nota_agrupacion"
+        android:textColor="@color/text_sub"
+        android:textSize="12sp"
+        android:visibility="gone"
+        tools:visibility="visible" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rvSemanasHistoricas"

@@ -97,6 +97,43 @@ object CalculoComisiones {
         val semanasHistoricas: List<SemanaHistoricaItem>
     )
 
+    enum class Periodo { MES, ANIO }
+
+    /** Totales de un mes ([mes] 1-12) o de un año completo ([mes] null). */
+    data class ResumenPeriodo(
+        val anio: Int,
+        val mes: Int?,
+        val semanas: Int,
+        val sociosHechos: Int,
+        val bonus: Double,
+        val bruto: Double,
+        val irpf: Double,
+        val neto: Double
+    )
+
+    /**
+     * Agrupa las semanas por mes o por año. Una semana que cruza de mes o de año cuenta en el de su
+     * jueves (criterio ISO-8601, el mismo de las claves de semana), así ninguna se cuenta dos veces.
+     */
+    fun agruparPorPeriodo(semanas: List<SemanaHistoricaItem>, periodo: Periodo): List<ResumenPeriodo> =
+        semanas
+            .mapNotNull { item -> DateUtils.lunesDeSemanaKey(item.semanaKey)?.plusDays(3)?.let { it to item } }
+            .groupBy { (jueves, _) -> jueves.year to (if (periodo == Periodo.MES) jueves.monthValue else null) }
+            .map { (clave, items) ->
+                val resumenes = items.map { it.second.resumenSemana }
+                ResumenPeriodo(
+                    anio = clave.first,
+                    mes = clave.second,
+                    semanas = resumenes.size,
+                    sociosHechos = resumenes.sumOf { it.totalSociosHechos },
+                    bonus = redondearCentimos(resumenes.sumOf { it.bonusSemanal }),
+                    bruto = redondearCentimos(resumenes.sumOf { it.totalBruto }),
+                    irpf = redondearCentimos(resumenes.sumOf { it.retencionIrpf }),
+                    neto = redondearCentimos(resumenes.sumOf { it.totalNeto })
+                )
+            }
+            .sortedWith(compareByDescending<ResumenPeriodo> { it.anio }.thenByDescending { it.mes ?: 0 })
+
     fun calcularResumenSemana(
         socios: List<Socio>,
         bonoRegalo: BonoRegaloInfo? = null,

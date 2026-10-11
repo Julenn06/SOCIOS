@@ -141,7 +141,16 @@
     <string name="historico_irpf_label">TOTAL IRPF RETENIDO (QUITADO)</string>
     <string name="historico_neto_label">Neto Cobrado</string>
     <string name="historico_bonus_label">Bonus Totales</string>
-    <string name="historico_lista_label">Desglose por semanas pasadas:</string>
+    <string name="historico_lista_label">Desglose:</string>
+    <string name="historico_por_semana">Semanas</string>
+    <string name="historico_por_mes">Meses</string>
+    <string name="historico_por_anio">Años</string>
+    <string name="historico_nota_agrupacion">Las semanas que cruzan de mes o de año cuentan en el de su jueves.</string>
+    <plurals name="historico_periodo_resumen">
+        <item quantity="one">Bruto %2$s · %1$d socio hecho</item>
+        <item quantity="many">Bruto %2$s · %1$d socios hechos</item>
+        <item quantity="other">Bruto %2$s · %1$d socios hechos</item>
+    </plurals>
     <plurals name="global_history_count">
         <item quantity="one">Acumulado en %d semana registrada</item>
         <item quantity="many">Acumulado en %d semanas registradas</item>
