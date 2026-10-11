@@ -1,0 +1,16 @@
+# Avisos semanales de nuevas versiones de dependencias de Gradle y mensuales de las GitHub Actions.
+# Las actualizaciones menores y de parche se agrupan en un único pull request.
+version: 2
+updates:
+  - package-ecosystem: "gradle"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    groups:
+      dependencias:
+        update-types: ["minor", "patch"]
+
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "monthly"
