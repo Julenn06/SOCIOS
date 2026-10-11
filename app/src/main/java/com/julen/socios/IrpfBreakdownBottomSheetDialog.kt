@@ -13,6 +13,8 @@ import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.julen.socios.databinding.BottomSheetIrpfBreakdownBinding
 import com.julen.socios.databinding.DialogIrpfBinding
+import com.julen.socios.util.CalculoComisiones
+import com.julen.socios.util.DateUtils
 import com.julen.socios.util.parseImporte
 import com.julen.socios.util.toCurrencyString
 import com.julen.socios.util.toFormattedEuros
@@ -40,12 +42,56 @@ class IrpfBreakdownBottomSheetDialog : BottomSheetDialogFragment() {
 
         binding.btnCerrarBreakdown.setOnClickListener { dismiss() }
         binding.btnCambiarIrpf.setOnClickListener { mostrarDialogoIrpf() }
+        binding.btnVerCambiosIrpf.setOnClickListener { mostrarCambiosIrpf() }
 
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                viewModel.uiState.collect(::render)
+                launch { viewModel.uiState.collect(::render) }
+                // Mantiene la lista de cambios cargada para mostrarla al instante.
+                launch { viewModel.irpfVigencias.collect {} }
             }
         }
+    }
+
+    private fun mostrarCambiosIrpf() {
+        val vigencias = viewModel.irpfVigencias.value.sortedByDescending { it.desdeSemanaKey }
+        val porDefecto = CalculoComisiones.IRPF_POR_DEFECTO.toPorcentajeString()
+        if (vigencias.isEmpty()) {
+            MaterialAlertDialogBuilder(requireContext())
+                .setTitle(R.string.irpf_ver_cambios)
+                .setMessage(getString(R.string.irpf_sin_cambios, porDefecto))
+                .setPositiveButton(R.string.action_accept, null)
+                .show()
+            return
+        }
+
+        val items = vigencias.map {
+            getString(
+                R.string.irpf_cambio_item,
+                it.desdeSemanaKey,
+                DateUtils.getRangoSemanaTextoFromKey(it.desdeSemanaKey),
+                it.porcentaje.toPorcentajeString()
+            )
+        }.toTypedArray()
+
+        MaterialAlertDialogBuilder(requireContext())
+            .setTitle(R.string.irpf_cambios_titulo)
+            .setItems(items) { _, which -> confirmarEliminarCambio(vigencias[which].desdeSemanaKey) }
+            .setNegativeButton(R.string.action_close, null)
+            .show()
+    }
+
+    private fun confirmarEliminarCambio(desdeSemanaKey: String) {
+        // Porcentaje que volverá a aplicarse: el del cambio anterior a este, o el de por defecto.
+        val restantes = viewModel.irpfVigencias.value.filter { it.desdeSemanaKey != desdeSemanaKey }
+        val anterior = CalculoComisiones.irpfParaSemana(desdeSemanaKey, restantes).toPorcentajeString()
+
+        MaterialAlertDialogBuilder(requireContext())
+            .setTitle(R.string.irpf_eliminar_cambio_titulo)
+            .setMessage(getString(R.string.irpf_eliminar_cambio_msg, desdeSemanaKey, anterior))
+            .setPositiveButton(R.string.action_delete) { _, _ -> viewModel.eliminarIrpf(desdeSemanaKey) }
+            .setNegativeButton(R.string.action_cancel, null)
+            .show()
     }
 
     private fun render(state: MainUiState) {

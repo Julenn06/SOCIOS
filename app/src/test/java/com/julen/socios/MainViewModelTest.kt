@@ -192,6 +192,25 @@ class MainViewModelTest {
     }
 
     @Test
+    fun alEliminarUnCambioDeIrpfSeVuelveAlPorcentajeAnterior() = runTest(dispatcher) {
+        socioDao.socios.value = listOf(entidad("a", semanaActual))
+        val viewModel = crearViewModel()
+        backgroundScope.launch(dispatcher) { viewModel.irpfVigencias.collect {} }
+        observar(viewModel)
+        val semanaAnterior = DateUtils.getSemanaKey(-1, clock)
+
+        viewModel.guardarIrpf(semanaAnterior, 15.0)
+        viewModel.guardarIrpf(semanaActual, 19.0)
+        assertEquals(19.0, viewModel.uiState.value.resumenSemana!!.porcentajeIrpf, 0.0)
+        assertEquals(listOf(semanaAnterior, semanaActual), viewModel.irpfVigencias.value.map { it.desdeSemanaKey })
+
+        viewModel.eliminarIrpf(semanaActual)
+
+        assertEquals(15.0, viewModel.uiState.value.resumenSemana!!.porcentajeIrpf, 0.0)
+        assertEquals(listOf(semanaAnterior), viewModel.irpfVigencias.value.map { it.desdeSemanaKey })
+    }
+
+    @Test
     fun elHistoricoCalculaCadaSemanaPorSeparado() = runTest(dispatcher) {
         socioDao.socios.value = List(5) { entidad("a$it", semanaActual) } + List(5) { entidad("b$it", semanaSiguiente) }
         val viewModel = crearViewModel()

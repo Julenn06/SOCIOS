@@ -127,6 +127,12 @@
     <string name="irpf_dialogo_ayuda">Se aplicará desde la semana %s en adelante. Las semanas anteriores conservan su porcentaje.</string>
     <string name="irpf_hint">Porcentaje de IRPF</string>
     <string name="msg_irpf_invalido">Introduce un porcentaje entre 0 y 100</string>
+    <string name="irpf_ver_cambios">Ver cambios de IRPF</string>
+    <string name="irpf_cambios_titulo">Cambios de IRPF (toca uno para eliminarlo)</string>
+    <string name="irpf_cambio_item">Desde la semana %1$s (%2$s): %3$s</string>
+    <string name="irpf_sin_cambios">Todavía no has cambiado el IRPF: todas las semanas usan el %s por defecto.</string>
+    <string name="irpf_eliminar_cambio_titulo">¿Eliminar este cambio de IRPF?</string>
+    <string name="irpf_eliminar_cambio_msg">Desde la semana %1$s se volverá a aplicar el porcentaje anterior (%2$s).</string>
     <string name="irpf_amount_format">IRPF: %s</string>
 
     <!-- Histórico -->
@@ -231,6 +237,7 @@
     <string name="msg_bonus_updated">¡Bonus actualizado!</string>
     <string name="msg_bonus_reset">Bonus restablecido a automático</string>
     <string name="msg_irpf_actualizado">IRPF del %1$s aplicado desde la semana %2$s</string>
+    <string name="msg_irpf_cambio_eliminado">Cambio de IRPF eliminado</string>
     <string name="msg_file_saved">¡Archivo guardado correctamente!</string>
     <string name="msg_error_file_save">Error al guardar el archivo: %s</string>
     <string name="msg_error_export">Error al exportar: %s</string>

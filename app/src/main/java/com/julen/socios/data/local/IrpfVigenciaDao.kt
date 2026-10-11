@@ -19,4 +19,7 @@ interface IrpfVigenciaDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun upsertAll(vigencias: List<IrpfVigenciaEntity>)
+
+    @Query("DELETE FROM irpf_vigencias WHERE desdeSemanaKey = :desdeSemanaKey")
+    suspend fun delete(desdeSemanaKey: String)
 }

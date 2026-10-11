@@ -14,4 +14,7 @@ class IrpfRepository(private val irpfDao: IrpfVigenciaDao) {
     /** Aplica [porcentaje] desde [desdeSemanaKey] en adelante, sin tocar las semanas anteriores. */
     suspend fun guardarVigencia(desdeSemanaKey: String, porcentaje: Double) =
         irpfDao.upsert(IrpfVigenciaEntity(desdeSemanaKey, porcentaje))
+
+    /** Elimina un cambio de porcentaje: esas semanas vuelven a usar el porcentaje vigente anterior. */
+    suspend fun eliminarVigencia(desdeSemanaKey: String) = irpfDao.delete(desdeSemanaKey)
 }

@@ -83,6 +83,10 @@ class FakeIrpfVigenciaDao : IrpfVigenciaDao {
     }
 
     override suspend fun upsertAll(vigencias: List<IrpfVigenciaEntity>) = vigencias.forEach { upsert(it) }
+
+    override suspend fun delete(desdeSemanaKey: String) {
+        vigencias.value = vigencias.value - desdeSemanaKey
+    }
 }
 
 class FakeTransactionRunner : TransactionRunner {

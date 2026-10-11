@@ -22,6 +22,7 @@ import com.julen.socios.export.ImportFormat
 import com.julen.socios.model.BonoRegaloInfo
 import com.julen.socios.model.DiaSemana
 import com.julen.socios.model.ImportPreview
+import com.julen.socios.model.IrpfVigencia
 import com.julen.socios.model.ResultadoLectura
 import com.julen.socios.model.Socio
 import com.julen.socios.util.CalculoComisiones
@@ -146,6 +147,10 @@ class MainViewModel(
     }.flowOn(calculoDispatcher)
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
 
+    /** Cambios de porcentaje de IRPF, del más antiguo al más reciente. */
+    val irpfVigencias: StateFlow<List<IrpfVigencia>> = irpfRepository.getVigenciasFlow()
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
     /** Semanas con socios o con un bono manual, de la más reciente a la más antigua. */
     val semanasDisponibles: StateFlow<List<String>> = combine(
         socioRepository.getSemanaKeysFlow(),
@@ -227,6 +232,11 @@ class MainViewModel(
     fun guardarIrpf(desdeSemanaKey: String, porcentaje: Double) = lanzar {
         irpfRepository.guardarVigencia(desdeSemanaKey, porcentaje)
         mensaje(R.string.msg_irpf_actualizado, porcentaje.toPorcentajeString(), desdeSemanaKey)
+    }
+
+    fun eliminarIrpf(desdeSemanaKey: String) = lanzar {
+        irpfRepository.eliminarVigencia(desdeSemanaKey)
+        mensaje(R.string.msg_irpf_cambio_eliminado)
     }
 
     // --- Exportación ---

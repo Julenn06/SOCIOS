@@ -286,6 +286,14 @@
         app:icon="@drawable/ic_edit" />
 
     <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnVerCambiosIrpf"
+        style="@style/Widget.Material3.Button.TextButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/irpf_ver_cambios"
+        app:icon="@drawable/ic_info" />
+
+    <com.google.android.material.button.MaterialButton
         android:id="@+id/btnCerrarBreakdown"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
