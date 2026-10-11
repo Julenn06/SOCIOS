@@ -5,6 +5,7 @@ import android.content.Context
 import com.julen.socios.actualizaciones.ComprobadorActualizaciones
 import com.julen.socios.actualizaciones.GitHubReleases
 import com.julen.socios.actualizaciones.RegistroEnPreferencias
+import com.julen.socios.ajustes.PreferenciasTema
 import com.julen.socios.data.BackupRepository
 import com.julen.socios.data.BonoRegaloRepository
 import com.julen.socios.data.IrpfRepository
@@ -34,6 +35,7 @@ class AppContainer(context: Context) {
         versionInstalada = BuildConfig.VERSION_NAME,
         clock = clock
     )
+    val preferenciasTema = PreferenciasTema(context)
 }
 
 class SociosApp : Application() {
@@ -44,5 +46,7 @@ class SociosApp : Application() {
     override fun onCreate() {
         super.onCreate()
         container = AppContainer(this)
+        // Antes de abrir ninguna pantalla, para que no se vea un instante con el tema del sistema.
+        container.preferenciasTema.tema.aplicar()
     }
 }

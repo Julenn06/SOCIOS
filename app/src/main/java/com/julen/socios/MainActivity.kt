@@ -521,6 +521,11 @@ class MainActivity : AppCompatActivity() {
             .show(supportFragmentManager, BonoRegaloBottomSheetDialog.TAG)
     }
 
+    private fun mostrarTema() {
+        if (supportFragmentManager.findFragmentByTag(TemaDialogFragment.TAG) != null) return
+        TemaDialogFragment().show(supportFragmentManager, TemaDialogFragment.TAG)
+    }
+
     private fun mostrarAcercaDe() {
         if (supportFragmentManager.findFragmentByTag(AcercaDeDialogFragment.TAG) != null) return
         AcercaDeDialogFragment().show(supportFragmentManager, AcercaDeDialogFragment.TAG)
@@ -545,6 +550,11 @@ class MainActivity : AppCompatActivity() {
 
             R.id.action_export_import -> {
                 mostrarDialogoExportImport()
+                true
+            }
+
+            R.id.action_tema -> {
+                mostrarTema()
                 true
             }
 

@@ -18,6 +18,11 @@
         app:showAsAction="never" />
 
     <item
+        android:id="@+id/action_tema"
+        android:title="@string/menu_tema"
+        app:showAsAction="never" />
+
+    <item
         android:id="@+id/action_acerca_de"
         android:title="@string/menu_acerca_de"
         app:showAsAction="never" />

@@ -24,7 +24,14 @@
     <string name="menu_historico">📈 Histórico Acumulado</string>
     <string name="menu_export_import">💾 Exportar / Importar Datos</string>
 
+    <string name="menu_tema">Tema</string>
     <string name="menu_acerca_de">Acerca de</string>
+
+    <!-- Tema -->
+    <string name="tema_titulo">Tema</string>
+    <string name="tema_sistema">Según el sistema</string>
+    <string name="tema_claro">Claro</string>
+    <string name="tema_oscuro">Oscuro</string>
 
     <!-- Acerca de y versiones nuevas -->
     <string name="acerca_de_mensaje">Versión %1$s\n\nAl abrirse, la app comprueba como mucho una vez al día si hay una versión nueva en GitHub.</string>
