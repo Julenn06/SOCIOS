@@ -15,64 +15,59 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
+        android:baselineAligned="false"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
         android:padding="14dp">
 
         <LinearLayout
-            android:layout_width="match_parent"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:gravity="center_vertical"
-            android:orientation="horizontal">
+            android:layout_weight="1"
+            android:orientation="vertical">
 
-            <LinearLayout
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:orientation="vertical">
-
-                <TextView
-                    android:id="@+id/tvSemanaItemTitulo"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:textColor="@color/text_main"
-                    android:textSize="15sp"
-                    android:textStyle="bold"
-                    tools:text="Semana 2025-W09" />
-
-                <TextView
-                    android:id="@+id/tvSemanaItemSociosCount"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="2dp"
-                    android:textColor="@color/text_sub"
-                    android:textSize="12sp"
-                    tools:text="8 socios hechos (+100€ bonus)" />
-            </LinearLayout>
-
-            <LinearLayout
+            <TextView
+                android:id="@+id/tvSemanaItemTitulo"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:gravity="end"
-                android:orientation="vertical">
+                android:textColor="@color/text_main"
+                android:textSize="15sp"
+                android:textStyle="bold"
+                tools:text="Semana 2025-W09" />
 
-                <TextView
-                    android:id="@+id/tvSemanaItemNeto"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:textColor="@color/green_text_soft"
-                    android:textSize="16sp"
-                    android:textStyle="bold"
-                    tools:text="+324,50 €" />
+            <TextView
+                android:id="@+id/tvSemanaItemSociosCount"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:textColor="@color/text_sub"
+                android:textSize="12sp"
+                tools:text="8 socios hechos (+100€ bonus)" />
+        </LinearLayout>
 
-                <TextView
-                    android:id="@+id/tvSemanaItemIrpf"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="2dp"
-                    android:textColor="@color/red_text"
-                    android:textSize="11sp"
-                    tools:text="IRPF: -88,70 €" />
-            </LinearLayout>
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="end"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/tvSemanaItemNeto"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/green_text_soft"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                tools:text="+324,50 €" />
+
+            <TextView
+                android:id="@+id/tvSemanaItemIrpf"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:textColor="@color/red_text"
+                android:textSize="11sp"
+                tools:text="IRPF: -88,70 €" />
         </LinearLayout>
     </LinearLayout>
 </com.google.android.material.card.MaterialCardView>

@@ -24,6 +24,8 @@
 
     <style name="CustomBottomSheetDialogTheme" parent="ThemeOverlay.Material3.BottomSheetDialog">
         <item name="bottomSheetStyle">@style/CustomBottomSheet</item>
+        <!-- Sin el tinte verdoso que Material añade según la elevación: el panel es surface_card tal cual. -->
+        <item name="elevationOverlayEnabled">false</item>
     </style>
 
     <style name="CustomBottomSheet" parent="Widget.Material3.BottomSheet.Modal">
