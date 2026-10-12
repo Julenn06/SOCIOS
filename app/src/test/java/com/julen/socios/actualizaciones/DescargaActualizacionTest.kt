@@ -7,7 +7,6 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertArrayEquals
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertNull
 import org.junit.Assert.assertThrows
 import org.junit.Test
 
@@ -57,8 +56,8 @@ class DescargaActualizacionTest {
     }
 
     @Test
-    fun laFraccionSoloExisteSiSeSabeElTotal() {
+    fun laFraccionVaDe0a1() {
         assertEquals(0.25f, Progreso(25, 100).fraccion)
-        assertNull(Progreso(25, 0).fraccion)
+        assertEquals(1f, Progreso(100, 100).fraccion)
     }
 }

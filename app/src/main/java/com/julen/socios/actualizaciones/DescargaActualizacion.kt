@@ -15,10 +15,10 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 
-/** Bytes descargados de los [total] que tiene el archivo (0 si no se sabe). */
+/** Bytes descargados de los [total] que tiene el archivo. */
 data class Progreso(val descargados: Long, val total: Long) {
-    /** De 0 a 1, o null si no se sabe el total. */
-    val fraccion: Float? get() = if (total > 0) (descargados.toFloat() / total).coerceIn(0f, 1f) else null
+    /** De 0 a 1. */
+    val fraccion: Float get() = (descargados.toFloat() / total).coerceIn(0f, 1f)
 }
 
 /** El archivo descargado no es el publicado: está incompleto o ha cambiado por el camino. */
@@ -105,14 +105,14 @@ class DescargadorGitHub(context: Context) : DescargadorActualizaciones {
                 val leidos = entrada.read(buffer)
                 if (leidos < 0) break
                 descargados += leidos
-                if (apk.tamano > 0 && descargados > apk.tamano) {
+                if (descargados > apk.tamano) {
                     throw DescargaDanadaException("La descarga ocupa más de ${apk.tamano} bytes")
                 }
                 salida.write(buffer, 0, leidos)
                 sha256.update(buffer, 0, leidos)
                 alProgresar(Progreso(descargados, apk.tamano))
             }
-            if (apk.tamano > 0 && descargados != apk.tamano) {
+            if (descargados != apk.tamano) {
                 throw DescargaDanadaException("Descarga incompleta: $descargados de ${apk.tamano} bytes")
             }
             val hash = sha256.digest().joinToString("") { "%02x".format(it) }

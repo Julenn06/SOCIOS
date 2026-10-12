@@ -18,8 +18,8 @@ import kotlinx.serialization.json.Json
 data class VersionPublicada(val version: Version, val url: String, val apk: ApkPublicado? = null)
 
 /**
- * APK adjunto a una release. [sha256] (en hexadecimal) sirve para comprobar que la descarga está entera y
- * sin cambios; GitHub no lo da en las releases antiguas.
+ * APK adjunto a una release, de [tamano] bytes (siempre más de 0). [sha256] (en hexadecimal) sirve para
+ * comprobar que la descarga está entera y sin cambios; GitHub no lo da en las releases antiguas.
  */
 data class ApkPublicado(val url: String, val tamano: Long, val sha256: String?)
 
@@ -121,7 +121,7 @@ class GitHubReleases : FuenteVersiones {
             val apk = release.assets
                 .firstOrNull {
                     it.name.endsWith(".apk", ignoreCase = true) && !it.name.endsWith("-debug.apk", ignoreCase = true) &&
-                        it.url.startsWith(URL_DESCARGAS, ignoreCase = true)
+                        it.url.startsWith(URL_DESCARGAS, ignoreCase = true) && it.size > 0
                 }
                 ?.let { ApkPublicado(it.url, it.size, sha256(it.digest)) }
             return VersionPublicada(version, url, apk)

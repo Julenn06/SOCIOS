@@ -111,9 +111,6 @@ class ActualizacionBottomSheetDialog : BottomSheetDialogFragment() {
             is Descarga.EnCurso -> {
                 if (anterior !is Descarga.EnCurso) mostrarDescargando(estado.publicada)
                 animacion.mostrarProgreso(estado.progreso.fraccion, inmediato = anterior == null)
-                if (estado.progreso.total <= 0) {
-                    binding.tvDetalleDescarga.text = tamano(estado.progreso.descargados)
-                }
             }
 
             // Los textos cambian cuando el anillo llega al final (alCompletar) y el instalador se abre al
@@ -149,7 +146,7 @@ class ActualizacionBottomSheetDialog : BottomSheetDialogFragment() {
 
     private fun mostrarTamano(fraccion: Float) {
         val b = _binding ?: return
-        if (tamanoTotal <= 0 || mostrado is Descarga.Fallida) return
+        if (mostrado is Descarga.Fallida) return
         b.tvDetalleDescarga.text =
             getString(R.string.descarga_progreso, tamano((tamanoTotal * fraccion).toLong()), tamano(tamanoTotal))
     }

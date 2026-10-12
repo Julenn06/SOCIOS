@@ -62,8 +62,8 @@ class AnimacionDescargaView @JvmOverloads constructor(
 
     private var fase = Fase.DESCARGANDO
 
-    /** Progreso real (de 0 a 1), o null si no se sabe el total. */
-    private var objetivo: Float? = 0f
+    /** Progreso real, de 0 a 1. */
+    private var objetivo = 0f
 
     /** Progreso que dibuja el anillo, que persigue a [objetivo]. */
     private var mostrado = 0f
@@ -138,8 +138,8 @@ class AnimacionDescargaView @JvmOverloads constructor(
 
     private val avisoProgreso = Runnable { alMostrarProgreso?.invoke(mostrado) }
 
-    /** El progreso real de la descarga, de 0 a 1 (null si no se sabe). [inmediato] lo muestra sin animar. */
-    fun mostrarProgreso(fraccion: Float?, inmediato: Boolean = false) {
+    /** El progreso real de la descarga, de 0 a 1. [inmediato] lo muestra sin animar. */
+    fun mostrarProgreso(fraccion: Float, inmediato: Boolean = false) {
         if (fase != Fase.DESCARGANDO) {
             // Reintento después de un fallo.
             fase = Fase.DESCARGANDO
@@ -149,7 +149,7 @@ class AnimacionDescargaView @JvmOverloads constructor(
             translationX = 0f
         }
         objetivo = fraccion
-        if (inmediato) mostrado = fraccion ?: 0f
+        if (inmediato) mostrado = fraccion
         invalidate()
     }
 
@@ -282,7 +282,7 @@ class AnimacionDescargaView @JvmOverloads constructor(
         }
 
         val seguir = when (fase) {
-            Fase.DESCARGANDO -> animado || mostrado != (objetivo ?: mostrado)
+            Fase.DESCARGANDO -> animado || mostrado != objetivo
             Fase.COMPLETANDO -> true
             Fase.COMPLETADA -> false
             Fase.FALLIDA -> reloj - inicioFinal < DURACION_ERROR_MS
@@ -291,10 +291,9 @@ class AnimacionDescargaView @JvmOverloads constructor(
     }
 
     private fun avanzar(dt: Float, animado: Boolean) {
-        val meta = objetivo ?: return
-        val restante = meta - mostrado
+        val restante = objetivo - mostrado
         mostrado = when {
-            !animado || restante <= 0f -> meta
+            !animado || restante <= 0f -> objetivo
             // Se acerca con suavidad al progreso real, con un mínimo para llegar y un máximo de velocidad.
             else -> mostrado + (restante * dt / SUAVIZADO_MS)
                 .coerceIn(min(restante, dt / VUELTA_LENTA_MS), dt / VUELTA_RAPIDA_MS)
@@ -340,19 +339,12 @@ class AnimacionDescargaView @JvmOverloads constructor(
 
         canvas.drawCircle(cx, cy, radio, pintaPista)
 
-        val meta = objetivo
-        if (meta == null) {
-            // Sin total conocido: un tramo que gira.
-            canvas.drawArc(ovalo, reloj / GIRO_MS * 360f % 360f - 90f, 100f, false, pintaArco)
-            dibujarFlecha(canvas, cy, animado, 255)
-            return
-        }
         if (mostrado > 0f) {
             val barrido = 360f * mostrado
             canvas.drawArc(ovalo, -90f, barrido, false, pintaArco)
             dibujarDestello(canvas, -90f + barrido, animado)
         }
-        dibujarFlecha(canvas, cy - radio * 0.34f, animado, 255)
+        dibujarFlecha(canvas, animado, 255)
         dibujarPorcentaje(canvas, 255)
     }
 
@@ -375,15 +367,15 @@ class AnimacionDescargaView @JvmOverloads constructor(
         canvas.drawCircle(x, y, grosor * 0.28f * brillo, pintaRelleno)
     }
 
-    /** Flecha que baja y se desvanece una y otra vez. */
-    private fun dibujarFlecha(canvas: Canvas, centroY: Float, animado: Boolean, opacidad: Int) {
+    /** Flecha que baja y se desvanece una y otra vez, encima del porcentaje. */
+    private fun dibujarFlecha(canvas: Canvas, animado: Boolean, opacidad: Int) {
         val ciclo = if (animado) reloj % FLECHA_MS / FLECHA_MS else 0.5f
         val desplazamiento = radio * (-0.09f + 0.18f * suave.getInterpolation(ciclo))
         val visibilidad = if (animado) sin(PI * ciclo).toFloat() else 1f
         pintaTrazo.color = colorPrincipal
         pintaTrazo.alpha = (opacidad * visibilidad).roundToInt()
         pintaTrazo.strokeWidth = grosor * 0.55f
-        canvas.withTranslation(cx, centroY + desplazamiento) { drawPath(flecha, pintaTrazo) }
+        canvas.withTranslation(cx, cy - radio * 0.34f + desplazamiento) { drawPath(flecha, pintaTrazo) }
     }
 
     /** "42 %", con el número grande y el símbolo más pequeño. */
@@ -431,7 +423,7 @@ class AnimacionDescargaView @JvmOverloads constructor(
         // El porcentaje se desvanece mientras el centro se rellena con un rebote.
         val desvanecido = (1 - t / 160f).coerceIn(0f, 1f)
         if (desvanecido > 0f) {
-            dibujarFlecha(canvas, cy - radio * 0.34f, false, (255 * desvanecido).roundToInt())
+            dibujarFlecha(canvas, false, (255 * desvanecido).roundToInt())
             dibujarPorcentaje(canvas, (255 * desvanecido).roundToInt())
         }
         val relleno = rebote.getInterpolation((t / 380f).coerceIn(0f, 1f))
@@ -501,7 +493,6 @@ class AnimacionDescargaView @JvmOverloads constructor(
         const val VUELTA_LENTA_MS = 9000f
         const val SUAVIZADO_MS = 110f
         const val PULSO_MS = 1600f
-        const val GIRO_MS = 900f
         const val FLECHA_MS = 1150f
         const val DURACION_EXITO_MS = 1150f
         const val DURACION_ERROR_MS = 450f

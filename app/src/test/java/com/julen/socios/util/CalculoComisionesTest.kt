@@ -146,16 +146,14 @@ class CalculoComisionesTest {
         assertEquals(listOf(2026 to 10, 2026 to 1, 2025 to 12), meses.map { it.anio to it.mes })
 
         val enero = meses[1]
-        assertEquals(2, enero.semanas)
         assertEquals(15, enero.sociosHechos)
-        assertEquals(190.0, enero.bonus, 0.0) // 50 + 140, cada semana con su tramo
-        assertEquals(790.0, enero.bruto, 0.0)
+        assertEquals(790.0, enero.bruto, 0.0) // 600 de base y 50 + 140 de bonus, cada semana con su tramo
         assertEquals(53.70 + 115.99, enero.irpf, 0.001)
 
         val anios = CalculoComisiones.agruparPorPeriodo(historico.semanasHistoricas, CalculoComisiones.Periodo.ANIO)
         assertEquals(listOf(2026, 2025), anios.map { it.anio })
         assertEquals(listOf(null, null), anios.map { it.mes })
-        assertEquals(3, anios[0].semanas)
+        assertEquals(20, anios[0].sociosHechos)
         assertEquals(historico.totalBrutoAcumulado, anios.sumOf { it.bruto }, 0.001)
     }
 

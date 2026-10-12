@@ -103,9 +103,7 @@ object CalculoComisiones {
     data class ResumenPeriodo(
         val anio: Int,
         val mes: Int?,
-        val semanas: Int,
         val sociosHechos: Int,
-        val bonus: Double,
         val bruto: Double,
         val irpf: Double,
         val neto: Double
@@ -124,9 +122,7 @@ object CalculoComisiones {
                 ResumenPeriodo(
                     anio = clave.first,
                     mes = clave.second,
-                    semanas = resumenes.size,
                     sociosHechos = resumenes.sumOf { it.totalSociosHechos },
-                    bonus = redondearCentimos(resumenes.sumOf { it.bonusSemanal }),
                     bruto = redondearCentimos(resumenes.sumOf { it.totalBruto }),
                     irpf = redondearCentimos(resumenes.sumOf { it.retencionIrpf }),
                     neto = redondearCentimos(resumenes.sumOf { it.totalNeto })

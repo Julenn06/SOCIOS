@@ -139,8 +139,8 @@ class ComprobadorActualizacionesTest {
 
     @Test
     fun soloDescargaApksDeLasReleasesDelRepositorio() {
-        fun apkDe(nombre: String, url: String) = GitHubReleases.leerRelease(
-            """{"tag_name":"v1.5.0","assets":[{"name":"$nombre","size":1,"browser_download_url":"$url"}]}"""
+        fun apkDe(nombre: String, url: String, tamano: Long = 1) = GitHubReleases.leerRelease(
+            """{"tag_name":"v1.5.0","assets":[{"name":"$nombre","size":$tamano,"browser_download_url":"$url"}]}"""
         ).apk
 
         assertNull(apkDe("socios-1.5.0.apk", "https://ejemplo.com/socios-1.5.0.apk"))
@@ -149,6 +149,8 @@ class ComprobadorActualizacionesTest {
             apkDe("socios-1.5.0-debug.apk", "https://github.com/Julenn06/SOCIOS/releases/download/v1.5.0/socios-1.5.0-debug.apk")
         )
         assertNull(GitHubReleases.leerRelease("""{"tag_name":"v1.5.0"}""").apk)
+        // Sin tamaño no se puede comprobar que la descarga está entera.
+        assertNull(apkDe("socios-1.5.0.apk", "https://github.com/Julenn06/SOCIOS/releases/download/v1.5.0/socios-1.5.0.apk", 0))
     }
 
     @Test
