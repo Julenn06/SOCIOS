@@ -81,10 +81,6 @@ class SocioAdapter(
                 HapticUtils.performClick(view)
                 socioActual()?.let(onEdit)
             }
-            binding.root.setOnClickListener { view ->
-                HapticUtils.performClick(view)
-                socioActual()?.let(onEdit)
-            }
 
             binding.btnEliminar.setOnClickListener { view ->
                 HapticUtils.performClick(view)

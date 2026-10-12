@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Un socio de la lista. Tocar la tarjeta lo edita; el interruptor lo marca como conseguido. -->
+<!-- Un socio de la lista. El lápiz lo edita, la papelera lo borra y el interruptor lo marca como conseguido. -->
 <com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
