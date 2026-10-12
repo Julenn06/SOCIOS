@@ -2,6 +2,7 @@ package com.julen.socios
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import androidx.core.view.isVisible
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
@@ -9,9 +10,13 @@ import com.julen.socios.databinding.ItemSemanaHistoricaBinding
 import com.julen.socios.util.toCurrencyString
 import com.julen.socios.util.setTextoAccesible
 
-/** Una fila del histórico: una semana, un mes o un año. Solo las semanas ([semanaKey]) se pueden abrir. */
+/**
+ * Una fila del histórico: una semana, un mes o un año, con una [etiqueta] corta para su placa ("S42", "OCT",
+ * "AÑO"). Solo las semanas ([semanaKey]) se pueden abrir.
+ */
 data class FilaHistorico(
     val id: String,
+    val etiqueta: String,
     val titulo: String,
     val detalle: String,
     val neto: Double,
@@ -45,6 +50,7 @@ class HistoricoAdapter(
         }
 
         fun bind(fila: FilaHistorico) {
+            binding.tvSemanaItemEtiqueta.text = fila.etiqueta
             binding.tvSemanaItemTitulo.text = fila.titulo
             binding.tvSemanaItemSociosCount.setTextoAccesible(fila.detalle)
             binding.tvSemanaItemNeto.text = fila.neto.toCurrencyString(prefix = "+")
@@ -52,6 +58,7 @@ class HistoricoAdapter(
                 R.string.irpf_amount_format, fila.irpf.toCurrencyString(prefix = "-")
             )
             binding.root.isClickable = fila.semanaKey != null
+            binding.ivSemanaItemFlecha.isVisible = fila.semanaKey != null
         }
     }
 

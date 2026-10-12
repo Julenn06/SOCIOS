@@ -7,14 +7,23 @@
     <string name="action_delete">Eliminar</string>
     <string name="action_close">Cerrar</string>
     <string name="action_accept">Aceptar</string>
-    <string name="action_entendido">Entendido</string>
     <string name="action_importar">Importar</string>
 
     <!-- Main Navigation & Titles -->
     <string name="title_app_bar">Gestión de Socios</string>
     <string name="btn_hoy">Hoy</string>
-    <string name="subtitle_current_week">Semana actual (Lunes a Viernes)</string>
-    <string name="title_week_format">Semana %s</string>
+    <string name="subtitle_current_week">Semana actual</string>
+    <string name="rango_semana_anio">%1$s %2$s</string>
+    <plurals name="semana_pasada">
+        <item quantity="one">Hace %d semana</item>
+        <item quantity="many">Hace %d semanas</item>
+        <item quantity="other">Hace %d semanas</item>
+    </plurals>
+    <plurals name="semana_futura">
+        <item quantity="one">Dentro de %d semana</item>
+        <item quantity="many">Dentro de %d semanas</item>
+        <item quantity="other">Dentro de %d semanas</item>
+    </plurals>
     <string name="title_socios_day_format">Socios del %s</string>
     <string name="title_socios_week">Socios de la semana</string>
     <string name="title_add_socio">Nuevo socio</string>
@@ -75,46 +84,46 @@
     <string name="atajo_nuevo_socio_largo">Añadir un socio</string>
 
     <!-- Financial Headers -->
-    <string name="header_neto_semanal">GANANCIA NETO SEMANAL</string>
-    <string name="action_ver_irpf">Ver IRPF</string>
-    <string name="label_base_x2">Base (Cuotas x2)</string>
-    <string name="label_bonus_auto">Bonus Socios ✏️</string>
-    <string name="label_bonus_manual">Bonus (Manual) ✏️</string>
-    <string name="label_irpf_header">IRPF (-%s)</string>
+    <string name="header_neto_semanal">NETO DE LA SEMANA</string>
+    <string name="action_ver_irpf">Desglose</string>
+    <string name="label_base_x2">Base ×2</string>
+    <string name="label_bonus_auto">Bonus</string>
+    <string name="label_bonus_manual">Bonus manual</string>
+    <string name="label_irpf_header">IRPF %s</string>
 
     <!-- Bonus Card -->
-    <plurals name="bonus_level_title">
-        <item quantity="one">🏆 Bonus Nivel: %2$s (%1$d socio hecho)</item>
-        <item quantity="many">🏆 Bonus Nivel: %2$s (%1$d socios hechos)</item>
-        <item quantity="other">🏆 Bonus Nivel: %2$s (%1$d socios hechos)</item>
-    </plurals>
-    <string name="bonus_progress_format">%1$d / %2$d socios</string>
+    <string name="bonus_progress_format">%1$d / %2$d</string>
+    <string name="bonus_titulo">Bonus de la semana: %s</string>
+    <string name="bonus_progress_a11y">%1$d de %2$d socios para el siguiente tramo</string>
     <plurals name="bonus_next_goal">
-        <item quantity="one">¡Haz %1$d socio más para alcanzar el Bonus de %2$s!</item>
-        <item quantity="many">¡Haz %1$d socios más para alcanzar el Bonus de %2$s!</item>
-        <item quantity="other">¡Haz %1$d socios más para alcanzar el Bonus de %2$s!</item>
+        <item quantity="one">Haz %1$d socio más para llegar a %2$s</item>
+        <item quantity="many">Haz %1$d socios más para llegar a %2$s</item>
+        <item quantity="other">Haz %1$d socios más para llegar a %2$s</item>
     </plurals>
-    <string name="bonus_max_goal_reached">¡Enhorabuena! Has alcanzado el nivel de bonus máximo para este tramo.</string>
 
     <!-- Filtros y lista -->
-    <string name="filtro_dias_label">Filtrar por día (Lunes a Viernes):</string>
-    <string name="chip_todos_format">Todos (%d)</string>
-    <string name="chip_day_format">%1$s (%2$d)</string>
-    <string name="list_summary_day_format">%1$d hechos / %2$d reg.</string>
-    <string name="empty_titulo">No hay socios para este día/semana</string>
-    <string name="empty_mensaje">Pulsa el botón \'+\' para añadir tu primer socio registrado.</string>
-    <string name="action_add_socio">Añadir Socio</string>
-    <string name="fab_nuevo_socio">Nuevo Socio</string>
+    <string name="filtro_dias_label">Filtrar por día</string>
+    <string name="filtro_todos">Todos</string>
+    <string name="filtro_todos_a11y">Todos los días</string>
+    <plurals name="filtro_dia_a11y">
+        <item quantity="one">%1$s, %2$d socio</item>
+        <item quantity="many">%1$s, %2$d socios</item>
+        <item quantity="other">%1$s, %2$d socios</item>
+    </plurals>
+    <string name="list_summary_day_format">%1$d de %2$d hechos</string>
+    <string name="empty_titulo">Aún no hay socios aquí</string>
+    <string name="empty_mensaje">Cuando registres uno, aparecerá en esta lista.</string>
+    <string name="action_add_socio">Añadir socio</string>
+    <string name="fab_nuevo_socio">Nuevo socio</string>
 
     <!-- Socio Item Status -->
-    <string name="socio_status_conseguido">✓ Socio Conseguido (+%s base)</string>
-    <string name="socio_status_pendiente">⏳ No Hecho (Pendiente)</string>
+    <string name="socio_status_conseguido">✓ Conseguido · suma %s</string>
+    <string name="socio_status_pendiente">⏳ Pendiente · aún no suma</string>
     <string name="socio_status_badge_conseguido">✓ Conseguido</string>
     <string name="socio_status_badge_pendiente">⏳ Pendiente</string>
     <string name="socio_default_name">Socio %s</string>
     <string name="socio_base_format">%s base</string>
-    <string name="socio_note_format">Nota: %s</string>
-    <string name="item_switch_hecho">Socio Conseguido / Hecho</string>
+    <string name="item_switch_hecho">Conseguido</string>
 
     <!-- Add Socio Bottom Sheet Labels -->
     <string name="preview_ganancia_label">GANANCIA DE ESTE SOCIO</string>
@@ -142,58 +151,66 @@
 
 
     <!-- Bonus manual -->
-    <string name="bono_titulo">Ajustar Bonus de la Semana</string>
-    <string name="bono_switch">Ajustar bonus manualmente</string>
-    <string name="bono_modo_label">¿Cómo se aplica el importe?</string>
-    <string name="bono_modo_fijo">Sustituir al automático</string>
-    <string name="bono_modo_sumar">Sumar al automático</string>
-    <string name="bono_label_monto">Selecciona el bonus a aplicar:</string>
-    <string name="bono_chip_otro">Otros…</string>
+    <string name="bono_titulo">Bonus de la semana</string>
+    <string name="bono_switch">Ajustar a mano</string>
+    <string name="bono_switch_detalle">Cambia el bonus automático de esta semana</string>
+    <string name="bono_modo_label">¿Cómo se aplica?</string>
+    <string name="bono_modo_fijo">Sustituir</string>
+    <string name="bono_modo_fijo_detalle">En lugar del automático</string>
+    <string name="bono_modo_sumar">Sumar</string>
+    <string name="bono_modo_sumar_detalle">Además del automático</string>
+    <string name="bono_label_monto">Importe</string>
     <string name="bono_hint_monto">Importe del bonus (€)</string>
-    <string name="bono_restablecer">Restablecer a automático</string>
+    <string name="bono_restablecer">Restablecer</string>
     <string name="bono_hint_nota">Motivo del ajuste (opcional)</string>
     <string name="msg_bono_monto_invalido">Por favor selecciona o introduce un importe de bonus</string>
 
     <!-- Desglose IRPF -->
-    <string name="irpf_titulo">📊 Desglose de Ganancias e IRPF</string>
-    <string name="irpf_neto_final">GANANCIA NETA FINAL</string>
+    <string name="irpf_titulo">Desglose de la semana</string>
+    <string name="irpf_neto_final">NETO A COBRAR</string>
+    <string name="irpf_seccion_calculo">Cómo se calcula</string>
+    <string name="irpf_seccion_porcentaje">Porcentaje de IRPF</string>
     <plurals name="irpf_breakdown_count">
-        <item quantity="one">Basado en %1$d socio hecho (%2$d registrados)</item>
-        <item quantity="many">Basado en %1$d socios hechos (%2$d registrados)</item>
-        <item quantity="other">Basado en %1$d socios hechos (%2$d registrados)</item>
+        <item quantity="one">%1$d socio hecho de %2$d registrados</item>
+        <item quantity="many">%1$d socios hechos de %2$d registrados</item>
+        <item quantity="other">%1$d socios hechos de %2$d registrados</item>
     </plurals>
-    <string name="irpf_fila_suma">1. Suma de colaboraciones</string>
-    <string name="irpf_fila_base">2. Ganancias Base (Cuotas x2)</string>
+    <string name="irpf_fila_suma">Suma de cuotas</string>
+    <string name="irpf_fila_base">Base (cuotas × 2)</string>
     <plurals name="irpf_fila_bonus_auto">
-        <item quantity="one">3. Bonus semanal por socios (%1$d hecho)</item>
-        <item quantity="many">3. Bonus semanal por socios (%1$d hechos)</item>
-        <item quantity="other">3. Bonus semanal por socios (%1$d hechos)</item>
+        <item quantity="one">Bonus por %1$d socio hecho</item>
+        <item quantity="many">Bonus por %1$d socios hechos</item>
+        <item quantity="other">Bonus por %1$d socios hechos</item>
     </plurals>
-    <string name="irpf_fila_bonus_manual">3. Bonus ajustado a mano 🎁 (automático: %s)</string>
+    <string name="irpf_fila_bonus_manual">Bonus ajustado a mano (automático: %s)</string>
     <string name="irpf_bonus_motivo">«%s»</string>
-    <string name="irpf_total_bruto">TOTAL BRUTO</string>
+    <string name="irpf_total_bruto">Total bruto</string>
     <string name="irpf_retencion_label">Retención IRPF (%s)</string>
-    <string name="irpf_total_neto">TOTAL NETO A COBRAR</string>
-    <string name="irpf_cambiar">Cambiar porcentaje de IRPF</string>
+    <string name="irpf_total_neto">Neto a cobrar</string>
+    <string name="irpf_cambiar">Cambiar el porcentaje</string>
+    <string name="irpf_cambiar_detalle">Se aplica desde esta semana en adelante</string>
     <string name="irpf_dialogo_titulo">Porcentaje de IRPF</string>
     <string name="irpf_dialogo_ayuda">Se aplicará desde la semana %s en adelante. Las semanas anteriores conservan su porcentaje.</string>
     <string name="irpf_hint">Porcentaje de IRPF</string>
     <string name="msg_irpf_invalido">Introduce un porcentaje entre 0 y 100</string>
-    <string name="irpf_ver_cambios">Ver cambios de IRPF</string>
+    <string name="irpf_ver_cambios">Cambios de porcentaje</string>
+    <string name="irpf_ver_cambios_detalle">Consulta o deshaz los cambios anteriores</string>
     <string name="irpf_cambios_titulo">Cambios de IRPF (toca uno para eliminarlo)</string>
     <string name="irpf_cambio_item">Desde la semana %1$s (%2$s): %3$s</string>
     <string name="irpf_sin_cambios">Todavía no has cambiado el IRPF: todas las semanas usan el %s por defecto.</string>
     <string name="irpf_eliminar_cambio_titulo">¿Eliminar este cambio de IRPF?</string>
     <string name="irpf_eliminar_cambio_msg">Desde la semana %1$s se volverá a aplicar el porcentaje anterior (%2$s).</string>
-    <string name="irpf_amount_format">IRPF: %s</string>
+    <string name="irpf_amount_format">IRPF %s</string>
 
     <!-- Histórico -->
-    <string name="historico_titulo">📈 Histórico Acumulado Global</string>
-    <string name="historico_subtitulo">Suma total de IRPF retenido y ganancias de todas tus semanas</string>
-    <string name="historico_irpf_label">TOTAL IRPF RETENIDO (QUITADO)</string>
-    <string name="historico_neto_label">Neto Cobrado</string>
-    <string name="historico_bonus_label">Bonus Totales</string>
-    <string name="historico_lista_label">Desglose:</string>
+    <string name="historico_titulo">Histórico</string>
+    <string name="historico_subtitulo">Lo acumulado en todas tus semanas</string>
+    <string name="historico_irpf_label">IRPF RETENIDO EN TOTAL</string>
+    <string name="historico_neto_label">Neto cobrado</string>
+    <string name="historico_bonus_label">Bonus</string>
+    <string name="historico_lista_label">Desglose</string>
+    <string name="historico_etiqueta_semana">S%d</string>
+    <string name="historico_etiqueta_anio">AÑO</string>
     <string name="historico_por_semana">Semanas</string>
     <string name="historico_por_mes">Meses</string>
     <string name="historico_por_anio">Años</string>
@@ -204,9 +221,9 @@
         <item quantity="other">Bruto %2$s · %1$d socios hechos</item>
     </plurals>
     <plurals name="global_history_count">
-        <item quantity="one">Acumulado en %d semana registrada</item>
-        <item quantity="many">Acumulado en %d semanas registradas</item>
-        <item quantity="other">Acumulado en %d semanas registradas</item>
+        <item quantity="one">En %d semana registrada</item>
+        <item quantity="many">En %d semanas registradas</item>
+        <item quantity="other">En %d semanas registradas</item>
     </plurals>
     <plurals name="historico_semana_resumen">
         <item quantity="one">%1$d socio hecho (%2$s bonus)</item>
@@ -253,6 +270,8 @@
     <string name="export_destino_titulo">Exportar %s</string>
     <string name="export_destino_compartir">Compartir con otra app</string>
     <string name="export_destino_guardar">Guardar en el dispositivo</string>
+    <string name="export_destino_compartir_detalle">WhatsApp, correo, Drive…</string>
+    <string name="export_destino_guardar_detalle">Elige la carpeta donde dejarlo</string>
     <string name="export_compartir_titulo">Compartir reporte %s</string>
     <string name="export_titulo_historico">Histórico global</string>
     <plurals name="export_titulo_semanas">
@@ -261,7 +280,6 @@
         <item quantity="other">%d semanas seleccionadas</item>
     </plurals>
     <string name="import_confirmar_titulo">Importar datos</string>
-    <string name="import_confirmar_cabecera">Se van a importar:</string>
     <plurals name="import_linea_nuevos">
         <item quantity="one">%d socio nuevo</item>
         <item quantity="many">%d socios nuevos</item>
@@ -283,9 +301,9 @@
         <item quantity="other">%d cambios de IRPF</item>
     </plurals>
     <plurals name="import_descartados">
-        <item quantity="one">\n\n%d registro no válido se ignorará.</item>
-        <item quantity="many">\n\n%d registros no válidos se ignorarán.</item>
-        <item quantity="other">\n\n%d registros no válidos se ignorarán.</item>
+        <item quantity="one">%d registro no válido se ignorará</item>
+        <item quantity="many">%d registros no válidos se ignorarán</item>
+        <item quantity="other">%d registros no válidos se ignorarán</item>
     </plurals>
 
     <!-- PDF -->
@@ -346,7 +364,5 @@
     <string name="cd_semana_siguiente">Semana siguiente</string>
     <string name="cd_editar_socio">Editar socio</string>
     <string name="cd_eliminar_socio">Eliminar socio</string>
-    <string name="irpf_titulo_a11y">Desglose de ganancias e IRPF</string>
-    <string name="historico_titulo_a11y">Histórico acumulado global</string>
     <string name="menu_historico_a11y">Histórico acumulado</string>
 </resources>

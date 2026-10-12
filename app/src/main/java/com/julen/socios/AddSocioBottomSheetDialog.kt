@@ -177,11 +177,13 @@ class AddSocioBottomSheetDialog : BottomSheetDialogFragment() {
                 setOnClickListener { opcion ->
                     HapticUtils.performClick(opcion)
                     marcarCuota(this)
+                    TransitionManager.beginDelayedTransition(binding.contenidoAddSocio, AutoTransition().setDuration(DURACION_MS))
                     if (this == opcionOtro) {
-                        TransitionManager.beginDelayedTransition(binding.contenidoAddSocio, AutoTransition().setDuration(DURACION_MS))
                         binding.tilCustomAmount.isVisible = true
                         mostrarTeclado(binding.etCustomAmount)
                     } else {
+                        // Si se pulsó "Otro" sin querer, el teclado de la cantidad se va con su campo.
+                        if (binding.etCustomAmount.hasFocus()) ocultarTeclado()
                         binding.tilCustomAmount.isVisible = false
                     }
                     actualizarVistaPrevia()
@@ -280,8 +282,13 @@ class AddSocioBottomSheetDialog : BottomSheetDialogFragment() {
         HapticUtils.performClick(binding.filaDetalles)
         detallesAbiertos = !detallesAbiertos
         TransitionManager.beginDelayedTransition(binding.contenidoAddSocio, AutoTransition().setDuration(DURACION_MS))
-        mostrarDetalles()
-        if (detallesAbiertos) mostrarTeclado(binding.etNombreSocio)
+        if (detallesAbiertos) {
+            mostrarDetalles()
+            mostrarTeclado(binding.etNombreSocio)
+        } else {
+            ocultarTeclado()
+            mostrarDetalles()
+        }
     }
 
     private fun mostrarDetalles() {
@@ -309,6 +316,13 @@ class AddSocioBottomSheetDialog : BottomSheetDialogFragment() {
         campo.requestFocus()
         val ventana = dialog?.window ?: return
         WindowCompat.getInsetsController(ventana, campo).show(WindowInsetsCompat.Type.ime())
+    }
+
+    /** Cierra el teclado y quita el foco del campo en el que se estaba escribiendo. */
+    private fun ocultarTeclado() {
+        val ventana = dialog?.window ?: return
+        WindowCompat.getInsetsController(ventana, binding.root).hide(WindowInsetsCompat.Type.ime())
+        ventana.currentFocus?.clearFocus()
     }
 
     private fun saveSocio() {

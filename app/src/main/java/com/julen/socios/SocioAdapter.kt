@@ -1,10 +1,12 @@
 package com.julen.socios
 
 import android.animation.ValueAnimator
+import android.graphics.drawable.GradientDrawable
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.core.content.ContextCompat
+import androidx.core.graphics.ColorUtils
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
@@ -56,8 +58,17 @@ class SocioAdapter(
         RecyclerView.ViewHolder(binding.root) {
 
         private var textColorAnimator: ValueAnimator? = null
+        private var fondoAnimator: ValueAnimator? = null
+
+        /** Fondo de la placa del importe: verde si está conseguido, ámbar si está pendiente. */
+        private val fondoPlaca = GradientDrawable().apply {
+            orientation = GradientDrawable.Orientation.TL_BR
+            cornerRadius = 18 * binding.root.resources.displayMetrics.density
+        }
 
         init {
+            binding.placaImporte.background = fondoPlaca
+
             // Los listeners se registran una sola vez y leen el socio actual de la lista en el momento
             // del clic. Si capturasen el socio del último bind, tras una actualización parcial (payload)
             // editarían una copia obsoleta y podrían deshacer el cambio de "hecho".
@@ -67,6 +78,10 @@ class SocioAdapter(
             }
 
             binding.btnEditar.setOnClickListener { view ->
+                HapticUtils.performClick(view)
+                socioActual()?.let(onEdit)
+            }
+            binding.root.setOnClickListener { view ->
                 HapticUtils.performClick(view)
                 socioActual()?.let(onEdit)
             }
@@ -93,12 +108,12 @@ class SocioAdapter(
             }
 
             binding.tvNotas.isVisible = socio.notas.isNotBlank()
-            binding.tvNotas.text = context.getString(R.string.socio_note_format, socio.notas)
+            binding.tvNotas.text = socio.notas
 
-            updateHechoState(socio)
+            updateHechoState(socio, animar = false)
         }
 
-        fun updateHechoState(socio: Socio) {
+        fun updateHechoState(socio: Socio, animar: Boolean = true) {
             val context = binding.root.context
 
             if (binding.switchHecho.isChecked != socio.hecho) {
@@ -117,6 +132,32 @@ class SocioAdapter(
             }
 
             animateTextColor(binding.tvEstadoTexto, targetColor)
+            pintarPlaca(socio.hecho, animar)
+        }
+
+        private fun pintarPlaca(hecho: Boolean, animar: Boolean) {
+            val context = binding.root.context
+            val destino = if (hecho) {
+                intArrayOf(ContextCompat.getColor(context, R.color.badge_gradient_start), ContextCompat.getColor(context, R.color.badge_gradient_end))
+            } else {
+                intArrayOf(ContextCompat.getColor(context, R.color.pendiente_gradient_start), ContextCompat.getColor(context, R.color.pendiente_gradient_end))
+            }
+            fondoAnimator?.cancel()
+            val origen = fondoPlaca.colors
+            if (!animar || origen == null) {
+                fondoPlaca.colors = destino
+                return
+            }
+            fondoAnimator = ValueAnimator.ofFloat(0f, 1f).apply {
+                duration = 300L
+                addUpdateListener { animacion ->
+                    val f = animacion.animatedValue as Float
+                    fondoPlaca.colors = intArrayOf(
+                        ColorUtils.blendARGB(origen[0], destino[0], f), ColorUtils.blendARGB(origen[1], destino[1], f)
+                    )
+                }
+                start()
+            }
         }
 
         private fun animateTextColor(textView: TextView, targetColor: Int) {
@@ -136,6 +177,8 @@ class SocioAdapter(
         fun cancelAnimation() {
             textColorAnimator?.cancel()
             textColorAnimator = null
+            fondoAnimator?.cancel()
+            fondoAnimator = null
         }
     }
 

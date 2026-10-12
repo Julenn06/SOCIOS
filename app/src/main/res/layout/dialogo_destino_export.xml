@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Dónde dejar un archivo exportado: compartirlo con otra app o guardarlo en el móvil. -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:paddingHorizontal="20dp"
+    android:paddingTop="8dp">
+
+    <include
+        android:id="@+id/opcionCompartir"
+        layout="@layout/item_formato" />
+
+    <include
+        android:id="@+id/opcionGuardar"
+        layout="@layout/item_formato"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp" />
+</LinearLayout>

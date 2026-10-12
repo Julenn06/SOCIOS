@@ -1,16 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- Una fila del histórico: placa con la semana, el mes o el año; resumen; neto e IRPF. -->
 <com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    style="@style/Socios.TarjetaFila"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginHorizontal="8dp"
-    android:layout_marginVertical="6dp"
-    app:cardBackgroundColor="@color/surface_card"
-    app:cardCornerRadius="14dp"
-    app:cardElevation="1dp"
-    app:strokeColor="@color/divider"
-    app:strokeWidth="1dp">
+    android:layout_marginVertical="5dp">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -20,29 +16,45 @@
         android:orientation="horizontal"
         android:padding="14dp">
 
+        <FrameLayout
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:background="@drawable/bg_icono_tile"
+            android:backgroundTint="@color/blue_container">
+
+            <TextView
+                android:id="@+id/tvSemanaItemEtiqueta"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:importantForAccessibility="no"
+                android:maxLines="1"
+                android:textColor="@color/blue_text_soft"
+                android:textSize="13sp"
+                android:textStyle="bold"
+                tools:text="S42" />
+        </FrameLayout>
+
         <LinearLayout
             android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_marginHorizontal="14dp"
             android:layout_weight="1"
             android:orientation="vertical">
 
             <TextView
                 android:id="@+id/tvSemanaItemTitulo"
+                style="@style/Socios.TituloFila"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textColor="@color/text_main"
-                android:textSize="15sp"
-                android:textStyle="bold"
-                tools:text="Semana 2025-W09" />
+                tools:text="12–16 oct 2026" />
 
             <TextView
                 android:id="@+id/tvSemanaItemSociosCount"
+                style="@style/Socios.DescripcionFila"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="2dp"
-                android:textColor="@color/text_sub"
-                android:textSize="12sp"
-                tools:text="8 socios hechos (+100€ bonus)" />
+                tools:text="8 socios hechos (+100 € bonus)" />
         </LinearLayout>
 
         <LinearLayout
@@ -66,8 +78,18 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="2dp"
                 android:textColor="@color/red_text"
-                android:textSize="11sp"
-                tools:text="IRPF: -88,70 €" />
+                android:textSize="11.5sp"
+                tools:text="IRPF -88,70 €" />
         </LinearLayout>
+
+        <!-- Solo en las semanas, que se pueden abrir -->
+        <ImageView
+            android:id="@+id/ivSemanaItemFlecha"
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:layout_marginStart="6dp"
+            android:importantForAccessibility="no"
+            android:src="@drawable/ic_chevron_right"
+            app:tint="@color/text_sub" />
     </LinearLayout>
 </com.google.android.material.card.MaterialCardView>

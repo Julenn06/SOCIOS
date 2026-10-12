@@ -23,6 +23,11 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="12dp"
         android:hint="@string/irpf_hint"
+        app:boxCornerRadiusBottomEnd="14dp"
+        app:boxCornerRadiusBottomStart="14dp"
+        app:boxCornerRadiusTopEnd="14dp"
+        app:boxCornerRadiusTopStart="14dp"
+        app:startIconDrawable="@drawable/ic_receipt"
         app:suffixText="%">
 
         <com.google.android.material.textfield.TextInputEditText

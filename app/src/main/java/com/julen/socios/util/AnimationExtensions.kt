@@ -1,11 +1,9 @@
 package com.julen.socios.util
 
-import android.animation.ObjectAnimator
 import android.annotation.SuppressLint
 import android.view.MotionEvent
 import android.view.View
 import android.view.animation.OvershootInterpolator
-import android.widget.ProgressBar
 
 object AnimationExtensions {
 
@@ -27,18 +25,5 @@ object AnimationExtensions {
             }
             false
         }
-    }
-
-    /**
-     * Smoothly animates progress of a ProgressBar with OvershootInterpolator for a springy feel.
-     */
-    fun animateProgressSmooth(
-        progressBar: ProgressBar, targetProgress: Int
-    ) {
-        val animation =
-            ObjectAnimator.ofInt(progressBar, "progress", progressBar.progress, targetProgress)
-        animation.duration = 500L
-        animation.interpolator = OvershootInterpolator(1.2f)
-        animation.start()
     }
 }

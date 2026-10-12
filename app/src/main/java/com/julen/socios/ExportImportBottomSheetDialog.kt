@@ -8,10 +8,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
-import androidx.annotation.ColorRes
-import androidx.annotation.DrawableRes
-import androidx.annotation.StringRes
-import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Lifecycle
@@ -23,7 +19,6 @@ import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.julen.socios.databinding.BottomSheetExportImportBinding
 import com.julen.socios.databinding.ItemAlcanceBinding
-import com.julen.socios.databinding.ItemFormatoBinding
 import com.julen.socios.export.AlcanceExport
 import com.julen.socios.export.ExportFormat
 import com.julen.socios.export.ImportFormat
@@ -210,27 +205,6 @@ class ExportImportBottomSheetDialog : BottomSheetDialogFragment() {
     private fun importar(formato: ImportFormat) {
         viewModel.solicitarImport(formato)
         dismiss()
-    }
-
-    private fun ItemFormatoBinding.configurar(
-        @DrawableRes icono: Int,
-        @ColorRes fondo: Int,
-        @ColorRes color: Int,
-        @StringRes titulo: Int,
-        @StringRes detalle: Int,
-        accion: () -> Unit
-    ) {
-        val contexto = root.context
-        placaFormato.backgroundTintList = ContextCompat.getColorStateList(contexto, fondo)
-        ivFormato.setImageResource(icono)
-        ivFormato.imageTintList = ContextCompat.getColorStateList(contexto, color)
-        tvFormato.setText(titulo)
-        tvFormatoDetalle.setText(detalle)
-        root.setOnClickListener {
-            HapticUtils.performClick(it)
-            accion()
-        }
-        AnimationExtensions.setupPressScaleAnimation(root)
     }
 
     companion object {

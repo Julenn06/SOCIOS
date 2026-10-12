@@ -21,98 +21,88 @@
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
             app:title="@string/title_app_bar"
+            app:titleTextAppearance="@style/Socios.TituloBarra"
             app:titleTextColor="@color/text_main" />
 
-        <!-- Selector de Semana -->
+        <!-- Selector de semana: botón "Hoy" a la izquierda en semanas futuras y a la derecha en pasadas -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="center_vertical"
             android:orientation="horizontal"
-            android:paddingHorizontal="12dp"
-            android:paddingBottom="8dp">
+            android:paddingHorizontal="16dp"
+            android:paddingBottom="10dp">
 
-            <!-- Botón Hoy a la Izquierda (Aparece al mirar semanas futuras) -->
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnHoyLeft"
-                style="@style/Widget.Material3.Button.TonalButton"
-                android:layout_width="wrap_content"
-                android:layout_height="36dp"
-                android:layout_marginEnd="6dp"
-                android:paddingHorizontal="12dp"
-                android:text="@string/btn_hoy"
-                android:textColor="@color/blue_text"
-                android:textSize="12sp"
-                android:textStyle="bold"
+                style="@style/Socios.BotonHoy"
+                android:layout_marginEnd="8dp"
                 android:visibility="gone"
-                app:backgroundTint="@color/blue_container"
-                app:cornerRadius="18dp"
                 app:icon="@drawable/ic_chevron_left"
-                app:iconTint="@color/blue_text"
                 tools:visibility="visible" />
 
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnSemanaAnterior"
-                android:contentDescription="@string/cd_semana_anterior"
-                style="@style/Widget.Material3.Button.IconButton"
-                android:layout_width="40dp"
-                android:layout_height="40dp"
-                app:icon="@drawable/ic_chevron_left"
-                app:iconTint="@color/text_main" />
-
-            <LinearLayout
+            <com.google.android.material.card.MaterialCardView
+                style="@style/Socios.TarjetaFila"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:gravity="center"
-                android:orientation="vertical">
+                app:cardBackgroundColor="@color/surface_card"
+                app:cardCornerRadius="20dp">
 
-                <TextView
-                    android:id="@+id/tvRangoSemana"
-                    android:layout_width="wrap_content"
+                <LinearLayout
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:textColor="@color/text_main"
-                    android:textSize="15sp"
-                    android:textStyle="bold"
-                    tools:text="24 de Feb. - 28 de Feb. (2025)" />
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:padding="6dp">
 
-                <TextView
-                    android:id="@+id/tvSemanaSubtitulo"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:textColor="@color/text_sub"
-                    android:textSize="11sp"
-                    tools:text="Semana actual (Lunes a Viernes)" />
-            </LinearLayout>
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnSemanaAnterior"
+                        style="@style/Socios.BotonFlecha"
+                        android:contentDescription="@string/cd_semana_anterior"
+                        app:icon="@drawable/ic_chevron_left" />
 
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnSemanaSiguiente"
-                android:contentDescription="@string/cd_semana_siguiente"
-                style="@style/Widget.Material3.Button.IconButton"
-                android:layout_width="40dp"
-                android:layout_height="40dp"
-                app:icon="@drawable/ic_chevron_right"
-                app:iconTint="@color/text_main" />
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:gravity="center"
+                        android:orientation="vertical">
 
-            <!-- Botón Hoy a la Derecha (Aparece al mirar semanas pasadas) -->
+                        <TextView
+                            android:id="@+id/tvRangoSemana"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textColor="@color/text_main"
+                            android:textSize="16sp"
+                            android:textStyle="bold"
+                            tools:text="12 de oct - 16 de oct (2026)" />
+
+                        <TextView
+                            android:id="@+id/tvSemanaSubtitulo"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="1dp"
+                            android:textColor="@color/text_sub"
+                            android:textSize="12sp"
+                            tools:text="Semana actual" />
+                    </LinearLayout>
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnSemanaSiguiente"
+                        style="@style/Socios.BotonFlecha"
+                        android:contentDescription="@string/cd_semana_siguiente"
+                        app:icon="@drawable/ic_chevron_right" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnHoyRight"
-                style="@style/Widget.Material3.Button.TonalButton"
-                android:layout_width="wrap_content"
-                android:layout_height="36dp"
-                android:layout_marginStart="6dp"
-                android:paddingHorizontal="12dp"
-                android:text="@string/btn_hoy"
-                android:textColor="@color/blue_text"
-                android:textSize="12sp"
-                android:textStyle="bold"
+                style="@style/Socios.BotonHoy"
+                android:layout_marginStart="8dp"
                 android:visibility="gone"
-                app:backgroundTint="@color/blue_container"
-                app:cornerRadius="18dp"
                 app:icon="@drawable/ic_chevron_right"
-                app:iconGravity="end"
-                app:iconTint="@color/blue_text"
-                tools:visibility="visible" />
+                app:iconGravity="end" />
         </LinearLayout>
     </com.google.android.material.appbar.AppBarLayout>
 
@@ -127,26 +117,25 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
+            android:paddingHorizontal="16dp"
+            android:paddingTop="4dp"
             android:paddingBottom="88dp">
 
-            <!-- Card Resumen Financiero Ejecutivo -->
+            <!-- Resumen de la semana -->
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginHorizontal="12dp"
-                android:layout_marginTop="4dp"
-                app:cardCornerRadius="20dp"
-                app:cardElevation="3dp"
+                app:cardCornerRadius="24dp"
+                app:cardElevation="6dp"
                 app:strokeWidth="0dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:background="@drawable/bg_gradient_header"
+                    android:background="@drawable/bg_hero"
                     android:orientation="vertical"
                     android:padding="20dp">
 
-                    <!-- Encabezado Neto -->
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -162,6 +151,7 @@
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
+                                android:letterSpacing="0.08"
                                 android:text="@string/header_neto_semanal"
                                 android:textColor="@color/header_label_neto"
                                 android:textSize="11sp"
@@ -173,111 +163,127 @@
                                 android:layout_height="wrap_content"
                                 android:layout_marginTop="2dp"
                                 android:textColor="@android:color/white"
-                                android:textSize="32sp"
+                                android:textSize="40sp"
                                 android:textStyle="bold"
                                 tools:text="424,01 €" />
                         </LinearLayout>
 
                         <com.google.android.material.button.MaterialButton
                             android:id="@+id/btnVerDesglose"
-                            style="@style/Widget.Material3.Button.TonalButton"
+                            style="@style/Widget.Material3.Button"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
+                            android:layout_gravity="top"
+                            android:minHeight="40dp"
+                            android:paddingHorizontal="14dp"
                             android:text="@string/action_ver_irpf"
-                            android:textColor="@color/header_button_text"
-                            android:textSize="12sp"
-                            app:backgroundTint="@color/header_button_bg"
-                            app:icon="@drawable/ic_info"
-                            app:iconTint="@color/header_button_text" />
+                            android:textColor="@android:color/white"
+                            android:textSize="12.5sp"
+                            android:textStyle="bold"
+                            app:backgroundTint="#33FFFFFF"
+                            app:icon="@drawable/ic_receipt"
+                            app:iconSize="18dp"
+                            app:iconTint="@android:color/white" />
                     </LinearLayout>
 
-                    <View
-                        android:layout_width="match_parent"
-                        android:layout_height="1dp"
-                        android:layout_marginVertical="14dp"
-                        android:background="@color/header_divider" />
-
-                    <!-- Stats Grid Row -->
+                    <!-- Base, bonus (se puede ajustar) e IRPF -->
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
+                        android:layout_marginTop="18dp"
                         android:baselineAligned="false"
                         android:orientation="horizontal">
 
-                        <!-- Base x2 -->
                         <LinearLayout
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
-                            android:orientation="vertical">
+                            android:background="@drawable/bg_caja_translucida"
+                            android:orientation="vertical"
+                            android:padding="12dp">
 
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
+                                android:maxLines="1"
                                 android:text="@string/label_base_x2"
                                 android:textColor="@color/header_label_base"
-                                android:textSize="11sp" />
+                                android:textSize="11.5sp" />
 
                             <TextView
                                 android:id="@+id/tvBaseHeader"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
+                                android:layout_marginTop="2dp"
+                                android:maxLines="1"
                                 android:textColor="@android:color/white"
-                                android:textSize="15sp"
+                                android:textSize="16sp"
                                 android:textStyle="bold"
-                                tools:text="+400,00 €" />
+                                tools:text="+400 €" />
                         </LinearLayout>
 
-                        <!-- Bonus (Clickable) -->
                         <LinearLayout
                             android:id="@+id/containerBonusHeader"
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
+                            android:layout_marginHorizontal="8dp"
                             android:layout_weight="1"
-                            android:background="?attr/selectableItemBackground"
+                            android:background="@drawable/bg_caja_translucida"
                             android:clickable="true"
                             android:focusable="true"
-                            android:orientation="vertical">
+                            android:foreground="?attr/selectableItemBackground"
+                            android:orientation="vertical"
+                            android:padding="12dp">
 
                             <TextView
                                 android:id="@+id/tvBonusHeaderLabel"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="@string/label_bonus_auto"
+                                android:drawablePadding="4dp"
+                                android:maxLines="1"
                                 android:textColor="@color/header_label_bonus"
-                                android:textSize="11sp" />
+                                android:textSize="11.5sp"
+                                app:drawableEndCompat="@drawable/ic_edit_pequeno"
+                                app:drawableTint="@color/header_label_bonus"
+                                tools:text="Bonus" />
 
                             <TextView
                                 android:id="@+id/tvBonusHeader"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
+                                android:layout_marginTop="2dp"
+                                android:maxLines="1"
                                 android:textColor="@color/header_bonus"
-                                android:textSize="15sp"
+                                android:textSize="16sp"
                                 android:textStyle="bold"
-                                tools:text="+140,00 €" />
+                                tools:text="+140 €" />
                         </LinearLayout>
 
-                        <!-- IRPF -->
                         <LinearLayout
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
-                            android:orientation="vertical">
+                            android:background="@drawable/bg_caja_translucida"
+                            android:orientation="vertical"
+                            android:padding="12dp">
 
                             <TextView
                                 android:id="@+id/tvIrpfHeaderLabel"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                tools:text="IRPF (-21,48 %)"
+                                android:maxLines="1"
                                 android:textColor="@color/header_label_irpf"
-                                android:textSize="11sp" />
+                                android:textSize="11.5sp"
+                                tools:text="IRPF 21,48 %" />
 
                             <TextView
                                 android:id="@+id/tvIrpfHeader"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
+                                android:layout_marginTop="2dp"
+                                android:maxLines="1"
                                 android:textColor="@color/header_irpf"
-                                android:textSize="15sp"
+                                android:textSize="16sp"
                                 android:textStyle="bold"
                                 tools:text="-115,99 €" />
                         </LinearLayout>
@@ -285,17 +291,13 @@
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Card Progreso de Bonus Nivel -->
+            <!-- Progreso del bonus por tramos -->
             <com.google.android.material.card.MaterialCardView
+                style="@style/Socios.TarjetaFila"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginHorizontal="12dp"
-                android:layout_marginTop="10dp"
-                app:cardBackgroundColor="@color/surface_card"
-                app:cardCornerRadius="16dp"
-                app:cardElevation="2dp"
-                app:strokeColor="@color/divider"
-                app:strokeWidth="1dp">
+                android:layout_marginTop="14dp"
+                app:cardBackgroundColor="@color/surface_card">
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -309,125 +311,130 @@
                         android:gravity="center_vertical"
                         android:orientation="horizontal">
 
-                        <TextView
-                            android:id="@+id/tvBonusTitle"
+                        <FrameLayout
+                            android:layout_width="44dp"
+                            android:layout_height="44dp"
+                            android:background="@drawable/bg_icono_ambar">
+
+                            <ImageView
+                                android:layout_width="24dp"
+                                android:layout_height="24dp"
+                                android:layout_gravity="center"
+                                android:importantForAccessibility="no"
+                                android:src="@drawable/ic_trophy"
+                                app:tint="@android:color/white" />
+                        </FrameLayout>
+
+                        <LinearLayout
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
+                            android:layout_marginHorizontal="12dp"
                             android:layout_weight="1"
-                            android:textColor="@color/text_main"
-                            android:textSize="15sp"
-                            android:textStyle="bold"
-                            tools:text="🏆 Bonus Nivel: +100 € (7 socios)" />
+                            android:orientation="vertical">
+
+                            <TextView
+                                android:id="@+id/tvBonusTitle"
+                                style="@style/Socios.TituloFila"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                tools:text="Bonus de la semana: +100 €" />
+
+                            <TextView
+                                android:id="@+id/tvBonusSiguienteMeta"
+                                style="@style/Socios.DescripcionFila"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                tools:text="¡Haz 3 socios más para el bonus de +140 €!" />
+                        </LinearLayout>
 
                         <TextView
                             android:id="@+id/tvBonusProgressCount"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:textColor="@color/primary"
-                            android:textSize="13sp"
+                            android:background="@drawable/bg_pastilla_version"
+                            android:paddingHorizontal="10dp"
+                            android:paddingVertical="4dp"
+                            android:textColor="@color/on_primary_container"
+                            android:textSize="12sp"
                             android:textStyle="bold"
-                            tools:text="7 / 10 socios" />
+                            tools:text="7 / 10" />
                     </LinearLayout>
 
-                    <com.google.android.material.progressindicator.LinearProgressIndicator
+                    <com.julen.socios.ProgresoBonusView
                         android:id="@+id/progressBonus"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="10dp"
-                        app:indicatorColor="@color/primary"
-                        app:trackCornerRadius="4dp"
-                        app:trackThickness="8dp"
-                        tools:progress="70" />
-
-                    <TextView
-                        android:id="@+id/tvBonusSiguienteMeta"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
-                        android:textColor="@color/text_sub"
-                        android:textSize="12sp"
-                        tools:text="¡Haz 3 socios más para alcanzar el Bonus de +140 €!" />
+                        android:layout_marginTop="16dp" />
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Selector de Días de la Semana (Horizontal Scroll Chips) -->
+            <!-- Filtro por día: Todos y los cinco días, con cuántos socios hay en cada uno -->
             <TextView
+                style="@style/Socios.Seccion"
+                android:text="@string/filtro_dias_label" />
+
+            <com.google.android.material.button.MaterialButtonToggleGroup
+                android:id="@+id/toggleFiltroDias"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginHorizontal="16dp"
-                android:layout_marginTop="16dp"
-                android:text="@string/filtro_dias_label"
-                android:textColor="@color/text_sub"
-                android:textSize="13sp"
-                android:textStyle="bold" />
+                app:checkedButton="@id/btnFiltroTodos"
+                app:selectionRequired="true"
+                app:singleSelection="true">
 
-            <HorizontalScrollView
-                android:id="@+id/scrollDiasFiltro"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="6dp"
-                android:clipToPadding="false"
-                android:paddingHorizontal="12dp"
-                android:scrollbars="none">
-
-                <com.google.android.material.chip.ChipGroup
-                    android:id="@+id/chipGroupDiasFiltro"
-                    android:layout_width="wrap_content"
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnFiltroTodos"
+                    style="@style/Socios.OpcionFiltro"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    app:singleLine="true"
-                    app:singleSelection="true">
+                    android:layout_weight="1.25"
+                    tools:text="Todos\n7" />
 
-                    <com.google.android.material.chip.Chip
-                        android:id="@+id/chipFiltroTodos"
-                        style="@style/Widget.Material3.Chip.Filter"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:checked="true"
-                        tools:text="Todos (0)" />
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnFiltroLun"
+                    style="@style/Socios.OpcionFiltro"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    tools:text="Lun\n2" />
 
-                    <com.google.android.material.chip.Chip
-                        android:id="@+id/chipFiltroLun"
-                        style="@style/Widget.Material3.Chip.Filter"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        tools:text="Lun (0)" />
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnFiltroMar"
+                    style="@style/Socios.OpcionFiltro"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    tools:text="Mar\n1" />
 
-                    <com.google.android.material.chip.Chip
-                        android:id="@+id/chipFiltroMar"
-                        style="@style/Widget.Material3.Chip.Filter"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        tools:text="Mar (0)" />
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnFiltroMie"
+                    style="@style/Socios.OpcionFiltro"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    tools:text="Mié\n0" />
 
-                    <com.google.android.material.chip.Chip
-                        android:id="@+id/chipFiltroMie"
-                        style="@style/Widget.Material3.Chip.Filter"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        tools:text="Mié (0)" />
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnFiltroJue"
+                    style="@style/Socios.OpcionFiltro"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    tools:text="Jue\n3" />
 
-                    <com.google.android.material.chip.Chip
-                        android:id="@+id/chipFiltroJue"
-                        style="@style/Widget.Material3.Chip.Filter"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        tools:text="Jue (0)" />
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnFiltroVie"
+                    style="@style/Socios.OpcionFiltro"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    tools:text="Vie\n1" />
+            </com.google.android.material.button.MaterialButtonToggleGroup>
 
-                    <com.google.android.material.chip.Chip
-                        android:id="@+id/chipFiltroVie"
-                        style="@style/Widget.Material3.Chip.Filter"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        tools:text="Vie (0)" />
-                </com.google.android.material.chip.ChipGroup>
-            </HorizontalScrollView>
-
-            <!-- Encabezado de la Lista de Socios -->
+            <!-- Encabezado de la lista -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginHorizontal="16dp"
-                android:layout_marginTop="12dp"
+                android:layout_marginTop="22dp"
                 android:gravity="center_vertical"
                 android:orientation="horizontal">
 
@@ -437,7 +444,7 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:textColor="@color/text_main"
-                    android:textSize="16sp"
+                    android:textSize="19sp"
                     android:textStyle="bold"
                     tools:text="Socios de la semana" />
 
@@ -445,39 +452,51 @@
                     android:id="@+id/tvListaResumenDia"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:textColor="@color/primary"
-                    android:textSize="13sp"
+                    android:background="@drawable/bg_pastilla_version"
+                    android:paddingHorizontal="10dp"
+                    android:paddingVertical="4dp"
+                    android:textColor="@color/on_primary_container"
+                    android:textSize="12sp"
                     android:textStyle="bold"
-                    tools:text="5 hechos" />
+                    tools:text="5 de 7 hechos" />
             </LinearLayout>
 
-            <!-- Estado Vacío (Empty State) -->
+            <!-- Estado vacío -->
             <LinearLayout
                 android:id="@+id/containerEmptyState"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginHorizontal="20dp"
-                android:layout_marginTop="24dp"
+                android:layout_marginTop="12dp"
                 android:gravity="center"
                 android:orientation="vertical"
-                android:padding="24dp"
+                android:paddingHorizontal="24dp"
+                android:paddingVertical="16dp"
                 android:visibility="gone"
                 tools:visibility="visible">
 
-                <ImageView
-                    android:importantForAccessibility="no"
-                    android:layout_width="64dp"
-                    android:layout_height="64dp"
-                    android:src="@drawable/ic_add"
-                    app:tint="@color/icon_muted" />
+                <FrameLayout
+                    android:layout_width="84dp"
+                    android:layout_height="84dp"
+                    android:background="@drawable/bg_circulo"
+                    android:backgroundTint="@color/primary_container">
+
+                    <ImageView
+                        android:layout_width="42dp"
+                        android:layout_height="42dp"
+                        android:layout_gravity="center"
+                        android:importantForAccessibility="no"
+                        android:src="@drawable/ic_group"
+                        app:tint="@color/primary" />
+                </FrameLayout>
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="12dp"
+                    android:layout_marginTop="16dp"
+                    android:gravity="center"
                     android:text="@string/empty_titulo"
                     android:textColor="@color/text_main"
-                    android:textSize="16sp"
+                    android:textSize="18sp"
                     android:textStyle="bold" />
 
                 <TextView
@@ -487,24 +506,29 @@
                     android:gravity="center"
                     android:text="@string/empty_mensaje"
                     android:textColor="@color/text_sub"
-                    android:textSize="13sp" />
+                    android:textSize="14sp" />
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnAddSocioEmpty"
                     style="@style/Widget.Material3.Button.TonalButton"
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="16dp"
+                    android:layout_height="52dp"
+                    android:layout_marginTop="18dp"
+                    android:paddingHorizontal="22dp"
                     android:text="@string/action_add_socio"
-                    app:icon="@drawable/ic_add" />
+                    android:textColor="@color/on_primary_container"
+                    android:textStyle="bold"
+                    app:backgroundTint="@color/primary_container"
+                    app:cornerRadius="16dp"
+                    app:icon="@drawable/ic_add"
+                    app:iconTint="@color/on_primary_container" />
             </LinearLayout>
 
-            <!-- RecyclerView de Socios -->
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/rvSocios"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="6dp"
+                android:layout_marginTop="8dp"
                 android:layoutAnimation="@anim/layout_animation_fall_down"
                 android:nestedScrollingEnabled="false"
                 tools:itemCount="3"
@@ -512,7 +536,6 @@
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
 
-    <!-- Floating Action Button (+ Nuevo Socio) -->
     <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
         android:id="@+id/fabAddSocio"
         android:layout_width="wrap_content"
@@ -521,8 +544,10 @@
         android:layout_margin="20dp"
         android:text="@string/fab_nuevo_socio"
         android:textColor="@color/on_primary"
+        android:textStyle="bold"
         app:backgroundTint="@color/primary"
         app:icon="@drawable/ic_add"
-        app:iconTint="@color/on_primary" />
+        app:iconTint="@color/on_primary"
+        app:shapeAppearanceOverlay="@style/Socios.FormaFab" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

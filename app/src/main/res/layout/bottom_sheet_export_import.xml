@@ -73,13 +73,7 @@
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnCerrar"
-                style="@style/Widget.Material3.Button.IconButton.Filled.Tonal"
-                android:layout_width="44dp"
-                android:layout_height="44dp"
-                android:contentDescription="@string/action_close"
-                app:backgroundTint="@color/surface_muted"
-                app:icon="@drawable/ic_close"
-                app:iconTint="@color/text_sub" />
+                style="@style/Socios.BotonCerrar" />
         </LinearLayout>
 
         <!-- Pestañas -->

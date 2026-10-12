@@ -20,6 +20,19 @@
         <item name="android:colorBackground">@color/bg_light</item>
         <item name="android:windowBackground">@color/bg_light</item>
         <item name="bottomSheetDialogTheme">@style/CustomBottomSheetDialogTheme</item>
+        <item name="materialAlertDialogTheme">@style/ThemeOverlay.Socios.Dialogo</item>
+    </style>
+
+    <!-- Diálogos con el título en negrita, como los paneles. -->
+    <style name="ThemeOverlay.Socios.Dialogo" parent="ThemeOverlay.Material3.MaterialAlertDialog">
+        <item name="materialAlertDialogTitleTextStyle">@style/Socios.Dialogo.Titulo</item>
+        <!-- Sin el tinte verdoso de la elevación, igual que en los paneles. -->
+        <item name="elevationOverlayEnabled">false</item>
+    </style>
+
+    <style name="Socios.Dialogo.Titulo" parent="MaterialAlertDialog.Material3.Title.Text">
+        <item name="android:textColor">@color/text_main</item>
+        <item name="android:textStyle">bold</item>
     </style>
 
     <style name="CustomBottomSheetDialogTheme" parent="ThemeOverlay.Material3.BottomSheetDialog">

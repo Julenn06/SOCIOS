@@ -15,7 +15,6 @@
     <color name="surface_muted">#F8FAFC</color>
     <color name="text_main">#0F172A</color>
     <color name="text_sub">#475569</color>
-    <color name="icon_muted">#BDBDBD</color>
     <color name="divider">#E2E8F0</color>
     <color name="stroke">#CBD5E1</color>
     <color name="handle">#D0D0D0</color>
@@ -27,11 +26,8 @@
     <color name="green_text">#1B5E20</color>
     <color name="green_text_soft">#2E7D32</color>
     <color name="green_container">#E8F5E9</color>
-    <color name="green_stroke">#C8E6C9</color>
     <color name="red_text">#C62828</color>
-    <color name="red_text_strong">#B71C1C</color>
     <color name="red_container">#FFEBEE</color>
-    <color name="red_stroke">#FFCDD2</color>
     <color name="orange_text">#E65100</color>
     <color name="orange_container">#FFF3E0</color>
     <color name="amber_text">#F57F17</color>
@@ -48,13 +44,11 @@
     <color name="header_label_irpf">#FFCDD2</color>
     <color name="header_irpf">#FFEBEE</color>
     <color name="header_divider">#40FFFFFF</color>
-    <color name="header_button_bg">#E3F2FD</color>
     <color name="header_button_text">#0D47A1</color>
 
-    <!-- Insignia verde del importe en cada socio: igual en los dos temas -->
+    <!-- Verde de la placa del importe de cada socio y de las cabeceras verdes: igual en los dos temas -->
     <color name="badge_gradient_start">#107C41</color>
     <color name="badge_gradient_end">#0B5A2F</color>
-    <color name="badge_text_sub">#E8F5E9</color>
 
     <!-- Cabecera del socio pendiente en el formulario: ámbar, con texto blanco en los dos temas -->
     <color name="pendiente_gradient_start">#F59E0B</color>

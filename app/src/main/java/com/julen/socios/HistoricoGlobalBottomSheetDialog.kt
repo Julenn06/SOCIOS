@@ -1,5 +1,6 @@
 package com.julen.socios
 
+import android.app.Dialog
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -10,10 +11,14 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.google.android.material.bottomsheet.BottomSheetBehavior
+import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.julen.socios.databinding.BottomSheetHistoricoGlobalBinding
 import com.julen.socios.util.CalculoComisiones
 import com.julen.socios.util.CalculoComisiones.Periodo
+import com.julen.socios.util.DateUtils
+import com.julen.socios.util.HapticUtils
 import com.julen.socios.util.toCurrencyString
 import com.julen.socios.util.toEurosCompacto
 import com.julen.socios.util.toFormattedEuros
@@ -37,6 +42,12 @@ class HistoricoGlobalBottomSheetDialog : BottomSheetDialogFragment() {
 
     private var resumenActual: CalculoComisiones.ResumenHistoricoGlobal? = null
 
+    override fun onCreateDialog(savedInstanceState: Bundle?): Dialog =
+        (super.onCreateDialog(savedInstanceState) as BottomSheetDialog).apply {
+            behavior.state = BottomSheetBehavior.STATE_EXPANDED
+            behavior.skipCollapsed = true
+        }
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View {
@@ -50,7 +61,11 @@ class HistoricoGlobalBottomSheetDialog : BottomSheetDialogFragment() {
         binding.rvSemanasHistoricas.layoutManager = LinearLayoutManager(requireContext())
         binding.rvSemanasHistoricas.adapter = adapter
 
-        binding.chipGroupAgrupacion.setOnCheckedStateChangeListener { _, _ -> mostrarFilas() }
+        binding.toggleAgrupacion.addOnButtonCheckedListener { grupo, _, marcado ->
+            if (!marcado) return@addOnButtonCheckedListener
+            HapticUtils.performClick(grupo)
+            mostrarFilas()
+        }
         binding.btnCerrarHistorico.setOnClickListener { dismiss() }
 
         viewLifecycleOwner.lifecycleScope.launch {
@@ -85,8 +100,8 @@ class HistoricoGlobalBottomSheetDialog : BottomSheetDialogFragment() {
     private fun mostrarFilas() {
         val semanas = resumenActual?.semanasHistoricas ?: return
         val periodo = when {
-            binding.chipPorMes.isChecked -> Periodo.MES
-            binding.chipPorAnio.isChecked -> Periodo.ANIO
+            binding.btnPorMes.isChecked -> Periodo.MES
+            binding.btnPorAnio.isChecked -> Periodo.ANIO
             else -> null
         }
         binding.tvNotaAgrupacion.isVisible = periodo != null
@@ -103,7 +118,8 @@ class HistoricoGlobalBottomSheetDialog : BottomSheetDialogFragment() {
         val r = item.resumenSemana
         return FilaHistorico(
             id = item.semanaKey,
-            titulo = getString(R.string.title_week_format, item.semanaKey),
+            etiqueta = getString(R.string.historico_etiqueta_semana, item.semanaKey.substringAfter("-W").toIntOrNull() ?: 0),
+            titulo = getString(R.string.rango_semana_anio, DateUtils.rangoCorto(item.semanaKey), item.semanaKey.take(4)),
             detalle = resources.getQuantityString(
                 if (r.esBonoRegaloAplicado) R.plurals.historico_semana_resumen_manual else R.plurals.historico_semana_resumen,
                 r.totalSociosHechos,
@@ -121,8 +137,12 @@ class HistoricoGlobalBottomSheetDialog : BottomSheetDialogFragment() {
             val nombre = Month.of(mes).getDisplayName(TextStyle.FULL_STANDALONE, LOCALE_ES)
             "${nombre.replaceFirstChar { it.titlecase(LOCALE_ES) }} ${p.anio}"
         } ?: p.anio.toString()
+        val etiqueta = p.mes?.let { mes ->
+            Month.of(mes).getDisplayName(TextStyle.SHORT, LOCALE_ES).removeSuffix(".").uppercase(LOCALE_ES)
+        } ?: getString(R.string.historico_etiqueta_anio)
         return FilaHistorico(
             id = "${p.anio}-${p.mes ?: 0}",
+            etiqueta = etiqueta,
             titulo = titulo,
             detalle = resources.getQuantityString(
                 R.plurals.historico_periodo_resumen, p.sociosHechos, p.sociosHechos, p.bruto.toFormattedEuros()

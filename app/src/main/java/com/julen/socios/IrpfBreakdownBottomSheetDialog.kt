@@ -1,5 +1,6 @@
 package com.julen.socios
 
+import android.app.Dialog
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -9,6 +10,8 @@ import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
+import com.google.android.material.bottomsheet.BottomSheetBehavior
+import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.julen.socios.databinding.BottomSheetIrpfBreakdownBinding
@@ -31,6 +34,12 @@ class IrpfBreakdownBottomSheetDialog : BottomSheetDialogFragment() {
     private var _binding: BottomSheetIrpfBreakdownBinding? = null
     private val binding get() = _binding!!
 
+    override fun onCreateDialog(savedInstanceState: Bundle?): Dialog =
+        (super.onCreateDialog(savedInstanceState) as BottomSheetDialog).apply {
+            behavior.state = BottomSheetBehavior.STATE_EXPANDED
+            behavior.skipCollapsed = true
+        }
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View {
@@ -42,8 +51,12 @@ class IrpfBreakdownBottomSheetDialog : BottomSheetDialogFragment() {
         super.onViewCreated(view, savedInstanceState)
 
         binding.btnCerrarBreakdown.setOnClickListener { dismiss() }
-        binding.btnCambiarIrpf.setOnClickListener { mostrarDialogoIrpf() }
-        binding.btnVerCambiosIrpf.setOnClickListener { mostrarCambiosIrpf() }
+        binding.btnCambiarIrpf.configurar(
+            R.drawable.ic_edit, R.color.blue_container, R.color.blue_text_soft, R.string.irpf_cambiar, R.string.irpf_cambiar_detalle
+        ) { mostrarDialogoIrpf() }
+        binding.btnVerCambiosIrpf.configurar(
+            R.drawable.ic_history, R.color.orange_container, R.color.orange_text, R.string.irpf_ver_cambios, R.string.irpf_ver_cambios_detalle
+        ) { mostrarCambiosIrpf() }
 
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
@@ -97,7 +110,8 @@ class IrpfBreakdownBottomSheetDialog : BottomSheetDialogFragment() {
 
     private fun render(state: MainUiState) {
         val resumen = state.resumenSemana ?: return
-        binding.tvBreakdownRangoSemana.text = state.rangoTexto
+        binding.tvBreakdownRangoSemana.text =
+            getString(R.string.rango_semana_anio, DateUtils.rangoCorto(state.semanaKey), state.semanaKey.take(4))
 
         val netoFormatted = resumen.totalNeto.toFormattedEuros()
         binding.tvBreakdownNetoBig.text = netoFormatted

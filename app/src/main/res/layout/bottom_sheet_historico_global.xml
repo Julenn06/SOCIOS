@@ -1,228 +1,249 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<!-- Histórico: lo acumulado en todas las semanas y el desglose por semanas, meses o años. -->
+<androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:forceDarkAllowed="false"
-    android:orientation="vertical"
-    android:padding="20dp"
     tools:targetApi="q">
 
-    <!-- Handle drag bar -->
-    <View
-        android:layout_width="40dp"
-        android:layout_height="4dp"
-        android:layout_gravity="center_horizontal"
-        android:layout_marginBottom="16dp"
-        android:background="@color/handle" />
-
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/historico_titulo"
-        android:contentDescription="@string/historico_titulo_a11y"
-        android:textColor="@color/text_main"
-        android:textSize="20sp"
-        android:textStyle="bold" />
-
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="2dp"
-        android:text="@string/historico_subtitulo"
-        android:textColor="@color/text_sub"
-        android:textSize="13sp" />
-
-    <!-- Card IRPF Retenido Acumulado -->
-    <com.google.android.material.card.MaterialCardView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        app:cardBackgroundColor="@color/red_container"
-        app:cardCornerRadius="16dp"
-        app:strokeColor="@color/red_stroke"
-        app:strokeWidth="1dp">
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:gravity="center"
-            android:orientation="vertical"
-            android:padding="18dp">
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/historico_irpf_label"
-                android:textColor="@color/red_text"
-                android:textSize="12sp"
-                android:textStyle="bold" />
-
-            <TextView
-                android:id="@+id/tvGlobalIrpfTotal"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="4dp"
-                android:textColor="@color/red_text_strong"
-                android:textSize="30sp"
-                android:textStyle="bold"
-                tools:text="-204,69 €" />
-
-            <TextView
-                android:id="@+id/tvGlobalSemanasCount"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="2dp"
-                android:textColor="@color/red_text"
-                android:textSize="12sp"
-                tools:text="Acumulado en 3 semanas de trabajo" />
-        </LinearLayout>
-    </com.google.android.material.card.MaterialCardView>
-
-    <!-- Grid de Totales Acumulados -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="12dp"
-        android:baselineAligned="false"
-        android:orientation="horizontal">
+        android:orientation="vertical"
+        android:paddingHorizontal="20dp"
+        android:paddingTop="12dp"
+        android:paddingBottom="24dp">
 
-        <!-- Total Neto -->
-        <com.google.android.material.card.MaterialCardView
-            android:layout_width="0dp"
+        <!-- Handle drag bar -->
+        <View
+            android:layout_width="40dp"
+            android:layout_height="4dp"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginBottom="16dp"
+            android:background="@color/handle" />
+
+        <!-- Encabezado -->
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginEnd="6dp"
-            android:layout_weight="1"
-            app:cardBackgroundColor="@color/green_container"
-            app:cardCornerRadius="12dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <FrameLayout
+                android:layout_width="52dp"
+                android:layout_height="52dp"
+                android:background="@drawable/bg_icono_degradado"
+                android:elevation="3dp">
+
+                <ImageView
+                    android:layout_width="26dp"
+                    android:layout_height="26dp"
+                    android:layout_gravity="center"
+                    android:importantForAccessibility="no"
+                    android:src="@drawable/ic_history"
+                    app:tint="@android:color/white" />
+            </FrameLayout>
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="14dp"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/historico_titulo"
+                    android:textColor="@color/text_main"
+                    android:textSize="20sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:text="@string/historico_subtitulo"
+                    android:textColor="@color/text_sub"
+                    android:textSize="13sp" />
+            </LinearLayout>
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnCerrarHistorico"
+                style="@style/Socios.BotonCerrar" />
+        </LinearLayout>
+
+        <!-- Totales: el IRPF retenido destacado, y el neto y el bonus -->
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            app:cardCornerRadius="24dp"
+            app:cardElevation="6dp"
             app:strokeWidth="0dp">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:background="@drawable/bg_hero"
                 android:orientation="vertical"
-                android:padding="12dp">
+                android:padding="20dp">
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/historico_neto_label"
-                    android:textColor="@color/green_text_soft"
-                    android:textSize="11sp" />
+                    android:letterSpacing="0.08"
+                    android:text="@string/historico_irpf_label"
+                    android:textColor="@color/header_label_irpf"
+                    android:textSize="11sp"
+                    android:textStyle="bold" />
 
                 <TextView
-                    android:id="@+id/tvGlobalNetoTotal"
+                    android:id="@+id/tvGlobalIrpfTotal"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="2dp"
-                    android:textColor="@color/green_text"
-                    android:textSize="16sp"
+                    android:textColor="@android:color/white"
+                    android:textSize="40sp"
                     android:textStyle="bold"
-                    tools:text="+748,31 €" />
+                    tools:text="-204,69 €" />
+
+                <TextView
+                    android:id="@+id/tvGlobalSemanasCount"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="6dp"
+                    android:background="@drawable/bg_pastilla"
+                    android:paddingHorizontal="10dp"
+                    android:paddingVertical="3dp"
+                    android:textColor="@android:color/white"
+                    android:textSize="12sp"
+                    android:textStyle="bold"
+                    tools:text="En 3 semanas registradas" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="18dp"
+                    android:baselineAligned="false"
+                    android:orientation="horizontal">
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginEnd="8dp"
+                        android:layout_weight="1"
+                        android:background="@drawable/bg_caja_translucida"
+                        android:orientation="vertical"
+                        android:padding="12dp">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/historico_neto_label"
+                            android:textColor="@color/header_label_base"
+                            android:textSize="11.5sp" />
+
+                        <TextView
+                            android:id="@+id/tvGlobalNetoTotal"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="2dp"
+                            android:maxLines="1"
+                            android:textColor="@android:color/white"
+                            android:textSize="17sp"
+                            android:textStyle="bold"
+                            tools:text="+748,31 €" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:background="@drawable/bg_caja_translucida"
+                        android:orientation="vertical"
+                        android:padding="12dp">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/historico_bonus_label"
+                            android:textColor="@color/header_label_bonus"
+                            android:textSize="11.5sp" />
+
+                        <TextView
+                            android:id="@+id/tvGlobalBonusTotal"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="2dp"
+                            android:maxLines="1"
+                            android:textColor="@color/header_bonus"
+                            android:textSize="17sp"
+                            android:textStyle="bold"
+                            tools:text="+280,00 €" />
+                    </LinearLayout>
+                </LinearLayout>
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
-        <!-- Total Bonus -->
-        <com.google.android.material.card.MaterialCardView
-            android:layout_width="0dp"
+        <!-- Desglose -->
+        <TextView
+            style="@style/Socios.Seccion"
+            android:text="@string/historico_lista_label" />
+
+        <com.google.android.material.button.MaterialButtonToggleGroup
+            android:id="@+id/toggleAgrupacion"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginStart="6dp"
-            android:layout_weight="1"
-            app:cardBackgroundColor="@color/amber_container"
-            app:cardCornerRadius="12dp"
-            app:strokeWidth="0dp">
+            app:checkedButton="@id/btnPorSemana"
+            app:selectionRequired="true"
+            app:singleSelection="true">
 
-            <LinearLayout
-                android:layout_width="match_parent"
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnPorSemana"
+                style="@style/Socios.Opcion"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:padding="12dp">
+                android:layout_weight="1"
+                android:text="@string/historico_por_semana" />
 
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/historico_bonus_label"
-                    android:textColor="@color/amber_text"
-                    android:textSize="11sp" />
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnPorMes"
+                style="@style/Socios.Opcion"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/historico_por_mes" />
 
-                <TextView
-                    android:id="@+id/tvGlobalBonusTotal"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="2dp"
-                    android:textColor="@color/orange_text"
-                    android:textSize="16sp"
-                    android:textStyle="bold"
-                    tools:text="+280,00 €" />
-            </LinearLayout>
-        </com.google.android.material.card.MaterialCardView>
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnPorAnio"
+                style="@style/Socios.Opcion"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/historico_por_anio" />
+        </com.google.android.material.button.MaterialButtonToggleGroup>
+
+        <TextView
+            android:id="@+id/tvNotaAgrupacion"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:text="@string/historico_nota_agrupacion"
+            android:textColor="@color/text_sub"
+            android:textSize="12sp"
+            android:visibility="gone"
+            tools:visibility="visible" />
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rvSemanasHistoricas"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:nestedScrollingEnabled="false"
+            tools:itemCount="3"
+            tools:listitem="@layout/item_semana_historica" />
     </LinearLayout>
-
-    <!-- Encabezado de la lista y agrupación -->
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="18dp"
-        android:text="@string/historico_lista_label"
-        android:textColor="@color/text_main"
-        android:textSize="15sp"
-        android:textStyle="bold" />
-
-    <com.google.android.material.chip.ChipGroup
-        android:id="@+id/chipGroupAgrupacion"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="4dp"
-        app:selectionRequired="true"
-        app:singleLine="true"
-        app:singleSelection="true">
-
-        <com.google.android.material.chip.Chip
-            android:id="@+id/chipPorSemana"
-            style="@style/Widget.Material3.Chip.Filter"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:checked="true"
-            android:text="@string/historico_por_semana" />
-
-        <com.google.android.material.chip.Chip
-            android:id="@+id/chipPorMes"
-            style="@style/Widget.Material3.Chip.Filter"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/historico_por_mes" />
-
-        <com.google.android.material.chip.Chip
-            android:id="@+id/chipPorAnio"
-            style="@style/Widget.Material3.Chip.Filter"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/historico_por_anio" />
-    </com.google.android.material.chip.ChipGroup>
-
-    <TextView
-        android:id="@+id/tvNotaAgrupacion"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/historico_nota_agrupacion"
-        android:textColor="@color/text_sub"
-        android:textSize="12sp"
-        android:visibility="gone"
-        tools:visibility="visible" />
-
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/rvSemanasHistoricas"
-        android:layout_width="match_parent"
-        android:layout_height="220dp"
-        android:layout_marginTop="8dp"
-        tools:listitem="@layout/item_semana_historica" />
-
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/btnCerrarHistorico"
-        style="@style/Widget.Material3.Button"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:text="@string/action_close" />
-</LinearLayout>
+</androidx.core.widget.NestedScrollView>

@@ -15,7 +15,6 @@
     <color name="surface_muted">#172033</color>
     <color name="text_main">#E2E8F0</color>
     <color name="text_sub">#94A3B8</color>
-    <color name="icon_muted">#64748B</color>
     <color name="divider">#334155</color>
     <color name="stroke">#475569</color>
     <color name="handle">#475569</color>
@@ -27,11 +26,8 @@
     <color name="green_text">#86EFAC</color>
     <color name="green_text_soft">#4ADE80</color>
     <color name="green_container">#14361F</color>
-    <color name="green_stroke">#1F5133</color>
     <color name="red_text">#FCA5A5</color>
-    <color name="red_text_strong">#FECACA</color>
     <color name="red_container">#3B1416</color>
-    <color name="red_stroke">#5C1F22</color>
     <color name="orange_text">#FDBA74</color>
     <color name="orange_container">#3D2410</color>
     <color name="amber_text">#FCD34D</color>

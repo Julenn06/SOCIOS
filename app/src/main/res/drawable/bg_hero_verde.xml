@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Cabecera verde (neto a cobrar), con los mismos círculos de adorno que la azul. -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item>
+        <shape android:shape="rectangle">
+            <gradient
+                android:angle="135"
+                android:endColor="@color/badge_gradient_end"
+                android:startColor="@color/badge_gradient_start" />
+        </shape>
+    </item>
+    <item android:drawable="@drawable/bg_adorno_circulos" />
+</layer-list>
