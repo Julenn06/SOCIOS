@@ -1,29 +1,40 @@
 package com.julen.socios
 
+import android.animation.ValueAnimator
 import android.app.Dialog
+import android.graphics.drawable.GradientDrawable
+import android.graphics.drawable.LayerDrawable
 import android.os.Bundle
+import android.transition.AutoTransition
+import android.transition.TransitionManager
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.GridLayout
 import androidx.core.content.ContextCompat
+import androidx.core.graphics.ColorUtils
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.isVisible
 import androidx.core.widget.doOnTextChanged
 import androidx.fragment.app.activityViewModels
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
-import com.google.android.material.chip.Chip
+import com.google.android.material.button.MaterialButton
 import com.julen.socios.databinding.BottomSheetAddSocioBinding
 import com.julen.socios.model.DiaSemana
 import com.julen.socios.model.ImportesPredefinidos
 import com.julen.socios.model.Socio
+import com.julen.socios.util.AnimationExtensions
 import com.julen.socios.util.CalculoComisiones
+import com.julen.socios.util.DateUtils
 import com.julen.socios.util.HapticUtils
+import com.julen.socios.util.NumberAnimators
 import com.julen.socios.util.parseImporte
-import com.julen.socios.util.toEurosCompacto
-import com.julen.socios.util.toFormattedEuros
-import com.julen.socios.util.toImporteInput
 import com.julen.socios.util.setTextoAccesible
+import com.julen.socios.util.toEurosCompacto
+import com.julen.socios.util.toImporteInput
 
 /**
  * Alta o edición de un socio. Recibe sus datos por argumentos (no por constructor) para que el sistema
@@ -40,35 +51,35 @@ class AddSocioBottomSheetDialog : BottomSheetDialogFragment() {
     private val semanaKey: String by lazy { requireNotNull(requireArguments().getString(ARG_SEMANA)) }
     private val defaultDia: DiaSemana by lazy { DiaSemana.fromId(requireArguments().getInt(ARG_DIA)) }
 
-    private var chipsCuota: List<Chip> = emptyList()
-    private val chipsDia: Map<DiaSemana, Chip> by lazy {
+    /** Las cuotas predefinidas y, al final, "Otro". */
+    private var opcionesCuota: List<MaterialButton> = emptyList()
+    private val opcionOtro get() = opcionesCuota.last()
+
+    private val botonesDia: Map<DiaSemana, MaterialButton> by lazy {
         DiaSemana.entries.zip(
-            listOf(binding.chipDiaLun, binding.chipDiaMar, binding.chipDiaMie, binding.chipDiaJue, binding.chipDiaVie)
+            listOf(binding.btnDiaLun, binding.btnDiaMar, binding.btnDiaMie, binding.btnDiaJue, binding.btnDiaVie)
         ).toMap()
     }
 
-    override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
-        val dialog = super.onCreateDialog(savedInstanceState) as BottomSheetDialog
-        dialog.setOnShowListener { dialogInterface ->
-            val bottomSheetDialog = dialogInterface as BottomSheetDialog
-            val bottomSheet =
-                bottomSheetDialog.findViewById<View>(com.google.android.material.R.id.design_bottom_sheet)
-            if (bottomSheet != null) {
-                val behavior = BottomSheetBehavior.from(bottomSheet)
-                behavior.state = BottomSheetBehavior.STATE_EXPANDED
-                behavior.skipCollapsed = true
+    private var esHecho = true
+    private var detallesAbiertos = false
 
-                val layoutParams = bottomSheet.layoutParams
-                layoutParams.height = ViewGroup.LayoutParams.MATCH_PARENT
-                bottomSheet.layoutParams = layoutParams
+    private val fondoHero = GradientDrawable().apply { orientation = GradientDrawable.Orientation.TL_BR }
+    private var animacionFondo: ValueAnimator? = null
+
+    override fun onCreateDialog(savedInstanceState: Bundle?): Dialog =
+        (super.onCreateDialog(savedInstanceState) as BottomSheetDialog).apply {
+            behavior.state = BottomSheetBehavior.STATE_EXPANDED
+            behavior.skipCollapsed = true
+            setOnShowListener {
+                // A pantalla completa, para que los botones queden siempre abajo.
+                findViewById<View>(com.google.android.material.R.id.design_bottom_sheet)?.let { hoja ->
+                    hoja.layoutParams = hoja.layoutParams.apply { height = ViewGroup.LayoutParams.MATCH_PARENT }
+                }
             }
         }
-        return dialog
-    }
 
-    override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
-    ): View {
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         _binding = BottomSheetAddSocioBinding.inflate(inflater, container, false)
         return binding.root
     }
@@ -76,138 +87,243 @@ class AddSocioBottomSheetDialog : BottomSheetDialogFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        crearChipsCuota()
-        setupListeners()
+        binding.fondoHero.background = LayerDrawable(
+            arrayOf(fondoHero, requireNotNull(ContextCompat.getDrawable(requireContext(), R.drawable.bg_adorno_circulos)))
+        )
+        binding.tvSubtituloSemana.text = getString(R.string.add_subtitulo_semana, DateUtils.rangoCorto(semanaKey))
+        crearOpcionesCuota()
+        configurarDias()
 
         val socio = socioToEdit
-        if (socio != null) {
-            binding.tvTitleBottomSheet.text = getString(R.string.title_edit_socio)
-            binding.btnGuardarSocio.text = getString(R.string.action_edit)
-            binding.btnGuardarSocio.setIconResource(R.drawable.ic_edit)
-        } else {
-            binding.tvTitleBottomSheet.text = getString(R.string.title_add_socio)
-            binding.btnGuardarSocio.text = getString(R.string.action_save)
-            binding.btnGuardarSocio.setIconResource(R.drawable.ic_add)
-        }
+        binding.tvTitleBottomSheet.setText(if (socio != null) R.string.title_edit_socio else R.string.title_add_socio)
+        binding.btnGuardarSocio.setText(if (socio != null) R.string.action_guardar_cambios else R.string.action_save_socio)
 
         if (savedInstanceState == null) {
             if (socio != null) {
-                binding.switchSocioHechoAdd.isChecked = socio.hecho
+                esHecho = socio.hecho
                 binding.etNombreSocio.setText(socio.nombreSocio)
                 binding.etNotas.setText(socio.notas)
-                selectCuota(socio.colaboracion)
-                chipsDia[socio.dia]?.isChecked = true
+                detallesAbiertos = socio.nombreSocio.isNotBlank() || socio.notas.isNotBlank()
+                elegirCuota(socio.colaboracion)
+                botonesDia[socio.dia]?.isChecked = true
             } else {
-                selectCuota(ImportesPredefinidos.CUOTA_POR_DEFECTO)
-                chipsDia[defaultDia]?.isChecked = true
+                elegirCuota(ImportesPredefinidos.CUOTA_POR_DEFECTO)
+                botonesDia[defaultDia]?.isChecked = true
             }
         } else {
-            // Los chips de cuota se crean en código con ids nuevos: su selección se restaura a mano.
-            chipsCuota.getOrNull(savedInstanceState.getInt(STATE_CUOTA_INDEX, -1))?.isChecked = true
+            esHecho = savedInstanceState.getBoolean(STATE_HECHO, true)
+            detallesAbiertos = savedInstanceState.getBoolean(STATE_DETALLES)
+            // Las cuotas se crean en código con ids nuevos: su selección se restaura a mano.
+            opcionesCuota.getOrNull(savedInstanceState.getInt(STATE_CUOTA_INDEX, -1))?.let(::marcarCuota)
         }
 
-        binding.btnCancelarAdd.setOnClickListener { viewClick ->
-            HapticUtils.performClick(viewClick)
+        binding.cardEstadoHecho.setOnClickListener { elegirEstado(hecho = true) }
+        binding.cardEstadoPendiente.setOnClickListener { elegirEstado(hecho = false) }
+        binding.filaDetalles.setOnClickListener { alternarDetalles() }
+        binding.etCustomAmount.doOnTextChanged { _, _, _, _ ->
+            binding.tilCustomAmount.error = null
+            actualizarVistaPrevia()
+        }
+        binding.etNombreSocio.doOnTextChanged { _, _, _, _ -> actualizarResumenDetalles() }
+        binding.etNotas.doOnTextChanged { _, _, _, _ -> actualizarResumenDetalles() }
+
+        binding.btnCancelarAdd.setOnClickListener {
+            HapticUtils.performClick(it)
             dismiss()
         }
-
-        binding.btnGuardarSocio.setOnClickListener { viewClick ->
-            HapticUtils.performConfirm(viewClick)
+        binding.btnGuardarSocio.setOnClickListener {
+            HapticUtils.performConfirm(it)
             saveSocio()
         }
+        listOf(binding.cardEstadoHecho, binding.cardEstadoPendiente, binding.btnGuardarSocio, binding.btnCancelarAdd)
+            .forEach(AnimationExtensions::setupPressScaleAnimation)
     }
 
     override fun onViewStateRestored(savedInstanceState: Bundle?) {
         super.onViewStateRestored(savedInstanceState)
-        binding.tilCustomAmount.isVisible = binding.chipOtro.isChecked
-        updateLivePreview()
+        binding.tilCustomAmount.isVisible = opcionOtro.isChecked
+        mostrarEstado(animar = false)
+        mostrarDetalles()
+        actualizarVistaPrevia()
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
-        _binding?.let { outState.putInt(STATE_CUOTA_INDEX, chipsCuota.indexOfFirst { it.isChecked }) }
+        _binding?.let { outState.putInt(STATE_CUOTA_INDEX, opcionesCuota.indexOfFirst { it.isChecked }) }
+        outState.putBoolean(STATE_HECHO, esHecho)
+        outState.putBoolean(STATE_DETALLES, detallesAbiertos)
     }
 
-    private fun crearChipsCuota() {
-        chipsCuota = ImportesPredefinidos.CUOTAS.mapIndexed { index, cuota ->
-            (layoutInflater.inflate(R.layout.chip_importe, binding.chipGroupCuotas, false) as Chip).apply {
+    override fun onDestroyView() {
+        animacionFondo?.cancel()
+        super.onDestroyView()
+        _binding = null
+    }
+
+    private fun crearOpcionesCuota() {
+        val margen = (4 * resources.displayMetrics.density).toInt()
+        val textos = ImportesPredefinidos.CUOTAS.map { it.toEurosCompacto() } + getString(R.string.chip_otro)
+        opcionesCuota = textos.mapIndexed { index, texto ->
+            (layoutInflater.inflate(R.layout.item_opcion_cuota, binding.gridCuotas, false) as MaterialButton).apply {
                 id = View.generateViewId()
-                text = cuota.toEurosCompacto()
-                tag = cuota
-                binding.chipGroupCuotas.addView(this, index)
+                text = texto
+                tag = ImportesPredefinidos.CUOTAS.getOrNull(index)
+                layoutParams = GridLayout.LayoutParams(
+                    GridLayout.spec(GridLayout.UNDEFINED), GridLayout.spec(GridLayout.UNDEFINED, 1f)
+                ).apply {
+                    width = 0
+                    setMargins(margen, margen, margen, margen)
+                }
+                setOnClickListener { opcion ->
+                    HapticUtils.performClick(opcion)
+                    marcarCuota(this)
+                    if (this == opcionOtro) {
+                        TransitionManager.beginDelayedTransition(binding.contenidoAddSocio, AutoTransition().setDuration(DURACION_MS))
+                        binding.tilCustomAmount.isVisible = true
+                        mostrarTeclado(binding.etCustomAmount)
+                    } else {
+                        binding.tilCustomAmount.isVisible = false
+                    }
+                    actualizarVistaPrevia()
+                }
+                AnimationExtensions.setupPressScaleAnimation(this)
+                binding.gridCuotas.addView(this)
             }
         }
     }
 
-    private fun setupListeners() {
-        binding.chipGroupCuotas.setOnCheckedStateChangeListener { _, checkedIds ->
-            HapticUtils.performClick(binding.chipGroupCuotas)
-            binding.tilCustomAmount.isVisible = R.id.chipOtro in checkedIds
-            updateLivePreview()
-        }
-
-        binding.chipGroupDias.setOnCheckedStateChangeListener { _, _ ->
-            HapticUtils.performClick(binding.chipGroupDias)
-        }
-
-        binding.switchSocioHechoAdd.setOnCheckedChangeListener { viewSwitch, _ ->
-            HapticUtils.performToggle(viewSwitch)
-            updateLivePreview()
-        }
-
-        binding.etCustomAmount.doOnTextChanged { _, _, _, _ ->
-            binding.tilCustomAmount.error = null
-            updateLivePreview()
-        }
+    /** Marca una sola cuota; volver a pulsar la elegida la deja marcada. */
+    private fun marcarCuota(elegida: MaterialButton) {
+        opcionesCuota.forEach { it.isChecked = it == elegida }
     }
 
-    private fun updateLivePreview() {
-        val cuota = getSelectedCuota() ?: 0.0
-        val baseX2 = CalculoComisiones.calcularBaseX2(cuota)
-
-        binding.tvPreviewBaseX2.text =
-            getString(R.string.preview_base_format, baseX2.toFormattedEuros(2), cuota.toEurosCompacto())
-
-        val context = requireContext()
-        if (binding.switchSocioHechoAdd.isChecked) {
-            binding.tvPreviewEstadoBadge.setTextoAccesible(getString(R.string.socio_status_badge_conseguido))
-            binding.tvPreviewEstadoBadge.setTextColor(ContextCompat.getColor(context, R.color.primary))
+    /** Marca el importe exacto; cualquier otro (p. ej. 10,50 €) va a "Otro". */
+    private fun elegirCuota(importe: Double) {
+        val opcion = opcionesCuota.firstOrNull { it.tag == importe }
+        if (opcion != null) {
+            marcarCuota(opcion)
         } else {
-            binding.tvPreviewEstadoBadge.setTextoAccesible(getString(R.string.socio_status_badge_pendiente))
-            binding.tvPreviewEstadoBadge.setTextColor(ContextCompat.getColor(context, R.color.orange_pending))
+            marcarCuota(opcionOtro)
+            binding.etCustomAmount.setText(importe.toImporteInput())
         }
-        binding.tvPreviewEstadoBadge.backgroundTintList = ContextCompat.getColorStateList(context, R.color.bg_light)
     }
 
-    /** Selecciona el chip con el importe exacto; cualquier otro importe (p. ej. 10,50 €) va a "Otro". */
-    private fun selectCuota(amount: Double) {
-        val chip = chipsCuota.firstOrNull { it.tag == amount }
-        if (chip != null) {
-            chip.isChecked = true
+    private fun cuotaElegida(): Double? {
+        if (opcionOtro.isChecked) return parseImporte(binding.etCustomAmount.text)
+        return opcionesCuota.firstOrNull { it.isChecked }?.tag as? Double
+    }
+
+    private fun configurarDias() {
+        for ((dia, boton) in botonesDia) {
+            boton.text = dia.nombreCorto
+            boton.contentDescription = dia.nombreCompleto
+        }
+        binding.toggleDias.addOnButtonCheckedListener { grupo, _, marcado ->
+            if (marcado) HapticUtils.performClick(grupo)
+        }
+    }
+
+    private fun elegirEstado(hecho: Boolean) {
+        if (hecho == esHecho) return
+        HapticUtils.performToggle(binding.cardEstadoHecho)
+        esHecho = hecho
+        mostrarEstado(animar = true)
+        actualizarVistaPrevia()
+    }
+
+    private fun mostrarEstado(animar: Boolean) {
+        binding.cardEstadoHecho.isChecked = esHecho
+        binding.cardEstadoPendiente.isChecked = !esHecho
+        pintarFondoHero(animar)
+    }
+
+    /** Verde si el socio suma, ámbar si está pendiente, con un fundido entre los dos. */
+    private fun pintarFondoHero(animar: Boolean) {
+        val contexto = requireContext()
+        val destino = if (esHecho) {
+            intArrayOf(ContextCompat.getColor(contexto, R.color.badge_gradient_start), ContextCompat.getColor(contexto, R.color.badge_gradient_end))
         } else {
-            binding.chipOtro.isChecked = true
-            binding.etCustomAmount.setText(amount.toImporteInput())
+            intArrayOf(ContextCompat.getColor(contexto, R.color.pendiente_gradient_start), ContextCompat.getColor(contexto, R.color.pendiente_gradient_end))
+        }
+        animacionFondo?.cancel()
+        val origen = fondoHero.colors
+        if (!animar || origen == null) {
+            fondoHero.colors = destino
+            return
+        }
+        animacionFondo = ValueAnimator.ofFloat(0f, 1f).apply {
+            duration = DURACION_MS * 2
+            addUpdateListener { animacion ->
+                val f = animacion.animatedValue as Float
+                fondoHero.colors = intArrayOf(
+                    ColorUtils.blendARGB(origen[0], destino[0], f), ColorUtils.blendARGB(origen[1], destino[1], f)
+                )
+            }
+            start()
         }
     }
 
-    private fun getSelectedCuota(): Double? {
-        if (binding.chipOtro.isChecked) return parseImporte(binding.etCustomAmount.text)
-        return chipsCuota.firstOrNull { it.isChecked }?.tag as? Double
+    private fun actualizarVistaPrevia() {
+        val cuota = cuotaElegida() ?: 0.0
+        NumberAnimators.animateCurrency(binding.tvPreviewBaseX2, CalculoComisiones.calcularBaseX2(cuota), prefix = "+")
+        binding.tvPreviewDetalle.text = if (esHecho) {
+            getString(R.string.preview_detalle, cuota.toEurosCompacto())
+        } else {
+            getString(R.string.preview_detalle_pendiente)
+        }
+        binding.tvPreviewEstadoBadge.setTextoAccesible(
+            getString(if (esHecho) R.string.socio_status_badge_conseguido else R.string.socio_status_badge_pendiente)
+        )
+    }
+
+    private fun alternarDetalles() {
+        HapticUtils.performClick(binding.filaDetalles)
+        detallesAbiertos = !detallesAbiertos
+        TransitionManager.beginDelayedTransition(binding.contenidoAddSocio, AutoTransition().setDuration(DURACION_MS))
+        mostrarDetalles()
+        if (detallesAbiertos) mostrarTeclado(binding.etNombreSocio)
+    }
+
+    private fun mostrarDetalles() {
+        binding.contenedorDetalles.isVisible = detallesAbiertos
+        binding.ivDetallesFlecha.animate().rotation(if (detallesAbiertos) 180f else 0f).setDuration(DURACION_MS).start()
+        binding.filaDetalles.contentDescription = getString(
+            if (detallesAbiertos) R.string.detalles_ocultar_a11y else R.string.detalles_mostrar_a11y
+        )
+        actualizarResumenDetalles()
+    }
+
+    /** Plegado, muestra lo que se ha escrito para que no quede escondido. */
+    private fun actualizarResumenDetalles() {
+        val escrito = listOf(binding.etNombreSocio.text, binding.etNotas.text)
+            .map { it?.toString()?.trim().orEmpty() }
+            .filter { it.isNotEmpty() }
+        binding.tvDetallesResumen.text = if (detallesAbiertos || escrito.isEmpty()) {
+            getString(R.string.detalles_opcional)
+        } else {
+            escrito.joinToString(" · ")
+        }
+    }
+
+    private fun mostrarTeclado(campo: View) {
+        campo.requestFocus()
+        val ventana = dialog?.window ?: return
+        WindowCompat.getInsetsController(ventana, campo).show(WindowInsetsCompat.Type.ime())
     }
 
     private fun saveSocio() {
-        val cuota = getSelectedCuota()
+        val cuota = cuotaElegida()
         if (cuota == null || cuota <= 0) {
+            marcarCuota(opcionOtro)
             binding.tilCustomAmount.isVisible = true
-            binding.chipOtro.isChecked = true
             binding.tilCustomAmount.error = getString(R.string.msg_cuota_invalida)
+            mostrarTeclado(binding.etCustomAmount)
             return
         }
 
-        val dia = chipsDia.entries.firstOrNull { it.value.isChecked }?.key ?: defaultDia
+        val dia = botonesDia.entries.firstOrNull { it.value.isChecked }?.key ?: defaultDia
         val nombre = binding.etNombreSocio.text?.toString()?.trim().orEmpty()
         val notas = binding.etNotas.text?.toString()?.trim().orEmpty()
-        val esHecho = binding.switchSocioHechoAdd.isChecked
 
         val original = socioToEdit
         val socio = original?.copy(
@@ -229,11 +345,6 @@ class AddSocioBottomSheetDialog : BottomSheetDialogFragment() {
         dismiss()
     }
 
-    override fun onDestroyView() {
-        super.onDestroyView()
-        _binding = null
-    }
-
     companion object {
         const val TAG = "AddSocioDialog"
 
@@ -241,6 +352,9 @@ class AddSocioBottomSheetDialog : BottomSheetDialogFragment() {
         private const val ARG_SEMANA = "semanaKey"
         private const val ARG_DIA = "diaId"
         private const val STATE_CUOTA_INDEX = "cuotaIndex"
+        private const val STATE_HECHO = "hecho"
+        private const val STATE_DETALLES = "detallesAbiertos"
+        private const val DURACION_MS = 200L
 
         fun nuevo(semanaKey: String, dia: DiaSemana) = AddSocioBottomSheetDialog().apply {
             arguments = Bundle().apply {

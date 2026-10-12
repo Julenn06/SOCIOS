@@ -44,7 +44,6 @@ import com.julen.socios.util.CalculoComisiones
 import com.julen.socios.util.DateUtils
 import com.julen.socios.util.HapticUtils
 import com.julen.socios.util.NumberAnimators
-import com.julen.socios.util.abrirEnlace
 import com.julen.socios.util.toEurosCompacto
 import com.julen.socios.util.toPorcentajeString
 import com.julen.socios.util.setTextoAccesible
@@ -133,7 +132,7 @@ class MainActivity : AppCompatActivity() {
                 launch { viewModel.events.collect(::manejarEvento) }
                 launch { viewModel.exportPendienteDeDestino.collect(::mostrarDialogoDestinoExport) }
                 launch { viewModel.importPendiente.collect(::mostrarDialogoConfirmarImport) }
-                launch { actualizaciones.events.collect(::manejarEventoActualizacion) }
+                launch { actualizaciones.nuevaVersion.collect(::avisarNuevaVersion) }
             }
         }
 
@@ -282,35 +281,18 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun manejarEventoActualizacion(evento: ActualizacionesViewModel.Evento) {
-        when (evento) {
-            is ActualizacionesViewModel.Evento.Mensaje ->
-                Snackbar.make(binding.root, evento.texto.resolver(this), Snackbar.LENGTH_LONG).show()
-
-            is ActualizacionesViewModel.Evento.NuevaVersion -> {
-                val texto = getString(
-                    R.string.actualizacion_disponible, evento.publicada.version.toString(), evento.instalada
-                )
-                // Más tiempo que un aviso normal: es fácil no verlo al abrir la app.
-                Snackbar.make(binding.root, texto, DURACION_AVISO_VERSION_MS)
-                    .setAction(R.string.action_actualizar) { actualizar(evento.publicada) }
-                    .show()
+    private fun avisarNuevaVersion(publicada: VersionPublicada) {
+        val texto = getString(
+            R.string.actualizacion_disponible, publicada.version.toString(), actualizaciones.versionInstalada
+        )
+        // Más tiempo que un aviso normal: es fácil no verlo al abrir la app.
+        Snackbar.make(binding.root, texto, DURACION_AVISO_VERSION_MS)
+            .setAction(R.string.action_actualizar) {
+                if (!ActualizacionBottomSheetDialog.empezar(this, actualizaciones, publicada)) {
+                    Snackbar.make(binding.root, R.string.msg_sin_navegador, Snackbar.LENGTH_LONG).show()
+                }
             }
-        }
-    }
-
-    /** Descarga e instala la versión nueva desde la app. */
-    private fun actualizar(publicada: VersionPublicada) {
-        if (publicada.apk == null) {
-            // Una release sin APK adjunto: queda la página de GitHub.
-            if (!abrirEnlace(publicada.url)) {
-                Snackbar.make(binding.root, R.string.msg_sin_navegador, Snackbar.LENGTH_LONG).show()
-            }
-            return
-        }
-        actualizaciones.descargar(publicada)
-        if (supportFragmentManager.findFragmentByTag(ActualizacionBottomSheetDialog.TAG) != null) return
-        ActualizacionBottomSheetDialog().show(supportFragmentManager, ActualizacionBottomSheetDialog.TAG)
+            .show()
     }
 
     private fun mostrarDialogoDestinoExport(request: ExportRequest?) {
@@ -527,19 +509,9 @@ class MainActivity : AppCompatActivity() {
             .show(supportFragmentManager, BonoRegaloBottomSheetDialog.TAG)
     }
 
-    private fun mostrarTema() {
-        if (supportFragmentManager.findFragmentByTag(TemaDialogFragment.TAG) != null) return
-        TemaDialogFragment().show(supportFragmentManager, TemaDialogFragment.TAG)
-    }
-
-    private fun mostrarAcercaDe() {
-        if (supportFragmentManager.findFragmentByTag(AcercaDeDialogFragment.TAG) != null) return
-        AcercaDeDialogFragment().show(supportFragmentManager, AcercaDeDialogFragment.TAG)
-    }
-
-    private fun mostrarDialogoExportImport() {
-        if (supportFragmentManager.findFragmentByTag(ExportImportBottomSheetDialog.TAG) != null) return
-        ExportImportBottomSheetDialog().show(supportFragmentManager, ExportImportBottomSheetDialog.TAG)
+    private fun mostrarMas() {
+        if (supportFragmentManager.findFragmentByTag(MasBottomSheetDialog.TAG) != null) return
+        MasBottomSheetDialog().show(supportFragmentManager, MasBottomSheetDialog.TAG)
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
@@ -554,18 +526,8 @@ class MainActivity : AppCompatActivity() {
                 true
             }
 
-            R.id.action_export_import -> {
-                mostrarDialogoExportImport()
-                true
-            }
-
-            R.id.action_tema -> {
-                mostrarTema()
-                true
-            }
-
-            R.id.action_acerca_de -> {
-                mostrarAcercaDe()
+            R.id.action_mas -> {
+                mostrarMas()
                 true
             }
 

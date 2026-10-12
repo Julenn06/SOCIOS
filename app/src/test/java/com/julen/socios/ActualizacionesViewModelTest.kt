@@ -1,6 +1,7 @@
 package com.julen.socios
 
 import com.julen.socios.ActualizacionesViewModel.Descarga
+import com.julen.socios.ActualizacionesViewModel.EstadoVersion
 import com.julen.socios.actualizaciones.ApkPublicado
 import com.julen.socios.actualizaciones.ComprobadorActualizaciones
 import com.julen.socios.actualizaciones.DescargaDanadaException
@@ -87,46 +88,47 @@ class ActualizacionesViewModelTest {
 
     @Test
     fun alAbrirLaAppAvisaDeLaVersionNueva() = runTest {
-        val evento = viewModel("1.3.0").events.first()
+        val vm = viewModel("1.3.0")
 
-        evento as ActualizacionesViewModel.Evento.NuevaVersion
-        assertEquals("1.4.0", evento.publicada.version.toString())
-        assertEquals("1.3.0", evento.instalada)
+        assertEquals("1.4.0", vm.nuevaVersion.first().version.toString())
+        assertEquals("1.4.0", (vm.estadoVersion.value as EstadoVersion.Disponible).publicada.version.toString())
     }
 
     @Test
-    fun laBusquedaManualDiceSiYaEstaAlDia() = runTest {
+    fun laBusquedaManualEncuentraLaVersionNueva() {
+        registro.ultimaComprobacion = clock.millis() // la del arranque ya no toca
+        val vm = viewModel("1.3.0")
+        assertEquals(EstadoVersion.SinComprobar, vm.estadoVersion.value)
+
+        vm.buscarActualizaciones()
+
+        assertEquals("1.4.0", (vm.estadoVersion.value as EstadoVersion.Disponible).publicada.version.toString())
+    }
+
+    @Test
+    fun laBusquedaManualDiceSiYaEstaAlDia() {
         publicada = "1.3.0"
         val vm = viewModel("1.3.0")
         vm.buscarActualizaciones()
 
-        assertEquals(
-            ActualizacionesViewModel.Evento.Mensaje(UiText.Res(R.string.actualizacion_al_dia, listOf("1.3.0"))),
-            vm.events.first()
-        )
+        assertEquals(EstadoVersion.AlDia, vm.estadoVersion.value)
     }
 
     @Test
-    fun enUnaBuildDeDesarrolloMuestraLaUltimaPublicada() = runTest {
+    fun enUnaBuildDeDesarrolloMuestraLaUltimaPublicada() {
         val vm = viewModel("dev-12")
         vm.buscarActualizaciones()
 
-        assertEquals(
-            ActualizacionesViewModel.Evento.Mensaje(UiText.Res(R.string.actualizacion_ultima_publicada, listOf("1.4.0"))),
-            vm.events.first()
-        )
+        assertEquals(EstadoVersion.UltimaPublicada(Version.parse("1.4.0")!!), vm.estadoVersion.value)
     }
 
     @Test
-    fun sinConexionLaBusquedaManualAvisaDelError() = runTest {
+    fun sinConexionLaBusquedaManualAvisaDelError() {
         sinConexion = true
         val vm = viewModel("1.3.0")
         vm.buscarActualizaciones()
 
-        assertEquals(
-            ActualizacionesViewModel.Evento.Mensaje(UiText.Res(R.string.actualizacion_error)),
-            vm.events.first()
-        )
+        assertEquals(EstadoVersion.Error, vm.estadoVersion.value)
     }
 
     @Test

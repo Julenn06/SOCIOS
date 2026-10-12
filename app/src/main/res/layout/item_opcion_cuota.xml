@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Una cuota de la rejilla del formulario del socio; se infla desde código para cada importe. -->
+<com.google.android.material.button.MaterialButton xmlns:android="http://schemas.android.com/apk/res/android"
+    style="@style/Socios.Opcion"
+    android:layout_width="0dp"
+    android:layout_height="wrap_content" />

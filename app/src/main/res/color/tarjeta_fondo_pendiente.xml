@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Como tarjeta_fondo, pero en ámbar: para la opción "Pendiente" del socio. -->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:color="@color/orange_container" android:state_checked="true" />
+    <item android:color="@color/surface_muted" />
+</selector>

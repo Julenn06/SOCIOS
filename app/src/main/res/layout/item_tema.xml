@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Una opción del selector de tema: miniatura de la pantalla y su nombre. -->
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    style="@style/Socios.TarjetaSeleccionable"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="8dp">
+
+        <com.julen.socios.MuestraTemaView
+            android:id="@+id/muestraTema"
+            android:layout_width="match_parent"
+            android:layout_height="112dp"
+            android:importantForAccessibility="no" />
+
+        <!-- El icono se pone desde código, más pequeño que su tamaño original -->
+        <TextView
+            android:id="@+id/tvTema"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="2dp"
+            android:drawablePadding="6dp"
+            android:gravity="center"
+            android:maxLines="1"
+            android:textColor="@color/text_main"
+            android:textSize="13sp"
+            android:textStyle="bold"
+            tools:text="Sistema" />
+    </LinearLayout>
+</com.google.android.material.card.MaterialCardView>

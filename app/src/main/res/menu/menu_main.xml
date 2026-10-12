@@ -10,20 +10,11 @@
         app:contentDescription="@string/menu_historico_a11y"
         app:showAsAction="ifRoom" />
 
+    <!-- Abre el panel "Más" (copias y exportación, tema, versión y actualizaciones). -->
     <item
-        android:id="@+id/action_export_import"
-        android:icon="@drawable/ic_export"
-        android:title="@string/menu_export_import"
-        app:contentDescription="@string/menu_export_import_a11y"
-        app:showAsAction="never" />
-
-    <item
-        android:id="@+id/action_tema"
-        android:title="@string/menu_tema"
-        app:showAsAction="never" />
-
-    <item
-        android:id="@+id/action_acerca_de"
-        android:title="@string/menu_acerca_de"
-        app:showAsAction="never" />
+        android:id="@+id/action_mas"
+        android:icon="@drawable/ic_more_vert"
+        android:title="@string/menu_mas"
+        app:iconTint="@color/text_main"
+        app:showAsAction="always" />
 </menu>

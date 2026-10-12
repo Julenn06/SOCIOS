@@ -9,6 +9,7 @@ import com.julen.socios.actualizaciones.ComprobadorActualizaciones
 import com.julen.socios.actualizaciones.DescargaDanadaException
 import com.julen.socios.actualizaciones.DescargadorActualizaciones
 import com.julen.socios.actualizaciones.Progreso
+import com.julen.socios.actualizaciones.Version
 import com.julen.socios.actualizaciones.VersionPublicada
 import com.julen.socios.util.UiText
 import java.io.File
@@ -23,7 +24,7 @@ import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 
 /**
- * Aviso de versiones nuevas (al abrir la app, como mucho una vez al día, y cuando el usuario lo pide) y
+ * Versiones nuevas: aviso al abrir la app (como mucho una vez al día), búsqueda desde el panel "Más" y
  * descarga de su APK para instalarla.
  */
 class ActualizacionesViewModel(
@@ -31,9 +32,17 @@ class ActualizacionesViewModel(
     private val descargador: DescargadorActualizaciones
 ) : ViewModel() {
 
-    sealed interface Evento {
-        data class NuevaVersion(val publicada: VersionPublicada, val instalada: String) : Evento
-        data class Mensaje(val texto: UiText) : Evento
+    /** Si hay una versión nueva, como lo muestra el panel "Más". */
+    sealed interface EstadoVersion {
+        /** Aún no se ha buscado en esta sesión, o la búsqueda al abrir no tocaba o no encontró nada. */
+        data object SinComprobar : EstadoVersion
+        data object Buscando : EstadoVersion
+        data object AlDia : EstadoVersion
+        data class Disponible(val publicada: VersionPublicada) : EstadoVersion
+
+        /** En las builds de desarrollo no se puede comparar: solo se dice cuál es la última publicada. */
+        data class UltimaPublicada(val version: Version) : EstadoVersion
+        data object Error : EstadoVersion
     }
 
     /** Descarga del APK de una versión nueva, que muestra [ActualizacionBottomSheetDialog]. */
@@ -44,12 +53,18 @@ class ActualizacionesViewModel(
         data class Fallida(val publicada: VersionPublicada, val motivo: UiText) : Descarga
     }
 
-    private val eventos = Channel<Evento>(Channel.BUFFERED)
-    val events: Flow<Evento> = eventos.receiveAsFlow()
+    private val avisos = Channel<VersionPublicada>(Channel.BUFFERED)
+
+    /** Versión nueva encontrada al abrir la app, para avisar de ella una vez. */
+    val nuevaVersion: Flow<VersionPublicada> = avisos.receiveAsFlow()
+
+    private val _estadoVersion = MutableStateFlow<EstadoVersion>(EstadoVersion.SinComprobar)
+    val estadoVersion: StateFlow<EstadoVersion> = _estadoVersion.asStateFlow()
 
     val versionInstalada: String get() = comprobador.versionInstalada
 
-    private var busqueda: Job? = null
+    /** Cuándo se consultó GitHub por última vez (0 si nunca). */
+    val ultimaComprobacion: Long get() = comprobador.ultimaComprobacion
 
     private val _descarga = MutableStateFlow<Descarga>(Descarga.Inactiva)
     val descarga: StateFlow<Descarga> = _descarga.asStateFlow()
@@ -59,29 +74,29 @@ class ActualizacionesViewModel(
     init {
         viewModelScope.launch { descargador.limpiar() }
         viewModelScope.launch {
-            comprobador.comprobarSiToca()?.let { eventos.send(Evento.NuevaVersion(it, versionInstalada)) }
+            comprobador.comprobarSiToca()?.let {
+                _estadoVersion.value = EstadoVersion.Disponible(it)
+                avisos.send(it)
+            }
         }
     }
 
     fun buscarActualizaciones() {
-        if (busqueda?.isActive == true) return
-        busqueda = viewModelScope.launch {
-            val evento = try {
+        if (_estadoVersion.value == EstadoVersion.Buscando) return
+        _estadoVersion.value = EstadoVersion.Buscando
+        viewModelScope.launch {
+            _estadoVersion.value = try {
                 val resultado = comprobador.comprobar()
                 when {
-                    resultado.hayNueva -> Evento.NuevaVersion(resultado.publicada, versionInstalada)
-                    comprobador.instalada != null ->
-                        Evento.Mensaje(UiText.Res(R.string.actualizacion_al_dia, listOf(versionInstalada)))
-                    else -> Evento.Mensaje(
-                        UiText.Res(R.string.actualizacion_ultima_publicada, listOf(resultado.publicada.version.toString()))
-                    )
+                    resultado.hayNueva -> EstadoVersion.Disponible(resultado.publicada)
+                    comprobador.instalada != null -> EstadoVersion.AlDia
+                    else -> EstadoVersion.UltimaPublicada(resultado.publicada.version)
                 }
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {
-                Evento.Mensaje(UiText.Res(R.string.actualizacion_error))
+                EstadoVersion.Error
             }
-            eventos.send(evento)
         }
     }
 

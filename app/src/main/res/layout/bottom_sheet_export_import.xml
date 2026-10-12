@@ -1,240 +1,228 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<!-- Copias y exportación: pestañas Exportar / Importar, alcance en tarjetas y formatos como filas. -->
+<androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="@drawable/bg_amount_badge"
-    android:backgroundTint="@color/surface_card"
-    android:orientation="vertical"
-    android:padding="20dp">
+    android:forceDarkAllowed="false"
+    tools:targetApi="q">
 
-    <!-- Drag handle bar -->
-    <View
-        android:layout_width="40dp"
-        android:layout_height="4dp"
-        android:layout_gravity="center_horizontal"
-        android:layout_marginBottom="16dp"
-        android:background="@color/handle" />
-
-    <!-- Encabezado -->
     <LinearLayout
+        android:id="@+id/contenidoExportImport"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:gravity="center_vertical"
-        android:orientation="horizontal">
+        android:orientation="vertical"
+        android:paddingHorizontal="20dp"
+        android:paddingTop="12dp"
+        android:paddingBottom="24dp">
 
-        <ImageView
-            android:importantForAccessibility="no"
-            android:layout_width="28dp"
-            android:layout_height="28dp"
-            android:src="@drawable/ic_export"
-            app:tint="@color/primary" />
+        <!-- Handle drag bar -->
+        <View
+            android:layout_width="40dp"
+            android:layout_height="4dp"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginBottom="16dp"
+            android:background="@color/handle" />
 
+        <!-- Encabezado -->
         <LinearLayout
-            android:layout_width="0dp"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginStart="12dp"
-            android:layout_weight="1"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <FrameLayout
+                android:layout_width="52dp"
+                android:layout_height="52dp"
+                android:background="@drawable/bg_icono_degradado"
+                android:elevation="3dp">
+
+                <ImageView
+                    android:layout_width="26dp"
+                    android:layout_height="26dp"
+                    android:layout_gravity="center"
+                    android:importantForAccessibility="no"
+                    android:src="@drawable/ic_backup"
+                    app:tint="@android:color/white" />
+            </FrameLayout>
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="14dp"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/export_titulo"
+                    android:textColor="@color/text_main"
+                    android:textSize="20sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:text="@string/export_subtitulo"
+                    android:textColor="@color/text_sub"
+                    android:textSize="13sp" />
+            </LinearLayout>
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnCerrar"
+                style="@style/Widget.Material3.Button.IconButton.Filled.Tonal"
+                android:layout_width="44dp"
+                android:layout_height="44dp"
+                android:contentDescription="@string/action_close"
+                app:backgroundTint="@color/surface_muted"
+                app:icon="@drawable/ic_close"
+                app:iconTint="@color/text_sub" />
+        </LinearLayout>
+
+        <!-- Pestañas -->
+        <com.google.android.material.button.MaterialButtonToggleGroup
+            android:id="@+id/toggleModo"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            app:checkedButton="@id/btnModoExportar"
+            app:selectionRequired="true"
+            app:singleSelection="true">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnModoExportar"
+                style="@style/Socios.Opcion"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/export_pestana_exportar"
+                app:icon="@drawable/ic_export"
+                app:iconGravity="textStart"
+                app:iconTint="@color/opcion_texto" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnModoImportar"
+                style="@style/Socios.Opcion"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/export_pestana_importar"
+                app:icon="@drawable/ic_import"
+                app:iconGravity="textStart"
+                app:iconTint="@color/opcion_texto" />
+        </com.google.android.material.button.MaterialButtonToggleGroup>
+
+        <!-- ===== EXPORTAR ===== -->
+        <LinearLayout
+            android:id="@+id/contenedorExportar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
             android:orientation="vertical">
 
             <TextView
-                android:layout_width="wrap_content"
+                style="@style/Socios.Seccion"
+                android:text="@string/export_alcance_label" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="@string/export_titulo"
-                android:textColor="@color/text_main"
-                android:textSize="18sp"
-                android:textStyle="bold" />
+                android:baselineAligned="false"
+                android:orientation="horizontal">
+
+                <include
+                    android:id="@+id/alcanceSemana"
+                    layout="@layout/item_alcance"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1" />
+
+                <include
+                    android:id="@+id/alcanceElegir"
+                    layout="@layout/item_alcance"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_marginHorizontal="10dp"
+                    android:layout_weight="1" />
+
+                <include
+                    android:id="@+id/alcanceTodo"
+                    layout="@layout/item_alcance"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1" />
+            </LinearLayout>
 
             <TextView
-                android:layout_width="wrap_content"
+                style="@style/Socios.Seccion"
+                android:text="@string/export_formato_label" />
+
+            <include
+                android:id="@+id/formatoPdf"
+                layout="@layout/item_formato" />
+
+            <include
+                android:id="@+id/formatoCsv"
+                layout="@layout/item_formato"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="@string/export_subtitulo"
-                android:textColor="@color/text_sub"
-                android:textSize="12sp" />
+                android:layout_marginTop="10dp" />
+
+            <include
+                android:id="@+id/formatoJson"
+                layout="@layout/item_formato"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp" />
+        </LinearLayout>
+
+        <!-- ===== IMPORTAR ===== -->
+        <LinearLayout
+            android:id="@+id/contenedorImportar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:visibility="gone"
+            tools:visibility="visible">
+
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                app:cardBackgroundColor="@color/amber_container"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="0dp"
+                app:strokeColor="@color/amber_stroke"
+                app:strokeWidth="1dp">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:drawablePadding="10dp"
+                    app:drawableTint="@color/amber_text"
+                    android:padding="14dp"
+                    android:text="@string/import_aviso"
+                    android:textColor="@color/text_main"
+                    android:textSize="13sp"
+                    app:drawableStartCompat="@drawable/ic_info" />
+            </com.google.android.material.card.MaterialCardView>
+
+            <TextView
+                style="@style/Socios.Seccion"
+                android:text="@string/import_archivo_label" />
+
+            <include
+                android:id="@+id/importarJson"
+                layout="@layout/item_formato" />
+
+            <include
+                android:id="@+id/importarCsv"
+                layout="@layout/item_formato"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp" />
         </LinearLayout>
     </LinearLayout>
-
-    <!-- Selector de Alcance -->
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:text="@string/export_alcance_label"
-        android:textColor="@color/text_sub"
-        android:textSize="12sp"
-        android:textStyle="bold" />
-
-    <com.google.android.material.chip.ChipGroup
-        android:id="@+id/chipGroupAlcance"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="6dp"
-        app:singleSelection="true">
-
-        <com.google.android.material.chip.Chip
-            android:id="@+id/chipAlcanceSemana"
-            style="@style/Widget.Material3.Chip.Filter"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:checked="true"
-            android:text="@string/export_alcance_semana" />
-
-        <com.google.android.material.chip.Chip
-            android:id="@+id/chipAlcanceSeleccion"
-            style="@style/Widget.Material3.Chip.Filter"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/export_alcance_elegir" />
-
-        <com.google.android.material.chip.Chip
-            android:id="@+id/chipAlcanceHistorico"
-            style="@style/Widget.Material3.Chip.Filter"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/export_alcance_historico" />
-    </com.google.android.material.chip.ChipGroup>
-
-    <!-- Botón Selección de Semanas Específicas -->
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/btnElegirSemanas"
-        style="@style/Widget.Material3.Button.OutlinedButton"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="6dp"
-        android:gravity="start|center_vertical"
-        tools:text="📅 1 semana seleccionada (2026-W41)"
-        android:textColor="@color/primary"
-        android:visibility="gone"
-        tools:visibility="visible" />
-
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="1dp"
-        android:layout_marginVertical="14dp"
-        android:background="@color/divider" />
-
-    <!-- SECCIÓN 1: EXPORTAR -->
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/export_seccion_exportar"
-        android:contentDescription="@string/export_seccion_exportar_a11y"
-        android:textColor="@color/text_main"
-        android:textSize="14sp"
-        android:textStyle="bold" />
-
-    <com.google.android.material.card.MaterialCardView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        app:cardBackgroundColor="@color/surface_muted"
-        app:cardCornerRadius="12dp"
-        app:cardElevation="0dp"
-        app:strokeColor="@color/divider"
-        app:strokeWidth="1dp">
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:padding="12dp">
-
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnExportPdf"
-                style="@style/Widget.Material3.Button.TonalButton"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:gravity="start|center_vertical"
-                android:text="@string/export_pdf"
-                android:textColor="@color/blue_text"
-                app:backgroundTint="@color/blue_container"
-                app:icon="@drawable/ic_file"
-                app:iconTint="@color/blue_text" />
-
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnExportCsv"
-                style="@style/Widget.Material3.Button.TonalButton"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="6dp"
-                android:gravity="start|center_vertical"
-                android:text="@string/export_csv"
-                android:textColor="@color/green_text"
-                app:backgroundTint="@color/green_container"
-                app:icon="@drawable/ic_export"
-                app:iconTint="@color/green_text" />
-
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnExportJson"
-                style="@style/Widget.Material3.Button.TonalButton"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="6dp"
-                android:gravity="start|center_vertical"
-                android:text="@string/export_json"
-                android:textColor="@color/orange_text"
-                app:backgroundTint="@color/orange_container"
-                app:icon="@drawable/ic_export"
-                app:iconTint="@color/orange_text" />
-        </LinearLayout>
-    </com.google.android.material.card.MaterialCardView>
-
-    <!-- SECCIÓN 2: IMPORTAR -->
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:text="@string/export_seccion_importar"
-        android:contentDescription="@string/export_seccion_importar_a11y"
-        android:textColor="@color/text_main"
-        android:textSize="14sp"
-        android:textStyle="bold" />
-
-    <com.google.android.material.card.MaterialCardView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        app:cardBackgroundColor="@color/surface_muted"
-        app:cardCornerRadius="12dp"
-        app:cardElevation="0dp"
-        app:strokeColor="@color/divider"
-        app:strokeWidth="1dp">
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:padding="12dp">
-
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnImportJson"
-                style="@style/Widget.Material3.Button.OutlinedButton"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:gravity="start|center_vertical"
-                android:text="@string/import_json"
-                app:icon="@drawable/ic_import" />
-
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnImportCsv"
-                style="@style/Widget.Material3.Button.OutlinedButton"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="6dp"
-                android:gravity="start|center_vertical"
-                android:text="@string/import_csv"
-                app:icon="@drawable/ic_import" />
-        </LinearLayout>
-    </com.google.android.material.card.MaterialCardView>
-
-    <!-- Botón Cerrar -->
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/btnCerrar"
-        style="@style/Widget.Material3.Button.TextButton"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:text="@string/action_close" />
-
-</LinearLayout>
+</androidx.core.widget.NestedScrollView>

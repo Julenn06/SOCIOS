@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Círculos translúcidos para poner encima de un fondo de color que cambia (cabecera del socio). -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:width="170dp"
+        android:height="170dp"
+        android:gravity="top|end"
+        android:right="-60dp"
+        android:top="-70dp">
+        <shape android:shape="oval">
+            <solid android:color="#1AFFFFFF" />
+        </shape>
+    </item>
+    <item
+        android:width="90dp"
+        android:height="90dp"
+        android:bottom="-40dp"
+        android:gravity="bottom|end"
+        android:right="80dp">
+        <shape android:shape="oval">
+            <solid android:color="#12FFFFFF" />
+        </shape>
+    </item>
+</layer-list>

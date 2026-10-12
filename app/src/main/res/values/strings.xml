@@ -6,7 +6,6 @@
     <string name="action_save">Guardar</string>
     <string name="action_delete">Eliminar</string>
     <string name="action_close">Cerrar</string>
-    <string name="action_edit">Editar</string>
     <string name="action_accept">Aceptar</string>
     <string name="action_entendido">Entendido</string>
     <string name="action_importar">Importar</string>
@@ -18,29 +17,44 @@
     <string name="title_week_format">Semana %s</string>
     <string name="title_socios_day_format">Socios del %s</string>
     <string name="title_socios_week">Socios de la semana</string>
-    <string name="title_add_socio">Añadir Nuevo Socio</string>
-    <string name="title_edit_socio">Editar Registro de Socio</string>
-    <string name="subtitle_add_socio">Introduce la colaboración y asigna el día</string>
+    <string name="title_add_socio">Nuevo socio</string>
+    <string name="title_edit_socio">Editar socio</string>
     <string name="menu_historico">📈 Histórico Acumulado</string>
-    <string name="menu_export_import">💾 Exportar / Importar Datos</string>
 
-    <string name="menu_tema">Tema</string>
-    <string name="menu_acerca_de">Acerca de</string>
+
+    <!-- Panel "Más" -->
+    <string name="menu_mas">Más opciones</string>
+    <string name="mas_version">Versión %s</string>
+    <string name="mas_seccion_datos">Datos</string>
+    <string name="mas_seccion_apariencia">Tema</string>
+    <string name="mas_seccion_acerca_de">Acerca de</string>
+    <string name="mas_exportar_descripcion">PDF, Excel o copia de seguridad</string>
+    <string name="mas_novedades">Novedades</string>
+    <string name="mas_novedades_descripcion">Qué trae cada versión, en GitHub</string>
+    <string name="mas_nota_actualizaciones">Al abrirse, la app busca versiones nuevas como mucho una vez al día.</string>
+    <string name="tema_a11y">Tema: %s</string>
+    <string name="version_sin_comprobar">¿Hay una versión nueva?</string>
+    <string name="version_nunca_comprobada">Todavía no se ha comprobado</string>
+    <string name="version_buscando">Buscando actualizaciones…</string>
+    <string name="version_buscando_detalle">Consultando GitHub</string>
+    <string name="version_al_dia">Tienes la última versión</string>
+    <string name="version_comprobada">Comprobado %s</string>
+    <string name="version_disponible">Versión %s disponible</string>
+    <string name="version_disponible_detalle">Lista para instalar desde aquí</string>
+    <string name="version_ultima_publicada">Última publicada: %s</string>
+    <string name="version_desarrollo">Esta es una versión de desarrollo</string>
+    <string name="version_error">No se ha podido comprobar</string>
+    <string name="version_error_detalle">Revisa la conexión a internet</string>
+    <string name="action_buscar">Buscar</string>
 
     <!-- Tema -->
-    <string name="tema_titulo">Tema</string>
-    <string name="tema_sistema">Según el sistema</string>
+    <string name="tema_sistema">Sistema</string>
     <string name="tema_claro">Claro</string>
     <string name="tema_oscuro">Oscuro</string>
 
-    <!-- Acerca de y versiones nuevas -->
-    <string name="acerca_de_mensaje">Versión %1$s\n\nAl abrirse, la app comprueba como mucho una vez al día si hay una versión nueva en GitHub.</string>
-    <string name="action_buscar_actualizaciones">Buscar actualizaciones</string>
+    <!-- Versiones nuevas -->
     <string name="actualizacion_disponible">Hay una versión nueva: %1$s (tienes la %2$s)</string>
     <string name="action_actualizar">Actualizar</string>
-    <string name="actualizacion_al_dia">Tienes la última versión (%s)</string>
-    <string name="actualizacion_ultima_publicada">La última versión publicada es la %s</string>
-    <string name="actualizacion_error">No se ha podido comprobar si hay versiones nuevas. Revisa la conexión a internet.</string>
     <string name="msg_sin_navegador">No hay ninguna app para abrir el enlace</string>
 
     <!-- Descarga e instalación de una versión nueva -->
@@ -105,28 +119,31 @@
     <string name="socio_base_format">%s base</string>
     <string name="socio_note_format">Nota: %s</string>
     <string name="item_switch_hecho">Socio Conseguido / Hecho</string>
-    <string name="preview_base_format">+%1$s (Cuota %2$s x2)</string>
 
     <!-- Add Socio Bottom Sheet Labels -->
-    <string name="preview_ganancia_label">VISTA PREVIA DE GANANCIA</string>
-    <string name="section_cuota_label">1. Cuota de Colaboración (€/mes)</string>
+    <string name="preview_ganancia_label">GANANCIA DE ESTE SOCIO</string>
+    <string name="section_cuota_label">Cuota mensual</string>
     <string name="chip_otro">Otro…</string>
     <string name="hint_custom_amount">Cantidad personalizada (€)</string>
-    <string name="section_dia_label">2. Asignar Día de la Semana</string>
-    <string name="section_estado_label">3. Estado del Registro</string>
-    <string name="switch_socio_hecho_label">Socio hecho / conseguido (sumar a ganancias)</string>
-    <string name="section_adicional_label">4. Información Adicional (Opcional)</string>
+    <string name="section_dia_label">Día</string>
+    <string name="section_estado_label">Estado</string>
     <string name="hint_nombre_socio">Nombre del socio o identificador</string>
     <string name="hint_notas">Notas o comentarios</string>
-    <string name="action_save_socio">Guardar Socio</string>
+    <string name="action_save_socio">Guardar socio</string>
+    <string name="action_guardar_cambios">Guardar cambios</string>
+    <string name="add_subtitulo_semana">Semana del %s</string>
+    <string name="preview_detalle">Cuota de %s × 2</string>
+    <string name="preview_detalle_pendiente">No suma hasta que esté conseguido</string>
+    <string name="estado_conseguido">Conseguido</string>
+    <string name="estado_conseguido_detalle">Suma a la semana</string>
+    <string name="estado_pendiente">Pendiente</string>
+    <string name="estado_pendiente_detalle">Aún no suma</string>
+    <string name="detalles_titulo">Nombre y notas</string>
+    <string name="detalles_opcional">Opcional</string>
+    <string name="detalles_mostrar_a11y">Nombre y notas, opcional. Toca para escribirlos</string>
+    <string name="detalles_ocultar_a11y">Nombre y notas. Toca para plegarlos</string>
     <string name="msg_cuota_invalida">Por favor introduce un importe de colaboración válido</string>
 
-    <!-- Days of the week -->
-    <string name="day_lunes">Lunes</string>
-    <string name="day_martes">Martes</string>
-    <string name="day_miercoles">Miércoles</string>
-    <string name="day_jueves">Jueves</string>
-    <string name="day_viernes">Viernes</string>
 
     <!-- Bonus manual -->
     <string name="bono_titulo">Ajustar Bonus de la Semana</string>
@@ -207,25 +224,33 @@
     </plurals>
 
     <!-- Exportar / Importar -->
-    <string name="export_titulo">Exportar / Importar Datos</string>
-    <string name="export_subtitulo">Genera informes o restaura copias de seguridad</string>
-    <string name="export_alcance_label">Selecciona el alcance de los datos:</string>
-    <string name="export_alcance_semana">Semana activa</string>
-    <string name="export_alcance_elegir">Elegir semanas…</string>
-    <string name="export_alcance_historico">Histórico completo</string>
-    <string name="export_seccion_exportar">📤 Exportar Datos</string>
-    <string name="export_pdf">Exportar Informe PDF</string>
-    <string name="export_csv">Exportar Hoja de Cálculo CSV</string>
-    <string name="export_json">Exportar Copia JSON</string>
-    <string name="export_seccion_importar">📥 Importar Datos</string>
-    <string name="import_json">Importar desde JSON</string>
-    <string name="import_csv">Importar desde CSV</string>
-    <string name="export_elegir_semanas_vacio">📅 Pulsar para seleccionar semanas…</string>
-    <plurals name="export_semanas_seleccionadas">
-        <item quantity="one">📅 %1$d semana seleccionada (%2$s)</item>
-        <item quantity="many">📅 %1$d semanas seleccionadas</item>
-        <item quantity="other">📅 %1$d semanas seleccionadas</item>
+    <string name="export_titulo">Copias y exportación</string>
+    <string name="export_subtitulo">Guarda tus datos o tráelos de otro móvil</string>
+    <string name="export_pestana_exportar">Exportar</string>
+    <string name="export_pestana_importar">Importar</string>
+    <string name="export_alcance_elegir_vacio">Toca para elegir</string>
+    <plurals name="export_semanas">
+        <item quantity="one">%d semana</item>
+        <item quantity="many">%d semanas</item>
+        <item quantity="other">%d semanas</item>
     </plurals>
+    <string name="export_formato_label">Formato</string>
+    <string name="export_pdf_detalle">Totales y detalle, listo para imprimir o enviar</string>
+    <string name="export_csv_detalle">Para abrirla en Excel o Google Sheets</string>
+    <string name="export_json_detalle">Todos los datos, para restaurarlos en la app</string>
+    <string name="import_aviso">Antes de importar verás un resumen de lo que entra. Los socios que ya tengas se sustituyen por los del archivo.</string>
+    <string name="import_archivo_label">Elige el archivo</string>
+    <string name="import_json_detalle">Restaura una copia de seguridad de la app</string>
+    <string name="import_csv_detalle">Una hoja exportada desde la app, aunque la hayas editado</string>
+    <string name="export_alcance_label">¿Qué quieres exportar?</string>
+    <string name="export_alcance_semana">Semana</string>
+    <string name="export_alcance_elegir">Elegir</string>
+    <string name="export_alcance_historico">Todo</string>
+    <string name="export_pdf">Informe PDF</string>
+    <string name="export_csv">Hoja de cálculo CSV</string>
+    <string name="export_json">Copia de seguridad JSON</string>
+    <string name="import_json">Copia JSON</string>
+    <string name="import_csv">Hoja CSV</string>
     <string name="export_dialogo_semanas_titulo">Seleccionar semanas a exportar</string>
     <string name="export_semana_item">Semana %1$s (%2$s)</string>
     <string name="msg_sin_semanas">No hay semanas registradas para seleccionar</string>
@@ -327,8 +352,5 @@
     <string name="cd_eliminar_socio">Eliminar socio</string>
     <string name="irpf_titulo_a11y">Desglose de ganancias e IRPF</string>
     <string name="historico_titulo_a11y">Histórico acumulado global</string>
-    <string name="export_seccion_exportar_a11y">Exportar datos</string>
-    <string name="export_seccion_importar_a11y">Importar datos</string>
     <string name="menu_historico_a11y">Histórico acumulado</string>
-    <string name="menu_export_import_a11y">Exportar o importar datos</string>
 </resources>

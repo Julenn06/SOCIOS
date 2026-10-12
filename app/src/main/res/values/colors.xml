@@ -36,6 +36,9 @@
     <color name="orange_container">#FFF3E0</color>
     <color name="amber_text">#F57F17</color>
     <color name="amber_container">#FFFDE7</color>
+    <color name="amber_stroke">#FDE68A</color>
+    <color name="violet_text">#6D28D9</color>
+    <color name="violet_container">#EDE9FE</color>
 
     <!-- Cabecera con degradado azul: igual en los dos temas porque ya es oscura y lleva texto claro -->
     <color name="header_gradient_start">#1976D2</color>
@@ -54,6 +57,20 @@
     <color name="badge_gradient_start">#107C41</color>
     <color name="badge_gradient_end">#0B5A2F</color>
     <color name="badge_text_sub">#E8F5E9</color>
+
+    <!-- Cabecera del socio pendiente en el formulario: ámbar, con texto blanco en los dos temas -->
+    <color name="pendiente_gradient_start">#F59E0B</color>
+    <color name="pendiente_gradient_end">#B45309</color>
+
+    <!-- Miniaturas del selector de tema: cada una muestra su tema, sea cual sea el actual -->
+    <color name="muestra_claro_fondo">#F1F5F9</color>
+    <color name="muestra_claro_tarjeta">#FFFFFF</color>
+    <color name="muestra_claro_linea">#CBD5E1</color>
+    <color name="muestra_claro_acento">#059669</color>
+    <color name="muestra_oscuro_fondo">#0B1220</color>
+    <color name="muestra_oscuro_tarjeta">#1E293B</color>
+    <color name="muestra_oscuro_linea">#475569</color>
+    <color name="muestra_oscuro_acento">#34D399</color>
 
     <!-- Icono del atajo "Nuevo socio": va sobre la placa blanca del icono, igual en claro y en oscuro. -->
     <color name="icono_atajo">#059669</color>

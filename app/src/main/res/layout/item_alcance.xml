@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Una opción de qué exportar: icono, nombre y detalle (rango, número de semanas). -->
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    style="@style/Socios.TarjetaSeleccionable"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingHorizontal="12dp"
+        android:paddingTop="14dp"
+        android:paddingBottom="12dp">
+
+        <ImageView
+            android:id="@+id/ivAlcance"
+            android:layout_width="26dp"
+            android:layout_height="26dp"
+            android:importantForAccessibility="no"
+            app:tint="@color/primary"
+            tools:src="@drawable/ic_today" />
+
+        <TextView
+            android:id="@+id/tvAlcance"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:maxLines="2"
+            android:textColor="@color/text_main"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            tools:text="Semana" />
+
+        <TextView
+            android:id="@+id/tvAlcanceDetalle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
+            android:maxLines="2"
+            android:textColor="@color/text_sub"
+            android:textSize="12sp"
+            tools:text="12–16 oct" />
+    </LinearLayout>
+</com.google.android.material.card.MaterialCardView>

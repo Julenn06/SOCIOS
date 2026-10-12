@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Fila de un formato para exportar o importar: placa de color con icono, nombre, para qué sirve y flecha. -->
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    style="@style/Socios.TarjetaFila"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:padding="14dp">
+
+        <FrameLayout
+            android:id="@+id/placaFormato"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:background="@drawable/bg_icono_tile"
+            tools:backgroundTint="@color/blue_container">
+
+            <ImageView
+                android:id="@+id/ivFormato"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:layout_gravity="center"
+                android:importantForAccessibility="no"
+                tools:src="@drawable/ic_pdf"
+                tools:tint="@color/blue_text" />
+        </FrameLayout>
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="14dp"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/tvFormato"
+                style="@style/Socios.TituloFila"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                tools:text="Informe PDF" />
+
+            <TextView
+                android:id="@+id/tvFormatoDetalle"
+                style="@style/Socios.DescripcionFila"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                tools:text="Totales y detalle, listo para imprimir o enviar" />
+        </LinearLayout>
+
+        <ImageView
+            android:layout_width="22dp"
+            android:layout_height="22dp"
+            android:importantForAccessibility="no"
+            android:src="@drawable/ic_chevron_right"
+            app:tint="@color/text_sub" />
+    </LinearLayout>
+</com.google.android.material.card.MaterialCardView>

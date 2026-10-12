@@ -11,6 +11,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.core.content.FileProvider
 import androidx.core.view.isVisible
+import androidx.fragment.app.FragmentActivity
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
@@ -210,8 +211,20 @@ class ActualizacionBottomSheetDialog : BottomSheetDialogFragment() {
     private fun tamano(bytes: Long): String = Formatter.formatShortFileSize(requireContext(), bytes)
 
     companion object {
-        const val TAG = "ActualizacionBottomSheet"
+        private const val TAG = "ActualizacionBottomSheet"
         private const val STATE_INSTALADOR_ABIERTO = "instaladorAbierto"
         private const val MIME_APK = "application/vnd.android.package-archive"
+
+        /**
+         * Descarga e instala [publicada] desde la app. Una release sin APK adjunto se abre en GitHub,
+         * como antes; devuelve false si no hay ninguna app para abrirla.
+         */
+        fun empezar(activity: FragmentActivity, viewModel: ActualizacionesViewModel, publicada: VersionPublicada): Boolean {
+            if (publicada.apk == null) return activity.abrirEnlace(publicada.url)
+            viewModel.descargar(publicada)
+            val fragmentos = activity.supportFragmentManager
+            if (fragmentos.findFragmentByTag(TAG) == null) ActualizacionBottomSheetDialog().show(fragmentos, TAG)
+            return true
+        }
     }
 }

@@ -49,6 +49,9 @@ class ComprobadorActualizaciones(
     /** null en las builds de desarrollo, que no se pueden comparar con las publicadas. */
     val instalada: Version? = Version.parse(versionInstalada)
 
+    /** Cuándo se consultó GitHub por última vez (0 si nunca). */
+    val ultimaComprobacion: Long get() = registro.ultimaComprobacion
+
     /** Comprobación que pide el usuario. @throws IOException si no se puede consultar. */
     suspend fun comprobar(): Resultado {
         val publicada = fuente.ultimaPublicada()
@@ -100,7 +103,9 @@ class GitHubReleases : FuenteVersiones {
 
     companion object {
         private const val URL_API = "https://api.github.com/repos/Julenn06/SOCIOS/releases/latest"
-        private const val URL_RELEASES = "https://github.com/Julenn06/SOCIOS/releases/"
+        /** Página de las versiones publicadas, con las novedades de cada una. */
+        const val URL_PAGINA = "https://github.com/Julenn06/SOCIOS/releases"
+        private const val URL_RELEASES = "$URL_PAGINA/"
         private const val URL_DESCARGAS = URL_RELEASES + "download/"
         private const val TIMEOUT_MS = 10_000
 

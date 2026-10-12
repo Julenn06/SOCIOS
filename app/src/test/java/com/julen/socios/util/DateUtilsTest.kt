@@ -76,6 +76,24 @@ class DateUtilsTest {
     }
 
     @Test
+    fun elRangoCortoJuntaElMesSiNoCambia() {
+        assertEquals("12–16 oct", DateUtils.rangoCorto("2026-W42"))
+        assertEquals("29 dic – 2 ene", DateUtils.rangoCorto("2026-W01"))
+        assertEquals("clave-rara", DateUtils.rangoCorto("clave-rara"))
+    }
+
+    @Test
+    fun elMomentoRelativoDiceHoyAyerOLaFecha() {
+        val ahora = clockEn("2026-10-14")
+        fun millis(fecha: String, hora: Int, minuto: Int) =
+            LocalDate.parse(fecha).atTime(hora, minuto).atZone(zona).toInstant().toEpochMilli()
+
+        assertEquals("hoy a las 9:05", DateUtils.momentoRelativo(millis("2026-10-14", 9, 5), ahora))
+        assertEquals("ayer a las 23:59", DateUtils.momentoRelativo(millis("2026-10-13", 23, 59), ahora))
+        assertEquals("el 3 oct", DateUtils.momentoRelativo(millis("2026-10-03", 12, 0), ahora))
+    }
+
+    @Test
     fun elFinDeSemanaSeAsignaAlDiaLaborableMasCercano() {
         assertEquals(DiaSemana.MIERCOLES, DateUtils.getDiaSemanaActual(clockEn("2026-10-14")))
         assertEquals(DiaSemana.VIERNES, DateUtils.getDiaSemanaActual(clockEn("2026-10-17")))

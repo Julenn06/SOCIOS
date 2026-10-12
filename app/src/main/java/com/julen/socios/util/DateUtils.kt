@@ -3,6 +3,7 @@ package com.julen.socios.util
 import com.julen.socios.model.DiaSemana
 import java.time.Clock
 import java.time.DayOfWeek
+import java.time.Instant
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
@@ -19,6 +20,8 @@ object DateUtils {
 
     private val LOCALE_ES: Locale = Locale.forLanguageTag("es-ES")
     private val FORMATO_DIA: DateTimeFormatter = DateTimeFormatter.ofPattern("d 'de' MMM", LOCALE_ES)
+    private val FORMATO_DIA_CORTO: DateTimeFormatter = DateTimeFormatter.ofPattern("d MMM", LOCALE_ES)
+    private val FORMATO_HORA: DateTimeFormatter = DateTimeFormatter.ofPattern("H:mm", LOCALE_ES)
     private val PATRON_SEMANA_KEY = Regex("""(\d{4})-W(\d{2})""")
 
     /** Lunes de la semana actual desplazada [weekOffset] semanas. */
@@ -75,6 +78,31 @@ object DateUtils {
         val viernes = lunes.plusDays(4)
         return "${FORMATO_DIA.format(lunes)} - ${FORMATO_DIA.format(viernes)} (${lunes.year})"
     }
+
+    /** Rango corto de lunes a viernes, ej. "12–16 oct" o "29 dic – 2 ene"; la propia clave si no es válida. */
+    fun rangoCorto(semanaKey: String): String {
+        val lunes = lunesDeSemanaKey(semanaKey) ?: return semanaKey
+        val viernes = lunes.plusDays(4)
+        return if (lunes.month == viernes.month) {
+            "${lunes.dayOfMonth}–${diaCorto(viernes)}"
+        } else {
+            "${diaCorto(lunes)} – ${diaCorto(viernes)}"
+        }
+    }
+
+    /** Cuándo fue [millis], dicho con naturalidad: "hoy a las 16:05", "ayer a las 9:30" o "el 3 oct". */
+    fun momentoRelativo(millis: Long, clock: Clock = Clock.systemDefaultZone()): String {
+        val momento = Instant.ofEpochMilli(millis).atZone(clock.zone)
+        val hoy = LocalDate.now(clock)
+        return when (momento.toLocalDate()) {
+            hoy -> "hoy a las ${FORMATO_HORA.format(momento)}"
+            hoy.minusDays(1) -> "ayer a las ${FORMATO_HORA.format(momento)}"
+            else -> "el ${diaCorto(momento.toLocalDate())}"
+        }
+    }
+
+    // Java escribe los meses abreviados con punto ("oct."); en un rango corto sobra.
+    private fun diaCorto(fecha: LocalDate) = FORMATO_DIA_CORTO.format(fecha).removeSuffix(".")
 
     /** Día laborable de hoy; el fin de semana se asigna al viernes (sábado) o al lunes (domingo). */
     fun getDiaSemanaActual(clock: Clock = Clock.systemDefaultZone()): DiaSemana =

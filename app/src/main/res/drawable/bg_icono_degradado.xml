@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Placa con el degradado azul de la cabecera, para el icono de un panel. -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <corners android:radius="16dp" />
+    <gradient
+        android:angle="135"
+        android:endColor="@color/header_gradient_end"
+        android:startColor="@color/header_gradient_start" />
+</shape>
