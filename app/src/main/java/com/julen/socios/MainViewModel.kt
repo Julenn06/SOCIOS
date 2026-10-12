@@ -62,7 +62,7 @@ data class MainUiState(
 
 /** Acciones puntuales que la Activity debe ejecutar una sola vez. */
 sealed interface MainEvent {
-    data class Mensaje(val texto: UiText, val larga: Boolean = false) : MainEvent
+    data class Mensaje(val texto: UiText, val tipo: TipoAviso, val larga: Boolean = false) : MainEvent
     data class CrearDocumento(val formato: ExportFormat, val nombreSugerido: String) : MainEvent
     data class Compartir(val uri: Uri, val formato: ExportFormat) : MainEvent {
         val mimeType: String get() = formato.mimeType
@@ -194,17 +194,21 @@ class MainViewModel(
 
     fun setSocioHecho(socioId: String, hecho: Boolean) = lanzar {
         if (socioRepository.setHecho(socioId, hecho)) {
-            mensaje(if (hecho) R.string.msg_socio_hecho else R.string.msg_socio_pendiente)
+            if (hecho) {
+                mensaje(R.string.msg_socio_hecho, TipoAviso.EXITO)
+            } else {
+                mensaje(R.string.msg_socio_pendiente, TipoAviso.PENDIENTE)
+            }
         }
     }
 
     fun guardarSocio(socio: Socio, esNuevo: Boolean) = lanzar {
         if (esNuevo) {
             socioRepository.addSocio(socio)
-            mensaje(R.string.msg_socio_saved)
+            mensaje(R.string.msg_socio_saved, TipoAviso.EXITO)
         } else {
             socioRepository.updateSocio(socio)
-            mensaje(R.string.msg_socio_updated)
+            mensaje(R.string.msg_socio_updated, TipoAviso.EXITO)
         }
     }
 
@@ -216,34 +220,34 @@ class MainViewModel(
     /** Vuelve a guardar un socio recién borrado, con el mismo id y fecha de alta. */
     fun restaurarSocio(socio: Socio) = lanzar {
         socioRepository.addSocio(socio)
-        mensaje(R.string.msg_socio_restaurado)
+        mensaje(R.string.msg_socio_restaurado, TipoAviso.EXITO)
     }
 
     fun guardarBono(bono: BonoRegaloInfo) = lanzar {
         bonoRegaloRepository.saveBonoRegalo(bono)
-        mensaje(R.string.msg_bonus_updated)
+        mensaje(R.string.msg_bonus_updated, TipoAviso.EXITO)
     }
 
     fun eliminarBono(semanaKey: String) = lanzar {
         bonoRegaloRepository.deleteBonoRegalo(semanaKey)
-        mensaje(R.string.msg_bonus_reset)
+        mensaje(R.string.msg_bonus_reset, TipoAviso.INFO)
     }
 
     fun guardarIrpf(desdeSemanaKey: String, porcentaje: Double) = lanzar {
         irpfRepository.guardarVigencia(desdeSemanaKey, porcentaje)
-        mensaje(R.string.msg_irpf_actualizado, porcentaje.toPorcentajeString(), desdeSemanaKey)
+        mensaje(R.string.msg_irpf_actualizado, TipoAviso.EXITO, porcentaje.toPorcentajeString(), desdeSemanaKey)
     }
 
     fun eliminarIrpf(desdeSemanaKey: String) = lanzar {
         irpfRepository.eliminarVigencia(desdeSemanaKey)
-        mensaje(R.string.msg_irpf_cambio_eliminado)
+        mensaje(R.string.msg_irpf_cambio_eliminado, TipoAviso.INFO)
     }
 
     // --- Exportación ---
 
     fun solicitarExport(formato: ExportFormat, alcance: AlcanceExport) = lanzar(R.string.msg_error_export) {
         if (backupRepository.cargarDatos(alcance).socios.isEmpty()) {
-            mensajeLargo(R.string.msg_export_vacio)
+            mensajeLargo(R.string.msg_export_vacio, TipoAviso.INFO)
         } else {
             guardarExportRequest(KEY_EXPORT_DESTINO, ExportRequest(formato, alcance))
         }
@@ -272,7 +276,7 @@ class MainViewModel(
         if (uri == null) return
         lanzar(R.string.msg_error_file_save) {
             exportService.escribirEnUri(request, backupRepository.cargarDatos(request.alcance), uri)
-            mensajeLargo(R.string.msg_file_saved)
+            mensajeLargo(R.string.msg_file_saved, TipoAviso.EXITO)
         }
     }
 
@@ -291,7 +295,7 @@ class MainViewModel(
     @VisibleForTesting
     internal suspend fun prepararImportacion(lectura: ResultadoLectura, formato: ImportFormat) {
         if (lectura.datos.estaVacio) {
-            mensajeLargo(R.string.msg_import_vacio, formato.name)
+            mensajeLargo(R.string.msg_import_vacio, TipoAviso.ERROR, formato.name)
             return
         }
         lecturaPendiente = lectura
@@ -310,6 +314,7 @@ class MainViewModel(
                         datos.socios.size,
                         listOf(datos.socios.size, datos.bonosRegalo.size, datos.irpfVigencias.size)
                     ),
+                    TipoAviso.EXITO,
                     larga = true
                 )
             )
@@ -348,11 +353,11 @@ class MainViewModel(
         eventos.trySend(evento)
     }
 
-    private fun mensaje(@StringRes id: Int, vararg args: Any) =
-        enviar(MainEvent.Mensaje(UiText.Res(id, args.toList())))
+    private fun mensaje(@StringRes id: Int, tipo: TipoAviso, vararg args: Any) =
+        enviar(MainEvent.Mensaje(UiText.Res(id, args.toList()), tipo))
 
-    private fun mensajeLargo(@StringRes id: Int, vararg args: Any) =
-        enviar(MainEvent.Mensaje(UiText.Res(id, args.toList()), larga = true))
+    private fun mensajeLargo(@StringRes id: Int, tipo: TipoAviso, vararg args: Any) =
+        enviar(MainEvent.Mensaje(UiText.Res(id, args.toList()), tipo, larga = true))
 
     /** Ejecuta una operación y convierte cualquier error en un mensaje, en lugar de cerrar la app. */
     private fun lanzar(@StringRes errorRes: Int = R.string.msg_error_generico, bloque: suspend () -> Unit) {
@@ -362,7 +367,7 @@ class MainViewModel(
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {
-                mensajeLargo(errorRes, e.message ?: e.javaClass.simpleName)
+                mensajeLargo(errorRes, TipoAviso.ERROR, e.message ?: e.javaClass.simpleName)
             }
         }
     }

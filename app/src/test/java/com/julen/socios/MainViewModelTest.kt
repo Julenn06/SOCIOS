@@ -158,7 +158,7 @@ class MainViewModelTest {
 
         assertEquals(4, viewModel.uiState.value.resumenSemana!!.totalSociosHechos)
         assertEquals(0.0, viewModel.uiState.value.resumenSemana!!.bonusSemanal, 0.0)
-        assertEquals(MainEvent.Mensaje(UiText.Res(R.string.msg_socio_pendiente)), eventos.last())
+        assertEquals(MainEvent.Mensaje(UiText.Res(R.string.msg_socio_pendiente), TipoAviso.PENDIENTE), eventos.last())
     }
 
     @Test
@@ -247,7 +247,7 @@ class MainViewModelTest {
         assertEquals(setOf("existente", "nuevo"), socioDao.socios.value.map { it.id }.toSet())
         assertEquals(30.0, socioDao.socios.value.first { it.id == "existente" }.colaboracion, 0.0)
         assertEquals(
-            MainEvent.Mensaje(UiText.Plural(R.plurals.msg_import_resultado, 2, listOf(2, 0, 0)), larga = true),
+            MainEvent.Mensaje(UiText.Plural(R.plurals.msg_import_resultado, 2, listOf(2, 0, 0)), TipoAviso.EXITO, larga = true),
             eventos.last()
         )
     }
@@ -275,7 +275,7 @@ class MainViewModelTest {
         viewModel.solicitarExport(ExportFormat.PDF, AlcanceExport.Semanas(setOf(semanaActual)))
 
         assertNull(viewModel.exportPendienteDeDestino.value)
-        assertEquals(MainEvent.Mensaje(UiText.Res(R.string.msg_export_vacio), larga = true), eventos.last())
+        assertEquals(MainEvent.Mensaje(UiText.Res(R.string.msg_export_vacio), TipoAviso.INFO, larga = true), eventos.last())
     }
 
     @Test

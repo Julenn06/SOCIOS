@@ -7,7 +7,6 @@ import android.transition.TransitionManager
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
 import androidx.core.view.isVisible
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Lifecycle
@@ -168,7 +167,7 @@ class ExportImportBottomSheetDialog : BottomSheetDialogFragment() {
     private fun mostrarDialogoSeleccionarSemanas() {
         val semanas = semanasDisponibles
         if (semanas.isEmpty()) {
-            Toast.makeText(requireContext(), R.string.msg_sin_semanas, Toast.LENGTH_SHORT).show()
+            Avisos.mostrar(binding.root, getString(R.string.msg_sin_semanas), TipoAviso.INFO)
             return
         }
         val seleccion = semanasSeleccionadas ?: mutableSetOf<String>().also { semanasSeleccionadas = it }

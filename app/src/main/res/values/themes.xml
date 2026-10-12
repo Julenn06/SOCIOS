@@ -3,6 +3,8 @@
     <style name="Base.Theme.Socios" parent="Theme.Material3.DayNight.NoActionBar">
         <!-- El tema oscuro es propio: que el sistema no oscurezca la app por su cuenta. -->
         <item name="android:forceDarkAllowed" tools:targetApi="q">false</item>
+        <!-- Sin el tinte verdoso que Material añade a lo que tiene sombra (avisos, tarjetas elevadas). -->
+        <item name="elevationOverlayEnabled">false</item>
         <item name="colorPrimary">@color/primary</item>
         <item name="colorOnPrimary">@color/on_primary</item>
         <item name="colorPrimaryContainer">@color/primary_container</item>

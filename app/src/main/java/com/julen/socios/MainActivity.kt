@@ -19,6 +19,7 @@ import androidx.activity.viewModels
 import androidx.annotation.ColorRes
 import androidx.annotation.DrawableRes
 import androidx.annotation.PluralsRes
+import androidx.annotation.StringRes
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.coordinatorlayout.widget.CoordinatorLayout
@@ -267,11 +268,11 @@ class MainActivity : AppCompatActivity() {
 
     private fun manejarEvento(evento: MainEvent) {
         when (evento) {
-            is MainEvent.Mensaje -> Snackbar.make(
-                binding.root,
+            is MainEvent.Mensaje -> aviso(
                 evento.texto.resolver(this),
+                evento.tipo,
                 if (evento.larga) Snackbar.LENGTH_LONG else Snackbar.LENGTH_SHORT
-            ).show()
+            )
 
             is MainEvent.CrearDocumento ->
                 crearDocumentoLaunchers.getValue(evento.formato).launch(evento.nombreSugerido)
@@ -292,11 +293,21 @@ class MainActivity : AppCompatActivity() {
                 ImportFormat.CSV -> importCsvLauncher.launch("*/*")
             }
 
-            is MainEvent.SocioEliminado ->
-                Snackbar.make(binding.root, R.string.msg_socio_deleted, Snackbar.LENGTH_LONG)
-                    .setAction(R.string.action_deshacer) { viewModel.restaurarSocio(evento.socio) }
-                    .show()
+            is MainEvent.SocioEliminado -> aviso(
+                getString(R.string.msg_socio_deleted), TipoAviso.BORRADO, accion = R.string.action_deshacer
+            ) { viewModel.restaurarSocio(evento.socio) }
         }
+    }
+
+    /** Aviso con el diseño de la app, encima del botón de "Nuevo socio" para no taparlo. */
+    private fun aviso(
+        texto: CharSequence,
+        tipo: TipoAviso,
+        duracion: Int = Snackbar.LENGTH_LONG,
+        @StringRes accion: Int? = null,
+        alPulsarAccion: (() -> Unit)? = null
+    ) {
+        Avisos.mostrar(binding.root, texto, tipo, duracion, binding.fabAddSocio, accion, alPulsarAccion)
     }
 
     private fun avisarNuevaVersion(publicada: VersionPublicada) {
@@ -304,13 +315,11 @@ class MainActivity : AppCompatActivity() {
             R.string.actualizacion_disponible, publicada.version.toString(), actualizaciones.versionInstalada
         )
         // Más tiempo que un aviso normal: es fácil no verlo al abrir la app.
-        Snackbar.make(binding.root, texto, DURACION_AVISO_VERSION_MS)
-            .setAction(R.string.action_actualizar) {
-                if (!ActualizacionBottomSheetDialog.empezar(this, actualizaciones, publicada)) {
-                    Snackbar.make(binding.root, R.string.msg_sin_navegador, Snackbar.LENGTH_LONG).show()
-                }
+        aviso(texto, TipoAviso.NOVEDAD, DURACION_AVISO_VERSION_MS, R.string.action_actualizar) {
+            if (!ActualizacionBottomSheetDialog.empezar(this, actualizaciones, publicada)) {
+                aviso(getString(R.string.msg_sin_navegador), TipoAviso.ERROR)
             }
-            .show()
+        }
     }
 
     private fun mostrarDialogoDestinoExport(request: ExportRequest?) {

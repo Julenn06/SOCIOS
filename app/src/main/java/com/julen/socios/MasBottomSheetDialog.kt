@@ -5,7 +5,6 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
 import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import androidx.core.widget.TextViewCompat
@@ -159,9 +158,13 @@ class MasBottomSheetDialog : BottomSheetDialogFragment() {
         boton?.let(b.btnEstadoVersion::setText)
         b.btnEstadoVersion.setOnClickListener {
             if (estado is EstadoVersion.Disponible) {
+                val actividad = requireActivity()
                 dismiss()
-                if (!ActualizacionBottomSheetDialog.empezar(requireActivity(), actualizaciones, estado.publicada)) {
-                    Toast.makeText(requireContext(), R.string.msg_sin_navegador, Toast.LENGTH_SHORT).show()
+                if (!ActualizacionBottomSheetDialog.empezar(actividad, actualizaciones, estado.publicada)) {
+                    // El panel ya se ha cerrado: el aviso va en la pantalla principal.
+                    Avisos.mostrar(
+                        actividad.findViewById(android.R.id.content), getString(R.string.msg_sin_navegador), TipoAviso.ERROR
+                    )
                 }
             } else {
                 actualizaciones.buscarActualizaciones()

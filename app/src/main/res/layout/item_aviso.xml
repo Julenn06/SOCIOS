@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Aviso flotante: franja e icono del color de su tipo, texto y, si hay, un botón de acción. -->
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    app:cardBackgroundColor="@color/surface_card"
+    app:cardCornerRadius="20dp"
+    app:cardElevation="6dp"
+    app:strokeColor="@color/divider"
+    app:strokeWidth="1dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:minHeight="64dp"
+        android:orientation="horizontal">
+
+        <View
+            android:id="@+id/franjaAviso"
+            android:layout_width="5dp"
+            android:layout_height="match_parent"
+            tools:background="@color/primary" />
+
+        <FrameLayout
+            android:id="@+id/placaAviso"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_marginVertical="12dp"
+            android:layout_marginStart="12dp"
+            android:background="@drawable/bg_icono_tile"
+            tools:backgroundTint="@color/green_container">
+
+            <ImageView
+                android:id="@+id/ivAviso"
+                android:layout_width="22dp"
+                android:layout_height="22dp"
+                android:layout_gravity="center"
+                android:importantForAccessibility="no"
+                tools:src="@drawable/ic_check_circle"
+                tools:tint="@color/green_text_soft" />
+        </FrameLayout>
+
+        <TextView
+            android:id="@+id/tvAviso"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="12dp"
+            android:layout_marginEnd="12dp"
+            android:layout_weight="1"
+            android:maxLines="3"
+            android:textColor="@color/text_main"
+            android:textSize="14.5sp"
+            android:textStyle="bold"
+            tools:text="Socio añadido" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnAccionAviso"
+            style="@style/Widget.Material3.Button.TonalButton"
+            android:layout_width="wrap_content"
+            android:layout_height="40dp"
+            android:layout_marginEnd="12dp"
+            android:insetTop="0dp"
+            android:insetBottom="0dp"
+            android:paddingHorizontal="14dp"
+            android:textColor="@color/on_primary_container"
+            android:textSize="13.5sp"
+            android:textStyle="bold"
+            android:visibility="gone"
+            app:backgroundTint="@color/primary_container"
+            app:cornerRadius="12dp"
+            tools:text="Deshacer"
+            tools:visibility="visible" />
+    </LinearLayout>
+</com.google.android.material.card.MaterialCardView>

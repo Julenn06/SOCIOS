@@ -8,7 +8,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.GridLayout
-import android.widget.Toast
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.isVisible
@@ -212,7 +211,7 @@ class BonoRegaloBottomSheetDialog : BottomSheetDialogFragment() {
             if (opcionOtro.isChecked) {
                 binding.tilCustomMonto.error = getString(R.string.msg_bono_monto_invalido)
             } else {
-                Toast.makeText(requireContext(), R.string.msg_bono_monto_invalido, Toast.LENGTH_SHORT).show()
+                Avisos.mostrar(binding.root, getString(R.string.msg_bono_monto_invalido), TipoAviso.ERROR)
             }
             return
         }

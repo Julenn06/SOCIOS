@@ -163,7 +163,7 @@
     <string name="bono_hint_monto">Importe del bonus (€)</string>
     <string name="bono_restablecer">Restablecer</string>
     <string name="bono_hint_nota">Motivo del ajuste (opcional)</string>
-    <string name="msg_bono_monto_invalido">Por favor selecciona o introduce un importe de bonus</string>
+    <string name="msg_bono_monto_invalido">Elige o escribe el importe del bonus</string>
 
     <!-- Desglose IRPF -->
     <string name="irpf_titulo">Desglose de la semana</string>
@@ -334,20 +334,20 @@
     <string name="pdf_pagina">Página %d</string>
 
     <!-- Snackbar Messages -->
-    <string name="msg_socio_hecho">Socio marcado como hecho</string>
-    <string name="msg_socio_pendiente">Socio marcado como pendiente</string>
-    <string name="msg_socio_saved">¡Socio registrado con éxito!</string>
+    <string name="msg_socio_hecho">Marcado como conseguido</string>
+    <string name="msg_socio_pendiente">Marcado como pendiente</string>
+    <string name="msg_socio_saved">Socio añadido</string>
     <string name="msg_socio_updated">Socio actualizado</string>
     <string name="msg_socio_deleted">Socio eliminado</string>
     <string name="eliminar_socio_titulo">¿Eliminar a %s?</string>
     <string name="eliminar_socio_mensaje">Se quitará de la lista y de las cuentas de la semana. Justo después podrás deshacerlo.</string>
     <string name="msg_socio_restaurado">Socio restaurado</string>
     <string name="action_deshacer">Deshacer</string>
-    <string name="msg_bonus_updated">¡Bonus actualizado!</string>
-    <string name="msg_bonus_reset">Bonus restablecido a automático</string>
+    <string name="msg_bonus_updated">Bonus actualizado</string>
+    <string name="msg_bonus_reset">El bonus vuelve a ser automático</string>
     <string name="msg_irpf_actualizado">IRPF del %1$s aplicado desde la semana %2$s</string>
     <string name="msg_irpf_cambio_eliminado">Cambio de IRPF eliminado</string>
-    <string name="msg_file_saved">¡Archivo guardado correctamente!</string>
+    <string name="msg_file_saved">Archivo guardado</string>
     <string name="msg_error_file_save">Error al guardar el archivo: %s</string>
     <string name="msg_error_export">Error al exportar: %s</string>
     <string name="msg_export_vacio">No hay socios para exportar en el rango seleccionado</string>
@@ -355,9 +355,9 @@
     <string name="msg_import_vacio">El archivo %s no contiene datos válidos</string>
     <string name="msg_error_generico">Se ha producido un error: %s</string>
     <plurals name="msg_import_resultado">
-        <item quantity="one">✓ Importado %1$d socio (%2$d bonus, %3$d cambios de IRPF)</item>
-        <item quantity="many">✓ Importados %1$d socios (%2$d bonus, %3$d cambios de IRPF)</item>
-        <item quantity="other">✓ Importados %1$d socios (%2$d bonus, %3$d cambios de IRPF)</item>
+        <item quantity="one">Importado %1$d socio (%2$d bonus, %3$d cambios de IRPF)</item>
+        <item quantity="many">Importados %1$d socios (%2$d bonus, %3$d cambios de IRPF)</item>
+        <item quantity="other">Importados %1$d socios (%2$d bonus, %3$d cambios de IRPF)</item>
     </plurals>
 
 
