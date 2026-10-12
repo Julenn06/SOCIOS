@@ -7,6 +7,7 @@
         <item name="colorOnPrimary">@color/on_primary</item>
         <item name="colorPrimaryContainer">@color/primary_container</item>
         <item name="colorOnPrimaryContainer">@color/on_primary_container</item>
+        <item name="colorPrimaryInverse">@color/primary_inverse</item>
         <item name="colorSecondary">@color/accent_blue</item>
         <item name="colorSurface">@color/surface_card</item>
         <item name="colorOnSurface">@color/text_main</item>

@@ -5,6 +5,8 @@
     <color name="on_primary">#FFFFFF</color>
     <color name="primary_container">#D1FAE5</color>
     <color name="on_primary_container">#022C22</color>
+    <!-- Verde sobre fondos oscuros, como el botón "Deshacer" de los avisos -->
+    <color name="primary_inverse">#34D399</color>
 
     <color name="accent_blue">#2563EB</color>
     <color name="orange_pending">#EA580C</color>

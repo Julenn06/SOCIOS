@@ -1,6 +1,7 @@
 package com.julen.socios
 
 import android.content.ClipData
+import android.content.DialogInterface
 import android.content.Intent
 import android.os.Bundle
 import android.view.GestureDetector
@@ -82,6 +83,7 @@ class MainActivity : AppCompatActivity() {
 
     private var dialogoDestinoExport: AlertDialog? = null
     private var dialogoConfirmarImport: AlertDialog? = null
+    private var dialogoEliminar: AlertDialog? = null
 
     // --- EXPORT & IMPORT LAUNCHERS ---
     // El resultado vuelve al ViewModel, que guarda la petición pendiente en su SavedStateHandle.
@@ -155,6 +157,8 @@ class MainActivity : AppCompatActivity() {
 
     override fun onDestroy() {
         // Los diálogos se vuelven a mostrar desde el estado del ViewModel si la Activity se recrea.
+        // El de eliminar no se restaura: tras girar la pantalla basta con volver a pulsar la papelera.
+        dialogoEliminar?.dismiss()
         listOfNotNull(dialogoDestinoExport, dialogoConfirmarImport).forEach {
             it.setOnDismissListener(null)
             it.dismiss()
@@ -341,6 +345,25 @@ class MainActivity : AppCompatActivity() {
             .show()
     }
 
+    /** Pide confirmación antes de borrar un socio; después aún se puede deshacer desde el aviso. */
+    private fun confirmarEliminar(socio: Socio) {
+        if (dialogoEliminar?.isShowing == true) return
+        val nombre = socio.nombreSocio.ifBlank { getString(R.string.socio_default_name, socio.colaboracion.toEurosCompacto()) }
+        val icono = ContextCompat.getDrawable(this, R.drawable.ic_delete)?.mutate()?.apply {
+            setTint(ContextCompat.getColor(this@MainActivity, R.color.red_text))
+        }
+        val dialogo = MaterialAlertDialogBuilder(this)
+            .setIcon(icono)
+            .setTitle(getString(R.string.eliminar_socio_titulo, nombre))
+            .setMessage(R.string.eliminar_socio_mensaje)
+            .setPositiveButton(R.string.action_delete) { _, _ -> viewModel.eliminarSocio(socio) }
+            .setNegativeButton(R.string.action_cancel, null)
+            .setOnDismissListener { dialogoEliminar = null }
+            .show()
+        dialogo.getButton(DialogInterface.BUTTON_POSITIVE).setTextColor(ContextCompat.getColor(this, R.color.red_text))
+        dialogoEliminar = dialogo
+    }
+
     private fun mostrarDialogoConfirmarImport(preview: ImportPreview?) {
         if (preview == null) {
             dialogoConfirmarImport?.let {
@@ -453,7 +476,7 @@ class MainActivity : AppCompatActivity() {
         adapter = SocioAdapter(
             onCambiarHecho = { socio, hecho -> viewModel.setSocioHecho(socio.id, hecho) },
             onEdit = { socio -> openAddEditDialog(socio) },
-            onDelete = { socio -> viewModel.eliminarSocio(socio) }
+            onDelete = ::confirmarEliminar
         )
         binding.rvSocios.layoutManager = LinearLayoutManager(this)
         binding.rvSocios.adapter = adapter

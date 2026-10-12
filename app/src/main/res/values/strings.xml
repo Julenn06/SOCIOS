@@ -339,6 +339,8 @@
     <string name="msg_socio_saved">¡Socio registrado con éxito!</string>
     <string name="msg_socio_updated">Socio actualizado</string>
     <string name="msg_socio_deleted">Socio eliminado</string>
+    <string name="eliminar_socio_titulo">¿Eliminar a %s?</string>
+    <string name="eliminar_socio_mensaje">Se quitará de la lista y de las cuentas de la semana. Justo después podrás deshacerlo.</string>
     <string name="msg_socio_restaurado">Socio restaurado</string>
     <string name="action_deshacer">Deshacer</string>
     <string name="msg_bonus_updated">¡Bonus actualizado!</string>

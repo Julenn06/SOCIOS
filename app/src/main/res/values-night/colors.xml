@@ -5,6 +5,7 @@
     <color name="on_primary">#022C22</color>
     <color name="primary_container">#064E3B</color>
     <color name="on_primary_container">#D1FAE5</color>
+    <color name="primary_inverse">#059669</color>
 
     <color name="accent_blue">#60A5FA</color>
     <color name="orange_pending">#FB923C</color>

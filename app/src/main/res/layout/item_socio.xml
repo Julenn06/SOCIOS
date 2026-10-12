@@ -128,33 +128,35 @@
             android:gravity="center_vertical"
             android:orientation="horizontal">
 
-            <com.google.android.material.materialswitch.MaterialSwitch
-                android:id="@+id/switchHecho"
+            <!-- Solo el interruptor cambia el estado; la etiqueta no responde a los toques -->
+            <TextView
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
+                android:importantForAccessibility="no"
                 android:text="@string/item_switch_hecho"
                 android:textColor="@color/text_main"
                 android:textSize="14sp"
                 android:textStyle="bold" />
 
+            <com.google.android.material.materialswitch.MaterialSwitch
+                android:id="@+id/switchHecho"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:contentDescription="@string/item_switch_hecho" />
+
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnEditar"
-                style="@style/Widget.Material3.Button.IconButton.Filled.Tonal"
-                android:layout_width="44dp"
-                android:layout_height="44dp"
-                android:layout_marginStart="8dp"
+                style="@style/Socios.BotonIcono"
+                android:layout_marginStart="10dp"
                 android:contentDescription="@string/cd_editar_socio"
-                app:backgroundTint="@color/surface_muted"
                 app:icon="@drawable/ic_edit"
                 app:iconSize="20dp"
                 app:iconTint="@color/text_sub" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnEliminar"
-                style="@style/Widget.Material3.Button.IconButton.Filled.Tonal"
-                android:layout_width="44dp"
-                android:layout_height="44dp"
+                style="@style/Socios.BotonIcono"
                 android:layout_marginStart="6dp"
                 android:contentDescription="@string/cd_eliminar_socio"
                 app:backgroundTint="@color/red_container"
