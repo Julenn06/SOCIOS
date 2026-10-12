@@ -17,19 +17,17 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.julen.socios.ActualizacionesViewModel.EstadoVersion
-import com.julen.socios.actualizaciones.GitHubReleases
 import com.julen.socios.ajustes.Tema
 import com.julen.socios.databinding.BottomSheetMasBinding
 import com.julen.socios.databinding.ItemTemaBinding
 import com.julen.socios.util.AnimationExtensions
 import com.julen.socios.util.DateUtils
 import com.julen.socios.util.HapticUtils
-import com.julen.socios.util.abrirEnlace
 import kotlinx.coroutines.launch
 
 /**
  * Panel "Más", en lugar del menú ⋮: versión de la app y búsqueda de actualizaciones, acceso a copias y
- * exportación, selector de tema y enlace a las novedades de cada versión.
+ * exportación y selector de tema.
  */
 class MasBottomSheetDialog : BottomSheetDialogFragment() {
 
@@ -66,12 +64,7 @@ class MasBottomSheetDialog : BottomSheetDialogFragment() {
                 ExportImportBottomSheetDialog().show(fragmentos, ExportImportBottomSheetDialog.TAG)
             }
         }
-        binding.cardNovedades.setOnClickListener {
-            if (!requireContext().abrirEnlace(GitHubReleases.URL_PAGINA)) {
-                Toast.makeText(requireContext(), R.string.msg_sin_navegador, Toast.LENGTH_SHORT).show()
-            }
-        }
-        listOf(binding.cardExportarImportar, binding.cardNovedades, binding.btnEstadoVersion)
+        listOf(binding.cardExportarImportar, binding.btnEstadoVersion)
             .forEach(AnimationExtensions::setupPressScaleAnimation)
 
         configurarTemas()

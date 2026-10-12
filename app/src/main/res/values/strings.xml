@@ -27,11 +27,7 @@
     <string name="mas_version">Versión %s</string>
     <string name="mas_seccion_datos">Datos</string>
     <string name="mas_seccion_apariencia">Tema</string>
-    <string name="mas_seccion_acerca_de">Acerca de</string>
     <string name="mas_exportar_descripcion">PDF, Excel o copia de seguridad</string>
-    <string name="mas_novedades">Novedades</string>
-    <string name="mas_novedades_descripcion">Qué trae cada versión, en GitHub</string>
-    <string name="mas_nota_actualizaciones">Al abrirse, la app busca versiones nuevas como mucho una vez al día.</string>
     <string name="tema_a11y">Tema: %s</string>
     <string name="version_sin_comprobar">¿Hay una versión nueva?</string>
     <string name="version_nunca_comprobada">Todavía no se ha comprobado</string>

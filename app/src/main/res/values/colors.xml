@@ -37,8 +37,6 @@
     <color name="amber_text">#F57F17</color>
     <color name="amber_container">#FFFDE7</color>
     <color name="amber_stroke">#FDE68A</color>
-    <color name="violet_text">#6D28D9</color>
-    <color name="violet_container">#EDE9FE</color>
 
     <!-- Cabecera con degradado azul: igual en los dos temas porque ya es oscura y lleva texto claro -->
     <color name="header_gradient_start">#1976D2</color>

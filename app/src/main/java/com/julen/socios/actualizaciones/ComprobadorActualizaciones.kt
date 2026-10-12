@@ -103,9 +103,7 @@ class GitHubReleases : FuenteVersiones {
 
     companion object {
         private const val URL_API = "https://api.github.com/repos/Julenn06/SOCIOS/releases/latest"
-        /** Página de las versiones publicadas, con las novedades de cada una. */
-        const val URL_PAGINA = "https://github.com/Julenn06/SOCIOS/releases"
-        private const val URL_RELEASES = "$URL_PAGINA/"
+        private const val URL_RELEASES = "https://github.com/Julenn06/SOCIOS/releases/"
         private const val URL_DESCARGAS = URL_RELEASES + "download/"
         private const val TIMEOUT_MS = 10_000
 
