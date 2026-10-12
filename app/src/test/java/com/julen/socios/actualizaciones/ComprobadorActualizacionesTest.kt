@@ -111,6 +111,47 @@ class ComprobadorActualizacionesTest {
     }
 
     @Test
+    fun leeElApkAdjuntoConSuTamanoYSuSha256() {
+        val apk = GitHubReleases.leerRelease(
+            """{"tag_name":"v1.5.0","html_url":"https://github.com/Julenn06/SOCIOS/releases/tag/v1.5.0","assets":[""" +
+                """{"name":"notas.txt","size":10,""" +
+                """"browser_download_url":"https://github.com/Julenn06/SOCIOS/releases/download/v1.5.0/notas.txt"},""" +
+                """{"name":"socios-1.5.0.apk","size":2293784,""" +
+                """"digest":"sha256:B35DA16FBB3701E9F3E944800E5B83D9C4DED1E64FC9283070A624C2BA805138",""" +
+                """"browser_download_url":"https://github.com/Julenn06/SOCIOS/releases/download/v1.5.0/socios-1.5.0.apk"}]}"""
+        ).apk
+
+        assertEquals("https://github.com/Julenn06/SOCIOS/releases/download/v1.5.0/socios-1.5.0.apk", apk?.url)
+        assertEquals(2293784L, apk?.tamano)
+        assertEquals("b35da16fbb3701e9f3e944800e5b83d9c4ded1e64fc9283070a624c2ba805138", apk?.sha256)
+    }
+
+    @Test
+    fun lasReleasesAntiguasNoTraenSha256() {
+        val apk = GitHubReleases.leerRelease(
+            """{"tag_name":"v1.3.0","assets":[{"name":"socios-1.3.0.apk","size":100,"digest":null,""" +
+                """"browser_download_url":"https://github.com/Julenn06/SOCIOS/releases/download/v1.3.0/socios-1.3.0.apk"}]}"""
+        ).apk
+
+        assertEquals(100L, apk?.tamano)
+        assertNull(apk?.sha256)
+    }
+
+    @Test
+    fun soloDescargaApksDeLasReleasesDelRepositorio() {
+        fun apkDe(nombre: String, url: String) = GitHubReleases.leerRelease(
+            """{"tag_name":"v1.5.0","assets":[{"name":"$nombre","size":1,"browser_download_url":"$url"}]}"""
+        ).apk
+
+        assertNull(apkDe("socios-1.5.0.apk", "https://ejemplo.com/socios-1.5.0.apk"))
+        assertNull(apkDe("socios-1.5.0.apk", "https://github.com/otro/SOCIOS/releases/download/v1.5.0/socios-1.5.0.apk"))
+        assertNull(
+            apkDe("socios-1.5.0-debug.apk", "https://github.com/Julenn06/SOCIOS/releases/download/v1.5.0/socios-1.5.0-debug.apk")
+        )
+        assertNull(GitHubReleases.leerRelease("""{"tag_name":"v1.5.0"}""").apk)
+    }
+
+    @Test
     fun unaRespuestaInesperadaEsUnErrorDeConexion() {
         assertThrows(IOException::class.java) { GitHubReleases.leerRelease("""{"message":"Not Found"}""") }
         assertThrows(IOException::class.java) { GitHubReleases.leerRelease("""{"tag_name":"nightly"}""") }

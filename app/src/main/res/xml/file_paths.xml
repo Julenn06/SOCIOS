@@ -4,4 +4,8 @@
     <cache-path
         name="exports"
         path="exports/" />
+    <!-- APK de las versiones nuevas, para pasárselo al instalador (ver DescargadorGitHub). -->
+    <cache-path
+        name="actualizaciones"
+        path="actualizaciones/" />
 </paths>

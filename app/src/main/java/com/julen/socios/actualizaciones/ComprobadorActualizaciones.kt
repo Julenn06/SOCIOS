@@ -14,8 +14,14 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 
-/** Última versión publicada y la página desde la que se descarga. */
-data class VersionPublicada(val version: Version, val url: String)
+/** Última versión publicada, la página de su release y, si la release lo incluye, su APK. */
+data class VersionPublicada(val version: Version, val url: String, val apk: ApkPublicado? = null)
+
+/**
+ * APK adjunto a una release. [sha256] (en hexadecimal) sirve para comprobar que la descarga está entera y
+ * sin cambios; GitHub no lo da en las releases antiguas.
+ */
+data class ApkPublicado(val url: String, val tamano: Long, val sha256: String?)
 
 /** Origen de la última versión publicada. Interfaz para poder sustituirla en tests. */
 fun interface FuenteVersiones {
@@ -95,6 +101,7 @@ class GitHubReleases : FuenteVersiones {
     companion object {
         private const val URL_API = "https://api.github.com/repos/Julenn06/SOCIOS/releases/latest"
         private const val URL_RELEASES = "https://github.com/Julenn06/SOCIOS/releases/"
+        private const val URL_DESCARGAS = URL_RELEASES + "download/"
         private const val TIMEOUT_MS = 10_000
 
         private val json = Json { ignoreUnknownKeys = true }
@@ -108,17 +115,39 @@ class GitHubReleases : FuenteVersiones {
             }
             val version = Version.parse(release.tagName)
                 ?: throw IOException("Etiqueta de versión no reconocida: ${release.tagName}")
-            // Solo se abren páginas de las releases de este repositorio.
+            // Solo se abren páginas y se descargan archivos de las releases de este repositorio.
             val url = release.htmlUrl.takeIf { it.startsWith(URL_RELEASES, ignoreCase = true) }
                 ?: (URL_RELEASES + "latest")
-            return VersionPublicada(version, url)
+            val apk = release.assets
+                .firstOrNull {
+                    it.name.endsWith(".apk", ignoreCase = true) && !it.name.endsWith("-debug.apk", ignoreCase = true) &&
+                        it.url.startsWith(URL_DESCARGAS, ignoreCase = true)
+                }
+                ?.let { ApkPublicado(it.url, it.size, sha256(it.digest)) }
+            return VersionPublicada(version, url, apk)
         }
+
+        /** El hash de un "digest" de GitHub ("sha256:3f2a…"), o null si no hay o es de otro tipo. */
+        private fun sha256(digest: String?): String? =
+            digest?.takeIf { it.startsWith("sha256:", ignoreCase = true) }
+                ?.substringAfter(':')
+                ?.lowercase()
+                ?.takeIf { hash -> hash.length == 64 && hash.all { it in '0'..'9' || it in 'a'..'f' } }
     }
 
     @Serializable
     private data class ReleaseDto(
         @SerialName("tag_name") val tagName: String,
-        @SerialName("html_url") val htmlUrl: String = ""
+        @SerialName("html_url") val htmlUrl: String = "",
+        val assets: List<AssetDto> = emptyList()
+    )
+
+    @Serializable
+    private data class AssetDto(
+        val name: String,
+        @SerialName("browser_download_url") val url: String,
+        val size: Long = 0,
+        val digest: String? = null
     )
 }
 

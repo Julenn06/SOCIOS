@@ -37,11 +37,28 @@
     <string name="acerca_de_mensaje">Versión %1$s\n\nAl abrirse, la app comprueba como mucho una vez al día si hay una versión nueva en GitHub.</string>
     <string name="action_buscar_actualizaciones">Buscar actualizaciones</string>
     <string name="actualizacion_disponible">Hay una versión nueva: %1$s (tienes la %2$s)</string>
-    <string name="action_descargar">Descargar</string>
+    <string name="action_actualizar">Actualizar</string>
     <string name="actualizacion_al_dia">Tienes la última versión (%s)</string>
     <string name="actualizacion_ultima_publicada">La última versión publicada es la %s</string>
     <string name="actualizacion_error">No se ha podido comprobar si hay versiones nuevas. Revisa la conexión a internet.</string>
     <string name="msg_sin_navegador">No hay ninguna app para abrir el enlace</string>
+
+    <!-- Descarga e instalación de una versión nueva -->
+    <string name="descarga_titulo">Descargando la versión %s</string>
+    <string name="descarga_titulo_completada">Versión %s descargada</string>
+    <string name="descarga_titulo_fallida">No se ha podido descargar</string>
+    <string name="descarga_versiones">%1$s → %2$s</string>
+    <string name="descarga_versiones_a11y">De la versión %1$s a la %2$s</string>
+    <string name="descarga_progreso">%1$s de %2$s</string>
+    <string name="descarga_abriendo_instalador">Abriendo el instalador…</string>
+    <string name="descarga_confirmar_instalacion">Confirma la instalación en el aviso de Android. Tus socios y ajustes se conservan.</string>
+    <string name="descarga_aviso_permiso">La primera vez, Android te pedirá permiso para instalar aplicaciones desde socios: permítelo para continuar.</string>
+    <string name="descarga_error">No se ha podido descargar la actualización. Revisa la conexión a internet.</string>
+    <string name="descarga_danada">La descarga no ha llegado completa. Vuelve a intentarlo.</string>
+    <string name="descarga_sin_instalador">No se ha podido abrir el instalador de Android.</string>
+    <string name="action_instalar">Instalar</string>
+    <string name="action_reintentar">Reintentar</string>
+    <string name="action_descargar_github">Descargar desde GitHub</string>
 
     <!-- Atajo al mantener pulsado el icono de la app (la etiqueta corta admite unos 10 caracteres) -->
     <string name="atajo_nuevo_socio_corto">Nuevo socio</string>

@@ -18,6 +18,14 @@ object HapticUtils {
         }
     }
 
+    fun performReject(view: View) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            view.performHapticFeedback(HapticFeedbackConstants.REJECT)
+        } else {
+            view.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS)
+        }
+    }
+
     fun performToggle(view: View) {
         view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
     }

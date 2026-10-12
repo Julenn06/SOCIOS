@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Con scroll para que en horizontal se pueda llegar a los botones. -->
+<androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:forceDarkAllowed="false"
+    tools:targetApi="q">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_horizontal"
+        android:orientation="vertical"
+        android:padding="20dp">
+
+        <!-- Handle drag bar -->
+        <View
+            android:layout_width="40dp"
+            android:layout_height="4dp"
+            android:background="@color/handle" />
+
+        <!-- Los textos de debajo ya cuentan lo que muestra la animación. -->
+        <com.julen.socios.AnimacionDescargaView
+            android:id="@+id/animacionDescarga"
+            android:layout_width="208dp"
+            android:layout_height="208dp"
+            android:importantForAccessibility="no" />
+
+        <TextView
+            android:id="@+id/tvTituloDescarga"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:accessibilityLiveRegion="polite"
+            android:gravity="center"
+            android:textColor="@color/text_main"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            tools:text="Descargando la versión 1.6.0" />
+
+        <TextView
+            android:id="@+id/tvVersionesDescarga"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:background="@drawable/bg_pastilla_version"
+            android:paddingHorizontal="14dp"
+            android:paddingVertical="5dp"
+            android:textColor="@color/on_primary_container"
+            android:textSize="13sp"
+            android:textStyle="bold"
+            tools:text="1.5.0  →  1.6.0" />
+
+        <TextView
+            android:id="@+id/tvDetalleDescarga"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:gravity="center"
+            android:minLines="2"
+            android:textColor="@color/text_sub"
+            android:textSize="14sp"
+            tools:text="1,2 MB de 2,3 MB" />
+
+        <TextView
+            android:id="@+id/tvAvisoPermiso"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:gravity="center"
+            android:text="@string/descarga_aviso_permiso"
+            android:textColor="@color/text_sub"
+            android:textSize="12sp"
+            android:visibility="gone"
+            tools:visibility="visible" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnPrincipalDescarga"
+            style="@style/Widget.Material3.Button"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:visibility="gone"
+            tools:text="@string/action_instalar"
+            tools:visibility="visible" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnGitHubDescarga"
+            style="@style/Widget.Material3.Button.OutlinedButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:text="@string/action_descargar_github"
+            android:visibility="gone"
+            tools:visibility="visible" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnSecundarioDescarga"
+            style="@style/Widget.Material3.Button.TextButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            tools:text="@string/action_cancel" />
+    </LinearLayout>
+</androidx.core.widget.NestedScrollView>

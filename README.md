@@ -39,7 +39,10 @@ Los push a `main` solo generan el APK como artefacto del workflow, sin publicar 
 
 La app consulta la última release de GitHub al abrirse (como mucho una vez al día, y también desde
 "Acerca de") y avisa si hay una versión nueva. Para que pueda compararlas, los tags tienen que seguir el
-formato `vX.Y.Z`.
+formato `vX.Y.Z`. Al pulsar "Actualizar", descarga el APK adjunto a la release, comprueba su tamaño y su
+SHA-256 con los que da GitHub y abre el instalador de Android, que pide confirmación (y, la primera vez,
+permiso para instalar aplicaciones desde socios). Por eso cada release tiene que llevar su APK firmado,
+como hace el workflow; si no lo lleva, la app abre la página de la release.
 
 ### Clave de firma (configuración única)
 

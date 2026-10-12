@@ -3,6 +3,7 @@ package com.julen.socios
 import android.app.Application
 import android.content.Context
 import com.julen.socios.actualizaciones.ComprobadorActualizaciones
+import com.julen.socios.actualizaciones.DescargadorGitHub
 import com.julen.socios.actualizaciones.GitHubReleases
 import com.julen.socios.actualizaciones.RegistroEnPreferencias
 import com.julen.socios.ajustes.PreferenciasTema
@@ -35,6 +36,7 @@ class AppContainer(context: Context) {
         versionInstalada = BuildConfig.VERSION_NAME,
         clock = clock
     )
+    val descargadorActualizaciones = DescargadorGitHub(context)
     val preferenciasTema = PreferenciasTema(context)
 }
 

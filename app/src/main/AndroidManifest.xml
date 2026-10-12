@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <!-- Solo para comprobar en GitHub si hay una versión nueva de la app. -->
+    <!-- Solo para comprobar en GitHub si hay una versión nueva de la app y descargarla. -->
     <uses-permission android:name="android.permission.INTERNET" />
+    <!-- Para abrir el instalador con la versión descargada. Android pide confirmación al usuario. -->
+    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
 
     <application
         android:name=".SociosApp"

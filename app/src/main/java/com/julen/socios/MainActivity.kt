@@ -1,6 +1,5 @@
 package com.julen.socios
 
-import android.content.ActivityNotFoundException
 import android.content.ClipData
 import android.content.Intent
 import android.os.Bundle
@@ -20,7 +19,6 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.content.pm.ShortcutManagerCompat
-import androidx.core.net.toUri
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.isVisible
@@ -33,6 +31,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.chip.Chip
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
+import com.julen.socios.actualizaciones.VersionPublicada
 import com.julen.socios.databinding.ActivityMainBinding
 import com.julen.socios.export.ExportFormat
 import com.julen.socios.export.ExportRequest
@@ -45,6 +44,7 @@ import com.julen.socios.util.CalculoComisiones
 import com.julen.socios.util.DateUtils
 import com.julen.socios.util.HapticUtils
 import com.julen.socios.util.NumberAnimators
+import com.julen.socios.util.abrirEnlace
 import com.julen.socios.util.toEurosCompacto
 import com.julen.socios.util.toPorcentajeString
 import com.julen.socios.util.setTextoAccesible
@@ -293,18 +293,24 @@ class MainActivity : AppCompatActivity() {
                 )
                 // Más tiempo que un aviso normal: es fácil no verlo al abrir la app.
                 Snackbar.make(binding.root, texto, DURACION_AVISO_VERSION_MS)
-                    .setAction(R.string.action_descargar) { abrirEnNavegador(evento.publicada.url) }
+                    .setAction(R.string.action_actualizar) { actualizar(evento.publicada) }
                     .show()
             }
         }
     }
 
-    private fun abrirEnNavegador(url: String) {
-        try {
-            startActivity(Intent(Intent.ACTION_VIEW, url.toUri()))
-        } catch (e: ActivityNotFoundException) {
-            Snackbar.make(binding.root, R.string.msg_sin_navegador, Snackbar.LENGTH_LONG).show()
+    /** Descarga e instala la versión nueva desde la app. */
+    private fun actualizar(publicada: VersionPublicada) {
+        if (publicada.apk == null) {
+            // Una release sin APK adjunto: queda la página de GitHub.
+            if (!abrirEnlace(publicada.url)) {
+                Snackbar.make(binding.root, R.string.msg_sin_navegador, Snackbar.LENGTH_LONG).show()
+            }
+            return
         }
+        actualizaciones.descargar(publicada)
+        if (supportFragmentManager.findFragmentByTag(ActualizacionBottomSheetDialog.TAG) != null) return
+        ActualizacionBottomSheetDialog().show(supportFragmentManager, ActualizacionBottomSheetDialog.TAG)
     }
 
     private fun mostrarDialogoDestinoExport(request: ExportRequest?) {
