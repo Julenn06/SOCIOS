@@ -99,9 +99,11 @@ class HistoricoGlobalBottomSheetDialog : BottomSheetDialogFragment() {
 
     private fun mostrarFilas() {
         val semanas = resumenActual?.semanasHistoricas ?: return
-        val periodo = when {
-            binding.btnPorMes.isChecked -> Periodo.MES
-            binding.btnPorAnio.isChecked -> Periodo.ANIO
+        // Se pregunta al grupo y no a cada botón: al elegir "Semanas", el grupo avisa antes de desmarcar el
+        // botón de mes o año, y ese botón aún diría que está marcado.
+        val periodo = when (binding.toggleAgrupacion.checkedButtonId) {
+            R.id.btnPorMes -> Periodo.MES
+            R.id.btnPorAnio -> Periodo.ANIO
             else -> null
         }
         binding.tvNotaAgrupacion.isVisible = periodo != null
