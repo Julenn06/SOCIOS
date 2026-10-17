@@ -59,7 +59,7 @@
                     android:text="@string/irpf_titulo"
                     android:textColor="@color/text_main"
                     android:textSize="20sp"
-                    android:textStyle="bold" />
+                    android:fontFamily="@font/geist_semibold" />
 
                 <TextView
                     android:id="@+id/tvBreakdownRangoSemana"
@@ -95,11 +95,10 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:letterSpacing="0.08"
-                    android:text="@string/irpf_neto_final"
+                                        android:text="@string/irpf_neto_final"
                     android:textColor="#D9FFFFFF"
-                    android:textSize="11sp"
-                    android:textStyle="bold" />
+                    android:textSize="13sp"
+                    android:fontFamily="@font/geist_medium" />
 
                 <TextView
                     android:id="@+id/tvBreakdownNetoBig"
@@ -108,7 +107,7 @@
                     android:layout_marginTop="2dp"
                     android:textColor="@android:color/white"
                     android:textSize="40sp"
-                    android:textStyle="bold"
+                    android:fontFamily="@font/geist_semibold"
                     tools:text="424,01 €" />
 
                 <TextView
@@ -121,7 +120,7 @@
                     android:paddingVertical="3dp"
                     android:textColor="@android:color/white"
                     android:textSize="12sp"
-                    android:textStyle="bold"
+                    android:fontFamily="@font/geist_semibold"
                     tools:text="10 socios hechos de 12 registrados" />
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
@@ -223,7 +222,7 @@
                         style="@style/Socios.EtiquetaCalculo"
                         android:layout_marginStart="0dp"
                         android:text="@string/irpf_total_bruto"
-                        android:textStyle="bold" />
+                        android:fontFamily="@font/geist_semibold" />
 
                     <TextView
                         android:id="@+id/tvBreakdownBruto"
@@ -271,7 +270,7 @@
                         android:text="@string/irpf_total_neto"
                         android:textColor="@color/green_text"
                         android:textSize="16sp"
-                        android:textStyle="bold" />
+                        android:fontFamily="@font/geist_semibold" />
 
                     <TextView
                         android:id="@+id/tvBreakdownNetoSmall"
@@ -279,7 +278,7 @@
                         android:layout_height="wrap_content"
                         android:textColor="@color/green_text"
                         android:textSize="18sp"
-                        android:textStyle="bold"
+                        android:fontFamily="@font/geist_semibold"
                         tools:text="424,01 €" />
                 </LinearLayout>
             </LinearLayout>

@@ -1,23 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- Entrada de cada fila: sube un poco desde abajo mientras aparece, y se posa con suavidad. -->
 <set xmlns:android="http://schemas.android.com/apk/res/android"
-    android:duration="250">
+    android:duration="420"
+    android:interpolator="@interpolator/salida_suave"
+    android:shareInterpolator="true">
 
     <translate
-        android:fromYDelta="-20%"
-        android:toYDelta="0%"
-        android:interpolator="@android:anim/decelerate_interpolator" />
+        android:fromYDelta="24%"
+        android:toYDelta="0%" />
 
     <alpha
         android:fromAlpha="0.0"
-        android:toAlpha="1.0"
-        android:interpolator="@android:anim/decelerate_interpolator" />
+        android:toAlpha="1.0" />
 
     <scale
-        android:fromXScale="95%"
-        android:fromYScale="95%"
+        android:fromXScale="98%"
+        android:fromYScale="98%"
         android:pivotX="50%"
         android:pivotY="50%"
         android:toXScale="100%"
-        android:toYScale="100%"
-        android:interpolator="@android:anim/decelerate_interpolator" />
+        android:toYScale="100%" />
 </set>

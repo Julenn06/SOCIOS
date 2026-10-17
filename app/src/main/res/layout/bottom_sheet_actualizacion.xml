@@ -35,7 +35,7 @@
             android:gravity="center"
             android:textColor="@color/text_main"
             android:textSize="20sp"
-            android:textStyle="bold"
+            android:fontFamily="@font/geist_semibold"
             tools:text="Descargando la versión 1.6.0" />
 
         <TextView
@@ -48,7 +48,7 @@
             android:paddingVertical="5dp"
             android:textColor="@color/on_primary_container"
             android:textSize="13sp"
-            android:textStyle="bold"
+            android:fontFamily="@font/geist_semibold"
             tools:text="1.5.0  →  1.6.0" />
 
         <TextView

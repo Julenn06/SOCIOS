@@ -67,7 +67,7 @@
                             android:text="@string/title_app_bar"
                             android:textColor="@android:color/white"
                             android:textSize="21sp"
-                            android:textStyle="bold" />
+                            android:fontFamily="@font/geist_semibold" />
 
                         <TextView
                             android:id="@+id/tvVersionMas"
@@ -79,7 +79,7 @@
                             android:paddingVertical="3dp"
                             android:textColor="@android:color/white"
                             android:textSize="12sp"
-                            android:textStyle="bold"
+                            android:fontFamily="@font/geist_semibold"
                             tools:text="Versión 1.6.0" />
                     </LinearLayout>
                 </LinearLayout>
@@ -138,7 +138,7 @@
                             android:layout_height="wrap_content"
                             android:textColor="@android:color/white"
                             android:textSize="15sp"
-                            android:textStyle="bold"
+                            android:fontFamily="@font/geist_semibold"
                             tools:text="Tienes la última versión" />
 
                         <TextView
@@ -160,7 +160,7 @@
                         android:paddingHorizontal="16dp"
                         android:textColor="@color/header_button_text"
                         android:textSize="13sp"
-                        android:textStyle="bold"
+                        android:fontFamily="@font/geist_semibold"
                         app:backgroundTint="@android:color/white"
                         tools:text="Buscar" />
                 </LinearLayout>

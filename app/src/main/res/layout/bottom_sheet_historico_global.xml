@@ -59,7 +59,7 @@
                     android:text="@string/historico_titulo"
                     android:textColor="@color/text_main"
                     android:textSize="20sp"
-                    android:textStyle="bold" />
+                    android:fontFamily="@font/geist_semibold" />
 
                 <TextView
                     android:layout_width="wrap_content"
@@ -94,11 +94,10 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:letterSpacing="0.08"
-                    android:text="@string/historico_irpf_label"
+                                        android:text="@string/historico_irpf_label"
                     android:textColor="@color/header_label_irpf"
-                    android:textSize="11sp"
-                    android:textStyle="bold" />
+                    android:textSize="13sp"
+                    android:fontFamily="@font/geist_medium" />
 
                 <TextView
                     android:id="@+id/tvGlobalIrpfTotal"
@@ -107,7 +106,7 @@
                     android:layout_marginTop="2dp"
                     android:textColor="@android:color/white"
                     android:textSize="40sp"
-                    android:textStyle="bold"
+                    android:fontFamily="@font/geist_semibold"
                     tools:text="-204,69 €" />
 
                 <TextView
@@ -120,7 +119,7 @@
                     android:paddingVertical="3dp"
                     android:textColor="@android:color/white"
                     android:textSize="12sp"
-                    android:textStyle="bold"
+                    android:fontFamily="@font/geist_semibold"
                     tools:text="En 3 semanas registradas" />
 
                 <LinearLayout
@@ -154,7 +153,7 @@
                             android:maxLines="1"
                             android:textColor="@android:color/white"
                             android:textSize="17sp"
-                            android:textStyle="bold"
+                            android:fontFamily="@font/geist_semibold"
                             tools:text="+748,31 €" />
                     </LinearLayout>
 
@@ -181,7 +180,7 @@
                             android:maxLines="1"
                             android:textColor="@color/header_bonus"
                             android:textSize="17sp"
-                            android:textStyle="bold"
+                            android:fontFamily="@font/geist_semibold"
                             tools:text="+280,00 €" />
                     </LinearLayout>
                 </LinearLayout>

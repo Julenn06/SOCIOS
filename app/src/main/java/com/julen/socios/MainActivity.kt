@@ -544,7 +544,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun setupFab() {
         binding.fabAddSocio.setOnClickListener { openAddEditDialog(null) }
-        binding.btnAddSocioEmpty.setOnClickListener { openAddEditDialog(null) }
+        binding.containerEmptyState.setOnClickListener { openAddEditDialog(null) }
     }
 
     private fun setupHeaderClickListeners() {

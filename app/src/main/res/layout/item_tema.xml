@@ -32,7 +32,7 @@
             android:maxLines="1"
             android:textColor="@color/text_main"
             android:textSize="13sp"
-            android:textStyle="bold"
+            android:fontFamily="@font/geist_semibold"
             tools:text="Sistema" />
     </LinearLayout>
 </com.google.android.material.card.MaterialCardView>

@@ -7,11 +7,11 @@ import android.graphics.LinearGradient
 import android.graphics.Paint
 import android.graphics.RectF
 import android.graphics.Shader
-import android.graphics.Typeface
 import android.util.AttributeSet
 import android.util.TypedValue
 import android.view.View
 import androidx.core.content.ContextCompat
+import androidx.core.content.res.ResourcesCompat
 import androidx.interpolator.view.animation.FastOutSlowInInterpolator
 import com.julen.socios.util.CalculoComisiones
 import com.julen.socios.util.toEurosCompacto
@@ -54,12 +54,14 @@ class ProgresoBonusView @JvmOverloads constructor(
     }
     private val pintaNumero = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         textAlign = Paint.Align.CENTER
-        typeface = Typeface.DEFAULT_BOLD
+        typeface = ResourcesCompat.getFont(context, R.font.geist_semibold)
+        fontFeatureSettings = "tnum"
         textSize = sp(11f)
     }
     private val pintaImporte = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         textAlign = Paint.Align.CENTER
-        typeface = Typeface.DEFAULT_BOLD
+        typeface = ResourcesCompat.getFont(context, R.font.geist_semibold)
+        fontFeatureSettings = "tnum"
         textSize = sp(11.5f)
     }
     private val colorTexto = ContextCompat.getColor(context, R.color.text_main)

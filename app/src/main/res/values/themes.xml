@@ -5,6 +5,27 @@
         <item name="android:forceDarkAllowed" tools:targetApi="q">false</item>
         <!-- Sin el tinte verdoso que Material añade a lo que tiene sombra (avisos, tarjetas elevadas). -->
         <item name="elevationOverlayEnabled">false</item>
+        <!-- Geist en toda la app: en los TextView sueltos y en la escala de Material (botones, campos, diálogos). -->
+        <!-- Solo android:fontFamily: el fontFamily de AppCompat a nivel de tema pisaría el peso que cada
+             vista pide con android:fontFamily (geist_semibold…). -->
+        <item name="android:fontFamily">@font/geist</item>
+        <!-- Números de ancho fijo: las cifras de importes y contadores no bailan al cambiar. -->
+        <item name="android:fontFeatureSettings">tnum</item>
+        <item name="textAppearanceDisplayLarge">@style/TextAppearance.Socios.DisplayLarge</item>
+        <item name="textAppearanceDisplayMedium">@style/TextAppearance.Socios.DisplayMedium</item>
+        <item name="textAppearanceDisplaySmall">@style/TextAppearance.Socios.DisplaySmall</item>
+        <item name="textAppearanceHeadlineLarge">@style/TextAppearance.Socios.HeadlineLarge</item>
+        <item name="textAppearanceHeadlineMedium">@style/TextAppearance.Socios.HeadlineMedium</item>
+        <item name="textAppearanceHeadlineSmall">@style/TextAppearance.Socios.HeadlineSmall</item>
+        <item name="textAppearanceTitleLarge">@style/TextAppearance.Socios.TitleLarge</item>
+        <item name="textAppearanceTitleMedium">@style/TextAppearance.Socios.TitleMedium</item>
+        <item name="textAppearanceTitleSmall">@style/TextAppearance.Socios.TitleSmall</item>
+        <item name="textAppearanceBodyLarge">@style/TextAppearance.Socios.BodyLarge</item>
+        <item name="textAppearanceBodyMedium">@style/TextAppearance.Socios.BodyMedium</item>
+        <item name="textAppearanceBodySmall">@style/TextAppearance.Socios.BodySmall</item>
+        <item name="textAppearanceLabelLarge">@style/TextAppearance.Socios.LabelLarge</item>
+        <item name="textAppearanceLabelMedium">@style/TextAppearance.Socios.LabelMedium</item>
+        <item name="textAppearanceLabelSmall">@style/TextAppearance.Socios.LabelSmall</item>
         <item name="colorPrimary">@color/primary</item>
         <item name="colorOnPrimary">@color/on_primary</item>
         <item name="colorPrimaryContainer">@color/primary_container</item>
@@ -35,7 +56,8 @@
 
     <style name="Socios.Dialogo.Titulo" parent="MaterialAlertDialog.Material3.Title.Text">
         <item name="android:textColor">@color/text_main</item>
-        <item name="android:textStyle">bold</item>
+        <item name="android:fontFamily">@font/geist_semibold</item>
+        <item name="fontFamily">@font/geist_semibold</item>
     </style>
 
     <style name="CustomBottomSheetDialogTheme" parent="ThemeOverlay.Material3.BottomSheetDialog">
@@ -47,6 +69,68 @@
     <style name="CustomBottomSheet" parent="Widget.Material3.BottomSheet.Modal">
         <item name="backgroundTint">@color/surface_card</item>
         <item name="android:elevation">8dp</item>
+    </style>
+
+    <!-- Escala tipográfica de Material con Geist. -->
+    <style name="TextAppearance.Socios.DisplayLarge" parent="TextAppearance.Material3.DisplayLarge">
+        <item name="android:fontFamily">@font/geist</item>
+        <item name="fontFamily">@font/geist</item>
+    </style>
+    <style name="TextAppearance.Socios.DisplayMedium" parent="TextAppearance.Material3.DisplayMedium">
+        <item name="android:fontFamily">@font/geist</item>
+        <item name="fontFamily">@font/geist</item>
+    </style>
+    <style name="TextAppearance.Socios.DisplaySmall" parent="TextAppearance.Material3.DisplaySmall">
+        <item name="android:fontFamily">@font/geist</item>
+        <item name="fontFamily">@font/geist</item>
+    </style>
+    <style name="TextAppearance.Socios.HeadlineLarge" parent="TextAppearance.Material3.HeadlineLarge">
+        <item name="android:fontFamily">@font/geist</item>
+        <item name="fontFamily">@font/geist</item>
+    </style>
+    <style name="TextAppearance.Socios.HeadlineMedium" parent="TextAppearance.Material3.HeadlineMedium">
+        <item name="android:fontFamily">@font/geist</item>
+        <item name="fontFamily">@font/geist</item>
+    </style>
+    <style name="TextAppearance.Socios.HeadlineSmall" parent="TextAppearance.Material3.HeadlineSmall">
+        <item name="android:fontFamily">@font/geist</item>
+        <item name="fontFamily">@font/geist</item>
+    </style>
+    <style name="TextAppearance.Socios.TitleLarge" parent="TextAppearance.Material3.TitleLarge">
+        <item name="android:fontFamily">@font/geist</item>
+        <item name="fontFamily">@font/geist</item>
+    </style>
+    <style name="TextAppearance.Socios.TitleMedium" parent="TextAppearance.Material3.TitleMedium">
+        <item name="android:fontFamily">@font/geist</item>
+        <item name="fontFamily">@font/geist</item>
+    </style>
+    <style name="TextAppearance.Socios.TitleSmall" parent="TextAppearance.Material3.TitleSmall">
+        <item name="android:fontFamily">@font/geist</item>
+        <item name="fontFamily">@font/geist</item>
+    </style>
+    <style name="TextAppearance.Socios.BodyLarge" parent="TextAppearance.Material3.BodyLarge">
+        <item name="android:fontFamily">@font/geist</item>
+        <item name="fontFamily">@font/geist</item>
+    </style>
+    <style name="TextAppearance.Socios.BodyMedium" parent="TextAppearance.Material3.BodyMedium">
+        <item name="android:fontFamily">@font/geist</item>
+        <item name="fontFamily">@font/geist</item>
+    </style>
+    <style name="TextAppearance.Socios.BodySmall" parent="TextAppearance.Material3.BodySmall">
+        <item name="android:fontFamily">@font/geist</item>
+        <item name="fontFamily">@font/geist</item>
+    </style>
+    <style name="TextAppearance.Socios.LabelLarge" parent="TextAppearance.Material3.LabelLarge">
+        <item name="android:fontFamily">@font/geist</item>
+        <item name="fontFamily">@font/geist</item>
+    </style>
+    <style name="TextAppearance.Socios.LabelMedium" parent="TextAppearance.Material3.LabelMedium">
+        <item name="android:fontFamily">@font/geist</item>
+        <item name="fontFamily">@font/geist</item>
+    </style>
+    <style name="TextAppearance.Socios.LabelSmall" parent="TextAppearance.Material3.LabelSmall">
+        <item name="android:fontFamily">@font/geist</item>
+        <item name="fontFamily">@font/geist</item>
     </style>
 
     <style name="Theme.Socios" parent="Base.Theme.Socios" />

@@ -84,7 +84,7 @@
     <string name="atajo_nuevo_socio_largo">Añadir un socio</string>
 
     <!-- Financial Headers -->
-    <string name="header_neto_semanal">NETO DE LA SEMANA</string>
+    <string name="header_neto_semanal">Neto de la semana</string>
     <string name="action_ver_irpf">Desglose</string>
     <string name="label_base_x2">Base ×2</string>
     <string name="label_bonus_auto">Bonus</string>
@@ -112,13 +112,13 @@
     </plurals>
     <string name="list_summary_day_format">%1$d de %2$d hechos</string>
     <string name="empty_titulo">Aún no hay socios aquí</string>
-    <string name="empty_mensaje">Cuando registres uno, aparecerá en esta lista.</string>
-    <string name="action_add_socio">Añadir socio</string>
+    <string name="empty_mensaje">Toca aquí para registrar el primero.</string>
     <string name="fab_nuevo_socio">Nuevo socio</string>
 
     <!-- Socio Item Status -->
-    <string name="socio_status_conseguido">✓ Conseguido · suma %s</string>
-    <string name="socio_status_pendiente">⏳ Pendiente · aún no suma</string>
+    <string name="socio_status_conseguido">Suma %s</string>
+    <string name="socio_status_pendiente">Pendiente</string>
+    <string name="separador_punto" translatable="false">·</string>
     <string name="socio_status_badge_conseguido">✓ Conseguido</string>
     <string name="socio_status_badge_pendiente">⏳ Pendiente</string>
     <string name="socio_default_name">Socio %s</string>
@@ -126,7 +126,7 @@
     <string name="item_switch_hecho">Conseguido</string>
 
     <!-- Add Socio Bottom Sheet Labels -->
-    <string name="preview_ganancia_label">GANANCIA DE ESTE SOCIO</string>
+    <string name="preview_ganancia_label">Ganancia de este socio</string>
     <string name="section_cuota_label">Cuota mensual</string>
     <string name="chip_otro">Otro…</string>
     <string name="hint_custom_amount">Cantidad personalizada (€)</string>
@@ -167,7 +167,7 @@
 
     <!-- Desglose IRPF -->
     <string name="irpf_titulo">Desglose de la semana</string>
-    <string name="irpf_neto_final">NETO A COBRAR</string>
+    <string name="irpf_neto_final">Neto a cobrar</string>
     <string name="irpf_seccion_calculo">Cómo se calcula</string>
     <string name="irpf_seccion_porcentaje">Porcentaje de IRPF</string>
     <plurals name="irpf_breakdown_count">
@@ -205,7 +205,7 @@
     <!-- Histórico -->
     <string name="historico_titulo">Histórico</string>
     <string name="historico_subtitulo">Lo acumulado en todas tus semanas</string>
-    <string name="historico_irpf_label">IRPF RETENIDO EN TOTAL</string>
+    <string name="historico_irpf_label">IRPF retenido en total</string>
     <string name="historico_neto_label">Neto cobrado</string>
     <string name="historico_bonus_label">Bonus</string>
     <string name="historico_lista_label">Desglose</string>

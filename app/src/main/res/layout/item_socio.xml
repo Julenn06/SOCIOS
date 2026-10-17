@@ -1,168 +1,163 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Un socio de la lista. El lápiz lo edita, la papelera lo borra y el interruptor lo marca como conseguido. -->
+<!-- Un socio de la lista, en una sola fila: placa del importe, nombre con día y estado, y a la derecha
+     el interruptor (lo marca como conseguido) con el lápiz (lo edita) y la papelera (lo borra) debajo. -->
 <com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     style="@style/Socios.TarjetaFila"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginVertical="6dp"
+    android:layout_marginVertical="5dp"
     app:cardBackgroundColor="@color/surface_card"
-    app:cardCornerRadius="20dp">
+    app:cardCornerRadius="22dp">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:paddingHorizontal="14dp"
-        android:paddingTop="14dp"
-        android:paddingBottom="6dp">
+        android:baselineAligned="false"
+        android:orientation="horizontal"
+        android:paddingStart="12dp"
+        android:paddingTop="12dp"
+        android:paddingEnd="8dp"
+        android:paddingBottom="8dp">
+
+        <!-- Placa del importe: el fondo (verde o ámbar según el estado) se pone desde código -->
+        <LinearLayout
+            android:id="@+id/placaImporte"
+            android:layout_width="60dp"
+            android:layout_height="60dp"
+            android:gravity="center"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/tvColaboracionAmount"
+                style="@style/Socios.Cifra"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:maxLines="1"
+                android:textColor="@android:color/white"
+                android:textSize="17sp"
+                tools:text="20 €" />
+
+            <TextView
+                android:id="@+id/tvBaseX2Amount"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFeatureSettings="tnum"
+                android:maxLines="1"
+                android:textColor="#D9FFFFFF"
+                android:textSize="11sp"
+                tools:text="40 € base" />
+        </LinearLayout>
 
         <LinearLayout
-            android:layout_width="match_parent"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:baselineAligned="false"
-            android:gravity="center_vertical"
-            android:orientation="horizontal">
+            android:layout_marginStart="14dp"
+            android:layout_marginTop="4dp"
+            android:layout_weight="1"
+            android:orientation="vertical">
 
-            <!-- Placa del importe: el fondo (verde o ámbar según el estado) se pone desde código -->
-            <LinearLayout
-                android:id="@+id/placaImporte"
-                android:layout_width="68dp"
-                android:layout_height="68dp"
-                android:gravity="center"
-                android:orientation="vertical">
-
-                <TextView
-                    android:id="@+id/tvColaboracionAmount"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:maxLines="1"
-                    android:textColor="@android:color/white"
-                    android:textSize="18sp"
-                    android:textStyle="bold"
-                    tools:text="20 €" />
-
-                <TextView
-                    android:id="@+id/tvBaseX2Amount"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:maxLines="1"
-                    android:textColor="#E6FFFFFF"
-                    android:textSize="11sp"
-                    tools:text="40 € base" />
-            </LinearLayout>
-
-            <LinearLayout
-                android:layout_width="0dp"
+            <TextView
+                android:id="@+id/tvNombreSocio"
+                style="@style/Socios.TituloFila"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="14dp"
-                android:layout_weight="1"
-                android:orientation="vertical">
+                android:ellipsize="end"
+                android:maxLines="1"
+                android:textSize="16sp"
+                tools:text="Juan Pérez" />
 
-                <LinearLayout
-                    android:layout_width="match_parent"
+            <!-- Día y estado: "Jueves · Suma 40 €" o "Martes · Pendiente" -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="3dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/tvDiaBadge"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:gravity="center_vertical"
-                    android:orientation="horizontal">
+                    android:fontFamily="@font/geist_medium"
+                    android:maxLines="1"
+                    android:textColor="@color/text_sub"
+                    android:textSize="13sp"
+                    tools:text="Jueves" />
 
-                    <TextView
-                        android:id="@+id/tvNombreSocio"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:ellipsize="end"
-                        android:maxLines="1"
-                        android:textColor="@color/text_main"
-                        android:textSize="16sp"
-                        android:textStyle="bold"
-                        tools:text="Juan Pérez" />
-
-                    <TextView
-                        android:id="@+id/tvDiaBadge"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="8dp"
-                        android:background="@drawable/bg_pastilla_version"
-                        android:backgroundTint="@color/blue_container"
-                        android:paddingHorizontal="10dp"
-                        android:paddingVertical="3dp"
-                        android:textColor="@color/blue_text_soft"
-                        android:textSize="12sp"
-                        android:textStyle="bold"
-                        tools:text="Lunes" />
-                </LinearLayout>
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginHorizontal="6dp"
+                    android:importantForAccessibility="no"
+                    android:text="@string/separador_punto"
+                    android:textColor="@color/stroke"
+                    android:textSize="13sp" />
 
                 <TextView
                     android:id="@+id/tvEstadoTexto"
-                    android:layout_width="wrap_content"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="4dp"
-                    android:textSize="12.5sp"
-                    android:textStyle="bold"
-                    tools:text="✓ Conseguido · suma 40 €"
-                    tools:textColor="@color/primary" />
-
-                <TextView
-                    android:id="@+id/tvNotas"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="3dp"
+                    android:layout_weight="1"
                     android:ellipsize="end"
-                    android:maxLines="2"
-                    android:textColor="@color/text_sub"
+                    android:fontFamily="@font/geist_semibold"
+                    android:fontFeatureSettings="tnum"
+                    android:maxLines="1"
                     android:textSize="13sp"
-                    tools:text="Firma realizada en punto presencial" />
+                    tools:text="Suma 40 €"
+                    tools:textColor="@color/primary" />
             </LinearLayout>
+
+            <TextView
+                android:id="@+id/tvNotas"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:layout_marginBottom="4dp"
+                android:ellipsize="end"
+                android:lineSpacingExtra="2dp"
+                android:maxLines="2"
+                android:textColor="@color/text_sub"
+                android:textSize="13sp"
+                tools:text="Firma realizada en punto presencial" />
         </LinearLayout>
 
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:layout_marginTop="12dp"
-            android:background="@color/divider" />
-
+        <!-- Solo el interruptor cambia el estado; el lápiz edita y la papelera borra (con confirmación) -->
         <LinearLayout
-            android:layout_width="match_parent"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:gravity="center_vertical"
-            android:orientation="horizontal">
-
-            <!-- Solo el interruptor cambia el estado; la etiqueta no responde a los toques -->
-            <TextView
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:importantForAccessibility="no"
-                android:text="@string/item_switch_hecho"
-                android:textColor="@color/text_main"
-                android:textSize="14sp"
-                android:textStyle="bold" />
+            android:layout_marginStart="4dp"
+            android:gravity="end"
+            android:orientation="vertical">
 
             <com.google.android.material.materialswitch.MaterialSwitch
                 android:id="@+id/switchHecho"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:contentDescription="@string/item_switch_hecho" />
+                android:layout_marginEnd="4dp"
+                android:contentDescription="@string/item_switch_hecho"
+                android:minHeight="40dp" />
 
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnEditar"
-                style="@style/Socios.BotonIcono"
-                android:layout_marginStart="10dp"
-                android:contentDescription="@string/cd_editar_socio"
-                app:icon="@drawable/ic_edit"
-                app:iconSize="20dp"
-                app:iconTint="@color/text_sub" />
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
 
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnEliminar"
-                style="@style/Socios.BotonIcono"
-                android:layout_marginStart="6dp"
-                android:contentDescription="@string/cd_eliminar_socio"
-                app:backgroundTint="@color/red_container"
-                app:icon="@drawable/ic_delete"
-                app:iconSize="20dp"
-                app:iconTint="@color/red_text" />
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnEditar"
+                    style="@style/Socios.BotonAccionSocio"
+                    android:contentDescription="@string/cd_editar_socio"
+                    app:icon="@drawable/ic_edit"
+                    app:iconTint="@color/text_sub" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnEliminar"
+                    style="@style/Socios.BotonAccionSocio"
+                    android:contentDescription="@string/cd_eliminar_socio"
+                    app:icon="@drawable/ic_delete"
+                    app:iconTint="@color/red_text" />
+            </LinearLayout>
         </LinearLayout>
     </LinearLayout>
 </com.google.android.material.card.MaterialCardView>

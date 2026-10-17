@@ -2,25 +2,37 @@
 <!-- Piezas comunes de los paneles: panel "Más", exportar/importar y formulario del socio. -->
 <resources>
 
-    <!-- Título pequeño de sección, en mayúsculas ("FORMATO", "APARIENCIA"…). -->
+    <!-- Título pequeño de sección ("Formato", "Apariencia"…), en tipo frase y en semibold. -->
     <style name="Socios.Seccion" parent="">
         <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">wrap_content</item>
-        <item name="android:layout_marginTop">22dp</item>
+        <item name="android:layout_marginTop">26dp</item>
         <item name="android:layout_marginBottom">10dp</item>
-        <item name="android:letterSpacing">0.08</item>
-        <item name="android:textAllCaps">true</item>
+        <item name="android:fontFamily">@font/geist_semibold</item>
         <item name="android:textColor">@color/text_sub</item>
-        <item name="android:textSize">11sp</item>
-        <item name="android:textStyle">bold</item>
+        <item name="android:textSize">13.5sp</item>
+    </style>
+
+    <!-- Cifras: semibold, con números de ancho fijo para que no bailen al cambiar. -->
+    <style name="Socios.Cifra" parent="">
+        <item name="android:fontFamily">@font/geist_semibold</item>
+        <item name="android:fontFeatureSettings">tnum</item>
+        <item name="android:letterSpacing">-0.01</item>
+    </style>
+
+    <!-- Cifra principal de una cabecera (neto de la semana, ganancia del socio…). -->
+    <style name="Socios.CifraGrande" parent="Socios.Cifra">
+        <item name="android:letterSpacing">-0.035</item>
+        <item name="android:includeFontPadding">false</item>
     </style>
 
     <!-- Fila grande y pulsable: placa con icono, título, descripción y flecha. -->
     <style name="Socios.TarjetaFila" parent="Widget.Material3.CardView.Outlined">
         <item name="cardBackgroundColor">@color/surface_muted</item>
-        <item name="cardCornerRadius">18dp</item>
+        <item name="cardCornerRadius">20dp</item>
         <item name="strokeColor">@color/divider</item>
         <item name="strokeWidth">1dp</item>
+        <item name="android:stateListAnimator">@animator/pulsar</item>
     </style>
 
     <!-- Tarjeta que se elige entre varias (alcance de la exportación, tema, estado del socio). -->
@@ -29,7 +41,8 @@
         <item name="cardBackgroundColor">@color/tarjeta_fondo</item>
         <!-- Sin la capa azulada que Material pone encima al marcarla: el color lo da cardBackgroundColor. -->
         <item name="cardForegroundColor">@android:color/transparent</item>
-        <item name="cardCornerRadius">18dp</item>
+        <item name="cardCornerRadius">20dp</item>
+        <item name="android:stateListAnimator">@animator/pulsar</item>
         <item name="strokeColor">@color/tarjeta_borde</item>
         <item name="strokeWidth">1.5dp</item>
         <item name="checkedIcon">@drawable/ic_check_circle</item>
@@ -48,7 +61,8 @@
         <item name="android:paddingEnd">4dp</item>
         <item name="android:textColor">@color/opcion_texto</item>
         <item name="android:textSize">15sp</item>
-        <item name="android:textStyle">bold</item>
+        <item name="android:fontFamily">@font/geist_semibold</item>
+        <item name="android:fontFeatureSettings">tnum</item>
         <item name="backgroundTint">@color/opcion_fondo</item>
         <item name="cornerRadius">14dp</item>
         <item name="strokeColor">@color/opcion_borde</item>
@@ -66,8 +80,10 @@
 
     <!-- Título de la barra superior. -->
     <style name="Socios.TituloBarra" parent="TextAppearance.Material3.TitleLarge">
-        <item name="android:textSize">22sp</item>
-        <item name="android:textStyle">bold</item>
+        <item name="android:fontFamily">@font/geist_semibold</item>
+        <item name="fontFamily">@font/geist_semibold</item>
+        <item name="android:letterSpacing">-0.02</item>
+        <item name="android:textSize">23sp</item>
     </style>
 
     <!-- Botón redondo de icono, con el icono centrado: los de Material reservan un hueco a la izquierda
@@ -81,6 +97,19 @@
         <item name="backgroundTint">@color/surface_muted</item>
         <item name="iconGravity">textStart</item>
         <item name="iconPadding">0dp</item>
+        <item name="android:stateListAnimator">@animator/pulsar</item>
+    </style>
+
+    <!-- Lápiz y papelera de cada socio: sin placa, solo el icono, con zona táctil de 40 dp. -->
+    <style name="Socios.BotonAccionSocio" parent="Widget.Material3.Button.IconButton">
+        <item name="android:layout_width">40dp</item>
+        <item name="android:layout_height">40dp</item>
+        <item name="android:insetTop">0dp</item>
+        <item name="android:insetBottom">0dp</item>
+        <item name="android:padding">0dp</item>
+        <item name="iconGravity">textStart</item>
+        <item name="iconPadding">0dp</item>
+        <item name="iconSize">20dp</item>
     </style>
 
     <!-- Flechas del selector de semana. -->
@@ -99,7 +128,7 @@
         <item name="android:text">@string/btn_hoy</item>
         <item name="android:textColor">@color/blue_text</item>
         <item name="android:textSize">13sp</item>
-        <item name="android:textStyle">bold</item>
+        <item name="android:fontFamily">@font/geist_semibold</item>
         <item name="backgroundTint">@color/blue_container</item>
         <item name="cornerRadius">16dp</item>
         <item name="iconTint">@color/blue_text</item>
@@ -147,19 +176,22 @@
         <item name="android:layout_marginStart">8dp</item>
         <item name="android:textColor">@color/text_main</item>
         <item name="android:textSize">14.5sp</item>
-        <item name="android:textStyle">bold</item>
+        <item name="android:fontFamily">@font/geist_semibold</item>
+        <item name="android:fontFeatureSettings">tnum</item>
     </style>
 
     <!-- Título y descripción dentro de las filas y tarjetas. -->
     <style name="Socios.TituloFila" parent="">
         <item name="android:textColor">@color/text_main</item>
         <item name="android:textSize">15sp</item>
-        <item name="android:textStyle">bold</item>
+        <item name="android:fontFamily">@font/geist_semibold</item>
+        <item name="android:letterSpacing">-0.005</item>
     </style>
 
     <style name="Socios.DescripcionFila" parent="">
         <item name="android:layout_marginTop">2dp</item>
+        <item name="android:lineSpacingExtra">1dp</item>
         <item name="android:textColor">@color/text_sub</item>
-        <item name="android:textSize">12.5sp</item>
+        <item name="android:textSize">13sp</item>
     </style>
 </resources>

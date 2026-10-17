@@ -40,7 +40,7 @@
                 android:text="@string/title_add_socio"
                 android:textColor="@color/text_main"
                 android:textSize="24sp"
-                android:textStyle="bold" />
+                android:fontFamily="@font/geist_semibold" />
 
             <TextView
                 android:id="@+id/tvSubtituloSemana"
@@ -78,11 +78,10 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:letterSpacing="0.08"
-                            android:text="@string/preview_ganancia_label"
+                                                        android:text="@string/preview_ganancia_label"
                             android:textColor="#D9FFFFFF"
-                            android:textSize="11sp"
-                            android:textStyle="bold" />
+                            android:textSize="13sp"
+                            android:fontFamily="@font/geist_medium" />
 
                         <TextView
                             android:id="@+id/tvPreviewBaseX2"
@@ -91,7 +90,7 @@
                             android:layout_marginTop="2dp"
                             android:textColor="@android:color/white"
                             android:textSize="38sp"
-                            android:textStyle="bold"
+                            android:fontFamily="@font/geist_semibold"
                             tools:text="+40,00 €" />
 
                         <TextView
@@ -114,7 +113,7 @@
                         android:paddingVertical="6dp"
                         android:textColor="@android:color/white"
                         android:textSize="12sp"
-                        android:textStyle="bold"
+                        android:fontFamily="@font/geist_semibold"
                         tools:text="✓ Conseguido" />
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
@@ -452,7 +451,7 @@
             android:text="@string/action_cancel"
             android:textColor="@color/text_main"
             android:textSize="15sp"
-            android:textStyle="bold"
+            android:fontFamily="@font/geist_semibold"
             app:cornerRadius="16dp"
             app:strokeColor="@color/stroke" />
 
@@ -466,7 +465,7 @@
             android:insetBottom="0dp"
             android:text="@string/action_save_socio"
             android:textSize="15sp"
-            android:textStyle="bold"
+            android:fontFamily="@font/geist_semibold"
             app:cornerRadius="16dp"
             app:icon="@drawable/ic_check"
             app:iconGravity="textStart" />

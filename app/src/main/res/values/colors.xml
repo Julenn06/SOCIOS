@@ -1,71 +1,76 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Paleta del tema claro. Las versiones para el tema oscuro están en values-night/colors.xml. -->
+<!-- Paleta del tema claro. Las versiones para el tema oscuro están en values-night/colors.xml.
+     Un solo acento (esmeralda) sobre neutros con un toque verde; el ámbar y el rojo solo dan significado
+     (bonus/pendiente e IRPF/borrar). -->
 <resources>
-    <color name="primary">#059669</color>
+    <color name="primary">#0E7A55</color>
     <color name="on_primary">#FFFFFF</color>
-    <color name="primary_container">#D1FAE5</color>
-    <color name="on_primary_container">#022C22</color>
+    <color name="primary_container">#D8EEE3</color>
+    <color name="on_primary_container">#073324</color>
     <!-- Verde sobre fondos oscuros, como el botón "Deshacer" de los avisos -->
-    <color name="primary_inverse">#34D399</color>
+    <color name="primary_inverse">#5FD3A5</color>
 
-    <color name="accent_blue">#2563EB</color>
-    <color name="orange_pending">#EA580C</color>
+    <!-- Tono informativo: un verde azulado de la misma familia, no un segundo acento -->
+    <color name="accent_blue">#1F6F7A</color>
+    <color name="orange_pending">#B45A0A</color>
 
     <!-- Neutros -->
-    <color name="bg_light">#F1F5F9</color>
+    <color name="bg_light">#F2F4F0</color>
     <color name="surface_card">#FFFFFF</color>
-    <color name="surface_muted">#F8FAFC</color>
-    <color name="text_main">#0F172A</color>
-    <color name="text_sub">#475569</color>
-    <color name="divider">#E2E8F0</color>
-    <color name="stroke">#CBD5E1</color>
-    <color name="handle">#D0D0D0</color>
+    <color name="surface_muted">#F6F7F4</color>
+    <color name="text_main">#111814</color>
+    <color name="text_sub">#57625C</color>
+    <color name="divider">#E3E7E1</color>
+    <color name="stroke">#CDD4CC</color>
+    <color name="handle">#D2D8D0</color>
 
     <!-- Acentos: texto e iconos sobre la superficie, y fondo/borde suave para tarjetas y botones tonales -->
-    <color name="blue_text">#0D47A1</color>
-    <color name="blue_text_soft">#1565C0</color>
-    <color name="blue_container">#E3F2FD</color>
-    <color name="green_text">#1B5E20</color>
-    <color name="green_text_soft">#2E7D32</color>
-    <color name="green_container">#E8F5E9</color>
-    <color name="red_text">#C62828</color>
-    <color name="red_container">#FFEBEE</color>
-    <color name="orange_text">#E65100</color>
-    <color name="orange_container">#FFF3E0</color>
-    <color name="amber_text">#F57F17</color>
-    <color name="amber_container">#FFFDE7</color>
-    <color name="amber_stroke">#FDE68A</color>
+    <color name="blue_text">#17535C</color>
+    <color name="blue_text_soft">#1F6470</color>
+    <color name="blue_container">#E2EFEE</color>
+    <color name="green_text">#0B5A3E</color>
+    <color name="green_text_soft">#11744F</color>
+    <color name="green_container">#E1F1E8</color>
+    <color name="red_text">#B4282C</color>
+    <color name="red_container">#FBE9E8</color>
+    <color name="orange_text">#9C4708</color>
+    <color name="orange_container">#FCEFE2</color>
+    <color name="amber_text">#8F5D00</color>
+    <color name="amber_container">#FBF3DC</color>
+    <color name="amber_stroke">#EED9A0</color>
 
-    <!-- Cabecera con degradado azul: igual en los dos temas porque ya es oscura y lleva texto claro -->
-    <color name="header_gradient_start">#1976D2</color>
-    <color name="header_gradient_end">#0D47A1</color>
-    <color name="header_label_neto">#B3E5FC</color>
-    <color name="header_label_base">#E0F7FA</color>
-    <color name="header_label_bonus">#FFF9C4</color>
-    <color name="header_bonus">#FFEE58</color>
-    <color name="header_label_irpf">#FFCDD2</color>
-    <color name="header_irpf">#FFEBEE</color>
-    <color name="header_divider">#40FFFFFF</color>
-    <color name="header_button_text">#0D47A1</color>
+    <!-- Cabecera verde bosque: igual en los dos temas porque ya es oscura y lleva texto claro -->
+    <color name="header_gradient_start">#155E46</color>
+    <color name="header_gradient_end">#0A2D22</color>
+    <!-- Filo claro de un pelo alrededor de la cabecera y de sus cajas -->
+    <color name="header_filo">#1FFFFFFF</color>
+    <color name="header_label_neto">#9FD9C0</color>
+    <color name="header_label_base">#CDE8DC</color>
+    <color name="header_label_bonus">#F3DDA2</color>
+    <color name="header_bonus">#FFD872</color>
+    <color name="header_label_irpf">#F2C2BD</color>
+    <color name="header_irpf">#FFE3E0</color>
+    <color name="header_divider">#33FFFFFF</color>
+    <color name="header_button_text">#0A2D22</color>
 
     <!-- Verde de la placa del importe de cada socio y de las cabeceras verdes: igual en los dos temas -->
-    <color name="badge_gradient_start">#107C41</color>
-    <color name="badge_gradient_end">#0B5A2F</color>
+    <color name="badge_gradient_start">#13825B</color>
+    <color name="badge_gradient_end">#0B5A3F</color>
 
     <!-- Cabecera del socio pendiente en el formulario: ámbar, con texto blanco en los dos temas -->
-    <color name="pendiente_gradient_start">#F59E0B</color>
-    <color name="pendiente_gradient_end">#B45309</color>
+    <color name="pendiente_gradient_start">#A85F12</color>
+    <color name="pendiente_gradient_end">#8A470B</color>
 
     <!-- Miniaturas del selector de tema: cada una muestra su tema, sea cual sea el actual -->
-    <color name="muestra_claro_fondo">#F1F5F9</color>
+    <color name="muestra_claro_fondo">#F2F4F0</color>
     <color name="muestra_claro_tarjeta">#FFFFFF</color>
-    <color name="muestra_claro_linea">#CBD5E1</color>
-    <color name="muestra_claro_acento">#059669</color>
-    <color name="muestra_oscuro_fondo">#0B1220</color>
-    <color name="muestra_oscuro_tarjeta">#1E293B</color>
-    <color name="muestra_oscuro_linea">#475569</color>
-    <color name="muestra_oscuro_acento">#34D399</color>
+    <color name="muestra_claro_linea">#CDD4CC</color>
+    <color name="muestra_claro_acento">#0E7A55</color>
+    <color name="muestra_oscuro_fondo">#0B100E</color>
+    <color name="muestra_oscuro_tarjeta">#151C19</color>
+    <color name="muestra_oscuro_linea">#33413A</color>
+    <color name="muestra_oscuro_acento">#5CCB9E</color>
 
     <!-- Icono del atajo "Nuevo socio": va sobre la placa blanca del icono, igual en claro y en oscuro. -->
-    <color name="icono_atajo">#059669</color>
+    <color name="icono_atajo">#0E7A55</color>
 </resources>

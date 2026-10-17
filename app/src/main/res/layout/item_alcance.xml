@@ -31,7 +31,7 @@
             android:maxLines="2"
             android:textColor="@color/text_main"
             android:textSize="14sp"
-            android:textStyle="bold"
+            android:fontFamily="@font/geist_semibold"
             tools:text="Semana" />
 
         <TextView

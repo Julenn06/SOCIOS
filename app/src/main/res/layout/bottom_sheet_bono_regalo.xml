@@ -60,7 +60,7 @@
                     android:text="@string/bono_titulo"
                     android:textColor="@color/text_main"
                     android:textSize="20sp"
-                    android:textStyle="bold" />
+                    android:fontFamily="@font/geist_semibold" />
 
                 <TextView
                     android:id="@+id/tvSubtituloBonoRegalo"
@@ -285,7 +285,7 @@
                 android:text="@string/bono_restablecer"
                 android:textColor="@color/text_main"
                 android:textSize="15sp"
-                android:textStyle="bold"
+                android:fontFamily="@font/geist_semibold"
                 android:visibility="gone"
                 app:cornerRadius="16dp"
                 app:strokeColor="@color/stroke"
@@ -301,7 +301,7 @@
                 android:insetBottom="0dp"
                 android:text="@string/action_save"
                 android:textSize="15sp"
-                android:textStyle="bold"
+                android:fontFamily="@font/geist_semibold"
                 app:cornerRadius="16dp"
                 app:icon="@drawable/ic_check"
                 app:iconGravity="textStart" />

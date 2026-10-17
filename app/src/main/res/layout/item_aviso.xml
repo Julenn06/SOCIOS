@@ -53,7 +53,7 @@
             android:maxLines="3"
             android:textColor="@color/text_main"
             android:textSize="14.5sp"
-            android:textStyle="bold"
+            android:fontFamily="@font/geist_semibold"
             tools:text="Socio añadido" />
 
         <com.google.android.material.button.MaterialButton
@@ -67,7 +67,7 @@
             android:paddingHorizontal="14dp"
             android:textColor="@color/on_primary_container"
             android:textSize="13.5sp"
-            android:textStyle="bold"
+            android:fontFamily="@font/geist_semibold"
             android:visibility="gone"
             app:backgroundTint="@color/primary_container"
             app:cornerRadius="12dp"

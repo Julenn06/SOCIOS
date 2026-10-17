@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Onda al tocar el hueco vacío, recortada a sus esquinas. -->
+<ripple xmlns:android="http://schemas.android.com/apk/res/android"
+    android:color="?attr/colorControlHighlight">
+    <item android:id="@android:id/mask">
+        <shape android:shape="rectangle">
+            <corners android:radius="22dp" />
+            <solid android:color="@android:color/white" />
+        </shape>
+    </item>
+</ripple>

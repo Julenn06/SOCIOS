@@ -75,7 +75,7 @@
                             android:layout_height="wrap_content"
                             android:textColor="@color/text_main"
                             android:textSize="16sp"
-                            android:textStyle="bold"
+                            android:fontFamily="@font/geist_semibold"
                             tools:text="12 de oct - 16 de oct (2026)" />
 
                         <TextView
@@ -125,16 +125,22 @@
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                app:cardCornerRadius="24dp"
-                app:cardElevation="6dp"
-                app:strokeWidth="0dp">
+                android:outlineAmbientShadowColor="@color/header_gradient_start"
+                android:outlineSpotShadowColor="@color/header_gradient_start"
+                app:cardCornerRadius="28dp"
+                app:cardElevation="10dp"
+                app:strokeColor="@color/header_filo"
+                app:strokeWidth="1dp"
+                tools:targetApi="p">
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:background="@drawable/bg_hero"
                     android:orientation="vertical"
-                    android:padding="20dp">
+                    android:paddingHorizontal="20dp"
+                    android:paddingTop="20dp"
+                    android:paddingBottom="18dp">
 
                     <LinearLayout
                         android:layout_width="match_parent"
@@ -151,20 +157,19 @@
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:letterSpacing="0.08"
                                 android:text="@string/header_neto_semanal"
                                 android:textColor="@color/header_label_neto"
-                                android:textSize="11sp"
-                                android:textStyle="bold" />
+                                android:textSize="13sp"
+                                android:fontFamily="@font/geist_medium" />
 
                             <TextView
                                 android:id="@+id/tvNetoHeader"
+                                style="@style/Socios.CifraGrande"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:layout_marginTop="2dp"
+                                android:layout_marginTop="8dp"
                                 android:textColor="@android:color/white"
-                                android:textSize="40sp"
-                                android:textStyle="bold"
+                                android:textSize="44sp"
                                 tools:text="424,01 €" />
                         </LinearLayout>
 
@@ -178,9 +183,12 @@
                             android:paddingHorizontal="14dp"
                             android:text="@string/action_ver_irpf"
                             android:textColor="@android:color/white"
-                            android:textSize="12.5sp"
-                            android:textStyle="bold"
-                            app:backgroundTint="#33FFFFFF"
+                            android:textSize="13sp"
+                            android:fontFamily="@font/geist_semibold"
+                            app:backgroundTint="#1FFFFFFF"
+                            app:cornerRadius="999dp"
+                            app:strokeColor="@color/header_filo"
+                            app:strokeWidth="1dp"
                             app:icon="@drawable/ic_receipt"
                             app:iconSize="18dp"
                             app:iconTint="@android:color/white" />
@@ -190,7 +198,7 @@
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="18dp"
+                        android:layout_marginTop="20dp"
                         android:baselineAligned="false"
                         android:orientation="horizontal">
 
@@ -218,7 +226,7 @@
                                 android:maxLines="1"
                                 android:textColor="@android:color/white"
                                 android:textSize="16sp"
-                                android:textStyle="bold"
+                                android:fontFamily="@font/geist_semibold"
                                 tools:text="+400 €" />
                         </LinearLayout>
 
@@ -255,7 +263,7 @@
                                 android:maxLines="1"
                                 android:textColor="@color/header_bonus"
                                 android:textSize="16sp"
-                                android:textStyle="bold"
+                                android:fontFamily="@font/geist_semibold"
                                 tools:text="+140 €" />
                         </LinearLayout>
 
@@ -284,7 +292,7 @@
                                 android:maxLines="1"
                                 android:textColor="@color/header_irpf"
                                 android:textSize="16sp"
-                                android:textStyle="bold"
+                                android:fontFamily="@font/geist_semibold"
                                 tools:text="-115,99 €" />
                         </LinearLayout>
                     </LinearLayout>
@@ -356,7 +364,7 @@
                             android:paddingVertical="4dp"
                             android:textColor="@color/on_primary_container"
                             android:textSize="12sp"
-                            android:textStyle="bold"
+                            android:fontFamily="@font/geist_semibold"
                             tools:text="7 / 10" />
                     </LinearLayout>
 
@@ -445,7 +453,7 @@
                     android:layout_weight="1"
                     android:textColor="@color/text_main"
                     android:textSize="19sp"
-                    android:textStyle="bold"
+                    android:fontFamily="@font/geist_semibold"
                     tools:text="Socios de la semana" />
 
                 <TextView
@@ -457,71 +465,68 @@
                     android:paddingVertical="4dp"
                     android:textColor="@color/on_primary_container"
                     android:textSize="12sp"
-                    android:textStyle="bold"
+                    android:fontFamily="@font/geist_semibold"
                     tools:text="5 de 7 hechos" />
             </LinearLayout>
 
-            <!-- Estado vacío -->
+            <!-- Estado vacío: una tarjeta compacta (para que no quede bajo el botón flotante) que abre el formulario -->
             <LinearLayout
                 android:id="@+id/containerEmptyState"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="12dp"
-                android:gravity="center"
-                android:orientation="vertical"
-                android:paddingHorizontal="24dp"
-                android:paddingVertical="16dp"
                 android:visibility="gone"
-                tools:visibility="visible">
+                tools:visibility="visible"
+                android:background="@drawable/bg_vacio"
+                android:clickable="true"
+                android:focusable="true"
+                android:foreground="@drawable/ripple_vacio"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:padding="16dp"
+                android:stateListAnimator="@animator/pulsar">
 
                 <FrameLayout
-                    android:layout_width="84dp"
-                    android:layout_height="84dp"
-                    android:background="@drawable/bg_circulo"
+                    android:layout_width="52dp"
+                    android:layout_height="52dp"
+                    android:background="@drawable/bg_icono_tile"
                     android:backgroundTint="@color/primary_container">
 
                     <ImageView
-                        android:layout_width="42dp"
-                        android:layout_height="42dp"
+                        android:layout_width="26dp"
+                        android:layout_height="26dp"
                         android:layout_gravity="center"
                         android:importantForAccessibility="no"
                         android:src="@drawable/ic_group"
                         app:tint="@color/primary" />
                 </FrameLayout>
 
-                <TextView
-                    android:layout_width="wrap_content"
+                <LinearLayout
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="16dp"
-                    android:gravity="center"
-                    android:text="@string/empty_titulo"
-                    android:textColor="@color/text_main"
-                    android:textSize="18sp"
-                    android:textStyle="bold" />
+                    android:layout_marginHorizontal="14dp"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
 
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="4dp"
-                    android:gravity="center"
-                    android:text="@string/empty_mensaje"
-                    android:textColor="@color/text_sub"
-                    android:textSize="14sp" />
+                    <TextView
+                        style="@style/Socios.TituloFila"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/empty_titulo" />
 
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btnAddSocioEmpty"
-                    style="@style/Widget.Material3.Button.TonalButton"
-                    android:layout_width="wrap_content"
-                    android:layout_height="52dp"
-                    android:layout_marginTop="18dp"
-                    android:paddingHorizontal="22dp"
-                    android:text="@string/action_add_socio"
-                    android:textColor="@color/on_primary_container"
-                    android:textStyle="bold"
-                    app:backgroundTint="@color/primary_container"
-                    app:cornerRadius="16dp"
-                    app:icon="@drawable/ic_add"
-                    app:iconTint="@color/on_primary_container" />
+                    <TextView
+                        style="@style/Socios.DescripcionFila"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/empty_mensaje" />
+                </LinearLayout>
+
+                <ImageView
+                    android:layout_width="22dp"
+                    android:layout_height="22dp"
+                    android:importantForAccessibility="no"
+                    android:src="@drawable/ic_add"
+                    app:tint="@color/primary" />
             </LinearLayout>
 
             <androidx.recyclerview.widget.RecyclerView
@@ -544,7 +549,7 @@
         android:layout_margin="20dp"
         android:text="@string/fab_nuevo_socio"
         android:textColor="@color/on_primary"
-        android:textStyle="bold"
+        android:fontFamily="@font/geist_semibold"
         app:backgroundTint="@color/primary"
         app:icon="@drawable/ic_add"
         app:iconTint="@color/on_primary"

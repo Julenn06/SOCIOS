@@ -13,7 +13,6 @@ import android.graphics.RadialGradient
 import android.graphics.RectF
 import android.graphics.Shader
 import android.graphics.SweepGradient
-import android.graphics.Typeface
 import android.os.Build
 import android.os.SystemClock
 import android.provider.Settings
@@ -22,6 +21,7 @@ import android.view.View
 import android.view.animation.DecelerateInterpolator
 import android.view.animation.OvershootInterpolator
 import androidx.core.content.ContextCompat
+import androidx.core.content.res.ResourcesCompat
 import androidx.core.graphics.ColorUtils
 import androidx.core.graphics.withScale
 import androidx.core.graphics.withTranslation
@@ -107,11 +107,13 @@ class AnimacionDescargaView @JvmOverloads constructor(
     private val pintaRelleno = Paint(Paint.ANTI_ALIAS_FLAG)
     private val pintaHalo = Paint(Paint.ANTI_ALIAS_FLAG)
     private val pintaNumero = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        typeface = Typeface.DEFAULT_BOLD
+        typeface = ResourcesCompat.getFont(context, R.font.geist_semibold)
+        fontFeatureSettings = "tnum"
         color = ContextCompat.getColor(context, R.color.text_main)
     }
     private val pintaSimbolo = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        typeface = Typeface.DEFAULT_BOLD
+        typeface = ResourcesCompat.getFont(context, R.font.geist_semibold)
+        fontFeatureSettings = "tnum"
         color = ContextCompat.getColor(context, R.color.text_sub)
     }
     private val colorCheck = ContextCompat.getColor(context, R.color.on_primary)

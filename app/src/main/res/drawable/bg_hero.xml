@@ -1,32 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Cabecera azul de los paneles, con dos círculos translúcidos de adorno. -->
+<!-- Cabecera verde bosque de la pantalla principal y de los paneles, con luz y grano encima. -->
 <layer-list xmlns:android="http://schemas.android.com/apk/res/android">
     <item>
         <shape android:shape="rectangle">
             <gradient
-                android:angle="135"
+                android:angle="315"
                 android:endColor="@color/header_gradient_end"
                 android:startColor="@color/header_gradient_start" />
         </shape>
     </item>
-    <item
-        android:width="190dp"
-        android:height="190dp"
-        android:gravity="top|end"
-        android:right="-70dp"
-        android:top="-80dp">
-        <shape android:shape="oval">
-            <solid android:color="#14FFFFFF" />
-        </shape>
-    </item>
-    <item
-        android:width="120dp"
-        android:height="120dp"
-        android:bottom="-60dp"
-        android:gravity="bottom|end"
-        android:right="60dp">
-        <shape android:shape="oval">
-            <solid android:color="#0FFFFFFF" />
-        </shape>
-    </item>
+    <item android:drawable="@drawable/bg_adorno_circulos" />
 </layer-list>
