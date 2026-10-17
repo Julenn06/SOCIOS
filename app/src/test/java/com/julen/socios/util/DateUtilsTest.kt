@@ -41,11 +41,13 @@ class DateUtilsTest {
     }
 
     @Test
-    fun elOffsetDeUnaClaveEsElInversoDeGetSemanaKey() {
+    fun laDistanciaEntreSemanasEsElInversoDeGetSemanaKey() {
         val clock = clockEn("2026-10-14")
+        val actual = DateUtils.getSemanaKey(0, clock)
         for (offset in -120..120) {
             val key = DateUtils.getSemanaKey(offset, clock)
-            assertEquals(key, offset, DateUtils.getWeekOffsetFromKey(key, clock))
+            assertEquals(key, offset, DateUtils.semanasEntre(actual, key))
+            assertEquals(key, DateUtils.semanaKeyDesplazada(actual, offset))
         }
     }
 
@@ -56,7 +58,8 @@ class DateUtilsTest {
         assertFalse(DateUtils.esSemanaKeyValida("2025-W00"))
         assertFalse(DateUtils.esSemanaKeyValida("2025-9"))
         assertFalse(DateUtils.esSemanaKeyValida(""))
-        assertNull(DateUtils.getWeekOffsetFromKey("no-es-una-semana", clockEn("2026-10-14")))
+        assertNull(DateUtils.semanasEntre("2026-W42", "no-es-una-semana"))
+        assertNull(DateUtils.semanaKeyDesplazada("no-es-una-semana", 1))
     }
 
     @Test
@@ -71,7 +74,7 @@ class DateUtilsTest {
         val rango = DateUtils.getRangoSemanaTextoFromKey("2026-W01")
         assertTrue(rango, rango.startsWith("29 de dic"))
         assertTrue(rango, rango.contains("2 de ene"))
-        assertTrue(rango, rango.endsWith("(2025)"))
+        assertTrue(rango, rango.endsWith("(2026)"))
         assertEquals("clave-rara", DateUtils.getRangoSemanaTextoFromKey("clave-rara"))
     }
 

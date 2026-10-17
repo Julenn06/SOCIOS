@@ -187,16 +187,21 @@ class ExportImportBottomSheetDialog : BottomSheetDialogFragment() {
             .show()
     }
 
-    private fun alcanceSeleccionado(): AlcanceExport {
-        val seleccion = semanasSeleccionadas.orEmpty()
-        return when {
-            alcance == Alcance.TODO -> AlcanceExport.Historico
-            alcance == Alcance.ELEGIR && seleccion.isNotEmpty() -> AlcanceExport.Semanas(seleccion.toSet())
-            else -> AlcanceExport.Semanas(setOf(viewModel.uiState.value.semanaKey))
-        }
+    private fun alcanceSeleccionado(): AlcanceExport = when (alcance) {
+        Alcance.TODO -> AlcanceExport.Historico
+        Alcance.ELEGIR -> AlcanceExport.Semanas(semanasSeleccionadas.orEmpty().toSet())
+        Alcance.SEMANA -> AlcanceExport.Semanas(setOf(viewModel.uiState.value.semanaKey))
     }
 
     private fun exportar(formato: ExportFormat) {
+        // Sin semanas elegidas no se exporta otra cosa en su lugar: se pide que se elija alguna.
+        if (alcance == Alcance.ELEGIR && semanasSeleccionadas.isNullOrEmpty()) {
+            if (semanasDisponibles.isNotEmpty()) {
+                Avisos.mostrar(binding.root, getString(R.string.msg_elige_semanas), TipoAviso.INFO)
+            }
+            mostrarDialogoSeleccionarSemanas()
+            return
+        }
         viewModel.solicitarExport(formato, alcanceSeleccionado())
         dismiss()
     }

@@ -127,7 +127,13 @@ class SocioAdapter(
                 ContextCompat.getColor(context, R.color.orange_pending)
             }
 
-            animateTextColor(binding.tvEstadoTexto, targetColor)
+            if (animar) {
+                animateTextColor(binding.tvEstadoTexto, targetColor)
+            } else {
+                // Al reutilizar la fila para otro socio, sin fundido desde el color del anterior.
+                textColorAnimator?.cancel()
+                binding.tvEstadoTexto.setTextColor(targetColor)
+            }
             pintarPlaca(socio.hecho, animar)
         }
 

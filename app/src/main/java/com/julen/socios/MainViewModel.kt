@@ -35,13 +35,16 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.receiveAsFlow
@@ -51,7 +54,6 @@ import kotlinx.coroutines.launch
 data class MainUiState(
     val weekOffset: Int,
     val semanaKey: String,
-    val rangoTexto: String,
     val diaFiltro: DiaSemana? = null,
     val todosSociosSemana: List<Socio> = emptyList(),
     val sociosFiltrados: List<Socio> = emptyList(),
@@ -82,12 +84,27 @@ class MainViewModel(
     private val exportService: ExportService,
     private val savedStateHandle: SavedStateHandle,
     private val clock: Clock = Clock.systemDefaultZone(),
-    calculoDispatcher: CoroutineDispatcher = Dispatchers.Default
+    calculoDispatcher: CoroutineDispatcher = Dispatchers.Default,
+    /** Clave de la semana actual, que cambia sola cada lunes aunque la app siga abierta. */
+    relojSemana: Flow<String> = semanaActualCadaMinuto(clock)
 ) : ViewModel() {
 
-    // Semana y filtro sobreviven a la recreación de la Activity y a la muerte del proceso.
-    private val weekOffset = savedStateHandle.getStateFlow(KEY_WEEK_OFFSET, 0)
+    // Semana y filtro sobreviven a la recreación de la Activity y a la muerte del proceso. Se guarda la
+    // clave de la semana elegida (null = la actual) y no su distancia a hoy: si el proceso se restaura días
+    // después, se sigue viendo la misma semana.
+    private val semanaElegida = savedStateHandle.getStateFlow<String?>(KEY_SEMANA, null)
     private val diaFiltroId = savedStateHandle.getStateFlow<Int?>(KEY_DIA_FILTRO, null)
+
+    // La navegación también la usa: sin nadie observando conserva el último valor, y al volver la app a
+    // primer plano se actualiza antes de que el usuario pueda tocar nada.
+    private val semanaActual: StateFlow<String> =
+        relojSemana.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), DateUtils.getSemanaKey(0, clock))
+
+    private data class SemanaVisible(val semanaKey: String, val offset: Int)
+
+    private val semanaVisible: Flow<SemanaVisible> = combine(semanaElegida, semanaActual) { elegida, actual ->
+        semanaVisibleDe(elegida, actual)
+    }.distinctUntilChanged()
 
     private val eventos = Channel<MainEvent>(Channel.BUFFERED)
 
@@ -104,8 +121,7 @@ class MainViewModel(
 
     // Un único flatMapLatest: la clave, los socios y el bono de la semana llegan siempre juntos, así la
     // UI nunca muestra las fechas de una semana con los datos de la anterior.
-    private val datosSemana: Flow<DatosSemana> = weekOffset.flatMapLatest { offset ->
-        val semanaKey = DateUtils.getSemanaKey(offset, clock)
+    private val datosSemana: Flow<DatosSemana> = semanaVisible.flatMapLatest { (semanaKey, offset) ->
         combine(
             socioRepository.getSociosPorSemanaFlow(semanaKey),
             bonoRegaloRepository.getBonoRegaloFlow(semanaKey),
@@ -120,7 +136,6 @@ class MainViewModel(
         MainUiState(
             weekOffset = datos.offset,
             semanaKey = datos.semanaKey,
-            rangoTexto = DateUtils.getRangoSemanaTexto(datos.offset, clock),
             diaFiltro = dia,
             todosSociosSemana = datos.socios,
             sociosFiltrados = if (dia == null) datos.socios else datos.socios.filter { it.dia == dia },
@@ -131,11 +146,9 @@ class MainViewModel(
     }.stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5000),
-        initialValue = MainUiState(
-            weekOffset = weekOffset.value,
-            semanaKey = DateUtils.getSemanaKey(weekOffset.value, clock),
-            rangoTexto = DateUtils.getRangoSemanaTexto(weekOffset.value, clock)
-        )
+        initialValue = semanaVisibleDe(semanaElegida.value, semanaActual.value).let {
+            MainUiState(weekOffset = it.offset, semanaKey = it.semanaKey)
+        }
     )
 
     val historicoGlobal: StateFlow<CalculoComisiones.ResumenHistoricoGlobal?> = combine(
@@ -173,17 +186,22 @@ class MainViewModel(
 
     // --- Navegación y filtros ---
 
-    fun cambiarSemana(delta: Int) = irAOffset(weekOffset.value + delta)
-
-    fun irASemanaActual() = irAOffset(0)
-
-    fun irASemana(semanaKey: String) {
-        DateUtils.getWeekOffsetFromKey(semanaKey, clock)?.let(::irAOffset)
+    fun cambiarSemana(delta: Int) {
+        val visible = semanaElegida.value ?: semanaActual.value
+        DateUtils.semanaKeyDesplazada(visible, delta)?.let(::irASemana)
     }
 
-    private fun irAOffset(offset: Int) {
+    fun irASemanaActual() = elegirSemana(null)
+
+    fun irASemana(semanaKey: String) {
+        if (!DateUtils.esSemanaKeyValida(semanaKey)) return
+        // Volver a la semana actual la deja de fijar: así pasa sola a la siguiente cuando llegue el lunes.
+        elegirSemana(semanaKey.takeIf { it != semanaActual.value })
+    }
+
+    private fun elegirSemana(semanaKey: String?) {
         savedStateHandle[KEY_DIA_FILTRO] = null
-        savedStateHandle[KEY_WEEK_OFFSET] = offset
+        savedStateHandle[KEY_SEMANA] = semanaKey
     }
 
     fun setDiaFiltro(dia: DiaSemana?) {
@@ -246,7 +264,9 @@ class MainViewModel(
     // --- Exportación ---
 
     fun solicitarExport(formato: ExportFormat, alcance: AlcanceExport) = lanzar(R.string.msg_error_export) {
-        if (backupRepository.cargarDatos(alcance).socios.isEmpty()) {
+        val datos = backupRepository.cargarDatos(alcance)
+        // Una semana sin socios pero con el bonus ajustado a mano también se puede exportar.
+        if (datos.socios.isEmpty() && datos.bonosRegalo.isEmpty()) {
             mensajeLargo(R.string.msg_export_vacio, TipoAviso.INFO)
         } else {
             guardarExportRequest(KEY_EXPORT_DESTINO, ExportRequest(formato, alcance))
@@ -328,6 +348,11 @@ class MainViewModel(
 
     // --- Utilidades ---
 
+    private fun semanaVisibleDe(elegida: String?, actual: String): SemanaVisible {
+        val semanaKey = elegida ?: actual
+        return SemanaVisible(semanaKey, DateUtils.semanasEntre(actual, semanaKey) ?: 0)
+    }
+
     private fun guardarExportRequest(prefijo: String, request: ExportRequest?) {
         // El formato es la clave que observa exportPendienteDeDestino: se vacía primero y se escribe
         // al final para que cualquier cambio de la petición se emita aunque el formato se repita.
@@ -373,12 +398,24 @@ class MainViewModel(
     }
 
     companion object {
-        private const val KEY_WEEK_OFFSET = "weekOffset"
+        private const val KEY_SEMANA = "semanaElegida"
         private const val KEY_DIA_FILTRO = "diaFiltro"
         private const val KEY_EXPORT_DESTINO = "exportDestino"
         private const val KEY_EXPORT_GUARDAR = "exportGuardar"
         private const val SUFIJO_FORMATO = ".formato"
         private const val SUFIJO_SEMANAS = ".semanas"
+        private const val INTERVALO_SEMANA_ACTUAL_MS = 60_000L
+
+        /**
+         * Semana actual, comprobada cada minuto mientras alguien la observa. Al pasar a segundo plano se deja
+         * de observar, y al volver se calcula de nuevo, así que tampoco se queda atrás tras días sin abrir la app.
+         */
+        private fun semanaActualCadaMinuto(clock: Clock): Flow<String> = flow {
+            while (true) {
+                emit(DateUtils.getSemanaKey(0, clock))
+                delay(INTERVALO_SEMANA_ACTUAL_MS)
+            }
+        }.distinctUntilChanged()
 
         val Factory: ViewModelProvider.Factory = viewModelFactory {
             initializer {

@@ -9,6 +9,7 @@ import java.io.ByteArrayOutputStream
 import java.time.LocalDate
 import java.time.ZoneId
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class BackupCsvTest {
@@ -106,6 +107,47 @@ class BackupCsvTest {
         val csv = "# SOCIOS\nviejo,20,true,2,2025-W01,,,$ts\n"
 
         assertEquals("2026-W01", leer(csv).datos.socios.single().semanaKey)
+    }
+
+    @Test
+    fun corrigeClavesImposiblesEnLugarDeDescartarlas() {
+        val zona = ZoneId.systemDefault()
+        val ts = LocalDate.parse("2027-01-01").atTime(10, 0).atZone(zona).toInstant().toEpochMilli()
+        val csv = "# SOCIOS\nviejo,20,true,5,2027-W53,,,$ts\n# BONOS_REGALO\n2027-W53,true,true,50,\n"
+
+        val resultado = leer(csv)
+
+        assertEquals(0, resultado.descartados)
+        assertEquals("2026-W53", resultado.datos.socios.single().semanaKey)
+        assertEquals("2026-W53", resultado.datos.bonosRegalo.single().semanaKey)
+    }
+
+    @Test
+    fun noMueveLasSemanasDeArchivosDeLaVersionActual() {
+        val zona = ZoneId.systemDefault()
+        // Socio de la semana 1 de 2025 (30 dic 2024 - 5 ene 2025) apuntado tarde, en diciembre de 2025.
+        val ts = LocalDate.parse("2025-12-30").atTime(10, 0).atZone(zona).toInstant().toEpochMilli()
+        val csv = "# VERSION 2\n# SOCIOS\ntarde,20,true,2,2025-W01,,,$ts\n"
+
+        val resultado = leer(csv)
+
+        assertEquals(0, resultado.descartados)
+        assertEquals("2025-W01", resultado.datos.socios.single().semanaKey)
+    }
+
+    @Test
+    fun unaFilaSinFechaNoSeMueveDeSemana() {
+        // Sin fecha se tomaría la de hoy, que no dice nada de cuándo se apuntó el socio.
+        assertEquals("2025-W01", leer("# SOCIOS\nsin-fecha,20,true,2,2025-W01\n").datos.socios.single().semanaKey)
+    }
+
+    @Test
+    fun escribeBomYVersionParaExcelYParaLaImportacion() {
+        val out = ByteArrayOutputStream()
+        BackupCsv.escribir(DatosBackup(), out)
+        val texto = out.toString(Charsets.UTF_8.name())
+
+        assertTrue(texto.startsWith(Char(0xFEFF) + "# VERSION ${ConversionBackup.VERSION_ACTUAL}\n# SOCIOS\n"))
     }
 
     @Test

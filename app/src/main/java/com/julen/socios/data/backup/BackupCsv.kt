@@ -8,15 +8,17 @@ import java.io.OutputStream
 import java.io.Writer
 
 /**
- * CSV con tres secciones (# SOCIOS, # BONOS_REGALO, # IRPF). Los campos con comas, comillas, saltos de
- * línea o espacios en los extremos van entre comillas, y el lector respeta esas comillas aunque el
- * campo ocupe varias líneas.
+ * CSV con tres secciones (# SOCIOS, # BONOS_REGALO, # IRPF), precedidas de la versión del formato
+ * (# VERSION 2). Los campos con comas, comillas, saltos de línea o espacios en los extremos van entre
+ * comillas, y el lector respeta esas comillas aunque el campo ocupe varias líneas.
  */
 object BackupCsv {
 
     private const val SECCION_SOCIOS = "# SOCIOS"
     private const val SECCION_BONOS = "# BONOS_REGALO"
     private const val SECCION_IRPF = "# IRPF"
+    private const val PREFIJO_VERSION = "# VERSION "
+    private val PATRON_VERSION = Regex("""#\s*VERSION\s+(\d+)""", RegexOption.IGNORE_CASE)
 
     private const val CABECERA_SOCIOS = "ID,Colaboracion,Hecho,DiaSemanaId,SemanaKey,NombreSocio,Notas,Timestamp"
     private const val CABECERA_BONOS = "SemanaKey,Activo,EsMontoFijo,Monto,Nota"
@@ -26,6 +28,10 @@ object BackupCsv {
 
     fun escribir(datos: DatosBackup, outputStream: OutputStream) {
         val out = outputStream.bufferedWriter(Charsets.UTF_8)
+        // Con el BOM, Excel abre el archivo como UTF-8 y muestra bien las tildes y las eñes.
+        out.write(BOM_UTF8)
+        // Las versiones anteriores de la app la toman por una sección desconocida y la ignoran.
+        out.linea(PREFIJO_VERSION + ConversionBackup.VERSION_ACTUAL)
         out.linea(SECCION_SOCIOS)
         out.linea(CABECERA_SOCIOS)
         for (socio in datos.socios) {
@@ -58,6 +64,7 @@ object BackupCsv {
         val bonos = mutableListOf<BonoRegaloDto>()
         val vigencias = mutableListOf<IrpfVigenciaDto>()
         var descartados = 0
+        var version: Int? = null
         var seccion = Seccion.SOCIOS
 
         for (campos in parsearRegistros(texto)) {
@@ -65,6 +72,11 @@ object BackupCsv {
 
             val primero = campos.first().trim()
             if (campos.size == 1 && primero.startsWith("#")) {
+                val numeroVersion = PATRON_VERSION.matchEntire(primero)?.groupValues?.get(1)?.toIntOrNull()
+                if (numeroVersion != null) {
+                    version = numeroVersion
+                    continue
+                }
                 seccion = when {
                     primero.equals(SECCION_BONOS, ignoreCase = true) -> Seccion.BONOS
                     primero.equals(SECCION_IRPF, ignoreCase = true) -> Seccion.IRPF
@@ -116,7 +128,7 @@ object BackupCsv {
         }
 
         val resultado = ConversionBackup.desdeDto(
-            BackupDto(socios = socios, bonosRegalo = bonos, irpfVigencias = vigencias)
+            BackupDto(version = version, socios = socios, bonosRegalo = bonos, irpfVigencias = vigencias)
         )
         return resultado.copy(descartados = resultado.descartados + descartados)
     }

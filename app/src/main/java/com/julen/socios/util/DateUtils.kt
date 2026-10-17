@@ -57,26 +57,28 @@ object DateUtils {
     fun semanasEnAnio(anio: Int): Int =
         LocalDate.of(anio, 1, 4).range(IsoFields.WEEK_OF_WEEK_BASED_YEAR).maximum.toInt()
 
-    /**
-     * Desplazamiento en semanas de [semanaKey] respecto a la semana actual,
-     * o null si la clave no es válida.
-     */
-    fun getWeekOffsetFromKey(semanaKey: String, clock: Clock = Clock.systemDefaultZone()): Int? {
-        val lunes = lunesDeSemanaKey(semanaKey) ?: return null
-        return ChronoUnit.WEEKS.between(lunesDeSemana(0, clock), lunes).toInt()
+    /** Semanas que van de [desde] a [hasta] (negativo si [hasta] es anterior), o null si alguna clave no es válida. */
+    fun semanasEntre(desde: String, hasta: String): Int? {
+        val lunesDesde = lunesDeSemanaKey(desde) ?: return null
+        val lunesHasta = lunesDeSemanaKey(hasta) ?: return null
+        return ChronoUnit.WEEKS.between(lunesDesde, lunesHasta).toInt()
     }
 
-    /** Texto legible del rango de la semana de lunes a viernes, ej. "24 de feb. - 28 de feb. (2025)". */
-    fun getRangoSemanaTexto(weekOffset: Int = 0, clock: Clock = Clock.systemDefaultZone()): String =
-        rangoTextoDe(lunesDeSemana(weekOffset, clock))
+    /** Clave de la semana que está [semanas] semanas después de [semanaKey], o null si la clave no es válida. */
+    fun semanaKeyDesplazada(semanaKey: String, semanas: Int): String? =
+        lunesDeSemanaKey(semanaKey)?.plusWeeks(semanas.toLong())?.let(::semanaKeyDe)
 
-    /** Texto legible del rango de la semana [semanaKey], o la propia clave si no es válida. */
+    /**
+     * Texto legible del rango de la semana [semanaKey] de lunes a viernes, ej. "24 de feb. - 28 de feb. (2025)",
+     * o la propia clave si no es válida.
+     */
     fun getRangoSemanaTextoFromKey(semanaKey: String): String =
         lunesDeSemanaKey(semanaKey)?.let(::rangoTextoDe) ?: semanaKey
 
+    // El año es el de la clave (año ISO), como en el resto de la app: "2026-W01" es de 2026 aunque empiece en diciembre.
     private fun rangoTextoDe(lunes: LocalDate): String {
         val viernes = lunes.plusDays(4)
-        return "${FORMATO_DIA.format(lunes)} - ${FORMATO_DIA.format(viernes)} (${lunes.year})"
+        return "${FORMATO_DIA.format(lunes)} - ${FORMATO_DIA.format(viernes)} (${lunes.get(IsoFields.WEEK_BASED_YEAR)})"
     }
 
     /** Rango corto de lunes a viernes, ej. "12–16 oct" o "29 dic – 2 ene"; la propia clave si no es válida. */

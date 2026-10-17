@@ -210,8 +210,9 @@ class AddSocioBottomSheetDialog : BottomSheetDialogFragment() {
         }
     }
 
+    /** La cuota en euros; la escrita a mano, redondeada a céntimos (10,555 → 10,56). */
     private fun cuotaElegida(): Double? {
-        if (opcionOtro.isChecked) return parseImporte(binding.etCustomAmount.text)
+        if (opcionOtro.isChecked) return parseImporte(binding.etCustomAmount.text)?.let(CalculoComisiones::redondearCentimos)
         return opcionesCuota.firstOrNull { it.isChecked }?.tag as? Double
     }
 

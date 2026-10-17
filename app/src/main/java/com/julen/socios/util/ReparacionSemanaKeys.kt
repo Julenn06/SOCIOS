@@ -17,7 +17,8 @@ import java.util.Locale
  */
 object ReparacionSemanaKeys {
 
-    data class SocioRef(val id: String, val semanaKey: String, val timestamp: Long)
+    /** [timestamp] null: no se sabe cuándo se creó, así que solo se corrige si la clave es imposible. */
+    data class SocioRef(val id: String, val semanaKey: String, val timestamp: Long?)
 
     data class Resultado(
         /** id del socio → clave corregida. */
@@ -32,7 +33,9 @@ object ReparacionSemanaKeys {
         zona: ZoneId = ZoneId.systemDefault()
     ): Resultado {
         val sociosCorregidos = socios.mapNotNull { socio ->
-            claveCorregida(socio.semanaKey, socio.timestamp, zona)?.let { socio.id to it }
+            val corregida = socio.timestamp?.let { claveCorregida(socio.semanaKey, it, zona) }
+                ?: claveImposibleCorregida(socio.semanaKey)
+            corregida?.let { socio.id to it }
         }.toMap()
 
         // Un bono no tiene fecha propia: se mueve si es una clave imposible, o si todos los socios
@@ -71,8 +74,8 @@ object ReparacionSemanaKeys {
         return if (!creadoEl.isBefore(inicioDiciembre)) DateUtils.semanaKeyDe(lunesSemana1Siguiente) else null
     }
 
-    /** "AAAA-W53" en un año ISO que solo tiene 52 semanas era la semana 53 del año anterior. */
-    private fun claveImposibleCorregida(semanaKey: String): String? {
+    /** "AAAA-W53" en un año ISO que solo tiene 52 semanas era la semana 53 del año anterior; null si no es el caso. */
+    fun claveImposibleCorregida(semanaKey: String): String? {
         val (anio, semana) = partes(semanaKey) ?: return null
         if (semana != 53 || DateUtils.semanasEnAnio(anio) == 53) return null
         return if (DateUtils.semanasEnAnio(anio - 1) == 53) String.format(Locale.ROOT, "%04d-W53", anio - 1) else null

@@ -14,8 +14,11 @@ import java.util.UUID
 /** Conversión y validación entre el formato de copia de seguridad y el modelo de dominio. */
 object ConversionBackup {
 
-    /** v1: socios y bonos. v2: añade las vigencias de IRPF. */
+    /** v1: socios y bonos. v2: añade las vigencias de IRPF y calcula las claves de semana con el año ISO. */
     const val VERSION_ACTUAL = 2
+
+    /** Primera versión cuyas claves de semana son siempre correctas: las de antes pueden venir con el error del cambio de año. */
+    private const val VERSION_CLAVES_ISO = 2
 
     fun aDto(datos: DatosBackup, timestamp: Long = System.currentTimeMillis()): BackupDto = BackupDto(
         version = VERSION_ACTUAL,
@@ -48,10 +51,15 @@ object ConversionBackup {
         zona: ZoneId = ZoneId.systemDefault()
     ): ResultadoLectura {
         var descartados = 0
+        val clavesFiables = (dto.version ?: 0) >= VERSION_CLAVES_ISO
 
-        val socios = dto.socios.orEmpty().mapNotNull { socioDto ->
-            socioDto?.let { aSocio(it, ahora) } ?: run { descartados++; null }
+        // Cada socio con la fecha con la que decidir si su clave de semana es del cálculo antiguo. Sin ella
+        // (archivo nuevo, o fila sin fecha que tomaría la de hoy) solo se corrigen las claves imposibles.
+        val leidos = dto.socios.orEmpty().mapNotNull { socioDto ->
+            socioDto?.let { leido -> aSocio(leido, ahora)?.let { it to leido.timestamp.takeUnless { clavesFiables } } }
+                ?: run { descartados++; null }
         }
+        val socios = leidos.map { it.first }
         val bonos = dto.bonosRegalo.orEmpty().mapNotNull { bonoDto ->
             bonoDto?.let(::aBono) ?: run { descartados++; null }
         }
@@ -60,7 +68,7 @@ object ConversionBackup {
         }
 
         val reparacion = ReparacionSemanaKeys.calcular(
-            socios = socios.map { ReparacionSemanaKeys.SocioRef(it.id, it.semanaKey, it.timestamp) },
+            socios = leidos.map { (socio, creadoEl) -> ReparacionSemanaKeys.SocioRef(socio.id, socio.semanaKey, creadoEl) },
             bonoKeys = bonos.map { it.semanaKey }.toSet(),
             zona = zona
         )
@@ -82,10 +90,19 @@ object ConversionBackup {
         )
     }
 
+    /**
+     * La clave de semana ya validada. Una "AAAA-W53" imposible de las versiones antiguas se corrige antes de
+     * validarla: si no, se descartaría el registro en lugar de moverlo a su semana.
+     */
+    private fun claveValida(texto: String?): String? =
+        texto?.trim()
+            ?.let { ReparacionSemanaKeys.claveImposibleCorregida(it) ?: it }
+            ?.takeIf(DateUtils::esSemanaKeyValida)
+
     private fun aSocio(dto: SocioDto, ahora: Long): Socio? {
         val colaboracion = dto.colaboracion?.takeIf { it.isFinite() && it > 0 } ?: return null
         val dia = dto.diaSemanaId?.let(DiaSemana::fromIdOrNull) ?: return null
-        val semanaKey = dto.semanaKey?.trim()?.takeIf(DateUtils::esSemanaKeyValida) ?: return null
+        val semanaKey = claveValida(dto.semanaKey) ?: return null
         return Socio(
             id = dto.id?.trim()?.takeIf { it.isNotEmpty() } ?: UUID.randomUUID().toString(),
             colaboracion = colaboracion,
@@ -99,7 +116,7 @@ object ConversionBackup {
     }
 
     private fun aBono(dto: BonoRegaloDto): BonoRegaloInfo? {
-        val semanaKey = dto.semanaKey?.trim()?.takeIf(DateUtils::esSemanaKeyValida) ?: return null
+        val semanaKey = claveValida(dto.semanaKey) ?: return null
         val monto = dto.monto?.takeIf { it.isFinite() && it >= 0 } ?: return null
         return BonoRegaloInfo(
             semanaKey = semanaKey,
@@ -111,7 +128,7 @@ object ConversionBackup {
     }
 
     private fun aVigencia(dto: IrpfVigenciaDto): IrpfVigencia? {
-        val desde = dto.desdeSemanaKey?.trim()?.takeIf(DateUtils::esSemanaKeyValida) ?: return null
+        val desde = claveValida(dto.desdeSemanaKey) ?: return null
         val porcentaje = dto.porcentaje?.takeIf { it.isFinite() && it in 0.0..100.0 } ?: return null
         return IrpfVigencia(desde, porcentaje)
     }

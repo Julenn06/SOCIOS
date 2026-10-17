@@ -21,6 +21,7 @@ import com.julen.socios.databinding.BottomSheetBonoRegaloBinding
 import com.julen.socios.model.BonoRegaloInfo
 import com.julen.socios.model.ImportesPredefinidos
 import com.julen.socios.util.AnimationExtensions
+import com.julen.socios.util.CalculoComisiones
 import com.julen.socios.util.DateUtils
 import com.julen.socios.util.HapticUtils
 import com.julen.socios.util.parseImporte
@@ -68,8 +69,8 @@ class BonoRegaloBottomSheetDialog : BottomSheetDialogFragment() {
         if (savedInstanceState == null) {
             binding.switchActivarBono.isChecked = tieneBono
             montoFijo = args.getBoolean(ARG_MONTO_FIJO, true)
-            val monto = args.getDouble(ARG_MONTO)
-            if (tieneBono && monto > 0) elegirMonto(monto)
+            // También un bonus de 0 €, que es válido: va a "Otro" con su importe.
+            if (tieneBono) elegirMonto(args.getDouble(ARG_MONTO))
             binding.etNotaBono.setText(args.getString(ARG_MOTIVO).orEmpty())
         } else {
             montoFijo = savedInstanceState.getBoolean(STATE_MONTO_FIJO, true)
@@ -170,8 +171,9 @@ class BonoRegaloBottomSheetDialog : BottomSheetDialogFragment() {
         }
     }
 
+    /** El importe en euros; el escrito a mano, redondeado a céntimos. */
     private fun montoElegido(): Double? {
-        if (opcionOtro.isChecked) return parseImporte(binding.etCustomMonto.text)
+        if (opcionOtro.isChecked) return parseImporte(binding.etCustomMonto.text)?.let(CalculoComisiones::redondearCentimos)
         return opcionesMonto.firstOrNull { it.isChecked }?.tag as? Double
     }
 

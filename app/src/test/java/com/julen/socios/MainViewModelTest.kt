@@ -5,6 +5,7 @@ import com.julen.socios.data.BackupRepository
 import com.julen.socios.data.BonoRegaloRepository
 import com.julen.socios.data.IrpfRepository
 import com.julen.socios.data.SocioRepository
+import com.julen.socios.data.local.BonoRegaloEntity
 import com.julen.socios.data.local.SocioEntity
 import com.julen.socios.export.AlcanceExport
 import com.julen.socios.export.ExportFormat
@@ -28,6 +29,9 @@ import java.time.LocalDate
 import java.time.ZoneId
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.TestScope
@@ -66,7 +70,10 @@ class MainViewModelTest {
         Dispatchers.resetMain()
     }
 
-    private fun crearViewModel(handle: SavedStateHandle = SavedStateHandle()) = MainViewModel(
+    private fun crearViewModel(
+        handle: SavedStateHandle = SavedStateHandle(),
+        relojSemana: Flow<String> = flowOf(semanaActual)
+    ) = MainViewModel(
         socioRepository = SocioRepository(socioDao),
         bonoRegaloRepository = BonoRegaloRepository(bonoDao),
         irpfRepository = IrpfRepository(irpfDao),
@@ -74,7 +81,8 @@ class MainViewModelTest {
         exportService = exportService,
         savedStateHandle = handle,
         clock = clock,
-        calculoDispatcher = dispatcher
+        calculoDispatcher = dispatcher,
+        relojSemana = relojSemana
     )
 
     private fun entidad(
@@ -110,6 +118,41 @@ class MainViewModelTest {
         estados.forEach { estado ->
             assertTrue(estado.toString(), estado.todosSociosSemana.all { it.semanaKey == estado.semanaKey })
         }
+    }
+
+    @Test
+    fun laSemanaActualPasaSolaALaSiguienteSinMoverLaElegida() = runTest(dispatcher) {
+        val reloj = MutableStateFlow(semanaActual)
+        val viewModel = crearViewModel(relojSemana = reloj)
+        observar(viewModel)
+
+        // Llega el lunes con la app abierta: se pasa a la semana nueva.
+        reloj.value = semanaSiguiente
+        assertEquals(semanaSiguiente, viewModel.uiState.value.semanaKey)
+        assertEquals(0, viewModel.uiState.value.weekOffset)
+
+        // Una semana elegida a mano no se mueve, solo cambia su distancia a la actual.
+        viewModel.cambiarSemana(-1)
+        assertEquals(semanaActual, viewModel.uiState.value.semanaKey)
+        reloj.value = DateUtils.semanaKeyDesplazada(semanaSiguiente, 1)!!
+        assertEquals(semanaActual, viewModel.uiState.value.semanaKey)
+        assertEquals(-2, viewModel.uiState.value.weekOffset)
+
+        // "Hoy" vuelve a la actual aunque antes ya se hubiera estado en ella.
+        viewModel.irASemanaActual()
+        assertEquals(reloj.value, viewModel.uiState.value.semanaKey)
+    }
+
+    @Test
+    fun exportarUnaSemanaSinSociosPeroConBonusManualSeDeja() = runTest(dispatcher) {
+        bonoDao.saveBonoRegalo(BonoRegaloEntity(semanaActual, activo = true, esMontoFijo = true, monto = 50.0, nota = ""))
+        val viewModel = crearViewModel()
+        observar(viewModel)
+        val request = ExportRequest(ExportFormat.PDF, AlcanceExport.Semanas(setOf(semanaActual)))
+
+        viewModel.solicitarExport(request.formato, request.alcance)
+
+        assertEquals(request, viewModel.exportPendienteDeDestino.value)
     }
 
     @Test

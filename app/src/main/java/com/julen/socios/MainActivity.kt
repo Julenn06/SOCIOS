@@ -32,6 +32,7 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
 import androidx.core.view.updatePadding
+import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
@@ -288,8 +289,10 @@ class MainActivity : AppCompatActivity() {
                 startActivity(Intent.createChooser(intent, titulo))
             }
 
+            // Cualquier tipo: muchos gestores de archivos marcan los .json y .csv como "octet-stream" y,
+            // filtrando por tipo, saldrían en gris. Si no es una copia válida, la importación lo dice.
             is MainEvent.SeleccionarArchivoImport -> when (evento.formato) {
-                ImportFormat.JSON -> importJsonLauncher.launch("application/json")
+                ImportFormat.JSON -> importJsonLauncher.launch("*/*")
                 ImportFormat.CSV -> importCsvLauncher.launch("*/*")
             }
 
@@ -299,7 +302,11 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    /** Aviso con el diseño de la app, encima del botón de "Nuevo socio" para no taparlo. */
+    /**
+     * Aviso con el diseño de la app, encima del botón de "Nuevo socio" para no taparlo. Si hay un panel
+     * abierto (por ejemplo, el desglose al cambiar el IRPF), va dentro de él: el panel es otra ventana y
+     * en la pantalla principal quedaría tapado.
+     */
     private fun aviso(
         texto: CharSequence,
         tipo: TipoAviso,
@@ -307,7 +314,15 @@ class MainActivity : AppCompatActivity() {
         @StringRes accion: Int? = null,
         alPulsarAccion: (() -> Unit)? = null
     ) {
-        Avisos.mostrar(binding.root, texto, tipo, duracion, binding.fabAddSocio, accion, alPulsarAccion)
+        val panel = supportFragmentManager.fragments.asReversed().firstNotNullOfOrNull { fragmento ->
+            (fragmento as? DialogFragment)?.dialog?.takeIf { it.isShowing }?.window
+                ?.decorView?.findViewById<View>(android.R.id.content)
+        }
+        if (panel != null) {
+            Avisos.mostrar(panel, texto, tipo, duracion, accion = accion, alPulsarAccion = alPulsarAccion)
+        } else {
+            Avisos.mostrar(binding.root, texto, tipo, duracion, binding.fabAddSocio, accion, alPulsarAccion)
+        }
     }
 
     private fun avisarNuevaVersion(publicada: VersionPublicada) {

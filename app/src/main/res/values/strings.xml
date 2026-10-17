@@ -267,6 +267,7 @@
     <string name="export_dialogo_semanas_titulo">Seleccionar semanas a exportar</string>
     <string name="export_semana_item">Semana %1$s (%2$s)</string>
     <string name="msg_sin_semanas">No hay semanas registradas para seleccionar</string>
+    <string name="msg_elige_semanas">Elige al menos una semana para exportar</string>
     <string name="export_destino_titulo">Exportar %s</string>
     <string name="export_destino_compartir">Compartir con otra app</string>
     <string name="export_destino_guardar">Guardar en el dispositivo</string>
@@ -350,7 +351,7 @@
     <string name="msg_file_saved">Archivo guardado</string>
     <string name="msg_error_file_save">Error al guardar el archivo: %s</string>
     <string name="msg_error_export">Error al exportar: %s</string>
-    <string name="msg_export_vacio">No hay socios para exportar en el rango seleccionado</string>
+    <string name="msg_export_vacio">No hay datos para exportar en el rango seleccionado</string>
     <string name="msg_error_import">Error al importar: %s</string>
     <string name="msg_import_vacio">El archivo %s no contiene datos válidos</string>
     <string name="msg_error_generico">Se ha producido un error: %s</string>

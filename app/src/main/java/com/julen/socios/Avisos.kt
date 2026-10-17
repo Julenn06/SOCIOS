@@ -48,7 +48,8 @@ object Avisos {
         val capa = snackbar.view as ViewGroup
         // Se oculta el contenido estándar (texto y botón) y se usa la tarjeta propia.
         // Fondo transparente (el Snackbar se lo vuelve a poner si solo se quita) y sin sombra propia: sin
-        // contorno no la proyecta, pero conserva una elevación alta para quedar encima de los paneles.
+        // contorno no la proyecta, pero conserva una elevación alta para quedar encima del resto de vistas de
+        // su ventana. Un panel abierto es otra ventana: en ese caso hay que mostrar el aviso dentro de él.
         snackbar.setBackgroundTint(Color.TRANSPARENT)
         val densidad = vista.resources.displayMetrics.density
         capa.outlineProvider = null
@@ -70,6 +71,9 @@ object Avisos {
         aviso.ivAviso.imageTintList = ContextCompat.getColorStateList(contexto, estilo.color)
         aviso.tvAviso.text = texto
         if (accion != null && alPulsarAccion != null) {
+            // También como acción del propio Snackbar, aunque su botón no se vea: así sabe que tiene una y,
+            // con TalkBack, deja el aviso el tiempo suficiente para llegar al botón.
+            snackbar.setAction(accion) { alPulsarAccion() }
             aviso.btnAccionAviso.setText(accion)
             aviso.btnAccionAviso.isVisible = true
             aviso.btnAccionAviso.setOnClickListener {

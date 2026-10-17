@@ -71,6 +71,16 @@ class ReparacionSemanaKeysTest {
     }
 
     @Test
+    fun sinFechaSoloSeCorrigenLasClavesImposibles() {
+        val resultado = ReparacionSemanaKeys.calcular(
+            socios = listOf(SocioRef("ambigua", "2025-W01", null), SocioRef("imposible", "2027-W53", null)),
+            bonoKeys = emptySet(),
+            zona = zona
+        )
+        assertEquals(mapOf("imposible" to "2026-W53"), resultado.socios)
+    }
+
+    @Test
     fun noMueveElBonoSiElDestinoYaTieneUno() {
         val resultado = ReparacionSemanaKeys.calcular(
             socios = listOf(SocioRef("a", "2025-W01", ts("2025-12-30"))),
