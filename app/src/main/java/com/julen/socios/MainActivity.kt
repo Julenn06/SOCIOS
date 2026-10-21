@@ -288,7 +288,6 @@ class MainActivity : AppCompatActivity() {
             NumberAnimators.animateCurrency(valor, abs(descontado), prefix = if (descontado < 0.0) "+" else "-")
             binding.tvCobroHeaderLabel.text =
                 cobro?.motivo?.let { getString(R.string.socio_dia_semana, etiqueta, it) } ?: etiqueta
-            binding.ivCobroHeaderIcono.setImageResource(R.drawable.ic_edit_pequeno)
             binding.containerCobroHeader.contentDescription = getString(
                 R.string.header_cobro_a11y, etiqueta, abs(descontado).toFormattedEuros(), resumen.netoCalculado.toFormattedEuros()
             )

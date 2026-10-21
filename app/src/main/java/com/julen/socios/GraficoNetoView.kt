@@ -10,6 +10,7 @@ import android.util.AttributeSet
 import android.util.TypedValue
 import android.view.MotionEvent
 import android.view.View
+import android.view.ViewConfiguration
 import androidx.core.content.ContextCompat
 import androidx.core.content.res.ResourcesCompat
 import androidx.interpolator.view.animation.FastOutSlowInInterpolator
@@ -44,6 +45,11 @@ class GraficoNetoView @JvmOverloads constructor(
     private val altoEje = 22 * densidad
     private val altoRotulo = 18 * densidad
     private val altoAviso = 28 * densidad
+    private val margenToque = ViewConfiguration.get(context).scaledTouchSlop
+
+    private var inicioX = 0f
+    private var inicioY = 0f
+    private var recorriendo = false
 
     private var columnas: List<Columna> = emptyList()
     private var destacada = -1
@@ -174,19 +180,35 @@ class GraficoNetoView @JvmOverloads constructor(
                 pintaEtiqueta.color = if (i == destacada) colorTexto else colorTextoSuave
                 canvas.drawText(columna.etiqueta, centro, abajo + altoEje - 6 * densidad, pintaEtiqueta)
             }
+        }
 
-            // Rótulos directos solo en el máximo y en la destacada (si no hay una columna tocada encima).
-            if ((i == indiceMaximo || i == destacada) && i != seleccionada && columna.neto != 0.0 && progreso >= 1f) {
-                val y = if (columna.neto >= 0) base - alto - 6 * densidad else base + alto + altoRotulo - 4 * densidad
-                val rotulo = columna.neto.toEurosCompacto()
-                // En las barras de los extremos el rótulo se mete hacia dentro en lugar de salirse del gráfico.
-                val mitad = pintaRotulo.measureText(rotulo) / 2
-                val x = centro.coerceIn(paddingLeft + mitad, width - paddingRight - mitad)
-                canvas.drawText(rotulo, x, y.coerceAtMost(abajo), pintaRotulo)
+        // Rótulos directos solo en la destacada y en el máximo, cuando la animación ha terminado y no hay una
+        // columna tocada encima. Si los dos se pisarían, se queda el de la destacada.
+        if (progreso >= 1f) {
+            val rotuloDestacada = rotulo(destacada, base, altoUtil, rango, abajo)
+            val rotuloMaximo = rotulo(indiceMaximo, base, altoUtil, rango, abajo)?.takeIf { maximo ->
+                indiceMaximo != destacada && rotuloDestacada?.let { RectF.intersects(it.caja, maximo.caja) } != true
             }
+            listOfNotNull(rotuloDestacada, rotuloMaximo).forEach { canvas.drawText(it.texto, it.caja.centerX(), it.linea, pintaRotulo) }
         }
 
         if (seleccionada in columnas.indices) dibujarAviso(canvas, seleccionada, base, altoUtil, rango)
+    }
+
+    private class Rotulo(val texto: String, val caja: RectF, val linea: Float)
+
+    /** El importe sobre la punta de la barra [indice] (bajo ella si es negativa), o null si no se rotula. */
+    private fun rotulo(indice: Int, base: Float, altoUtil: Float, rango: Double, abajo: Float): Rotulo? {
+        val columna = columnas.getOrNull(indice) ?: return null
+        if (indice == seleccionada || columna.neto == 0.0) return null
+        val alto = (altoUtil * (abs(columna.neto) / rango)).toFloat()
+        val linea = (if (columna.neto >= 0) base - alto - 6 * densidad else base + alto + altoRotulo - 4 * densidad)
+            .coerceAtMost(abajo)
+        val texto = columna.neto.toEurosCompacto()
+        // En las barras de los extremos el rótulo se mete hacia dentro en lugar de salirse del gráfico.
+        val mitad = pintaRotulo.measureText(texto) / 2
+        val centro = (paddingLeft + anchoHueco * (indice + 0.5f)).coerceIn(paddingLeft + mitad, width - paddingRight - mitad)
+        return Rotulo(texto, RectF(centro - mitad, linea + pintaRotulo.ascent(), centro + mitad, linea + pintaRotulo.descent()), linea)
     }
 
     /** Barra con la punta (el extremo del dato) redondeada y la base recta, pegada a la línea base. */
@@ -219,27 +241,41 @@ class GraficoNetoView @JvmOverloads constructor(
         canvas.drawText(texto, rect.centerX(), baseTexto, pintaAvisoTexto)
     }
 
+    /**
+     * Un toque elige la columna; arrastrar en horizontal va recorriendo las columnas. Un arrastre vertical se
+     * deja al panel, para que el histórico se pueda desplazar aunque el dedo empiece encima del gráfico.
+     */
     override fun onTouchEvent(event: MotionEvent): Boolean {
         if (columnas.isEmpty()) return false
         when (event.actionMasked) {
             MotionEvent.ACTION_DOWN -> {
-                // Que el panel no se arrastre mientras se recorren las barras con el dedo.
-                parent?.requestDisallowInterceptTouchEvent(true)
-                seleccionar(event.x)
+                inicioX = event.x
+                inicioY = event.y
+                recorriendo = false
                 return true
             }
 
             MotionEvent.ACTION_MOVE -> {
-                seleccionar(event.x)
+                val dx = abs(event.x - inicioX)
+                if (!recorriendo && dx > margenToque && dx > abs(event.y - inicioY)) {
+                    recorriendo = true
+                    parent?.requestDisallowInterceptTouchEvent(true)
+                }
+                if (recorriendo) seleccionar(event.x)
                 return true
             }
 
             MotionEvent.ACTION_UP -> {
+                if (!recorriendo) seleccionar(event.x)
+                recorriendo = false
                 performClick()
                 return true
             }
 
-            MotionEvent.ACTION_CANCEL -> return true
+            MotionEvent.ACTION_CANCEL -> {
+                recorriendo = false
+                return true
+            }
         }
         return super.onTouchEvent(event)
     }
