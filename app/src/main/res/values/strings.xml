@@ -90,6 +90,12 @@
     <string name="label_bonus_auto">Bonus</string>
     <string name="label_bonus_manual">Bonus manual</string>
     <string name="label_irpf_header">IRPF %s</string>
+    <string name="header_neto_tras_devoluciones">Neto tras devoluciones</string>
+    <string name="label_devoluciones">Devoluciones</string>
+    <string name="header_devoluciones_anadir">Añadir</string>
+    <string name="header_devoluciones_a11y">Devoluciones de la semana: %s. Toca para cambiarlas</string>
+    <string name="header_devoluciones_vacio_a11y">Sin devoluciones esta semana. Toca para apuntarlas</string>
+    <string name="header_neto_a11y">%1$s: %2$s. Toca para apuntar devoluciones</string>
 
     <!-- Bonus Card -->
     <string name="bonus_progress_format">%1$d / %2$d</string>
@@ -148,6 +154,63 @@
     <string name="detalles_mostrar_a11y">Nombre y notas, opcional. Toca para escribirlos</string>
     <string name="detalles_ocultar_a11y">Nombre y notas. Toca para plegarlos</string>
     <string name="msg_cuota_invalida">Por favor introduce un importe de colaboración válido</string>
+    <string name="section_semana_label">Semana</string>
+    <string name="add_semana_actual">Esta semana</string>
+    <string name="action_guardar_y_otro">Guardar y otro</string>
+    <plurals name="add_subtitulo_anadidos">
+        <item quantity="one">Semana del %2$s · %1$d añadido</item>
+        <item quantity="many">Semana del %2$s · %1$d añadidos</item>
+        <item quantity="other">Semana del %2$s · %1$d añadidos</item>
+    </plurals>
+
+    <!-- Lista agrupada por día -->
+    <string name="cabecera_dia_detalle">%1$d de %2$d · %3$s</string>
+    <plurals name="cabecera_dia_a11y">
+        <item quantity="one">%1$s: %2$d de %3$d socio hecho, %4$s</item>
+        <item quantity="many">%1$s: %2$d de %3$d socios hechos, %4$s</item>
+        <item quantity="other">%1$s: %2$d de %3$d socios hechos, %4$s</item>
+    </plurals>
+    <string name="socio_dia_semana">%1$s · %2$s</string>
+
+    <!-- Pendientes de semanas anteriores -->
+    <plurals name="pendientes_aviso">
+        <item quantity="one">%d pendiente de semanas anteriores</item>
+        <item quantity="many">%d pendientes de semanas anteriores</item>
+        <item quantity="other">%d pendientes de semanas anteriores</item>
+    </plurals>
+    <string name="pendientes_aviso_detalle">Toca para revisarlos</string>
+    <string name="cd_ocultar_aviso_pendientes">Ocultar el aviso de pendientes</string>
+    <string name="pendientes_titulo">Pendientes anteriores</string>
+    <string name="pendientes_subtitulo">Socios sin conseguir de semanas pasadas</string>
+    <string name="pendientes_ayuda">Márcalos como conseguidos con el interruptor, edítalos o bórralos. Toca uno para ir a su semana.</string>
+    <string name="pendientes_vacio">No te queda ningún pendiente de semanas anteriores</string>
+
+    <!-- Buscar -->
+    <string name="menu_buscar">Buscar socio</string>
+    <string name="buscar_titulo">Buscar socio</string>
+    <string name="buscar_subtitulo">En todas tus semanas</string>
+    <string name="buscar_hint">Nombre, notas o cuota</string>
+    <string name="buscar_ayuda">Escribe un nombre, una palabra de las notas o una cuota (por ejemplo, 20). Toca un resultado para ir a su semana.</string>
+    <string name="buscar_sin_resultados">Ningún socio coincide con «%s»</string>
+    <plurals name="buscar_resultados">
+        <item quantity="one">%d socio encontrado</item>
+        <item quantity="many">%d socios encontrados</item>
+        <item quantity="other">%d socios encontrados</item>
+    </plurals>
+
+    <!-- Widget de la pantalla de inicio -->
+    <string name="widget_nombre">Resumen de la semana</string>
+    <string name="widget_descripcion">Socios hechos, neto y cuánto falta para el siguiente bonus</string>
+    <plurals name="widget_socios">
+        <item quantity="one">%1$d socio hecho</item>
+        <item quantity="many">%1$d socios hechos</item>
+        <item quantity="other">%1$d socios hechos</item>
+    </plurals>
+    <plurals name="widget_meta">
+        <item quantity="one">Falta %1$d para %2$s</item>
+        <item quantity="many">Faltan %1$d para %2$s</item>
+        <item quantity="other">Faltan %1$d para %2$s</item>
+    </plurals>
 
 
     <!-- Bonus manual -->
@@ -164,6 +227,24 @@
     <string name="bono_restablecer">Restablecer</string>
     <string name="bono_hint_nota">Motivo del ajuste (opcional)</string>
     <string name="msg_bono_monto_invalido">Elige o escribe el importe del bonus</string>
+
+    <!-- Devoluciones -->
+    <string name="devolucion_titulo">Devoluciones</string>
+    <string name="devolucion_explicacion">Lo que te descuentan en el pago de esta semana por cuotas devueltas (primera o segunda cuota). Se resta del bruto antes del IRPF, así que tampoco te retienen por ese dinero.</string>
+    <string name="devolucion_label_monto">¿Cuánto te han descontado?</string>
+    <string name="devolucion_hint_monto">Importe descontado (€)</string>
+    <string name="devolucion_hint_nota">Qué se ha devuelto (opcional)</string>
+    <string name="devolucion_preview_titulo">Así queda la semana</string>
+    <string name="devolucion_preview_sin">Neto sin devoluciones</string>
+    <string name="devolucion_preview_descuento">Devoluciones</string>
+    <string name="devolucion_preview_irpf">IRPF que dejas de pagar</string>
+    <string name="devolucion_preview_con">Neto tras devoluciones</string>
+    <string name="devolucion_quitar">Quitar</string>
+    <string name="msg_devolucion_invalida">Escribe el importe que te han descontado</string>
+    <string name="devolucion_accion">Apuntar devoluciones</string>
+    <string name="devolucion_accion_detalle">Lo que te descuentan esta semana por cuotas devueltas</string>
+    <string name="devolucion_accion_cambiar">Cambiar las devoluciones</string>
+    <string name="devolucion_accion_cambiar_detalle">%s descontados esta semana</string>
 
     <!-- Desglose IRPF -->
     <string name="irpf_titulo">Desglose de la semana</string>
@@ -185,6 +266,8 @@
     <string name="irpf_fila_bonus_manual">Bonus ajustado a mano (automático: %s)</string>
     <string name="irpf_bonus_motivo">«%s»</string>
     <string name="irpf_total_bruto">Total bruto</string>
+    <string name="irpf_fila_devoluciones">Devoluciones descontadas</string>
+    <string name="irpf_seccion_devoluciones">Devoluciones</string>
     <string name="irpf_retencion_label">Retención IRPF (%s)</string>
     <string name="irpf_total_neto">Neto a cobrar</string>
     <string name="irpf_cambiar">Cambiar el porcentaje</string>
@@ -208,6 +291,26 @@
     <string name="historico_irpf_label">IRPF retenido en total</string>
     <string name="historico_neto_label">Neto cobrado</string>
     <string name="historico_bonus_label">Bonus</string>
+    <string name="historico_devoluciones_label">Devoluciones</string>
+    <string name="historico_detalle_devoluciones">%1$s · %2$s devol.</string>
+    <string name="historico_seccion_comparativa">Esta semana</string>
+    <string name="comparativa_vs_anterior">Frente a la anterior</string>
+    <plurals name="comparativa_vs_media">
+        <item quantity="one">Frente a tu media (%d semana)</item>
+        <item quantity="many">Frente a tu media (%d semanas)</item>
+        <item quantity="other">Frente a tu media (%d semanas)</item>
+    </plurals>
+    <string name="comparativa_mejor">Tu mejor semana</string>
+    <string name="comparativa_es_esta">¡Es esta!</string>
+    <string name="comparativa_sin_datos">Sin datos</string>
+    <string name="comparativa_sube">↑ %s</string>
+    <string name="comparativa_baja">↓ %s</string>
+    <string name="comparativa_neto_semana">Neto de esta semana: %s</string>
+    <string name="historico_seccion_evolucion">Evolución del neto</string>
+    <string name="grafico_ayuda">Toca una barra para ver su importe</string>
+    <string name="grafico_a11y">Neto de los últimos %1$d periodos, de %2$s a %3$s. El más alto: %4$s en %5$s.</string>
+    <string name="grafico_a11y_vacio">Todavía no hay neto registrado en estos periodos</string>
+    <string name="grafico_seleccion">%1$s · %2$s</string>
     <string name="historico_lista_label">Desglose</string>
     <string name="historico_etiqueta_semana">S%d</string>
     <string name="historico_etiqueta_anio">AÑO</string>
@@ -301,6 +404,11 @@
         <item quantity="many">%d cambios de IRPF</item>
         <item quantity="other">%d cambios de IRPF</item>
     </plurals>
+    <plurals name="import_linea_devoluciones">
+        <item quantity="one">%d semana con devoluciones</item>
+        <item quantity="many">%d semanas con devoluciones</item>
+        <item quantity="other">%d semanas con devoluciones</item>
+    </plurals>
     <plurals name="import_descartados">
         <item quantity="one">%d registro no válido se ignorará</item>
         <item quantity="many">%d registros no válidos se ignorarán</item>
@@ -318,6 +426,7 @@
     <string name="pdf_kpi_neto">Ganancia Neta</string>
     <string name="pdf_detalle_semana">"Bruto: %1$s  •  IRPF (%2$s): -%3$s"</string>
     <string name="pdf_detalle_motivo">"  •  Bonus manual: «%s»"</string>
+    <string name="pdf_detalle_devoluciones">"Devoluciones: -%s  •  "</string>
     <plurals name="pdf_detalle_varias_semanas">
         <item quantity="one">Bruto: %1$s  •  IRPF retenido: -%2$s  •  %3$d semana</item>
         <item quantity="many">Bruto: %1$s  •  IRPF retenido: -%2$s  •  %3$d semanas</item>
@@ -339,6 +448,7 @@
     <string name="msg_socio_pendiente">Marcado como pendiente</string>
     <string name="msg_socio_saved">Socio añadido</string>
     <string name="msg_socio_updated">Socio actualizado</string>
+    <string name="msg_socio_movido">Socio movido a la semana del %s</string>
     <string name="msg_socio_deleted">Socio eliminado</string>
     <string name="eliminar_socio_titulo">¿Eliminar a %s?</string>
     <string name="eliminar_socio_mensaje">Se quitará de la lista y de las cuentas de la semana. Justo después podrás deshacerlo.</string>
@@ -346,6 +456,8 @@
     <string name="action_deshacer">Deshacer</string>
     <string name="msg_bonus_updated">Bonus actualizado</string>
     <string name="msg_bonus_reset">El bonus vuelve a ser automático</string>
+    <string name="msg_devolucion_guardada">Devoluciones de la semana: %s</string>
+    <string name="msg_devolucion_eliminada">Esta semana ya no tiene devoluciones</string>
     <string name="msg_irpf_actualizado">IRPF del %1$s aplicado desde la semana %2$s</string>
     <string name="msg_irpf_cambio_eliminado">Cambio de IRPF eliminado</string>
     <string name="msg_file_saved">Archivo guardado</string>
@@ -356,9 +468,9 @@
     <string name="msg_import_vacio">El archivo %s no contiene datos válidos</string>
     <string name="msg_error_generico">Se ha producido un error: %s</string>
     <plurals name="msg_import_resultado">
-        <item quantity="one">Importado %1$d socio (%2$d bonus, %3$d cambios de IRPF)</item>
-        <item quantity="many">Importados %1$d socios (%2$d bonus, %3$d cambios de IRPF)</item>
-        <item quantity="other">Importados %1$d socios (%2$d bonus, %3$d cambios de IRPF)</item>
+        <item quantity="one">Importado %1$d socio (%2$d bonus, %3$d cambios de IRPF, %4$d devoluciones)</item>
+        <item quantity="many">Importados %1$d socios (%2$d bonus, %3$d cambios de IRPF, %4$d devoluciones)</item>
+        <item quantity="other">Importados %1$d socios (%2$d bonus, %3$d cambios de IRPF, %4$d devoluciones)</item>
     </plurals>
 
 

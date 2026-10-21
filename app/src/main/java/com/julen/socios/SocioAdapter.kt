@@ -11,47 +11,116 @@ import androidx.core.view.isVisible
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
+import com.julen.socios.databinding.ItemCabeceraDiaBinding
 import com.julen.socios.databinding.ItemSocioBinding
+import com.julen.socios.model.DiaSemana
 import com.julen.socios.model.Socio
 import com.julen.socios.util.CalculoComisiones
+import com.julen.socios.util.DateUtils
 import com.julen.socios.util.HapticUtils
 import com.julen.socios.util.toEurosCompacto
 import com.julen.socios.util.setTextoAccesible
 
+/** Una fila de la lista de socios: la cabecera de un día o un socio. */
+sealed interface FilaSocio {
+    val id: String
+
+    /** [ganancia]: lo que suman los socios hechos del día (cuota × 2; el bonus es de la semana, no de un día). */
+    data class Cabecera(val dia: DiaSemana, val socios: Int, val hechos: Int, val ganancia: Double) : FilaSocio {
+        override val id: String get() = "dia-${dia.id}"
+    }
+
+    data class Item(val socio: Socio) : FilaSocio {
+        override val id: String get() = socio.id
+    }
+
+    companion object {
+        /** De lunes a viernes, cada día con su cabecera y sus socios en el orden en que se apuntaron. */
+        fun agrupadasPorDia(socios: List<Socio>): List<FilaSocio> =
+            socios.groupBy { it.dia }.toSortedMap(compareBy { it.id }).flatMap { (dia, delDia) ->
+                val hechos = delDia.filter { it.hecho }
+                listOf(
+                    Cabecera(
+                        dia = dia,
+                        socios = delDia.size,
+                        hechos = hechos.size,
+                        ganancia = CalculoComisiones.redondearCentimos(hechos.sumOf { CalculoComisiones.calcularBaseX2(it.colaboracion) })
+                    )
+                ) + delDia.sortedBy { it.timestamp }.map(::Item)
+            }
+
+        fun sinAgrupar(socios: List<Socio>): List<FilaSocio> = socios.map(::Item)
+    }
+}
+
+/**
+ * Socios con su interruptor, lápiz y papelera. En la pantalla principal van agrupados por día; en la búsqueda
+ * y en los pendientes ([mostrarSemana]) cada uno dice de qué semana es y, al tocarlo, se abre esa semana.
+ */
 class SocioAdapter(
     private val onCambiarHecho: (Socio, Boolean) -> Unit,
     private val onEdit: (Socio) -> Unit,
-    private val onDelete: (Socio) -> Unit
-) : ListAdapter<Socio, SocioAdapter.SocioViewHolder>(SocioDiffCallback()) {
+    private val onDelete: (Socio) -> Unit,
+    private val mostrarSemana: Boolean = false,
+    private val onAbrir: ((Socio) -> Unit)? = null
+) : ListAdapter<FilaSocio, RecyclerView.ViewHolder>(FilaDiffCallback()) {
 
     companion object {
         private const val PAYLOAD_HECHO_CHANGED = "PAYLOAD_HECHO_CHANGED"
+        private const val TIPO_CABECERA = 0
+        private const val TIPO_SOCIO = 1
     }
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): SocioViewHolder {
-        val binding = ItemSocioBinding.inflate(LayoutInflater.from(parent.context), parent, false)
-        return SocioViewHolder(binding)
+    override fun getItemViewType(position: Int) = when (getItem(position)) {
+        is FilaSocio.Cabecera -> TIPO_CABECERA
+        is FilaSocio.Item -> TIPO_SOCIO
     }
 
-    override fun onBindViewHolder(holder: SocioViewHolder, position: Int) {
-        holder.bind(getItem(position))
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
+        val inflater = LayoutInflater.from(parent.context)
+        return if (viewType == TIPO_CABECERA) {
+            CabeceraViewHolder(ItemCabeceraDiaBinding.inflate(inflater, parent, false))
+        } else {
+            SocioViewHolder(ItemSocioBinding.inflate(inflater, parent, false))
+        }
+    }
+
+    override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
+        when (val fila = getItem(position)) {
+            is FilaSocio.Cabecera -> (holder as CabeceraViewHolder).bind(fila)
+            is FilaSocio.Item -> (holder as SocioViewHolder).bind(fila.socio)
+        }
     }
 
     override fun onBindViewHolder(
-        holder: SocioViewHolder,
+        holder: RecyclerView.ViewHolder,
         position: Int,
         payloads: MutableList<Any>
     ) {
-        if (PAYLOAD_HECHO_CHANGED in payloads) {
-            holder.updateHechoState(getItem(position))
+        val fila = getItem(position)
+        if (PAYLOAD_HECHO_CHANGED in payloads && holder is SocioViewHolder && fila is FilaSocio.Item) {
+            holder.updateHechoState(fila.socio)
         } else {
             super.onBindViewHolder(holder, position, payloads)
         }
     }
 
-    override fun onViewRecycled(holder: SocioViewHolder) {
+    override fun onViewRecycled(holder: RecyclerView.ViewHolder) {
         super.onViewRecycled(holder)
-        holder.cancelAnimation()
+        (holder as? SocioViewHolder)?.cancelAnimation()
+    }
+
+    class CabeceraViewHolder(private val binding: ItemCabeceraDiaBinding) : RecyclerView.ViewHolder(binding.root) {
+        fun bind(cabecera: FilaSocio.Cabecera) {
+            val context = binding.root.context
+            val ganancia = cabecera.ganancia.toEurosCompacto(prefix = "+")
+            binding.tvCabeceraDia.text = cabecera.dia.nombreCompleto
+            binding.tvCabeceraDetalle.text =
+                context.getString(R.string.cabecera_dia_detalle, cabecera.hechos, cabecera.socios, ganancia)
+            binding.root.contentDescription = context.resources.getQuantityString(
+                R.plurals.cabecera_dia_a11y, cabecera.socios, cabecera.dia.nombreCompleto, cabecera.hechos, cabecera.socios, ganancia
+            )
+        }
     }
 
     inner class SocioViewHolder(private val binding: ItemSocioBinding) :
@@ -86,10 +155,20 @@ class SocioAdapter(
                 HapticUtils.performClick(view)
                 socioActual()?.let(onDelete)
             }
+
+            // En la pantalla principal tocar la tarjeta no hace nada: editar va solo con el lápiz.
+            onAbrir?.let { abrir ->
+                binding.root.setOnClickListener { view ->
+                    HapticUtils.performClick(view)
+                    socioActual()?.let(abrir)
+                }
+            }
+            binding.root.isClickable = onAbrir != null
         }
 
         private fun socioActual(): Socio? =
-            bindingAdapterPosition.takeIf { it != RecyclerView.NO_POSITION }?.let(::getItem)
+            bindingAdapterPosition.takeIf { it != RecyclerView.NO_POSITION }
+                ?.let { (getItem(it) as? FilaSocio.Item)?.socio }
 
         fun bind(socio: Socio) {
             val context = binding.root.context
@@ -97,7 +176,12 @@ class SocioAdapter(
 
             binding.tvColaboracionAmount.text = socio.colaboracion.toEurosCompacto()
             binding.tvBaseX2Amount.text = context.getString(R.string.socio_base_format, baseX2.toEurosCompacto())
-            binding.tvDiaBadge.text = socio.dia.nombreCompleto
+            binding.tvDiaBadge.text = if (mostrarSemana) {
+                // Día abreviado: con la semana al lado, el nombre completo no deja sitio al estado.
+                context.getString(R.string.socio_dia_semana, socio.dia.nombreCorto, DateUtils.rangoCorto(socio.semanaKey))
+            } else {
+                socio.dia.nombreCompleto
+            }
 
             binding.tvNombreSocio.text = socio.nombreSocio.ifBlank {
                 context.getString(R.string.socio_default_name, socio.colaboracion.toEurosCompacto())
@@ -184,21 +268,18 @@ class SocioAdapter(
         }
     }
 
-    class SocioDiffCallback : DiffUtil.ItemCallback<Socio>() {
-        override fun areItemsTheSame(oldItem: Socio, newItem: Socio): Boolean {
-            return oldItem.id == newItem.id
-        }
+    class FilaDiffCallback : DiffUtil.ItemCallback<FilaSocio>() {
+        override fun areItemsTheSame(oldItem: FilaSocio, newItem: FilaSocio): Boolean = oldItem.id == newItem.id
 
-        override fun areContentsTheSame(oldItem: Socio, newItem: Socio): Boolean {
-            return oldItem == newItem
-        }
+        override fun areContentsTheSame(oldItem: FilaSocio, newItem: FilaSocio): Boolean = oldItem == newItem
 
-        override fun getChangePayload(oldItem: Socio, newItem: Socio): Any? {
-            return if (oldItem.copy(hecho = newItem.hecho) == newItem) {
-                PAYLOAD_HECHO_CHANGED
-            } else {
-                super.getChangePayload(oldItem, newItem)
+        override fun getChangePayload(oldItem: FilaSocio, newItem: FilaSocio): Any? {
+            if (oldItem is FilaSocio.Item && newItem is FilaSocio.Item &&
+                oldItem.socio.copy(hecho = newItem.socio.hecho) == newItem.socio
+            ) {
+                return PAYLOAD_HECHO_CHANGED
             }
+            return super.getChangePayload(oldItem, newItem)
         }
     }
 }

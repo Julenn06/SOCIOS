@@ -2,6 +2,7 @@ package com.julen.socios.data.backup
 
 import com.julen.socios.model.BonoRegaloInfo
 import com.julen.socios.model.DatosBackup
+import com.julen.socios.model.DevolucionInfo
 import com.julen.socios.model.DiaSemana
 import com.julen.socios.model.IrpfVigencia
 import com.julen.socios.model.Socio
@@ -41,10 +42,19 @@ class BackupCsvTest {
             bonosRegalo = listOf(
                 BonoRegaloInfo("2026-W10", activo = true, esMontoFijo = false, monto = 50.0, nota = "Extra, por ventas")
             ),
-            irpfVigencias = listOf(IrpfVigencia("2026-W01", 15.5))
+            irpfVigencias = listOf(IrpfVigencia("2026-W01", 15.5)),
+            devoluciones = listOf(DevolucionInfo("2026-W11", 24.5, "2.ª cuota de Ana, \"devuelta\""))
         )
 
         assertEquals(datos, escribirYLeer(datos))
+    }
+
+    @Test
+    fun descartaDevolucionesSinImporteOConClaveInvalida() {
+        val resultado = leer("# DEVOLUCIONES\nSemanaKey,Monto,Nota\n2026-W11,12,ok\n2026-W11\nx,5,\n2026-W12,0,\n")
+
+        assertEquals(listOf(DevolucionInfo("2026-W11", 12.0, "ok")), resultado.datos.devoluciones)
+        assertEquals(3, resultado.descartados)
     }
 
     @Test

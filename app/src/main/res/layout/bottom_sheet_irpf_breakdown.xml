@@ -210,6 +210,42 @@
                     tools:text="«Regalo de la jefa por buen trabajo»"
                     tools:visibility="visible" />
 
+                <!-- Devoluciones: se restan antes del IRPF, así que van antes del total bruto -->
+                <LinearLayout
+                    android:id="@+id/filaBreakdownDevoluciones"
+                    style="@style/Socios.FilaCalculo"
+                    android:layout_marginTop="12dp"
+                    android:visibility="gone"
+                    tools:visibility="visible">
+
+                    <View
+                        style="@style/Socios.PuntoCalculo"
+                        android:backgroundTint="@color/red_text" />
+
+                    <TextView
+                        style="@style/Socios.EtiquetaCalculo"
+                        android:text="@string/irpf_fila_devoluciones" />
+
+                    <TextView
+                        android:id="@+id/tvBreakdownDevoluciones"
+                        style="@style/Socios.ImporteCalculo"
+                        android:textColor="@color/red_text"
+                        tools:text="-40,00 €" />
+                </LinearLayout>
+
+                <TextView
+                    android:id="@+id/tvBreakdownDevolucionesNota"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="20dp"
+                    android:layout_marginTop="2dp"
+                    android:textColor="@color/text_sub"
+                    android:textSize="12.5sp"
+                    android:textStyle="italic"
+                    android:visibility="gone"
+                    tools:text="«1.ª cuota de Ana»"
+                    tools:visibility="visible" />
+
                 <View
                     android:layout_width="match_parent"
                     android:layout_height="1dp"
@@ -283,6 +319,15 @@
                 </LinearLayout>
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
+
+        <!-- Devoluciones -->
+        <TextView
+            style="@style/Socios.Seccion"
+            android:text="@string/irpf_seccion_devoluciones" />
+
+        <include
+            android:id="@+id/btnDevolucionesBreakdown"
+            layout="@layout/item_formato" />
 
         <!-- IRPF -->
         <TextView

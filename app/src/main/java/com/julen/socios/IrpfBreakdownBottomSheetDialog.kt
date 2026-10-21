@@ -54,6 +54,9 @@ class IrpfBreakdownBottomSheetDialog : BottomSheetDialogFragment() {
         binding.btnCambiarIrpf.configurar(
             R.drawable.ic_edit, R.color.blue_container, R.color.blue_text_soft, R.string.irpf_cambiar, R.string.irpf_cambiar_detalle
         ) { mostrarDialogoIrpf() }
+        binding.btnDevolucionesBreakdown.configurar(
+            R.drawable.ic_devolucion, R.color.red_container, R.color.red_text, R.string.devolucion_accion, R.string.devolucion_accion_detalle
+        ) { mostrarDevoluciones() }
         binding.btnVerCambiosIrpf.configurar(
             R.drawable.ic_history, R.color.orange_container, R.color.orange_text, R.string.irpf_ver_cambios, R.string.irpf_ver_cambios_detalle
         ) { mostrarCambiosIrpf() }
@@ -139,10 +142,33 @@ class IrpfBreakdownBottomSheetDialog : BottomSheetDialogFragment() {
         binding.tvBreakdownBonusNota.isVisible = motivo != null
         binding.tvBreakdownBonusNota.text = motivo?.let { getString(R.string.irpf_bonus_motivo, it) }
 
+        binding.filaBreakdownDevoluciones.isVisible = resumen.tieneDevoluciones
+        binding.tvBreakdownDevoluciones.text = resumen.devoluciones.toCurrencyString(prefix = "-")
+        val motivoDevolucion = state.devolucionSemana?.motivo?.takeIf { resumen.tieneDevoluciones }
+        binding.tvBreakdownDevolucionesNota.isVisible = motivoDevolucion != null
+        binding.tvBreakdownDevolucionesNota.text = motivoDevolucion?.let { getString(R.string.irpf_bonus_motivo, it) }
+        if (resumen.tieneDevoluciones) {
+            binding.btnDevolucionesBreakdown.tvFormato.setText(R.string.devolucion_accion_cambiar)
+            binding.btnDevolucionesBreakdown.tvFormatoDetalle.text =
+                getString(R.string.devolucion_accion_cambiar_detalle, resumen.devoluciones.toFormattedEuros())
+        } else {
+            binding.btnDevolucionesBreakdown.tvFormato.setText(R.string.devolucion_accion)
+            binding.btnDevolucionesBreakdown.tvFormatoDetalle.setText(R.string.devolucion_accion_detalle)
+        }
+
         binding.tvBreakdownBruto.text = resumen.totalBruto.toFormattedEuros()
         binding.tvBreakdownIrpfLabel.text =
             getString(R.string.irpf_retencion_label, resumen.porcentajeIrpf.toPorcentajeString())
         binding.tvBreakdownIrpf.text = resumen.retencionIrpf.toCurrencyString(prefix = "-")
+    }
+
+    /** Encima del desglose, que se actualiza solo al guardarlas. */
+    private fun mostrarDevoluciones() {
+        val fragmentos = parentFragmentManager
+        if (fragmentos.findFragmentByTag(DevolucionesBottomSheetDialog.TAG) != null) return
+        val state = viewModel.uiState.value
+        DevolucionesBottomSheetDialog.newInstance(state.semanaKey, state.devolucionSemana)
+            .show(fragmentos, DevolucionesBottomSheetDialog.TAG)
     }
 
     private fun mostrarDialogoIrpf() {

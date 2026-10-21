@@ -15,7 +15,8 @@ data class BackupDto(
     val timestamp: Long? = null,
     val socios: List<SocioDto?>? = null,
     val bonosRegalo: List<BonoRegaloDto?>? = null,
-    val irpfVigencias: List<IrpfVigenciaDto?>? = null
+    val irpfVigencias: List<IrpfVigenciaDto?>? = null,
+    val devoluciones: List<DevolucionDto?>? = null
 )
 
 @Serializable
@@ -43,4 +44,11 @@ data class BonoRegaloDto(
 data class IrpfVigenciaDto(
     val desdeSemanaKey: String? = null,
     val porcentaje: Double? = null
+)
+
+@Serializable
+data class DevolucionDto(
+    val semanaKey: String? = null,
+    val monto: Double? = null,
+    val nota: String? = null
 )

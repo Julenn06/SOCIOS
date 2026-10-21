@@ -50,6 +50,8 @@
     <color name="header_bonus">#FFD872</color>
     <color name="header_label_irpf">#F2C2BD</color>
     <color name="header_irpf">#FFE3E0</color>
+    <color name="header_label_devoluciones">#F6CDB0</color>
+    <color name="header_devoluciones">#FFE4D1</color>
     <color name="header_divider">#33FFFFFF</color>
     <color name="header_button_text">#0A2D22</color>
 
@@ -61,6 +63,10 @@
     <color name="pendiente_gradient_start">#A85F12</color>
     <color name="pendiente_gradient_end">#8A470B</color>
 
+    <!-- Placa del panel de devoluciones: coral, con icono blanco en los dos temas -->
+    <color name="devolucion_gradient_start">#B24A3B</color>
+    <color name="devolucion_gradient_end">#7F2C22</color>
+
     <!-- Miniaturas del selector de tema: cada una muestra su tema, sea cual sea el actual -->
     <color name="muestra_claro_fondo">#F2F4F0</color>
     <color name="muestra_claro_tarjeta">#FFFFFF</color>
@@ -70,6 +76,11 @@
     <color name="muestra_oscuro_tarjeta">#151C19</color>
     <color name="muestra_oscuro_linea">#33413A</color>
     <color name="muestra_oscuro_acento">#5CCB9E</color>
+
+    <!-- Gráfico de evolución: la barra de la semana elegida en el acento y el resto en un paso más suave del
+         mismo verde. Validados con el validador de dataviz frente a la superficie de cada tema. -->
+    <color name="grafico_barra">#0E7A55</color>
+    <color name="grafico_barra_suave">#9CCCB5</color>
 
     <!-- Icono del atajo "Nuevo socio": va sobre la placa blanca del icono, igual en claro y en oscuro. -->
     <color name="icono_atajo">#0E7A55</color>

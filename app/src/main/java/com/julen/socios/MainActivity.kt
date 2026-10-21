@@ -1,7 +1,6 @@
 package com.julen.socios
 
 import android.content.ClipData
-import android.content.DialogInterface
 import android.content.Intent
 import android.os.Bundle
 import android.view.GestureDetector
@@ -48,6 +47,7 @@ import com.julen.socios.databinding.ItemResumenImportBinding
 import com.julen.socios.export.ExportFormat
 import com.julen.socios.export.ExportRequest
 import com.julen.socios.export.ImportFormat
+import com.julen.socios.model.DevolucionInfo
 import com.julen.socios.model.DiaSemana
 import com.julen.socios.model.ImportPreview
 import com.julen.socios.model.Socio
@@ -57,6 +57,7 @@ import com.julen.socios.util.DateUtils
 import com.julen.socios.util.HapticUtils
 import com.julen.socios.util.NumberAnimators
 import com.julen.socios.util.toEurosCompacto
+import com.julen.socios.util.toFormattedEuros
 import com.julen.socios.util.toPorcentajeString
 import com.julen.socios.util.setTextoAccesible
 import kotlin.math.abs
@@ -138,6 +139,8 @@ class MainActivity : AppCompatActivity() {
         AnimationExtensions.setupPressScaleAnimation(binding.fabAddSocio)
         AnimationExtensions.setupPressScaleAnimation(binding.containerBonusHeader)
         AnimationExtensions.setupPressScaleAnimation(binding.btnVerDesglose)
+        AnimationExtensions.setupPressScaleAnimation(binding.containerDevolucionesHeader)
+        AnimationExtensions.setupPressScaleAnimation(binding.cardAvisoPendientes)
 
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
@@ -145,6 +148,7 @@ class MainActivity : AppCompatActivity() {
                 launch { viewModel.events.collect(::manejarEvento) }
                 launch { viewModel.exportPendienteDeDestino.collect(::mostrarDialogoDestinoExport) }
                 launch { viewModel.importPendiente.collect(::mostrarDialogoConfirmarImport) }
+                launch { viewModel.avisoPendientes.collect(::mostrarAvisoPendientes) }
                 launch { actualizaciones.nuevaVersion.collect(::avisarNuevaVersion) }
             }
         }
@@ -182,7 +186,7 @@ class MainActivity : AppCompatActivity() {
         binding.btnHoyLeft.isVisible = state.weekOffset > 0
         binding.btnHoyRight.isVisible = state.weekOffset < 0
 
-        state.resumenSemana?.let { renderResumen(state.semanaKey, it) }
+        state.resumenSemana?.let { renderResumen(state.semanaKey, it, state.devolucionSemana) }
 
         // Filtro por día, con cuántos socios hay en cada uno
         mostrarFiltro(binding.btnFiltroTodos, getString(R.string.filtro_todos), getString(R.string.filtro_todos_a11y), state.todosSociosSemana.size)
@@ -191,8 +195,14 @@ class MainActivity : AppCompatActivity() {
         }
         sincronizarFiltro(state.diaFiltro)
 
-        // Lista de socios
-        adapter.submitList(state.sociosFiltrados)
+        // Lista de socios: con todos los días, agrupada por día; con un día elegido, sin cabecera.
+        adapter.submitList(
+            if (state.diaFiltro == null) {
+                FilaSocio.agrupadasPorDia(state.sociosFiltrados)
+            } else {
+                FilaSocio.sinAgrupar(state.sociosFiltrados.sortedBy { it.timestamp })
+            }
+        )
         binding.containerEmptyState.isVisible = state.sociosFiltrados.isEmpty()
         binding.rvSocios.isVisible = state.sociosFiltrados.isNotEmpty()
 
@@ -204,8 +214,19 @@ class MainActivity : AppCompatActivity() {
         )
     }
 
-    private fun renderResumen(semanaKey: String, resumen: CalculoComisiones.ResumenCalculo) {
+    private fun renderResumen(
+        semanaKey: String,
+        resumen: CalculoComisiones.ResumenCalculo,
+        devolucion: DevolucionInfo?
+    ) {
         NumberAnimators.animateCurrency(binding.tvNetoHeader, resumen.totalNeto, prefix = "")
+        val etiquetaNeto = getString(
+            if (resumen.tieneDevoluciones) R.string.header_neto_tras_devoluciones else R.string.header_neto_semanal
+        )
+        binding.tvNetoHeaderLabel.text = etiquetaNeto
+        binding.containerNetoHeader.contentDescription =
+            getString(R.string.header_neto_a11y, etiquetaNeto, resumen.totalNeto.toFormattedEuros())
+        renderDevoluciones(resumen, devolucion)
         NumberAnimators.animateCurrency(
             binding.tvBaseHeader, resumen.gananciasBaseX2, prefix = "+", decimals = decimalesDe(resumen.gananciasBaseX2)
         )
@@ -244,6 +265,34 @@ class MainActivity : AppCompatActivity() {
         binding.tvBonusSiguienteMeta.text = resources.getQuantityString(
             R.plurals.bonus_next_goal, faltan, faltan, resumen.siguienteMetaBonus.toEurosCompacto(prefix = "+")
         )
+    }
+
+    /** La fila de devoluciones: lo descontado (y qué es, si se apuntó) o, si no hay, la invitación a añadirlas. */
+    private fun renderDevoluciones(resumen: CalculoComisiones.ResumenCalculo, devolucion: DevolucionInfo?) {
+        val valor = binding.tvDevolucionesHeader
+        if (resumen.tieneDevoluciones) {
+            NumberAnimators.animateCurrency(valor, resumen.devoluciones, prefix = "-")
+            binding.tvDevolucionesHeaderLabel.text = devolucion?.motivo
+                ?.let { getString(R.string.socio_dia_semana, getString(R.string.label_devoluciones), it) }
+                ?: getString(R.string.label_devoluciones)
+            binding.ivDevolucionesHeaderIcono.setImageResource(R.drawable.ic_edit_pequeno)
+            binding.containerDevolucionesHeader.contentDescription =
+                getString(R.string.header_devoluciones_a11y, resumen.devoluciones.toFormattedEuros())
+        } else {
+            // Primero se para la animación: al cancelarla escribiría su último importe encima de "Añadir".
+            (valor.getTag(R.id.tag_numeric_animator) as? android.animation.ValueAnimator)?.cancel()
+            valor.setTag(R.id.tag_numeric_value, 0.0)
+            valor.setText(R.string.header_devoluciones_anadir)
+            binding.tvDevolucionesHeaderLabel.setText(R.string.label_devoluciones)
+            binding.ivDevolucionesHeaderIcono.setImageResource(R.drawable.ic_add)
+            binding.containerDevolucionesHeader.contentDescription = getString(R.string.header_devoluciones_vacio_a11y)
+        }
+    }
+
+    private fun mostrarAvisoPendientes(pendientes: List<Socio>) {
+        binding.cardAvisoPendientes.isVisible = pendientes.isNotEmpty()
+        binding.tvAvisoPendientes.text =
+            resources.getQuantityString(R.plurals.pendientes_aviso, pendientes.size, pendientes.size)
     }
 
     private fun decimalesDe(importe: Double) = if (importe % 1.0 == 0.0) 0 else 2
@@ -372,20 +421,9 @@ class MainActivity : AppCompatActivity() {
     /** Pide confirmación antes de borrar un socio; después aún se puede deshacer desde el aviso. */
     private fun confirmarEliminar(socio: Socio) {
         if (dialogoEliminar?.isShowing == true) return
-        val nombre = socio.nombreSocio.ifBlank { getString(R.string.socio_default_name, socio.colaboracion.toEurosCompacto()) }
-        val icono = ContextCompat.getDrawable(this, R.drawable.ic_delete)?.mutate()?.apply {
-            setTint(ContextCompat.getColor(this@MainActivity, R.color.red_text))
+        dialogoEliminar = confirmarEliminarSocio(this, socio) { viewModel.eliminarSocio(socio) }.apply {
+            setOnDismissListener { dialogoEliminar = null }
         }
-        val dialogo = MaterialAlertDialogBuilder(this)
-            .setIcon(icono)
-            .setTitle(getString(R.string.eliminar_socio_titulo, nombre))
-            .setMessage(R.string.eliminar_socio_mensaje)
-            .setPositiveButton(R.string.action_delete) { _, _ -> viewModel.eliminarSocio(socio) }
-            .setNegativeButton(R.string.action_cancel, null)
-            .setOnDismissListener { dialogoEliminar = null }
-            .show()
-        dialogo.getButton(DialogInterface.BUTTON_POSITIVE).setTextColor(ContextCompat.getColor(this, R.color.red_text))
-        dialogoEliminar = dialogo
     }
 
     private fun mostrarDialogoConfirmarImport(preview: ImportPreview?) {
@@ -404,7 +442,8 @@ class MainActivity : AppCompatActivity() {
             FilaImport(R.plurals.import_linea_nuevos, preview.sociosNuevos, R.drawable.ic_person, R.color.green_container, R.color.green_text_soft),
             FilaImport(R.plurals.import_linea_sobrescritos, preview.sociosSobrescritos, R.drawable.ic_edit, R.color.orange_container, R.color.orange_text),
             FilaImport(R.plurals.import_linea_bonus, preview.bonos, R.drawable.ic_gift, R.color.amber_container, R.color.amber_text),
-            FilaImport(R.plurals.import_linea_irpf, preview.irpfVigencias, R.drawable.ic_receipt, R.color.blue_container, R.color.blue_text_soft)
+            FilaImport(R.plurals.import_linea_irpf, preview.irpfVigencias, R.drawable.ic_receipt, R.color.blue_container, R.color.blue_text_soft),
+            FilaImport(R.plurals.import_linea_devoluciones, preview.devoluciones, R.drawable.ic_devolucion, R.color.red_container, R.color.red_text)
         ).forEach { fila ->
             val linea = ItemResumenImportBinding.inflate(layoutInflater, vista.filasImport, true)
             linea.placaResumen.backgroundTintList = ContextCompat.getColorStateList(this, fila.fondo)
@@ -550,6 +589,22 @@ class MainActivity : AppCompatActivity() {
     private fun setupHeaderClickListeners() {
         binding.btnVerDesglose.setOnClickListener { mostrarDesgloseIrpf() }
         binding.containerBonusHeader.setOnClickListener { mostrarDialogoBonoRegalo() }
+        binding.containerNetoHeader.setOnClickListener {
+            HapticUtils.performClick(it)
+            mostrarDevoluciones()
+        }
+        binding.containerDevolucionesHeader.setOnClickListener {
+            HapticUtils.performClick(it)
+            mostrarDevoluciones()
+        }
+        binding.cardAvisoPendientes.setOnClickListener {
+            HapticUtils.performClick(it)
+            mostrarLista(ListaSociosBottomSheetDialog.pendientes())
+        }
+        binding.btnOcultarAvisoPendientes.setOnClickListener {
+            HapticUtils.performClick(it)
+            viewModel.ocultarAvisoPendientes()
+        }
     }
 
     // --- Diálogos ---
@@ -583,6 +638,19 @@ class MainActivity : AppCompatActivity() {
             .show(supportFragmentManager, BonoRegaloBottomSheetDialog.TAG)
     }
 
+    private fun mostrarDevoluciones() {
+        if (supportFragmentManager.findFragmentByTag(DevolucionesBottomSheetDialog.TAG) != null) return
+        val state = viewModel.uiState.value
+        if (state.resumenSemana == null) return
+        DevolucionesBottomSheetDialog.newInstance(state.semanaKey, state.devolucionSemana)
+            .show(supportFragmentManager, DevolucionesBottomSheetDialog.TAG)
+    }
+
+    private fun mostrarLista(lista: ListaSociosBottomSheetDialog) {
+        if (supportFragmentManager.findFragmentByTag(ListaSociosBottomSheetDialog.TAG) != null) return
+        lista.show(supportFragmentManager, ListaSociosBottomSheetDialog.TAG)
+    }
+
     private fun mostrarMas() {
         if (supportFragmentManager.findFragmentByTag(MasBottomSheetDialog.TAG) != null) return
         MasBottomSheetDialog().show(supportFragmentManager, MasBottomSheetDialog.TAG)
@@ -595,6 +663,11 @@ class MainActivity : AppCompatActivity() {
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {
+            R.id.action_buscar -> {
+                mostrarLista(ListaSociosBottomSheetDialog.buscar())
+                true
+            }
+
             R.id.action_ver_historico -> {
                 mostrarHistoricoGlobal()
                 true
@@ -618,11 +691,11 @@ class MainActivity : AppCompatActivity() {
         @ColorRes val color: Int
     )
 
-    private companion object {
-        // Deben coincidir con res/xml/shortcuts.xml.
+    companion object {
+        // Deben coincidir con res/xml/shortcuts.xml. El botón "+" del widget usa la misma acción.
         const val ACTION_NUEVO_SOCIO = "com.julen.socios.action.NUEVO_SOCIO"
-        const val ATAJO_NUEVO_SOCIO = "nuevo_socio"
+        private const val ATAJO_NUEVO_SOCIO = "nuevo_socio"
 
-        const val DURACION_AVISO_VERSION_MS = 10_000
+        private const val DURACION_AVISO_VERSION_MS = 10_000
     }
 }

@@ -1,6 +1,7 @@
 package com.julen.socios.util
 
 import com.julen.socios.model.BonoRegaloInfo
+import com.julen.socios.model.DevolucionInfo
 import com.julen.socios.model.DiaSemana
 import com.julen.socios.model.IrpfVigencia
 import com.julen.socios.model.Socio
@@ -43,6 +44,11 @@ class CalculoComisionesTest {
         assertEquals(10 to 140.0, CalculoComisiones.obtenerSiguienteMetaBonus(8))
         assertEquals(13 to 190.0, CalculoComisiones.obtenerSiguienteMetaBonus(10))
         assertEquals(16 to 240.0, CalculoComisiones.obtenerSiguienteMetaBonus(13))
+    }
+
+    @Test
+    fun tramoAnteriorDeCadaMeta() {
+        assertEquals(listOf(0, 5, 7, 10, 13), listOf(5, 7, 10, 13, 16).map(CalculoComisiones::tramoAnterior))
     }
 
     @Test
@@ -155,6 +161,113 @@ class CalculoComisionesTest {
         assertEquals(listOf(null, null), anios.map { it.mes })
         assertEquals(20, anios[0].sociosHechos)
         assertEquals(historico.totalBrutoAcumulado, anios.sumOf { it.bruto }, 0.001)
+    }
+
+    @Test
+    fun lasDevolucionesSeRestanDelBrutoAntesDelIrpf() {
+        val sin = CalculoComisiones.calcularResumenSemana(socios(10, "2026-W42"))
+        val con = CalculoComisiones.calcularResumenSemana(
+            socios(10, "2026-W42"), devolucion = DevolucionInfo("2026-W42", 40.0)
+        )
+
+        assertEquals(540.0, con.brutoAntesDevoluciones, 0.0)
+        assertEquals(40.0, con.devoluciones, 0.0)
+        assertEquals(500.0, con.totalBruto, 0.0)
+        // 500 × 21,48 % = 107,40 €: por los 40 € devueltos ya no se retienen 8,59 €
+        assertEquals(107.40, con.retencionIrpf, 0.0)
+        assertEquals(392.60, con.totalNeto, 0.0)
+        assertTrue(con.tieneDevoluciones)
+        assertFalse(sin.tieneDevoluciones)
+        assertEquals(31.41, CalculoComisiones.redondearCentimos(sin.totalNeto - con.totalNeto), 0.0)
+        // El bonus y la siguiente meta no cambian: dependen de los socios hechos, no del dinero.
+        assertEquals(sin.bonusSemanal, con.bonusSemanal, 0.0)
+        assertEquals(sin.siguienteMetaSocios, con.siguienteMetaSocios)
+    }
+
+    @Test
+    fun siLasDevolucionesSuperanLoGanadoNoSeRetieneIrpf() {
+        val resumen = CalculoComisiones.calcularResumenSemana(
+            socios(1, "2026-W42"), devolucion = DevolucionInfo("2026-W42", 70.0)
+        )
+
+        assertEquals(-30.0, resumen.totalBruto, 0.0)
+        assertEquals(0.0, resumen.retencionIrpf, 0.0)
+        assertEquals(-30.0, resumen.totalNeto, 0.0)
+    }
+
+    @Test
+    fun unaSemanaConSoloDevolucionesCuentaEnElHistorico() {
+        val global = CalculoComisiones.calcularResumenHistoricoGlobal(
+            todosLosSocios = socios(10, "2026-W41"),
+            devolucionesMap = mapOf(
+                "2026-W42" to DevolucionInfo("2026-W42", 25.0),
+                "2026-W41" to DevolucionInfo("2026-W41", 40.0)
+            )
+        )
+
+        assertEquals(listOf("2026-W42", "2026-W41"), global.semanasHistoricas.map { it.semanaKey })
+        assertEquals(65.0, global.totalDevolucionesAcumulado, 0.0)
+        assertEquals(392.60 - 25.0, global.totalNetoAcumulado, 0.001)
+        assertEquals(475.0, global.totalBrutoAcumulado, 0.0)
+
+        val mes = CalculoComisiones.agruparPorPeriodo(global.semanasHistoricas, CalculoComisiones.Periodo.MES).single()
+        assertEquals(65.0, mes.devoluciones, 0.0)
+        assertEquals(global.totalNetoAcumulado, mes.neto, 0.001)
+    }
+
+    @Test
+    fun comparaLaSemanaConLaAnteriorLaMediaYLaMejor() {
+        val semanas = CalculoComisiones.calcularResumenHistoricoGlobal(
+            socios(5, "2026-W40") + socios(10, "2026-W41") + socios(7, "2026-W42")
+        ).semanasHistoricas
+
+        val c = CalculoComisiones.comparar("2026-W42", semanas)
+
+        assertEquals(298.38, c.neto, 0.0)
+        assertEquals(424.01, c.netoSemanaAnterior!!, 0.0)
+        assertEquals(-125.63, c.diferenciaSemanaAnterior!!, 0.0)
+        assertEquals(310.16, c.mediaNeto!!, 0.0) // (196,30 + 424,01) / 2
+        assertEquals(2, c.semanasEnMedia)
+        assertEquals(-11.78, c.diferenciaMedia!!, 0.0)
+        assertEquals("2026-W41", c.mejorSemana?.semanaKey)
+        assertFalse(c.esLaMejor)
+    }
+
+    @Test
+    fun sinSemanaAnteriorNiOtrasSemanasNoHayConQueComparar() {
+        val semanas = CalculoComisiones.calcularResumenHistoricoGlobal(socios(5, "2026-W42")).semanasHistoricas
+
+        val c = CalculoComisiones.comparar("2026-W42", semanas)
+
+        assertEquals(null, c.netoSemanaAnterior)
+        assertEquals(null, c.mediaNeto)
+        assertTrue(c.esLaMejor)
+        assertEquals(null, CalculoComisiones.comparar("2026-W42", emptyList()).mejorSemana)
+    }
+
+    @Test
+    fun lasUltimasSemanasVanSeguidasConCeroEnLasVacias() {
+        val semanas = CalculoComisiones.calcularResumenHistoricoGlobal(socios(10, "2025-W52")).semanasHistoricas
+
+        val barras = CalculoComisiones.ultimasSemanas(semanas, hasta = "2026-W02", cantidad = 4)
+
+        assertEquals(listOf("2025-W51", "2025-W52", "2026-W01", "2026-W02"), barras.map { it.clave })
+        assertEquals(listOf(0.0, 424.01, 0.0, 0.0), barras.map { it.neto })
+    }
+
+    @Test
+    fun losUltimosMesesYAniosLleganHastaElDeLaSemanaElegida() {
+        val semanas = CalculoComisiones.calcularResumenHistoricoGlobal(socios(10, "2025-W48")).semanasHistoricas
+        val meses = CalculoComisiones.agruparPorPeriodo(semanas, CalculoComisiones.Periodo.MES)
+        val anios = CalculoComisiones.agruparPorPeriodo(semanas, CalculoComisiones.Periodo.ANIO)
+
+        // La semana 2026-W01 tiene su jueves el 1 de enero de 2026.
+        val porMes = CalculoComisiones.ultimosPeriodos(meses, CalculoComisiones.Periodo.MES, "2026-W01", cantidad = 3)
+        assertEquals(listOf("2025-11", "2025-12", "2026-01"), porMes.map { it.clave })
+        assertEquals(listOf(424.01, 0.0, 0.0), porMes.map { it.neto })
+
+        val porAnio = CalculoComisiones.ultimosPeriodos(anios, CalculoComisiones.Periodo.ANIO, "2026-W01")
+        assertEquals(listOf("2025", "2026"), porAnio.map { it.clave })
     }
 
     @Test

@@ -43,3 +43,13 @@ class Migracion3a4(private val zona: ZoneId = ZoneId.systemDefault()) : Migratio
         }
     }
 }
+
+/** v4 → v5: tabla de devoluciones (lo descontado cada semana por cuotas devueltas). */
+object Migracion4a5 : Migration(4, 5) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.execSQL(
+            "CREATE TABLE IF NOT EXISTS `devoluciones` (`semanaKey` TEXT NOT NULL, `monto` REAL NOT NULL, " +
+                "`nota` TEXT NOT NULL, PRIMARY KEY(`semanaKey`))"
+        )
+    }
+}

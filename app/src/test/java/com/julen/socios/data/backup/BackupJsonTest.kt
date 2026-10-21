@@ -2,6 +2,7 @@ package com.julen.socios.data.backup
 
 import com.julen.socios.model.BonoRegaloInfo
 import com.julen.socios.model.DatosBackup
+import com.julen.socios.model.DevolucionInfo
 import com.julen.socios.model.DiaSemana
 import com.julen.socios.model.IrpfVigencia
 import com.julen.socios.model.Socio
@@ -26,7 +27,8 @@ class BackupJsonTest {
                 )
             ),
             bonosRegalo = listOf(BonoRegaloInfo("2026-W10", activo = true, esMontoFijo = true, monto = 100.0)),
-            irpfVigencias = listOf(IrpfVigencia("2026-W01", 18.0))
+            irpfVigencias = listOf(IrpfVigencia("2026-W01", 18.0)),
+            devoluciones = listOf(DevolucionInfo("2026-W10", 32.0, "1.ª cuota"))
         )
         val out = ByteArrayOutputStream()
         BackupJson.escribir(datos, out, timestamp = 0)
@@ -44,6 +46,14 @@ class BackupJsonTest {
         assertEquals("", socio.notas)
         assertTrue(socio.hecho)
         assertTrue(socio.id.isNotBlank())
+        assertEquals(0, resultado.descartados)
+    }
+
+    @Test
+    fun unaCopiaSinDevolucionesSeLeeSinNinguna() {
+        val resultado = leer("""{"version":2,"socios":[{"colaboracion":20.0,"diaSemanaId":2,"semanaKey":"2026-W10"}]}""")
+
+        assertTrue(resultado.datos.devoluciones.isEmpty())
         assertEquals(0, resultado.descartados)
     }
 

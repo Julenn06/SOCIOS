@@ -34,4 +34,8 @@
     <color name="amber_text">#F2CB6B</color>
     <color name="amber_container">#352B10</color>
     <color name="amber_stroke">#574614</color>
+
+    <!-- Gráfico: en oscuro, un verde algo más profundo que el acento para quedar dentro de la banda de luminosidad -->
+    <color name="grafico_barra">#36A57B</color>
+    <color name="grafico_barra_suave">#2B5C49</color>
 </resources>

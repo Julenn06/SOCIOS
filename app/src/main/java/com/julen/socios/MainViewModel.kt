@@ -10,8 +10,10 @@ import androidx.lifecycle.createSavedStateHandle
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
+import com.julen.socios.ajustes.PreferenciasUsuario
 import com.julen.socios.data.BackupRepository
 import com.julen.socios.data.BonoRegaloRepository
+import com.julen.socios.data.DevolucionRepository
 import com.julen.socios.data.IrpfRepository
 import com.julen.socios.data.SocioRepository
 import com.julen.socios.export.AlcanceExport
@@ -20,7 +22,9 @@ import com.julen.socios.export.ExportRequest
 import com.julen.socios.export.ExportService
 import com.julen.socios.export.ImportFormat
 import com.julen.socios.model.BonoRegaloInfo
+import com.julen.socios.model.DevolucionInfo
 import com.julen.socios.model.DiaSemana
+import com.julen.socios.model.ImportesPredefinidos
 import com.julen.socios.model.ImportPreview
 import com.julen.socios.model.IrpfVigencia
 import com.julen.socios.model.ResultadoLectura
@@ -28,6 +32,7 @@ import com.julen.socios.model.Socio
 import com.julen.socios.util.CalculoComisiones
 import com.julen.socios.util.DateUtils
 import com.julen.socios.util.UiText
+import com.julen.socios.util.toCurrencyString
 import com.julen.socios.util.toPorcentajeString
 import java.time.Clock
 import kotlinx.coroutines.CancellationException
@@ -59,6 +64,7 @@ data class MainUiState(
     val sociosFiltrados: List<Socio> = emptyList(),
     val conteoPorDia: Map<DiaSemana, Int> = emptyMap(),
     val bonoInfoSemana: BonoRegaloInfo? = null,
+    val devolucionSemana: DevolucionInfo? = null,
     val resumenSemana: CalculoComisiones.ResumenCalculo? = null
 )
 
@@ -80,8 +86,10 @@ class MainViewModel(
     private val socioRepository: SocioRepository,
     private val bonoRegaloRepository: BonoRegaloRepository,
     private val irpfRepository: IrpfRepository,
+    private val devolucionRepository: DevolucionRepository,
     private val backupRepository: BackupRepository,
     private val exportService: ExportService,
+    private val preferencias: PreferenciasUsuario,
     private val savedStateHandle: SavedStateHandle,
     private val clock: Clock = Clock.systemDefaultZone(),
     calculoDispatcher: CoroutineDispatcher = Dispatchers.Default,
@@ -97,7 +105,7 @@ class MainViewModel(
 
     // La navegación también la usa: sin nadie observando conserva el último valor, y al volver la app a
     // primer plano se actualiza antes de que el usuario pueda tocar nada.
-    private val semanaActual: StateFlow<String> =
+    val semanaActual: StateFlow<String> =
         relojSemana.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), DateUtils.getSemanaKey(0, clock))
 
     private data class SemanaVisible(val semanaKey: String, val offset: Int)
@@ -116,7 +124,8 @@ class MainViewModel(
         val semanaKey: String,
         val socios: List<Socio>,
         val bono: BonoRegaloInfo?,
-        val porcentajeIrpf: Double
+        val porcentajeIrpf: Double,
+        val devolucion: DevolucionInfo?
     )
 
     // Un único flatMapLatest: la clave, los socios y el bono de la semana llegan siempre juntos, así la
@@ -125,9 +134,10 @@ class MainViewModel(
         combine(
             socioRepository.getSociosPorSemanaFlow(semanaKey),
             bonoRegaloRepository.getBonoRegaloFlow(semanaKey),
-            irpfRepository.getVigenciasFlow()
-        ) { socios, bono, vigencias ->
-            DatosSemana(offset, semanaKey, socios, bono, CalculoComisiones.irpfParaSemana(semanaKey, vigencias))
+            irpfRepository.getVigenciasFlow(),
+            devolucionRepository.getDevolucionFlow(semanaKey)
+        ) { socios, bono, vigencias, devolucion ->
+            DatosSemana(offset, semanaKey, socios, bono, CalculoComisiones.irpfParaSemana(semanaKey, vigencias), devolucion)
         }
     }
 
@@ -141,7 +151,10 @@ class MainViewModel(
             sociosFiltrados = if (dia == null) datos.socios else datos.socios.filter { it.dia == dia },
             conteoPorDia = datos.socios.groupingBy { it.dia }.eachCount(),
             bonoInfoSemana = datos.bono,
-            resumenSemana = CalculoComisiones.calcularResumenSemana(datos.socios, datos.bono, datos.porcentajeIrpf)
+            devolucionSemana = datos.devolucion,
+            resumenSemana = CalculoComisiones.calcularResumenSemana(
+                datos.socios, datos.bono, datos.porcentajeIrpf, datos.devolucion
+            )
         )
     }.stateIn(
         scope = viewModelScope,
@@ -154,9 +167,10 @@ class MainViewModel(
     val historicoGlobal: StateFlow<CalculoComisiones.ResumenHistoricoGlobal?> = combine(
         socioRepository.getAllSociosFlow(),
         bonoRegaloRepository.getAllBonosRegaloFlow(),
-        irpfRepository.getVigenciasFlow()
-    ) { socios, bonos, vigencias ->
-        CalculoComisiones.calcularResumenHistoricoGlobal(socios, bonos, vigencias)
+        irpfRepository.getVigenciasFlow(),
+        devolucionRepository.getAllFlow()
+    ) { socios, bonos, vigencias, devoluciones ->
+        CalculoComisiones.calcularResumenHistoricoGlobal(socios, bonos, vigencias, devoluciones)
     }.flowOn(calculoDispatcher)
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
 
@@ -164,13 +178,36 @@ class MainViewModel(
     val irpfVigencias: StateFlow<List<IrpfVigencia>> = irpfRepository.getVigenciasFlow()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
-    /** Semanas con socios o con un bono manual, de la más reciente a la más antigua. */
+    /** Semanas con socios, con un bono manual o con devoluciones, de la más reciente a la más antigua. */
     val semanasDisponibles: StateFlow<List<String>> = combine(
         socioRepository.getSemanaKeysFlow(),
-        bonoRegaloRepository.getSemanaKeysFlow()
-    ) { deSocios, deBonos ->
-        (deSocios + deBonos).distinct().sortedDescending()
+        bonoRegaloRepository.getSemanaKeysFlow(),
+        devolucionRepository.getSemanaKeysFlow()
+    ) { deSocios, deBonos, deDevoluciones ->
+        (deSocios + deBonos + deDevoluciones).distinct().sortedDescending()
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
+    /** Todos los socios, del más reciente al más antiguo, para buscar en el histórico. */
+    val todosLosSocios: StateFlow<List<Socio>> = socioRepository.getAllSociosFlow()
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
+    /** Socios que siguen pendientes en semanas anteriores a la actual, de la más reciente a la más antigua. */
+    val pendientesAnteriores: StateFlow<List<Socio>> = semanaActual
+        .flatMapLatest { socioRepository.getPendientesAnterioresFlow(it) }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
+    /**
+     * Los pendientes anteriores mientras haya alguno que el usuario no haya descartado; vacío si ya cerró el
+     * aviso con estos mismos. Un pendiente nuevo (o que vuelve a estar pendiente) hace que salga otra vez.
+     */
+    val avisoPendientes: StateFlow<List<Socio>> =
+        combine(pendientesAnteriores, preferencias.pendientesOcultos) { pendientes, ocultos ->
+            pendientes.takeIf { lista -> lista.any { it.id !in ocultos } }.orEmpty()
+        }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
+    /** Cuota con la que empieza el formulario de un socio nuevo: la del último que se añadió. */
+    val cuotaPorDefecto: Double
+        get() = preferencias.ultimaCuota ?: ImportesPredefinidos.CUOTA_POR_DEFECTO
 
     /** Exportación preparada a la espera de que el usuario elija entre compartir o guardar. */
     val exportPendienteDeDestino: StateFlow<ExportRequest?> =
@@ -220,15 +257,29 @@ class MainViewModel(
         }
     }
 
-    fun guardarSocio(socio: Socio, esNuevo: Boolean) = lanzar {
-        if (esNuevo) {
-            socioRepository.addSocio(socio)
-            mensaje(R.string.msg_socio_saved, TipoAviso.EXITO)
-        } else {
-            socioRepository.updateSocio(socio)
-            mensaje(R.string.msg_socio_updated, TipoAviso.EXITO)
+    /** [semanaOriginal]: la semana en la que estaba el socio editado, para avisar si se ha movido a otra. */
+    fun guardarSocio(socio: Socio, esNuevo: Boolean, semanaOriginal: String? = null) = lanzar {
+        when {
+            esNuevo -> {
+                socioRepository.addSocio(socio)
+                preferencias.ultimaCuota = socio.colaboracion
+                mensaje(R.string.msg_socio_saved, TipoAviso.EXITO)
+            }
+
+            semanaOriginal != null && semanaOriginal != socio.semanaKey -> {
+                socioRepository.updateSocio(socio)
+                mensaje(R.string.msg_socio_movido, TipoAviso.EXITO, DateUtils.rangoCorto(socio.semanaKey))
+            }
+
+            else -> {
+                socioRepository.updateSocio(socio)
+                mensaje(R.string.msg_socio_updated, TipoAviso.EXITO)
+            }
         }
     }
+
+    /** Cierra el aviso de pendientes de semanas pasadas hasta que aparezca uno nuevo. */
+    fun ocultarAvisoPendientes() = preferencias.ocultarPendientes(pendientesAnteriores.value.map { it.id }.toSet())
 
     fun eliminarSocio(socio: Socio) = lanzar {
         socioRepository.deleteSocio(socio.id)
@@ -251,6 +302,23 @@ class MainViewModel(
         mensaje(R.string.msg_bonus_reset, TipoAviso.INFO)
     }
 
+    /** Lo descontado en la semana por devoluciones. Un importe de 0 € quita las devoluciones de la semana. */
+    fun guardarDevolucion(semanaKey: String, monto: Double, nota: String) = lanzar {
+        val importe = CalculoComisiones.redondearCentimos(monto)
+        if (importe <= 0.0) {
+            devolucionRepository.eliminar(semanaKey)
+            mensaje(R.string.msg_devolucion_eliminada, TipoAviso.INFO)
+        } else {
+            devolucionRepository.guardar(DevolucionInfo(semanaKey, importe, nota.trim()))
+            mensaje(R.string.msg_devolucion_guardada, TipoAviso.EXITO, importe.toCurrencyString(prefix = "-"))
+        }
+    }
+
+    fun eliminarDevolucion(semanaKey: String) = lanzar {
+        devolucionRepository.eliminar(semanaKey)
+        mensaje(R.string.msg_devolucion_eliminada, TipoAviso.INFO)
+    }
+
     fun guardarIrpf(desdeSemanaKey: String, porcentaje: Double) = lanzar {
         irpfRepository.guardarVigencia(desdeSemanaKey, porcentaje)
         mensaje(R.string.msg_irpf_actualizado, TipoAviso.EXITO, porcentaje.toPorcentajeString(), desdeSemanaKey)
@@ -266,7 +334,7 @@ class MainViewModel(
     fun solicitarExport(formato: ExportFormat, alcance: AlcanceExport) = lanzar(R.string.msg_error_export) {
         val datos = backupRepository.cargarDatos(alcance)
         // Una semana sin socios pero con el bonus ajustado a mano también se puede exportar.
-        if (datos.socios.isEmpty() && datos.bonosRegalo.isEmpty()) {
+        if (datos.socios.isEmpty() && datos.bonosRegalo.isEmpty() && datos.devoluciones.isEmpty()) {
             mensajeLargo(R.string.msg_export_vacio, TipoAviso.INFO)
         } else {
             guardarExportRequest(KEY_EXPORT_DESTINO, ExportRequest(formato, alcance))
@@ -332,7 +400,7 @@ class MainViewModel(
                     UiText.Plural(
                         R.plurals.msg_import_resultado,
                         datos.socios.size,
-                        listOf(datos.socios.size, datos.bonosRegalo.size, datos.irpfVigencias.size)
+                        listOf(datos.socios.size, datos.bonosRegalo.size, datos.irpfVigencias.size, datos.devoluciones.size)
                     ),
                     TipoAviso.EXITO,
                     larga = true
@@ -425,8 +493,10 @@ class MainViewModel(
                     socioRepository = container.socioRepository,
                     bonoRegaloRepository = container.bonoRegaloRepository,
                     irpfRepository = container.irpfRepository,
+                    devolucionRepository = container.devolucionRepository,
                     backupRepository = container.backupRepository,
                     exportService = container.exportService,
+                    preferencias = container.preferenciasUsuario,
                     savedStateHandle = createSavedStateHandle(),
                     clock = container.clock
                 )

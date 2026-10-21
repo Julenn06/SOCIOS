@@ -24,6 +24,10 @@ interface SocioDao {
     @Query("SELECT DISTINCT semanaKey FROM socios")
     fun getSemanaKeysFlow(): Flow<List<String>>
 
+    /** Pendientes de las semanas anteriores a [semanaKey] (las claves ISO se ordenan bien como texto). */
+    @Query("SELECT * FROM socios WHERE hecho = 0 AND semanaKey < :semanaKey ORDER BY semanaKey DESC, timestamp DESC")
+    fun getPendientesAnterioresFlow(semanaKey: String): Flow<List<SocioEntity>>
+
     @Query("SELECT id FROM socios")
     suspend fun getAllIds(): List<String>
 

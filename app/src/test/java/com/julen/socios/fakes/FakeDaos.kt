@@ -1,8 +1,11 @@
 package com.julen.socios.fakes
 
 import android.net.Uri
+import com.julen.socios.ajustes.PreferenciasUsuario
 import com.julen.socios.data.local.BonoRegaloDao
 import com.julen.socios.data.local.BonoRegaloEntity
+import com.julen.socios.data.local.DevolucionDao
+import com.julen.socios.data.local.DevolucionEntity
 import com.julen.socios.data.local.IrpfVigenciaDao
 import com.julen.socios.data.local.IrpfVigenciaEntity
 import com.julen.socios.data.local.SocioDao
@@ -30,6 +33,13 @@ class FakeSocioDao : SocioDao {
         socios.map { l -> l.filter { it.semanaKey == semanaKey }.sortedByDescending { it.timestamp } }
 
     override fun getSemanaKeysFlow(): Flow<List<String>> = socios.map { l -> l.map { it.semanaKey }.distinct() }
+
+    override fun getPendientesAnterioresFlow(semanaKey: String): Flow<List<SocioEntity>> =
+        socios.map { l ->
+            l.filter { !it.hecho && it.semanaKey < semanaKey }
+                .sortedWith(compareByDescending<SocioEntity> { it.semanaKey }.thenByDescending { it.timestamp })
+        }
+
     override suspend fun getAllIds() = socios.value.map { it.id }
 
     override suspend fun insertSocio(socio: SocioEntity) {
@@ -86,6 +96,34 @@ class FakeIrpfVigenciaDao : IrpfVigenciaDao {
 
     override suspend fun delete(desdeSemanaKey: String) {
         vigencias.value = vigencias.value - desdeSemanaKey
+    }
+}
+
+class FakeDevolucionDao : DevolucionDao {
+    val devoluciones = MutableStateFlow<Map<String, DevolucionEntity>>(emptyMap())
+
+    override fun getDevolucionFlow(semanaKey: String): Flow<DevolucionEntity?> = devoluciones.map { it[semanaKey] }
+    override suspend fun getAll() = devoluciones.value.values.toList()
+    override fun getAllFlow(): Flow<List<DevolucionEntity>> = devoluciones.map { it.values.toList() }
+    override fun getSemanaKeysFlow(): Flow<List<String>> = devoluciones.map { it.keys.toList() }
+
+    override suspend fun upsert(devolucion: DevolucionEntity) {
+        devoluciones.value = devoluciones.value + (devolucion.semanaKey to devolucion)
+    }
+
+    override suspend fun upsertAll(devoluciones: List<DevolucionEntity>) = devoluciones.forEach { upsert(it) }
+
+    override suspend fun delete(semanaKey: String) {
+        devoluciones.value = devoluciones.value - semanaKey
+    }
+}
+
+class FakePreferenciasUsuario : PreferenciasUsuario {
+    override var ultimaCuota: Double? = null
+    override val pendientesOcultos = MutableStateFlow<Set<String>>(emptySet())
+
+    override fun ocultarPendientes(ids: Set<String>) {
+        pendientesOcultos.value = ids
     }
 }
 

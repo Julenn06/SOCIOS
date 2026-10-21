@@ -2,6 +2,7 @@ package com.julen.socios.data.backup
 
 import com.julen.socios.model.BonoRegaloInfo
 import com.julen.socios.model.DatosBackup
+import com.julen.socios.model.DevolucionInfo
 import com.julen.socios.model.DiaSemana
 import com.julen.socios.model.IrpfVigencia
 import com.julen.socios.model.ResultadoLectura
@@ -14,8 +15,11 @@ import java.util.UUID
 /** Conversión y validación entre el formato de copia de seguridad y el modelo de dominio. */
 object ConversionBackup {
 
-    /** v1: socios y bonos. v2: añade las vigencias de IRPF y calcula las claves de semana con el año ISO. */
-    const val VERSION_ACTUAL = 2
+    /**
+     * v1: socios y bonos. v2: añade las vigencias de IRPF y calcula las claves de semana con el año ISO.
+     * v3: añade las devoluciones.
+     */
+    const val VERSION_ACTUAL = 3
 
     /** Primera versión cuyas claves de semana son siempre correctas: las de antes pueden venir con el error del cambio de año. */
     private const val VERSION_CLAVES_ISO = 2
@@ -38,7 +42,8 @@ object ConversionBackup {
         bonosRegalo = datos.bonosRegalo.map { bono ->
             BonoRegaloDto(bono.semanaKey, bono.activo, bono.esMontoFijo, bono.monto, bono.nota)
         },
-        irpfVigencias = datos.irpfVigencias.map { IrpfVigenciaDto(it.desdeSemanaKey, it.porcentaje) }
+        irpfVigencias = datos.irpfVigencias.map { IrpfVigenciaDto(it.desdeSemanaKey, it.porcentaje) },
+        devoluciones = datos.devoluciones.map { DevolucionDto(it.semanaKey, it.monto, it.nota) }
     )
 
     /**
@@ -66,6 +71,10 @@ object ConversionBackup {
         val vigencias = dto.irpfVigencias.orEmpty().mapNotNull { vigenciaDto ->
             vigenciaDto?.let(::aVigencia) ?: run { descartados++; null }
         }
+        // Las devoluciones llegaron en la v3, con las claves ya bien calculadas: no hace falta repararlas.
+        val devoluciones = dto.devoluciones.orEmpty().mapNotNull { devolucionDto ->
+            devolucionDto?.let(::aDevolucion) ?: run { descartados++; null }
+        }
 
         val reparacion = ReparacionSemanaKeys.calcular(
             socios = leidos.map { (socio, creadoEl) -> ReparacionSemanaKeys.SocioRef(socio.id, socio.semanaKey, creadoEl) },
@@ -84,7 +93,8 @@ object ConversionBackup {
                 // Si un archivo repite un registro prevalece el último, igual que al guardarlo en la BD.
                 socios = sociosReparados.associateBy { it.id }.values.toList(),
                 bonosRegalo = bonosReparados.associateBy { it.semanaKey }.values.toList(),
-                irpfVigencias = vigencias.associateBy { it.desdeSemanaKey }.values.toList()
+                irpfVigencias = vigencias.associateBy { it.desdeSemanaKey }.values.toList(),
+                devoluciones = devoluciones.associateBy { it.semanaKey }.values.toList()
             ),
             descartados = descartados
         )
@@ -131,5 +141,11 @@ object ConversionBackup {
         val desde = claveValida(dto.desdeSemanaKey) ?: return null
         val porcentaje = dto.porcentaje?.takeIf { it.isFinite() && it in 0.0..100.0 } ?: return null
         return IrpfVigencia(desde, porcentaje)
+    }
+
+    private fun aDevolucion(dto: DevolucionDto): DevolucionInfo? {
+        val semanaKey = claveValida(dto.semanaKey) ?: return null
+        val monto = dto.monto?.takeIf { it.isFinite() && it > 0 } ?: return null
+        return DevolucionInfo(semanaKey = semanaKey, monto = monto, nota = dto.nota.orEmpty())
     }
 }

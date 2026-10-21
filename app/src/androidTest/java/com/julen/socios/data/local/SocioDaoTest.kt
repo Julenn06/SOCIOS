@@ -60,6 +60,25 @@ class SocioDaoTest {
     }
 
     @Test
+    fun pendientesDeSemanasAnterioresIncluidoElCambioDeAnio() = runTest {
+        dao.insertSocios(
+            listOf(
+                socio("año-pasado", "2025-W52", hecho = false),
+                socio("anterior", "2026-W41", hecho = false, timestamp = 1),
+                socio("anterior-2", "2026-W41", hecho = false, timestamp = 2),
+                socio("hecho", "2026-W41"),
+                socio("actual", "2026-W42", hecho = false),
+                socio("futuro", "2026-W43", hecho = false)
+            )
+        )
+
+        assertEquals(
+            listOf("anterior-2", "anterior", "año-pasado"),
+            dao.getPendientesAnterioresFlow("2026-W42").first().map { it.id }
+        )
+    }
+
+    @Test
     fun unaTransaccionFallidaNoDejaDatosAMedias() = runTest {
         val runner = RoomTransactionRunner(db)
 

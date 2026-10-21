@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Socios de varias semanas: los pendientes de semanas anteriores o los resultados de una búsqueda. -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:forceDarkAllowed="false"
+    android:orientation="vertical"
+    android:paddingHorizontal="20dp"
+    android:paddingTop="12dp"
+    tools:targetApi="q">
+
+    <!-- Handle drag bar -->
+    <View
+        android:layout_width="40dp"
+        android:layout_height="4dp"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginBottom="16dp"
+        android:background="@color/handle" />
+
+    <!-- Encabezado -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+        <FrameLayout
+            android:id="@+id/placaLista"
+            android:layout_width="52dp"
+            android:layout_height="52dp"
+            android:background="@drawable/bg_icono_degradado"
+            android:elevation="3dp">
+
+            <ImageView
+                android:id="@+id/ivLista"
+                android:layout_width="26dp"
+                android:layout_height="26dp"
+                android:layout_gravity="center"
+                android:importantForAccessibility="no"
+                app:tint="@android:color/white"
+                tools:src="@drawable/ic_search" />
+        </FrameLayout>
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="14dp"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/tvTituloLista"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/text_main"
+                android:textSize="20sp"
+                android:fontFamily="@font/geist_semibold"
+                tools:text="Buscar socio" />
+
+            <TextView
+                android:id="@+id/tvSubtituloLista"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:textColor="@color/text_sub"
+                android:textSize="13sp"
+                tools:text="En todas tus semanas" />
+        </LinearLayout>
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnCerrarLista"
+            style="@style/Socios.BotonCerrar" />
+    </LinearLayout>
+
+    <!-- Solo en la búsqueda -->
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/tilBuscar"
+        style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="18dp"
+        android:hint="@string/buscar_hint"
+        android:visibility="gone"
+        app:boxCornerRadiusBottomEnd="16dp"
+        app:boxCornerRadiusBottomStart="16dp"
+        app:boxCornerRadiusTopEnd="16dp"
+        app:boxCornerRadiusTopStart="16dp"
+        app:endIconMode="clear_text"
+        app:startIconDrawable="@drawable/ic_search"
+        tools:visibility="visible">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/etBuscar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:imeOptions="actionSearch"
+            android:inputType="textPersonName|textCapWords"
+            android:maxLines="1" />
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <TextView
+        android:id="@+id/tvAyudaLista"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:lineSpacingExtra="2dp"
+        android:textColor="@color/text_sub"
+        android:textSize="13sp"
+        tools:text="Márcalos como conseguidos con el interruptor, edítalos o bórralos." />
+
+    <TextView
+        android:id="@+id/tvResultadosLista"
+        style="@style/Socios.Seccion"
+        android:layout_marginTop="16dp"
+        android:layout_marginBottom="4dp"
+        android:visibility="gone"
+        tools:text="3 socios encontrados"
+        tools:visibility="visible" />
+
+    <TextView
+        android:id="@+id/tvVacioLista"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="24dp"
+        android:background="@drawable/bg_vacio"
+        android:gravity="center"
+        android:padding="20dp"
+        android:textColor="@color/text_sub"
+        android:textSize="14sp"
+        android:visibility="gone"
+        tools:text="Ningún socio coincide con «Pepe»" />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rvListaSocios"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:clipToPadding="false"
+        android:paddingBottom="24dp"
+        tools:itemCount="3"
+        tools:listitem="@layout/item_socio" />
+</LinearLayout>

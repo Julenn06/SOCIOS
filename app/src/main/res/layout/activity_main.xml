@@ -148,13 +148,22 @@
                         android:gravity="center_vertical"
                         android:orientation="horizontal">
 
+                        <!-- El neto: al tocarlo se apuntan las devoluciones de la semana -->
                         <LinearLayout
+                            android:id="@+id/containerNetoHeader"
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
+                            android:layout_marginStart="-6dp"
+                            android:layout_marginEnd="8dp"
                             android:layout_weight="1"
-                            android:orientation="vertical">
+                            android:background="?attr/selectableItemBackground"
+                            android:clickable="true"
+                            android:focusable="true"
+                            android:orientation="vertical"
+                            android:padding="6dp">
 
                             <TextView
+                                android:id="@+id/tvNetoHeaderLabel"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="@string/header_neto_semanal"
@@ -296,6 +305,128 @@
                                 tools:text="-115,99 €" />
                         </LinearLayout>
                     </LinearLayout>
+
+                    <!-- Devoluciones: lo descontado esta semana por cuotas devueltas, antes del IRPF -->
+                    <LinearLayout
+                        android:id="@+id/containerDevolucionesHeader"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:background="@drawable/bg_caja_translucida"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:foreground="?attr/selectableItemBackground"
+                        android:gravity="center_vertical"
+                        android:minHeight="44dp"
+                        android:orientation="horizontal"
+                        android:paddingHorizontal="12dp"
+                        android:paddingVertical="8dp">
+
+                        <ImageView
+                            android:layout_width="18dp"
+                            android:layout_height="18dp"
+                            android:importantForAccessibility="no"
+                            android:src="@drawable/ic_devolucion"
+                            app:tint="@color/header_label_devoluciones" />
+
+                        <TextView
+                            android:id="@+id/tvDevolucionesHeaderLabel"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginHorizontal="8dp"
+                            android:layout_weight="1"
+                            android:ellipsize="end"
+                            android:maxLines="1"
+                            android:text="@string/label_devoluciones"
+                            android:textColor="@color/header_label_devoluciones"
+                            android:textSize="12.5sp"
+                            tools:text="Devoluciones · 2.ª cuota de Ana" />
+
+                        <TextView
+                            android:id="@+id/tvDevolucionesHeader"
+                            style="@style/Socios.Cifra"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:maxLines="1"
+                            android:textColor="@color/header_devoluciones"
+                            android:textSize="15sp"
+                            tools:text="−24,00 €" />
+
+                        <ImageView
+                            android:id="@+id/ivDevolucionesHeaderIcono"
+                            android:layout_width="14dp"
+                            android:layout_height="14dp"
+                            android:layout_marginStart="6dp"
+                            android:importantForAccessibility="no"
+                            android:src="@drawable/ic_edit_pequeno"
+                            app:tint="@color/header_label_devoluciones" />
+                    </LinearLayout>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Aviso de socios pendientes en semanas anteriores: lleva a revisarlos; la ✕ lo oculta -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/cardAvisoPendientes"
+                style="@style/Socios.TarjetaFila"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="14dp"
+                android:visibility="gone"
+                app:cardBackgroundColor="@color/amber_container"
+                app:strokeColor="@color/amber_stroke"
+                tools:visibility="visible">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:paddingVertical="10dp"
+                    android:paddingStart="14dp"
+                    android:paddingEnd="6dp">
+
+                    <FrameLayout
+                        android:layout_width="40dp"
+                        android:layout_height="40dp"
+                        android:background="@drawable/bg_icono_ambar">
+
+                        <ImageView
+                            android:layout_width="22dp"
+                            android:layout_height="22dp"
+                            android:layout_gravity="center"
+                            android:importantForAccessibility="no"
+                            android:src="@drawable/ic_pendientes"
+                            app:tint="@android:color/white" />
+                    </FrameLayout>
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginHorizontal="12dp"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:id="@+id/tvAvisoPendientes"
+                            style="@style/Socios.TituloFila"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textColor="@color/amber_text"
+                            tools:text="3 pendientes de semanas anteriores" />
+
+                        <TextView
+                            style="@style/Socios.DescripcionFila"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/pendientes_aviso_detalle" />
+                    </LinearLayout>
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnOcultarAvisoPendientes"
+                        style="@style/Socios.BotonAccionSocio"
+                        android:contentDescription="@string/cd_ocultar_aviso_pendientes"
+                        app:icon="@drawable/ic_close"
+                        app:iconTint="@color/amber_text" />
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 

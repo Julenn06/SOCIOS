@@ -182,7 +182,8 @@ class PdfReportGenerator(private val context: Context) {
      */
     private fun resumen(datos: DatosBackup, alcance: AlcanceExport): Resumen {
         val bonos = datos.bonosRegalo.filter { it.activo }.associateBy { it.semanaKey }
-        val semanas = (datos.socios.map { it.semanaKey } + bonos.keys).toSet()
+        val devoluciones = datos.devoluciones.associateBy { it.semanaKey }
+        val semanas = (datos.socios.map { it.semanaKey } + bonos.keys + devoluciones.keys).toSet()
             .ifEmpty { (alcance as? AlcanceExport.Semanas)?.semanaKeys.orEmpty() }
 
         if (semanas.size <= 1) {
@@ -190,7 +191,8 @@ class PdfReportGenerator(private val context: Context) {
             val porcentaje = semanaKey?.let { CalculoComisiones.irpfParaSemana(it, datos.irpfVigencias) }
                 ?: CalculoComisiones.IRPF_POR_DEFECTO
             val bono = semanaKey?.let(bonos::get)
-            val r = CalculoComisiones.calcularResumenSemana(datos.socios, bono, porcentaje)
+            val devolucion = semanaKey?.let(devoluciones::get)
+            val r = CalculoComisiones.calcularResumenSemana(datos.socios, bono, porcentaje, devolucion)
             val bonusLabel = if (r.esBonoRegaloAplicado) R.string.pdf_kpi_bonus_manual else R.string.pdf_kpi_bonus_semanal
             val detalle = context.getString(
                 R.string.pdf_detalle_semana,
@@ -201,17 +203,17 @@ class PdfReportGenerator(private val context: Context) {
             val motivo = bono?.motivo?.let { context.getString(R.string.pdf_detalle_motivo, it) }.orEmpty()
             return Resumen(
                 kpis = kpis(r.totalSociosHechos, r.totalSociosRegistrados, r.gananciasBaseX2, bonusLabel, r.bonusSemanal, r.totalNeto),
-                detalle = detalle + motivo
+                detalle = textoDevoluciones(r.devoluciones) + detalle + motivo
             )
         }
 
-        val g = CalculoComisiones.calcularResumenHistoricoGlobal(datos.socios, bonos, datos.irpfVigencias)
+        val g = CalculoComisiones.calcularResumenHistoricoGlobal(datos.socios, bonos, datos.irpfVigencias, devoluciones)
         return Resumen(
             kpis = kpis(
                 g.totalSociosHechosAcumulado, g.totalSociosRegistradosAcumulado, g.totalBaseX2Acumulado,
                 R.string.pdf_kpi_bonus_total, g.totalBonusAcumulado, g.totalNetoAcumulado
             ),
-            detalle = context.resources.getQuantityString(
+            detalle = textoDevoluciones(g.totalDevolucionesAcumulado) + context.resources.getQuantityString(
                 R.plurals.pdf_detalle_varias_semanas,
                 g.semanasHistoricas.size,
                 g.totalBrutoAcumulado.toFormattedEuros(),
@@ -220,6 +222,10 @@ class PdfReportGenerator(private val context: Context) {
             )
         )
     }
+
+    /** "Devoluciones: -24,00 €  •  " delante del bruto, que ya las tiene descontadas; vacío si no hay. */
+    private fun textoDevoluciones(devoluciones: Double): String =
+        if (devoluciones > 0.0) context.getString(R.string.pdf_detalle_devoluciones, devoluciones.toFormattedEuros()) else ""
 
     private fun kpis(hechos: Int, registrados: Int, base: Double, bonusLabel: Int, bonus: Double, neto: Double) = listOf(
         Kpi(context.getString(R.string.pdf_kpi_socios_hechos), "$hechos / $registrados", "#1565C0"),

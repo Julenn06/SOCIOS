@@ -57,6 +57,28 @@ class MigracionesTest {
     }
 
     @Test
+    fun migra4a5ConservandoLosDatosYCreandoLaTablaDeDevoluciones() {
+        helper.createDatabase(nombreDb, 4).apply {
+            execSQL("INSERT INTO socios VALUES ('a', 20.0, 1, 1, '2026-W42', 'Ana', '', 0)")
+            execSQL("INSERT INTO irpf_vigencias VALUES ('2026-W01', 15.0)")
+            close()
+        }
+
+        val db = helper.runMigrationsAndValidate(nombreDb, 5, true, Migracion4a5)
+
+        db.query("SELECT nombreSocio FROM socios WHERE id = 'a'").use { cursor ->
+            cursor.moveToFirst()
+            assertEquals("Ana", cursor.getString(0))
+        }
+        db.execSQL("INSERT INTO devoluciones VALUES ('2026-W43', 24.0, '1.ª cuota')")
+        db.query("SELECT monto, nota FROM devoluciones").use { cursor ->
+            cursor.moveToFirst()
+            assertEquals(24.0, cursor.getDouble(0), 0.0)
+            assertEquals("1.ª cuota", cursor.getString(1))
+        }
+    }
+
+    @Test
     fun roomAbreLaBaseDeDatosMigrada() {
         helper.createDatabase(nombreDb, 3).apply {
             execSQL("INSERT INTO socios VALUES ('a', 20.0, 1, 1, '2026-W42', '', '', 0)")
@@ -65,11 +87,12 @@ class MigracionesTest {
 
         val context = InstrumentationRegistry.getInstrumentation().targetContext
         val room = Room.databaseBuilder(context, AppDatabase::class.java, nombreDb)
-            .addMigrations(Migracion3a4(zona))
+            .addMigrations(Migracion3a4(zona), Migracion4a5)
             .build()
         helper.closeWhenFinished(room)
 
         val socios = runBlocking { room.socioDao().getAllSocios() }
         assertEquals(listOf("a"), socios.map { it.id })
+        assertEquals(emptyList<DevolucionEntity>(), runBlocking { room.devolucionDao().getAll() })
     }
 }

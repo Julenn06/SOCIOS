@@ -31,6 +31,20 @@
                 android:resource="@xml/shortcuts" />
         </activity>
 
+        <!-- Widget con el resumen de la semana -->
+        <receiver
+            android:name=".ResumenWidgetProvider"
+            android:exported="false"
+            android:label="@string/widget_nombre">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_resumen_info" />
+        </receiver>
+
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="${applicationId}.fileprovider"

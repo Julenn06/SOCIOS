@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Widget: semana, neto, socios hechos con lo que falta para el siguiente bonus y botón para añadir uno.
+     Solo vistas que admite RemoteViews; las fuentes son las del sistema porque el launcher no carga las de la app.
+     Por lo mismo, el icono se tiñe con android:tint: app:tint es de AppCompat y el launcher no lo entiende. -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/widgetRaiz"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/bg_widget"
+    android:orientation="vertical"
+    android:paddingHorizontal="18dp"
+    android:paddingVertical="14dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/tvWidgetEtiqueta"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="sans-serif-medium"
+                android:maxLines="1"
+                android:text="@string/header_neto_semanal"
+                android:textColor="@color/header_label_neto"
+                android:textSize="12sp" />
+
+            <TextView
+                android:id="@+id/tvWidgetNeto"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="sans-serif-medium"
+                android:fontFeatureSettings="tnum"
+                android:includeFontPadding="false"
+                android:maxLines="1"
+                android:textColor="@android:color/white"
+                android:textSize="30sp"
+                tools:text="424,01 €" />
+        </LinearLayout>
+
+        <ImageView
+            android:id="@+id/btnWidgetNuevo"
+            android:layout_width="44dp"
+            android:layout_height="44dp"
+            android:background="@drawable/bg_widget_boton"
+            android:contentDescription="@string/fab_nuevo_socio"
+            android:padding="11dp"
+            android:src="@drawable/ic_add"
+            android:tint="@android:color/white"
+            tools:ignore="UseAppTint" />
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/tvWidgetSocios"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:ellipsize="end"
+        android:fontFamily="sans-serif-medium"
+        android:maxLines="1"
+        android:textColor="@android:color/white"
+        android:textSize="13sp"
+        tools:text="7 socios hechos · 12–16 oct" />
+
+    <ProgressBar
+        android:id="@+id/progresoWidget"
+        style="?android:attr/progressBarStyleHorizontal"
+        android:layout_width="match_parent"
+        android:layout_height="6dp"
+        android:layout_marginTop="6dp"
+        android:max="10"
+        android:progressDrawable="@drawable/widget_progreso"
+        tools:progress="7" />
+
+    <TextView
+        android:id="@+id/tvWidgetMeta"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="5dp"
+        android:ellipsize="end"
+        android:maxLines="1"
+        android:textColor="@color/header_label_bonus"
+        android:textSize="12sp"
+        tools:text="Faltan 3 para +140 €" />
+</LinearLayout>

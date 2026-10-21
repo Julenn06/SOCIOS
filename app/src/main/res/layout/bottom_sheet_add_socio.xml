@@ -33,23 +33,41 @@
                 android:layout_marginBottom="16dp"
                 android:background="@color/handle" />
 
-            <TextView
-                android:id="@+id/tvTitleBottomSheet"
-                android:layout_width="wrap_content"
+            <LinearLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="@string/title_add_socio"
-                android:textColor="@color/text_main"
-                android:textSize="24sp"
-                android:fontFamily="@font/geist_semibold" />
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
 
-            <TextView
-                android:id="@+id/tvSubtituloSemana"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="2dp"
-                android:textColor="@color/text_sub"
-                android:textSize="14sp"
-                tools:text="Semana del 12–16 oct" />
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:id="@+id/tvTitleBottomSheet"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/title_add_socio"
+                        android:textColor="@color/text_main"
+                        android:textSize="24sp"
+                        android:fontFamily="@font/geist_semibold" />
+
+                    <TextView
+                        android:id="@+id/tvSubtituloSemana"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="2dp"
+                        android:textColor="@color/text_sub"
+                        android:textSize="14sp"
+                        tools:text="Semana del 12–16 oct" />
+                </LinearLayout>
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnCerrarAddSocio"
+                    style="@style/Socios.BotonCerrar" />
+            </LinearLayout>
 
             <!-- Cabecera con la ganancia: verde si está conseguido, ámbar si está pendiente -->
             <com.google.android.material.card.MaterialCardView
@@ -152,6 +170,70 @@
                     android:layout_height="wrap_content"
                     android:inputType="numberDecimal" />
             </com.google.android.material.textfield.TextInputLayout>
+
+            <!-- Semana: la visible al abrirlo; se puede cambiar, también para mover un socio de semana -->
+            <TextView
+                style="@style/Socios.Seccion"
+                android:text="@string/section_semana_label" />
+
+            <com.google.android.material.card.MaterialCardView
+                style="@style/Socios.TarjetaFila"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:stateListAnimator="@null"
+                app:cardCornerRadius="18dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:padding="5dp">
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnFormSemanaAnterior"
+                        style="@style/Socios.BotonFlecha"
+                        android:contentDescription="@string/cd_semana_anterior"
+                        app:backgroundTint="@color/surface_card"
+                        app:icon="@drawable/ic_chevron_left" />
+
+                    <LinearLayout
+                        android:id="@+id/contenedorFormSemana"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:focusable="true"
+                        android:gravity="center"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:id="@+id/tvFormSemana"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:fontFamily="@font/geist_semibold"
+                            android:importantForAccessibility="no"
+                            android:textColor="@color/text_main"
+                            android:textSize="15sp"
+                            tools:text="12–16 oct 2026" />
+
+                        <TextView
+                            android:id="@+id/tvFormSemanaRelativa"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:importantForAccessibility="no"
+                            android:textColor="@color/text_sub"
+                            android:textSize="12sp"
+                            tools:text="Esta semana" />
+                    </LinearLayout>
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnFormSemanaSiguiente"
+                        style="@style/Socios.BotonFlecha"
+                        android:contentDescription="@string/cd_semana_siguiente"
+                        app:backgroundTint="@color/surface_card"
+                        app:icon="@drawable/ic_chevron_right" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
 
             <!-- Día -->
             <TextView
@@ -438,6 +520,28 @@
         android:orientation="horizontal"
         android:paddingHorizontal="20dp"
         android:paddingVertical="12dp">
+
+        <!-- Solo al añadir: guarda y deja el formulario listo para el siguiente socio -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnGuardarYOtro"
+            style="@style/Widget.Material3.Button.TonalButton"
+            android:layout_width="0dp"
+            android:layout_height="56dp"
+            android:layout_marginEnd="12dp"
+            android:layout_weight="1"
+            android:insetTop="0dp"
+            android:insetBottom="0dp"
+            android:text="@string/action_guardar_y_otro"
+            android:textColor="@color/on_primary_container"
+            android:textSize="15sp"
+            android:fontFamily="@font/geist_semibold"
+            android:visibility="gone"
+            app:backgroundTint="@color/primary_container"
+            app:cornerRadius="16dp"
+            app:icon="@drawable/ic_add"
+            app:iconGravity="textStart"
+            app:iconTint="@color/on_primary_container"
+            tools:visibility="visible" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnCancelarAdd"

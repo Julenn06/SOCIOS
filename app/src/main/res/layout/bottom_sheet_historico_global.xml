@@ -152,7 +152,7 @@
                             android:layout_marginTop="2dp"
                             android:maxLines="1"
                             android:textColor="@android:color/white"
-                            android:textSize="17sp"
+                            android:textSize="15sp"
                             android:fontFamily="@font/geist_semibold"
                             tools:text="+748,31 €" />
                     </LinearLayout>
@@ -179,10 +179,164 @@
                             android:layout_marginTop="2dp"
                             android:maxLines="1"
                             android:textColor="@color/header_bonus"
-                            android:textSize="17sp"
+                            android:textSize="15sp"
                             android:fontFamily="@font/geist_semibold"
                             tools:text="+280,00 €" />
                     </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="8dp"
+                        android:layout_weight="1"
+                        android:background="@drawable/bg_caja_translucida"
+                        android:orientation="vertical"
+                        android:padding="12dp">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:maxLines="1"
+                            android:text="@string/historico_devoluciones_label"
+                            android:textColor="@color/header_label_devoluciones"
+                            android:textSize="11.5sp" />
+
+                        <TextView
+                            android:id="@+id/tvGlobalDevolucionesTotal"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="2dp"
+                            android:maxLines="1"
+                            android:textColor="@color/header_devoluciones"
+                            android:textSize="15sp"
+                            android:fontFamily="@font/geist_semibold"
+                            tools:text="-64,00 €" />
+                    </LinearLayout>
+                </LinearLayout>
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- Esta semana frente a la anterior, a la media y a la mejor -->
+        <TextView
+            style="@style/Socios.Seccion"
+            android:text="@string/historico_seccion_comparativa" />
+
+        <com.google.android.material.card.MaterialCardView
+            style="@style/Socios.TarjetaFila"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:stateListAnimator="@null">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:paddingHorizontal="16dp"
+                android:paddingTop="16dp"
+                android:paddingBottom="8dp">
+
+                <TextView
+                    android:id="@+id/tvComparativaNeto"
+                    style="@style/Socios.TituloFila"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    tools:text="Neto de esta semana: 298,38 €" />
+
+                <LinearLayout
+                    style="@style/Socios.FilaCalculo"
+                    android:layout_marginTop="12dp">
+
+                    <TextView
+                        style="@style/Socios.EtiquetaCalculo"
+                        android:layout_marginStart="0dp"
+                        android:text="@string/comparativa_vs_anterior"
+                        android:textColor="@color/text_sub" />
+
+                    <TextView
+                        android:id="@+id/tvComparativaAnterior"
+                        style="@style/Socios.ImporteCalculo"
+                        tools:text="↓ 125,63 €" />
+                </LinearLayout>
+
+                <LinearLayout
+                    style="@style/Socios.FilaCalculo"
+                    android:layout_marginTop="10dp">
+
+                    <TextView
+                        android:id="@+id/tvComparativaMediaLabel"
+                        style="@style/Socios.EtiquetaCalculo"
+                        android:layout_marginStart="0dp"
+                        android:textColor="@color/text_sub"
+                        tools:text="Frente a tu media (5 semanas)" />
+
+                    <TextView
+                        android:id="@+id/tvComparativaMedia"
+                        style="@style/Socios.ImporteCalculo"
+                        tools:text="↑ 11,78 €" />
+                </LinearLayout>
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:layout_marginTop="12dp"
+                    android:background="@color/divider" />
+
+                <!-- La mejor semana: al tocarla se abre -->
+                <LinearLayout
+                    android:id="@+id/filaMejorSemana"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginHorizontal="-8dp"
+                    android:background="?attr/selectableItemBackground"
+                    android:gravity="center_vertical"
+                    android:minHeight="48dp"
+                    android:orientation="horizontal"
+                    android:paddingHorizontal="8dp"
+                    android:paddingVertical="6dp">
+
+                    <ImageView
+                        android:layout_width="18dp"
+                        android:layout_height="18dp"
+                        android:importantForAccessibility="no"
+                        android:src="@drawable/ic_trophy"
+                        app:tint="@color/amber_text" />
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="10dp"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/comparativa_mejor"
+                            android:textColor="@color/text_main"
+                            android:textSize="14sp" />
+
+                        <TextView
+                            android:id="@+id/tvMejorSemanaRango"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textColor="@color/text_sub"
+                            android:textSize="12.5sp"
+                            tools:text="5–9 oct 2026" />
+                    </LinearLayout>
+
+                    <TextView
+                        android:id="@+id/tvMejorSemanaNeto"
+                        style="@style/Socios.ImporteCalculo"
+                        tools:text="424,01 €" />
+
+                    <ImageView
+                        android:id="@+id/ivMejorSemanaFlecha"
+                        android:layout_width="18dp"
+                        android:layout_height="18dp"
+                        android:layout_marginStart="4dp"
+                        android:importantForAccessibility="no"
+                        android:src="@drawable/ic_chevron_right"
+                        app:tint="@color/text_sub" />
                 </LinearLayout>
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
@@ -224,6 +378,49 @@
                 android:layout_weight="1"
                 android:text="@string/historico_por_anio" />
         </com.google.android.material.button.MaterialButtonToggleGroup>
+
+        <!-- Evolución del neto, por semanas, meses o años según lo elegido arriba -->
+        <com.google.android.material.card.MaterialCardView
+            style="@style/Socios.TarjetaFila"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:stateListAnimator="@null"
+            app:cardBackgroundColor="@color/surface_card">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:paddingHorizontal="12dp"
+                android:paddingTop="14dp"
+                android:paddingBottom="10dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="4dp"
+                    android:text="@string/historico_seccion_evolucion"
+                    android:textColor="@color/text_main"
+                    android:textSize="14sp"
+                    android:fontFamily="@font/geist_semibold" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="4dp"
+                    android:text="@string/grafico_ayuda"
+                    android:textColor="@color/text_sub"
+                    android:textSize="12sp" />
+
+                <com.julen.socios.GraficoNetoView
+                    android:id="@+id/graficoNeto"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:focusable="true" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
 
         <TextView
             android:id="@+id/tvNotaAgrupacion"

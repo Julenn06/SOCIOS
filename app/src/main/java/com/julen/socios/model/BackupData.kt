@@ -4,10 +4,11 @@ package com.julen.socios.model
 data class DatosBackup(
     val socios: List<Socio> = emptyList(),
     val bonosRegalo: List<BonoRegaloInfo> = emptyList(),
-    val irpfVigencias: List<IrpfVigencia> = emptyList()
+    val irpfVigencias: List<IrpfVigencia> = emptyList(),
+    val devoluciones: List<DevolucionInfo> = emptyList()
 ) {
     val estaVacio: Boolean
-        get() = socios.isEmpty() && bonosRegalo.isEmpty() && irpfVigencias.isEmpty()
+        get() = socios.isEmpty() && bonosRegalo.isEmpty() && irpfVigencias.isEmpty() && devoluciones.isEmpty()
 }
 
 /** Resultado de leer un archivo de importación: los datos válidos y cuántos registros se descartaron. */
@@ -22,5 +23,6 @@ data class ImportPreview(
     val sociosSobrescritos: Int,
     val bonos: Int,
     val irpfVigencias: Int,
+    val devoluciones: Int,
     val descartados: Int
 )

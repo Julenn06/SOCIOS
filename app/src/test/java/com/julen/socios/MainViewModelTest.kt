@@ -3,6 +3,7 @@ package com.julen.socios
 import androidx.lifecycle.SavedStateHandle
 import com.julen.socios.data.BackupRepository
 import com.julen.socios.data.BonoRegaloRepository
+import com.julen.socios.data.DevolucionRepository
 import com.julen.socios.data.IrpfRepository
 import com.julen.socios.data.SocioRepository
 import com.julen.socios.data.local.BonoRegaloEntity
@@ -12,6 +13,8 @@ import com.julen.socios.export.ExportFormat
 import com.julen.socios.export.ExportRequest
 import com.julen.socios.export.ImportFormat
 import com.julen.socios.fakes.FakeBonoRegaloDao
+import com.julen.socios.fakes.FakeDevolucionDao
+import com.julen.socios.fakes.FakePreferenciasUsuario
 import com.julen.socios.fakes.FakeExportService
 import com.julen.socios.fakes.FakeIrpfVigenciaDao
 import com.julen.socios.fakes.FakeSocioDao
@@ -58,6 +61,8 @@ class MainViewModelTest {
     private val socioDao = FakeSocioDao()
     private val bonoDao = FakeBonoRegaloDao()
     private val irpfDao = FakeIrpfVigenciaDao()
+    private val devolucionDao = FakeDevolucionDao()
+    private val preferencias = FakePreferenciasUsuario()
     private val exportService = FakeExportService()
 
     @Before
@@ -77,8 +82,10 @@ class MainViewModelTest {
         socioRepository = SocioRepository(socioDao),
         bonoRegaloRepository = BonoRegaloRepository(bonoDao),
         irpfRepository = IrpfRepository(irpfDao),
-        backupRepository = BackupRepository(socioDao, bonoDao, irpfDao, FakeTransactionRunner()),
+        devolucionRepository = DevolucionRepository(devolucionDao),
+        backupRepository = BackupRepository(socioDao, bonoDao, irpfDao, devolucionDao, FakeTransactionRunner()),
         exportService = exportService,
+        preferencias = preferencias,
         savedStateHandle = handle,
         clock = clock,
         calculoDispatcher = dispatcher,
@@ -90,14 +97,16 @@ class MainViewModelTest {
         semana: String,
         dia: DiaSemana = DiaSemana.LUNES,
         hecho: Boolean = true,
-        cuota: Double = 20.0
-    ) = SocioEntity(id, cuota, hecho, dia.id, semana, "", "", 0)
+        cuota: Double = 20.0,
+        timestamp: Long = 0
+    ) = SocioEntity(id, cuota, hecho, dia.id, semana, "", "", timestamp)
 
     /** Mantiene suscritos los StateFlow (WhileSubscribed) y recoge los eventos emitidos. */
     private fun TestScope.observar(viewModel: MainViewModel): MutableList<MainEvent> {
         val eventos = mutableListOf<MainEvent>()
         backgroundScope.launch(dispatcher) { viewModel.uiState.collect {} }
         backgroundScope.launch(dispatcher) { viewModel.historicoGlobal.collect {} }
+        backgroundScope.launch(dispatcher) { viewModel.avisoPendientes.collect {} }
         backgroundScope.launch(dispatcher) { viewModel.events.toList(eventos) }
         return eventos
     }
@@ -281,7 +290,7 @@ class MainViewModelTest {
 
         viewModel.prepararImportacion(lectura, ImportFormat.JSON)
 
-        assertEquals(ImportPreview(1, 1, 0, 0, 2), viewModel.importPendiente.value)
+        assertEquals(ImportPreview(1, 1, 0, 0, 0, 2), viewModel.importPendiente.value)
         assertEquals(1, socioDao.socios.value.size)
 
         viewModel.confirmarImport()
@@ -290,7 +299,99 @@ class MainViewModelTest {
         assertEquals(setOf("existente", "nuevo"), socioDao.socios.value.map { it.id }.toSet())
         assertEquals(30.0, socioDao.socios.value.first { it.id == "existente" }.colaboracion, 0.0)
         assertEquals(
-            MainEvent.Mensaje(UiText.Plural(R.plurals.msg_import_resultado, 2, listOf(2, 0, 0)), TipoAviso.EXITO, larga = true),
+            MainEvent.Mensaje(UiText.Plural(R.plurals.msg_import_resultado, 2, listOf(2, 0, 0, 0)), TipoAviso.EXITO, larga = true),
+            eventos.last()
+        )
+    }
+
+    @Test
+    fun lasDevolucionesBajanElNetoDeSuSemanaYDelHistorico() = runTest(dispatcher) {
+        socioDao.socios.value = List(10) { entidad("s$it", semanaActual) }
+        val viewModel = crearViewModel()
+        val eventos = observar(viewModel)
+        assertEquals(424.01, viewModel.uiState.value.resumenSemana!!.totalNeto, 0.0)
+
+        viewModel.guardarDevolucion(semanaActual, 40.0, "  1.ª cuota de Ana ")
+
+        val resumen = viewModel.uiState.value.resumenSemana!!
+        assertEquals(500.0, resumen.totalBruto, 0.0)
+        assertEquals(392.60, resumen.totalNeto, 0.0)
+        assertEquals("1.ª cuota de Ana", viewModel.uiState.value.devolucionSemana?.nota)
+        assertEquals(40.0, viewModel.historicoGlobal.value!!.totalDevolucionesAcumulado, 0.0)
+        assertEquals(
+            MainEvent.Mensaje(UiText.Res(R.string.msg_devolucion_guardada, listOf("-40,00 €")), TipoAviso.EXITO),
+            eventos.last()
+        )
+
+        // Guardar 0 € es quitarlas.
+        viewModel.guardarDevolucion(semanaActual, 0.0, "")
+
+        assertNull(viewModel.uiState.value.devolucionSemana)
+        assertEquals(424.01, viewModel.uiState.value.resumenSemana!!.totalNeto, 0.0)
+    }
+
+    @Test
+    fun unaSemanaConSoloDevolucionesSePuedeExportar() = runTest(dispatcher) {
+        val viewModel = crearViewModel()
+        observar(viewModel)
+        viewModel.guardarDevolucion(semanaActual, 12.0, "")
+
+        viewModel.solicitarExport(ExportFormat.JSON, AlcanceExport.Semanas(setOf(semanaActual)))
+
+        assertEquals(ExportRequest(ExportFormat.JSON, AlcanceExport.Semanas(setOf(semanaActual))), viewModel.exportPendienteDeDestino.value)
+    }
+
+    @Test
+    fun avisaDeLosPendientesDeSemanasAnterioresHastaQueSeCierraElAviso() = runTest(dispatcher) {
+        val semanaAnterior = DateUtils.getSemanaKey(-1, clock)
+        val haceDos = DateUtils.getSemanaKey(-2, clock)
+        socioDao.socios.value = listOf(
+            entidad("viejo", haceDos, hecho = false),
+            entidad("anterior", semanaAnterior, hecho = false),
+            entidad("hecho", semanaAnterior),
+            entidad("actual", semanaActual, hecho = false)
+        )
+        val viewModel = crearViewModel()
+        observar(viewModel)
+
+        assertEquals(listOf("anterior", "viejo"), viewModel.avisoPendientes.value.map { it.id })
+
+        viewModel.ocultarAvisoPendientes()
+        assertTrue(viewModel.avisoPendientes.value.isEmpty())
+        // Siguen ahí para revisarlos aunque el aviso esté cerrado.
+        assertEquals(2, viewModel.pendientesAnteriores.value.size)
+
+        // Al conseguir uno no vuelve el aviso; si otro pasa a pendiente, sí.
+        viewModel.setSocioHecho("viejo", true)
+        assertTrue(viewModel.avisoPendientes.value.isEmpty())
+        viewModel.setSocioHecho("hecho", false)
+        assertEquals(listOf("anterior", "hecho"), viewModel.avisoPendientes.value.map { it.id }.sorted())
+    }
+
+    @Test
+    fun elFormularioProponeLaCuotaDelUltimoSocioAnadido() = runTest(dispatcher) {
+        val viewModel = crearViewModel()
+        observar(viewModel)
+        assertEquals(20.0, viewModel.cuotaPorDefecto, 0.0)
+
+        viewModel.guardarSocio(Socio(colaboracion = 15.0, dia = DiaSemana.LUNES, semanaKey = semanaActual), esNuevo = true)
+
+        assertEquals(15.0, viewModel.cuotaPorDefecto, 0.0)
+    }
+
+    @Test
+    fun moverUnSocioDeSemanaLoSacaDeLaVisibleYAvisa() = runTest(dispatcher) {
+        socioDao.socios.value = listOf(entidad("a", semanaActual))
+        val viewModel = crearViewModel()
+        val eventos = observar(viewModel)
+        val socio = viewModel.uiState.value.todosSociosSemana.single()
+
+        viewModel.guardarSocio(socio.copy(semanaKey = semanaSiguiente), esNuevo = false, semanaOriginal = semanaActual)
+
+        assertTrue(viewModel.uiState.value.todosSociosSemana.isEmpty())
+        assertEquals(semanaSiguiente, socioDao.socios.value.single().semanaKey)
+        assertEquals(
+            MainEvent.Mensaje(UiText.Res(R.string.msg_socio_movido, listOf(DateUtils.rangoCorto(semanaSiguiente))), TipoAviso.EXITO),
             eventos.last()
         )
     }

@@ -8,8 +8,8 @@ import java.io.OutputStream
 import java.io.Writer
 
 /**
- * CSV con tres secciones (# SOCIOS, # BONOS_REGALO, # IRPF), precedidas de la versión del formato
- * (# VERSION 2). Los campos con comas, comillas, saltos de línea o espacios en los extremos van entre
+ * CSV con cuatro secciones (# SOCIOS, # BONOS_REGALO, # IRPF, # DEVOLUCIONES), precedidas de la versión del
+ * formato (# VERSION 3). Los campos con comas, comillas, saltos de línea o espacios en los extremos van entre
  * comillas, y el lector respeta esas comillas aunque el campo ocupe varias líneas.
  */
 object BackupCsv {
@@ -17,14 +17,16 @@ object BackupCsv {
     private const val SECCION_SOCIOS = "# SOCIOS"
     private const val SECCION_BONOS = "# BONOS_REGALO"
     private const val SECCION_IRPF = "# IRPF"
+    private const val SECCION_DEVOLUCIONES = "# DEVOLUCIONES"
     private const val PREFIJO_VERSION = "# VERSION "
     private val PATRON_VERSION = Regex("""#\s*VERSION\s+(\d+)""", RegexOption.IGNORE_CASE)
 
     private const val CABECERA_SOCIOS = "ID,Colaboracion,Hecho,DiaSemanaId,SemanaKey,NombreSocio,Notas,Timestamp"
     private const val CABECERA_BONOS = "SemanaKey,Activo,EsMontoFijo,Monto,Nota"
     private const val CABECERA_IRPF = "DesdeSemanaKey,Porcentaje"
+    private const val CABECERA_DEVOLUCIONES = "SemanaKey,Monto,Nota"
 
-    private enum class Seccion { SOCIOS, BONOS, IRPF }
+    private enum class Seccion { SOCIOS, BONOS, IRPF, DEVOLUCIONES }
 
     fun escribir(datos: DatosBackup, outputStream: OutputStream) {
         val out = outputStream.bufferedWriter(Charsets.UTF_8)
@@ -54,6 +56,13 @@ object BackupCsv {
                 out.fila(vigencia.desdeSemanaKey, vigencia.porcentaje)
             }
         }
+        if (datos.devoluciones.isNotEmpty()) {
+            out.linea(SECCION_DEVOLUCIONES)
+            out.linea(CABECERA_DEVOLUCIONES)
+            for (devolucion in datos.devoluciones) {
+                out.fila(devolucion.semanaKey, devolucion.monto, devolucion.nota)
+            }
+        }
         out.flush()
     }
 
@@ -63,6 +72,7 @@ object BackupCsv {
         val socios = mutableListOf<SocioDto>()
         val bonos = mutableListOf<BonoRegaloDto>()
         val vigencias = mutableListOf<IrpfVigenciaDto>()
+        val devoluciones = mutableListOf<DevolucionDto>()
         var descartados = 0
         var version: Int? = null
         var seccion = Seccion.SOCIOS
@@ -80,6 +90,7 @@ object BackupCsv {
                 seccion = when {
                     primero.equals(SECCION_BONOS, ignoreCase = true) -> Seccion.BONOS
                     primero.equals(SECCION_IRPF, ignoreCase = true) -> Seccion.IRPF
+                    primero.equals(SECCION_DEVOLUCIONES, ignoreCase = true) -> Seccion.DEVOLUCIONES
                     else -> Seccion.SOCIOS
                 }
                 continue
@@ -124,11 +135,19 @@ object BackupCsv {
                 } else {
                     descartados++
                 }
+
+                Seccion.DEVOLUCIONES -> if (campos.size >= 2) {
+                    devoluciones += DevolucionDto(campos[0].trim(), parseImporte(campos[1]), campos.getOrNull(2))
+                } else {
+                    descartados++
+                }
             }
         }
 
         val resultado = ConversionBackup.desdeDto(
-            BackupDto(version = version, socios = socios, bonosRegalo = bonos, irpfVigencias = vigencias)
+            BackupDto(
+                version = version, socios = socios, bonosRegalo = bonos, irpfVigencias = vigencias, devoluciones = devoluciones
+            )
         )
         return resultado.copy(descartados = resultado.descartados + descartados)
     }

@@ -17,6 +17,10 @@ class SocioRepository(private val socioDao: SocioDao) {
 
     fun getSemanaKeysFlow(): Flow<List<String>> = socioDao.getSemanaKeysFlow()
 
+    /** Socios que siguen pendientes en semanas anteriores a [semanaKey], de la más reciente a la más antigua. */
+    fun getPendientesAnterioresFlow(semanaKey: String): Flow<List<Socio>> =
+        socioDao.getPendientesAnterioresFlow(semanaKey).map { list -> list.map { it.toSocio() } }
+
     suspend fun addSocio(socio: Socio) = socioDao.insertSocio(SocioEntity.fromSocio(socio))
 
     suspend fun updateSocio(socio: Socio) = socioDao.updateSocio(SocioEntity.fromSocio(socio))

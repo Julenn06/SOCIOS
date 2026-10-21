@@ -48,7 +48,12 @@ class AddSocioBottomSheetDialog : BottomSheetDialogFragment() {
     private val binding get() = _binding!!
 
     private val socioToEdit: Socio? by lazy { requireArguments().getBundle(ARG_SOCIO)?.toSocio() }
-    private val semanaKey: String by lazy { requireNotNull(requireArguments().getString(ARG_SEMANA)) }
+
+    /** La semana en la que se guardará: la del socio (o la visible al abrirlo), y se puede cambiar. */
+    private lateinit var semanaKey: String
+
+    /** Socios guardados con "Guardar y otro" sin cerrar el formulario. */
+    private var anadidos = 0
     private val defaultDia: DiaSemana by lazy { DiaSemana.fromId(requireArguments().getInt(ARG_DIA)) }
 
     /** Las cuotas predefinidas y, al final, "Otro". */
@@ -90,13 +95,18 @@ class AddSocioBottomSheetDialog : BottomSheetDialogFragment() {
         binding.fondoHero.background = LayerDrawable(
             arrayOf(fondoHero, requireNotNull(ContextCompat.getDrawable(requireContext(), R.drawable.bg_adorno_circulos)))
         )
-        binding.tvSubtituloSemana.text = getString(R.string.add_subtitulo_semana, DateUtils.rangoCorto(semanaKey))
+        semanaKey = savedInstanceState?.getString(STATE_SEMANA) ?: requireNotNull(requireArguments().getString(ARG_SEMANA))
+        anadidos = savedInstanceState?.getInt(STATE_ANADIDOS) ?: 0
+        mostrarSemana()
         crearOpcionesCuota()
         configurarDias()
 
         val socio = socioToEdit
         binding.tvTitleBottomSheet.setText(if (socio != null) R.string.title_edit_socio else R.string.title_add_socio)
         binding.btnGuardarSocio.setText(if (socio != null) R.string.action_guardar_cambios else R.string.action_save_socio)
+        // Al añadir, el segundo botón guarda y prepara otro; para cancelar están la ✕ y deslizar hacia abajo.
+        binding.btnGuardarYOtro.isVisible = socio == null
+        binding.btnCancelarAdd.isVisible = socio != null
 
         if (savedInstanceState == null) {
             if (socio != null) {
@@ -107,7 +117,8 @@ class AddSocioBottomSheetDialog : BottomSheetDialogFragment() {
                 elegirCuota(socio.colaboracion)
                 botonesDia[socio.dia]?.isChecked = true
             } else {
-                elegirCuota(ImportesPredefinidos.CUOTA_POR_DEFECTO)
+                // La cuota del último socio añadido: casi siempre se repite.
+                elegirCuota(viewModel.cuotaPorDefecto)
                 botonesDia[defaultDia]?.isChecked = true
             }
         } else {
@@ -131,12 +142,21 @@ class AddSocioBottomSheetDialog : BottomSheetDialogFragment() {
             HapticUtils.performClick(it)
             dismiss()
         }
+        binding.btnCerrarAddSocio.setOnClickListener { dismiss() }
         binding.btnGuardarSocio.setOnClickListener {
             HapticUtils.performConfirm(it)
-            saveSocio()
+            saveSocio(otro = false)
         }
-        listOf(binding.cardEstadoHecho, binding.cardEstadoPendiente, binding.btnGuardarSocio, binding.btnCancelarAdd)
-            .forEach(AnimationExtensions::setupPressScaleAnimation)
+        binding.btnGuardarYOtro.setOnClickListener {
+            HapticUtils.performConfirm(it)
+            saveSocio(otro = true)
+        }
+        binding.btnFormSemanaAnterior.setOnClickListener { moverSemana(-1) }
+        binding.btnFormSemanaSiguiente.setOnClickListener { moverSemana(1) }
+        listOf(
+            binding.cardEstadoHecho, binding.cardEstadoPendiente, binding.btnGuardarSocio, binding.btnCancelarAdd,
+            binding.btnGuardarYOtro
+        ).forEach(AnimationExtensions::setupPressScaleAnimation)
     }
 
     override fun onViewStateRestored(savedInstanceState: Bundle?) {
@@ -152,12 +172,41 @@ class AddSocioBottomSheetDialog : BottomSheetDialogFragment() {
         _binding?.let { outState.putInt(STATE_CUOTA_INDEX, opcionesCuota.indexOfFirst { it.isChecked }) }
         outState.putBoolean(STATE_HECHO, esHecho)
         outState.putBoolean(STATE_DETALLES, detallesAbiertos)
+        outState.putString(STATE_SEMANA, semanaKey)
+        outState.putInt(STATE_ANADIDOS, anadidos)
     }
 
     override fun onDestroyView() {
         animacionFondo?.cancel()
         super.onDestroyView()
         _binding = null
+    }
+
+    private fun moverSemana(delta: Int) {
+        val nueva = DateUtils.semanaKeyDesplazada(semanaKey, delta) ?: return
+        HapticUtils.performClick(binding.contenedorFormSemana)
+        semanaKey = nueva
+        mostrarSemana()
+    }
+
+    /** La semana elegida, cuánto dista de la actual y, en el subtítulo, cuántos se llevan añadidos. */
+    private fun mostrarSemana() {
+        val rango = DateUtils.rangoCorto(semanaKey)
+        binding.tvSubtituloSemana.text = if (anadidos > 0) {
+            resources.getQuantityString(R.plurals.add_subtitulo_anadidos, anadidos, anadidos, rango)
+        } else {
+            getString(R.string.add_subtitulo_semana, rango)
+        }
+        binding.tvFormSemana.text = getString(R.string.rango_semana_anio, rango, semanaKey.take(4))
+        val distancia = DateUtils.semanasEntre(DateUtils.getSemanaKey(), semanaKey) ?: 0
+        binding.tvFormSemanaRelativa.text = when {
+            distancia == 0 -> getString(R.string.add_semana_actual)
+            distancia < 0 -> resources.getQuantityString(R.plurals.semana_pasada, -distancia, -distancia)
+            else -> resources.getQuantityString(R.plurals.semana_futura, distancia, distancia)
+        }
+        binding.contenedorFormSemana.contentDescription = getString(
+            R.string.socio_dia_semana, DateUtils.getRangoSemanaTextoFromKey(semanaKey), binding.tvFormSemanaRelativa.text
+        )
     }
 
     private fun crearOpcionesCuota() {
@@ -326,7 +375,8 @@ class AddSocioBottomSheetDialog : BottomSheetDialogFragment() {
         ventana.currentFocus?.clearFocus()
     }
 
-    private fun saveSocio() {
+    /** [otro]: tras guardar, deja el formulario listo para el siguiente en lugar de cerrarlo. */
+    private fun saveSocio(otro: Boolean) {
         val cuota = cuotaElegida()
         if (cuota == null || cuota <= 0) {
             marcarCuota(opcionOtro)
@@ -345,6 +395,7 @@ class AddSocioBottomSheetDialog : BottomSheetDialogFragment() {
             colaboracion = cuota,
             hecho = esHecho,
             dia = dia,
+            semanaKey = semanaKey,
             nombreSocio = nombre,
             notas = notas
         ) ?: Socio(
@@ -356,8 +407,25 @@ class AddSocioBottomSheetDialog : BottomSheetDialogFragment() {
             notas = notas
         )
 
-        viewModel.guardarSocio(socio, esNuevo = original == null)
-        dismiss()
+        viewModel.guardarSocio(socio, esNuevo = original == null, semanaOriginal = original?.semanaKey)
+        if (otro && original == null) prepararSiguiente() else dismiss()
+    }
+
+    /** Vacía nombre y notas para el siguiente socio; la cuota, el día, el estado y la semana se mantienen. */
+    private fun prepararSiguiente() {
+        anadidos++
+        ocultarTeclado()
+        binding.etNombreSocio.text = null
+        binding.etNotas.text = null
+        TransitionManager.beginDelayedTransition(binding.contenidoAddSocio, AutoTransition().setDuration(DURACION_MS))
+        detallesAbiertos = false
+        mostrarDetalles()
+        mostrarSemana()
+        binding.scrollAddSocio.smoothScrollTo(0, 0)
+        // Un latido de la cabecera para que se note que se ha guardado y empieza uno nuevo.
+        binding.fondoHero.animate().scaleX(0.97f).scaleY(0.97f).setDuration(110).withEndAction {
+            _binding?.fondoHero?.animate()?.scaleX(1f)?.scaleY(1f)?.setDuration(160)?.start()
+        }.start()
     }
 
     companion object {
@@ -369,6 +437,8 @@ class AddSocioBottomSheetDialog : BottomSheetDialogFragment() {
         private const val STATE_CUOTA_INDEX = "cuotaIndex"
         private const val STATE_HECHO = "hecho"
         private const val STATE_DETALLES = "detallesAbiertos"
+        private const val STATE_SEMANA = "semana"
+        private const val STATE_ANADIDOS = "anadidos"
         private const val DURACION_MS = 200L
 
         fun nuevo(semanaKey: String, dia: DiaSemana) = AddSocioBottomSheetDialog().apply {
