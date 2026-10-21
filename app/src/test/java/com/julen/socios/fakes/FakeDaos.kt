@@ -4,8 +4,8 @@ import android.net.Uri
 import com.julen.socios.ajustes.PreferenciasUsuario
 import com.julen.socios.data.local.BonoRegaloDao
 import com.julen.socios.data.local.BonoRegaloEntity
-import com.julen.socios.data.local.DevolucionDao
-import com.julen.socios.data.local.DevolucionEntity
+import com.julen.socios.data.local.CobroDao
+import com.julen.socios.data.local.CobroEntity
 import com.julen.socios.data.local.IrpfVigenciaDao
 import com.julen.socios.data.local.IrpfVigenciaEntity
 import com.julen.socios.data.local.SocioDao
@@ -99,22 +99,22 @@ class FakeIrpfVigenciaDao : IrpfVigenciaDao {
     }
 }
 
-class FakeDevolucionDao : DevolucionDao {
-    val devoluciones = MutableStateFlow<Map<String, DevolucionEntity>>(emptyMap())
+class FakeCobroDao : CobroDao {
+    val cobros = MutableStateFlow<Map<String, CobroEntity>>(emptyMap())
 
-    override fun getDevolucionFlow(semanaKey: String): Flow<DevolucionEntity?> = devoluciones.map { it[semanaKey] }
-    override suspend fun getAll() = devoluciones.value.values.toList()
-    override fun getAllFlow(): Flow<List<DevolucionEntity>> = devoluciones.map { it.values.toList() }
-    override fun getSemanaKeysFlow(): Flow<List<String>> = devoluciones.map { it.keys.toList() }
+    override fun getCobroFlow(semanaKey: String): Flow<CobroEntity?> = cobros.map { it[semanaKey] }
+    override suspend fun getAll() = cobros.value.values.toList()
+    override fun getAllFlow(): Flow<List<CobroEntity>> = cobros.map { it.values.toList() }
+    override fun getSemanaKeysFlow(): Flow<List<String>> = cobros.map { it.keys.toList() }
 
-    override suspend fun upsert(devolucion: DevolucionEntity) {
-        devoluciones.value = devoluciones.value + (devolucion.semanaKey to devolucion)
+    override suspend fun upsert(cobro: CobroEntity) {
+        cobros.value = cobros.value + (cobro.semanaKey to cobro)
     }
 
-    override suspend fun upsertAll(devoluciones: List<DevolucionEntity>) = devoluciones.forEach { upsert(it) }
+    override suspend fun upsertAll(cobros: List<CobroEntity>) = cobros.forEach { upsert(it) }
 
     override suspend fun delete(semanaKey: String) {
-        devoluciones.value = devoluciones.value - semanaKey
+        cobros.value = cobros.value - semanaKey
     }
 }
 

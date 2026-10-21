@@ -2,8 +2,8 @@ package com.julen.socios.data
 
 import com.julen.socios.data.local.BonoRegaloDao
 import com.julen.socios.data.local.BonoRegaloEntity
-import com.julen.socios.data.local.DevolucionDao
-import com.julen.socios.data.local.DevolucionEntity
+import com.julen.socios.data.local.CobroDao
+import com.julen.socios.data.local.CobroEntity
 import com.julen.socios.data.local.IrpfVigenciaDao
 import com.julen.socios.data.local.IrpfVigenciaEntity
 import com.julen.socios.data.local.SocioDao
@@ -19,14 +19,14 @@ class BackupRepository(
     private val socioDao: SocioDao,
     private val bonoDao: BonoRegaloDao,
     private val irpfDao: IrpfVigenciaDao,
-    private val devolucionDao: DevolucionDao,
+    private val cobroDao: CobroDao,
     private val transactionRunner: TransactionRunner
 ) {
 
     suspend fun cargarDatos(alcance: AlcanceExport): DatosBackup {
         val vigencias = irpfDao.getAll().map { it.toIrpfVigencia() }
         val bonos = bonoDao.getAllBonosRegalo().map { it.toBonoRegaloInfo() }
-        val devoluciones = devolucionDao.getAll().map { it.toDevolucionInfo() }
+        val cobros = cobroDao.getAll().map { it.toCobroInfo() }
         return when (alcance) {
             is AlcanceExport.Semanas -> {
                 val keys = alcance.semanaKeys
@@ -38,12 +38,12 @@ class BackupRepository(
                     socios,
                     bonos.filter { it.semanaKey in keys },
                     vigencias,
-                    devoluciones.filter { it.semanaKey in keys }
+                    cobros.filter { it.semanaKey in keys }
                 )
             }
 
             AlcanceExport.Historico ->
-                DatosBackup(socioDao.getAllSocios().map { it.toSocio() }, bonos, vigencias, devoluciones)
+                DatosBackup(socioDao.getAllSocios().map { it.toSocio() }, bonos, vigencias, cobros)
         }
     }
 
@@ -55,7 +55,7 @@ class BackupRepository(
             sociosSobrescritos = sobrescritos,
             bonos = lectura.datos.bonosRegalo.size,
             irpfVigencias = lectura.datos.irpfVigencias.size,
-            devoluciones = lectura.datos.devoluciones.size,
+            cobros = lectura.datos.cobros.size,
             descartados = lectura.descartados
         )
     }
@@ -65,6 +65,6 @@ class BackupRepository(
         if (datos.socios.isNotEmpty()) socioDao.insertSocios(datos.socios.map(SocioEntity::fromSocio))
         if (datos.bonosRegalo.isNotEmpty()) bonoDao.saveBonosRegalo(datos.bonosRegalo.map(BonoRegaloEntity::fromBonoRegaloInfo))
         if (datos.irpfVigencias.isNotEmpty()) irpfDao.upsertAll(datos.irpfVigencias.map(IrpfVigenciaEntity::fromIrpfVigencia))
-        if (datos.devoluciones.isNotEmpty()) devolucionDao.upsertAll(datos.devoluciones.map(DevolucionEntity::fromDevolucionInfo))
+        if (datos.cobros.isNotEmpty()) cobroDao.upsertAll(datos.cobros.map(CobroEntity::fromCobroInfo))
     }
 }

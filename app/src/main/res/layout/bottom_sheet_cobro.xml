@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Devoluciones de una semana: importe descontado, qué se ha devuelto y cómo queda el neto. -->
+<!-- Lo cobrado de verdad en una semana: el neto que ha llegado, por qué no coincide y cuánto se ha descontado. -->
 <androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
@@ -9,7 +9,6 @@
     tools:targetApi="q">
 
     <LinearLayout
-        android:id="@+id/contenidoDevoluciones"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
@@ -35,7 +34,7 @@
             <FrameLayout
                 android:layout_width="52dp"
                 android:layout_height="52dp"
-                android:background="@drawable/bg_icono_devolucion"
+                android:background="@drawable/bg_icono_verde"
                 android:elevation="3dp">
 
                 <ImageView
@@ -43,7 +42,7 @@
                     android:layout_height="26dp"
                     android:layout_gravity="center"
                     android:importantForAccessibility="no"
-                    android:src="@drawable/ic_devolucion"
+                    android:src="@drawable/ic_cobro"
                     app:tint="@android:color/white" />
             </FrameLayout>
 
@@ -57,27 +56,27 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/devolucion_titulo"
+                    android:text="@string/cobro_titulo"
                     android:textColor="@color/text_main"
                     android:textSize="20sp"
                     android:fontFamily="@font/geist_semibold" />
 
                 <TextView
-                    android:id="@+id/tvSubtituloDevoluciones"
+                    android:id="@+id/tvSubtituloCobro"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="2dp"
                     android:textColor="@color/text_sub"
                     android:textSize="13sp"
-                    tools:text="12–16 oct 2026" />
+                    tools:text="19–23 oct 2026" />
             </LinearLayout>
 
             <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnCerrarDevoluciones"
+                android:id="@+id/btnCerrarCobro"
                 style="@style/Socios.BotonCerrar" />
         </LinearLayout>
 
-        <!-- Qué es y cómo se descuenta -->
+        <!-- Para qué sirve -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -100,29 +99,31 @@
                 android:layout_marginStart="10dp"
                 android:layout_weight="1"
                 android:lineSpacingExtra="2dp"
-                android:text="@string/devolucion_explicacion"
+                android:text="@string/cobro_explicacion"
                 android:textColor="@color/text_sub"
                 android:textSize="13sp" />
         </LinearLayout>
 
         <TextView
             style="@style/Socios.Seccion"
-            android:text="@string/devolucion_label_monto" />
+            android:text="@string/cobro_label_monto" />
 
         <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/tilMontoDevolucion"
+            android:id="@+id/tilNetoCobrado"
             style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="@string/devolucion_hint_monto"
+            android:hint="@string/cobro_hint_monto"
             app:boxCornerRadiusBottomEnd="14dp"
             app:boxCornerRadiusBottomStart="14dp"
             app:boxCornerRadiusTopEnd="14dp"
             app:boxCornerRadiusTopStart="14dp"
-            app:startIconDrawable="@drawable/ic_euro">
+            app:helperTextEnabled="true"
+            app:startIconDrawable="@drawable/ic_euro"
+            tools:helperText="Calculado: 300,00 €">
 
             <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/etMontoDevolucion"
+                android:id="@+id/etNetoCobrado"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:fontFamily="@font/geist_semibold"
@@ -137,7 +138,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="12dp"
-            android:hint="@string/devolucion_hint_nota"
+            android:hint="@string/cobro_hint_nota"
             app:boxCornerRadiusBottomEnd="14dp"
             app:boxCornerRadiusBottomStart="14dp"
             app:boxCornerRadiusTopEnd="14dp"
@@ -145,7 +146,7 @@
             app:startIconDrawable="@drawable/ic_notes">
 
             <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/etNotaDevolucion"
+                android:id="@+id/etNotaCobro"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:inputType="textCapSentences"
@@ -155,7 +156,7 @@
         <!-- Cómo queda la semana con lo escrito -->
         <TextView
             style="@style/Socios.Seccion"
-            android:text="@string/devolucion_preview_titulo" />
+            android:text="@string/cobro_preview_titulo" />
 
         <com.google.android.material.card.MaterialCardView
             style="@style/Socios.TarjetaFila"
@@ -176,12 +177,12 @@
 
                     <TextView
                         style="@style/Socios.EtiquetaCalculo"
-                        android:text="@string/devolucion_preview_sin" />
+                        android:text="@string/cobro_preview_calculado" />
 
                     <TextView
-                        android:id="@+id/tvPreviewNetoSin"
+                        android:id="@+id/tvPreviewCalculado"
                         style="@style/Socios.ImporteCalculo"
-                        tools:text="424,01 €" />
+                        tools:text="300,00 €" />
                 </LinearLayout>
 
                 <LinearLayout
@@ -190,65 +191,48 @@
 
                     <View
                         style="@style/Socios.PuntoCalculo"
-                        android:backgroundTint="@color/red_text" />
+                        android:backgroundTint="@color/primary" />
 
                     <TextView
                         style="@style/Socios.EtiquetaCalculo"
-                        android:text="@string/devolucion_preview_descuento" />
+                        android:text="@string/cobro_preview_cobrado" />
 
                     <TextView
-                        android:id="@+id/tvPreviewDescuento"
+                        android:id="@+id/tvPreviewCobrado"
                         style="@style/Socios.ImporteCalculo"
-                        android:textColor="@color/red_text"
-                        tools:text="-40,00 €" />
+                        tools:text="284,69 €" />
                 </LinearLayout>
 
+                <!-- La diferencia: rojo si te han descontado, verde si coincide o has cobrado de más -->
                 <LinearLayout
-                    style="@style/Socios.FilaCalculo"
-                    android:layout_marginTop="12dp">
-
-                    <View
-                        style="@style/Socios.PuntoCalculo"
-                        android:backgroundTint="@color/green_text_soft" />
-
-                    <TextView
-                        style="@style/Socios.EtiquetaCalculo"
-                        android:text="@string/devolucion_preview_irpf" />
-
-                    <TextView
-                        android:id="@+id/tvPreviewIrpfAhorrado"
-                        style="@style/Socios.ImporteCalculo"
-                        android:textColor="@color/green_text_soft"
-                        tools:text="+8,59 €" />
-                </LinearLayout>
-
-                <LinearLayout
+                    android:id="@+id/placaPreviewDiferencia"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="16dp"
                     android:background="@drawable/bg_icono_tile"
-                    android:backgroundTint="@color/green_container"
+                    android:backgroundTint="@color/red_container"
                     android:gravity="center_vertical"
                     android:orientation="horizontal"
                     android:padding="14dp">
 
                     <TextView
+                        android:id="@+id/tvPreviewDiferenciaLabel"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:text="@string/devolucion_preview_con"
-                        android:textColor="@color/green_text"
+                        android:textColor="@color/red_text"
                         android:textSize="15sp"
-                        android:fontFamily="@font/geist_semibold" />
+                        android:fontFamily="@font/geist_semibold"
+                        tools:text="Te han descontado" />
 
                     <TextView
-                        android:id="@+id/tvPreviewNetoCon"
+                        android:id="@+id/tvPreviewDiferencia"
                         style="@style/Socios.Cifra"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:textColor="@color/green_text"
+                        android:textColor="@color/red_text"
                         android:textSize="18sp"
-                        tools:text="392,60 €" />
+                        tools:text="-15,31 €" />
                 </LinearLayout>
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
@@ -261,7 +245,7 @@
             android:orientation="horizontal">
 
             <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnQuitarDevoluciones"
+                android:id="@+id/btnQuitarCobro"
                 style="@style/Widget.Material3.Button.OutlinedButton"
                 android:layout_width="0dp"
                 android:layout_height="56dp"
@@ -269,7 +253,7 @@
                 android:layout_weight="1"
                 android:insetTop="0dp"
                 android:insetBottom="0dp"
-                android:text="@string/devolucion_quitar"
+                android:text="@string/cobro_quitar"
                 android:textColor="@color/red_text"
                 android:textSize="15sp"
                 android:fontFamily="@font/geist_semibold"
@@ -282,7 +266,7 @@
                 tools:visibility="visible" />
 
             <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnGuardarDevoluciones"
+                android:id="@+id/btnGuardarCobro"
                 style="@style/Widget.Material3.Button"
                 android:layout_width="0dp"
                 android:layout_height="56dp"

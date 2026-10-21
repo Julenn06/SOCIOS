@@ -1,13 +1,13 @@
 # SOCIOS
 
 App Android para registrar los socios conseguidos cada semana y calcular la ganancia: base (cuota × 2),
-bonus por tramos o ajustado a mano, devoluciones, retención de IRPF y neto. Incluye histórico global con
+bonus por tramos o ajustado a mano, retención de IRPF y neto, y lo cobrado de verdad. Incluye histórico global con
 comparativa y gráfico de evolución, búsqueda de socios, aviso de pendientes de semanas anteriores, widget
 para la pantalla de inicio y exportación a PDF, CSV y JSON (copia de seguridad que se puede volver a importar).
 
-Las cuentas de cada semana: `base + bonus − devoluciones = total bruto`, `total bruto − IRPF = neto`. Las
-devoluciones (cuotas devueltas que la empresa descuenta del pago) se restan antes del IRPF, así que tampoco
-se retiene por ellas; si superan lo ganado, el bruto queda en negativo y no se retiene nada.
+Las cuentas de cada semana: `base + bonus = total bruto`, `total bruto − IRPF = neto calculado`. Si se apunta
+lo cobrado de verdad, ese pasa a ser el neto de la semana y la diferencia con el calculado es lo descontado
+(devoluciones de primera o segunda cuota u otros descuentos); si se cobra de más, sale en positivo.
 
 ## Estructura
 

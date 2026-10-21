@@ -197,17 +197,17 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:maxLines="1"
-                            android:text="@string/historico_devoluciones_label"
-                            android:textColor="@color/header_label_devoluciones"
+                            android:text="@string/historico_descontado_label"
+                            android:textColor="@color/header_label_cobro"
                             android:textSize="11.5sp" />
 
                         <TextView
-                            android:id="@+id/tvGlobalDevolucionesTotal"
+                            android:id="@+id/tvGlobalDescontadoTotal"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="2dp"
                             android:maxLines="1"
-                            android:textColor="@color/header_devoluciones"
+                            android:textColor="@color/header_cobro"
                             android:textSize="15sp"
                             android:fontFamily="@font/geist_semibold"
                             tools:text="-64,00 €" />

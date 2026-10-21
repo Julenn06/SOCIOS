@@ -53,7 +53,7 @@ object ResumenWidget {
             socios = container.socioRepository.getSociosPorSemanaFlow(semanaKey).first(),
             bonoRegalo = container.bonoRegaloRepository.getBonoRegaloFlow(semanaKey).first(),
             porcentajeIrpf = CalculoComisiones.irpfParaSemana(semanaKey, container.irpfRepository.getVigenciasFlow().first()),
-            devolucion = container.devolucionRepository.getDevolucionFlow(semanaKey).first()
+            cobro = container.cobroRepository.getCobroFlow(semanaKey).first()
         )
         val vistas = vistas(app, semanaKey, resumen)
         AppWidgetManager.getInstance(app).updateAppWidget(ids, vistas)
@@ -64,7 +64,7 @@ object ResumenWidget {
         return RemoteViews(context.packageName, R.layout.widget_resumen).apply {
             setTextViewText(
                 R.id.tvWidgetEtiqueta,
-                context.getString(if (r.tieneDevoluciones) R.string.header_neto_tras_devoluciones else R.string.header_neto_semanal)
+                context.getString(if (r.tieneCobroReal) R.string.header_neto_cobrado else R.string.header_neto_semanal)
             )
             setTextViewText(R.id.tvWidgetNeto, r.totalNeto.toFormattedEuros())
             setTextViewText(

@@ -11,7 +11,7 @@ import com.julen.socios.ajustes.PreferenciasUsuario
 import com.julen.socios.ajustes.PreferenciasUsuarioCompartidas
 import com.julen.socios.data.BackupRepository
 import com.julen.socios.data.BonoRegaloRepository
-import com.julen.socios.data.DevolucionRepository
+import com.julen.socios.data.CobroRepository
 import com.julen.socios.data.IrpfRepository
 import com.julen.socios.data.SocioRepository
 import com.julen.socios.data.local.AppDatabase
@@ -34,9 +34,9 @@ class AppContainer(context: Context) {
     val socioRepository = SocioRepository(database.socioDao())
     val bonoRegaloRepository = BonoRegaloRepository(database.bonoRegaloDao())
     val irpfRepository = IrpfRepository(database.irpfVigenciaDao())
-    val devolucionRepository = DevolucionRepository(database.devolucionDao())
+    val cobroRepository = CobroRepository(database.cobroDao())
     val backupRepository = BackupRepository(
-        database.socioDao(), database.bonoRegaloDao(), database.irpfVigenciaDao(), database.devolucionDao(),
+        database.socioDao(), database.bonoRegaloDao(), database.irpfVigenciaDao(), database.cobroDao(),
         RoomTransactionRunner(database)
     )
     val exportService: ExportService = ExportadorArchivos(context, clock)
@@ -67,14 +67,14 @@ class SociosApp : Application() {
         mantenerWidgetAlDia()
     }
 
-    /** Cualquier cambio de socios, bonus, IRPF o devoluciones se ve enseguida en el widget, no a la media hora. */
+    /** Cualquier cambio de socios, bonus, IRPF o lo cobrado se ve enseguida en el widget, no a la media hora. */
     private fun mantenerWidgetAlDia() {
         alcanceApp.launch {
             combine(
                 container.socioRepository.getAllSociosFlow(),
                 container.bonoRegaloRepository.getAllBonosRegaloFlow(),
                 container.irpfRepository.getVigenciasFlow(),
-                container.devolucionRepository.getAllFlow()
+                container.cobroRepository.getAllFlow()
             ) { _, _, _, _ -> }
                 .collect {
                     // Un fallo al pintar el widget no debe cerrar la app.

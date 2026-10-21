@@ -79,6 +79,29 @@ class MigracionesTest {
     }
 
     @Test
+    fun migra5a6PasandoCadaDevolucionAlNetoQueDaba() {
+        helper.createDatabase(nombreDb, 5).apply {
+            for (i in 1..10) execSQL("INSERT INTO socios VALUES ('s$i', 20.0, 1, 1, '2026-W42', '', '', 0)")
+            execSQL("INSERT INTO devoluciones VALUES ('2026-W42', 40.0, '1.ª cuota de Ana')")
+            close()
+        }
+
+        val db = helper.runMigrationsAndValidate(nombreDb, 6, true, Migracion5a6)
+
+        // 10 socios de 20 €: 540 € de bruto; con 40 € de devolución, 500 € - 107,40 € de IRPF = 392,60 €.
+        db.query("SELECT semanaKey, netoCobrado, nota FROM cobros").use { cursor ->
+            cursor.moveToFirst()
+            assertEquals("2026-W42", cursor.getString(0))
+            assertEquals(392.60, cursor.getDouble(1), 0.001)
+            assertEquals("1.ª cuota de Ana", cursor.getString(2))
+        }
+        db.query("SELECT COUNT(*) FROM sqlite_master WHERE name = 'devoluciones'").use { cursor ->
+            cursor.moveToFirst()
+            assertEquals(0, cursor.getInt(0))
+        }
+    }
+
+    @Test
     fun roomAbreLaBaseDeDatosMigrada() {
         helper.createDatabase(nombreDb, 3).apply {
             execSQL("INSERT INTO socios VALUES ('a', 20.0, 1, 1, '2026-W42', '', '', 0)")
@@ -87,12 +110,12 @@ class MigracionesTest {
 
         val context = InstrumentationRegistry.getInstrumentation().targetContext
         val room = Room.databaseBuilder(context, AppDatabase::class.java, nombreDb)
-            .addMigrations(Migracion3a4(zona), Migracion4a5)
+            .addMigrations(Migracion3a4(zona), Migracion4a5, Migracion5a6)
             .build()
         helper.closeWhenFinished(room)
 
         val socios = runBlocking { room.socioDao().getAllSocios() }
         assertEquals(listOf("a"), socios.map { it.id })
-        assertEquals(emptyList<DevolucionEntity>(), runBlocking { room.devolucionDao().getAll() })
+        assertEquals(emptyList<CobroEntity>(), runBlocking { room.cobroDao().getAll() })
     }
 }

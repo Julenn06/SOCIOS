@@ -93,9 +93,10 @@
                 android:padding="20dp">
 
                 <TextView
+                    android:id="@+id/tvBreakdownNetoBigLabel"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                                        android:text="@string/irpf_neto_final"
+                    android:text="@string/irpf_neto_final"
                     android:textColor="#D9FFFFFF"
                     android:textSize="13sp"
                     android:fontFamily="@font/geist_medium" />
@@ -210,41 +211,6 @@
                     tools:text="«Regalo de la jefa por buen trabajo»"
                     tools:visibility="visible" />
 
-                <!-- Devoluciones: se restan antes del IRPF, así que van antes del total bruto -->
-                <LinearLayout
-                    android:id="@+id/filaBreakdownDevoluciones"
-                    style="@style/Socios.FilaCalculo"
-                    android:layout_marginTop="12dp"
-                    android:visibility="gone"
-                    tools:visibility="visible">
-
-                    <View
-                        style="@style/Socios.PuntoCalculo"
-                        android:backgroundTint="@color/red_text" />
-
-                    <TextView
-                        style="@style/Socios.EtiquetaCalculo"
-                        android:text="@string/irpf_fila_devoluciones" />
-
-                    <TextView
-                        android:id="@+id/tvBreakdownDevoluciones"
-                        style="@style/Socios.ImporteCalculo"
-                        android:textColor="@color/red_text"
-                        tools:text="-40,00 €" />
-                </LinearLayout>
-
-                <TextView
-                    android:id="@+id/tvBreakdownDevolucionesNota"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="20dp"
-                    android:layout_marginTop="2dp"
-                    android:textColor="@color/text_sub"
-                    android:textSize="12.5sp"
-                    android:textStyle="italic"
-                    android:visibility="gone"
-                    tools:text="«1.ª cuota de Ana»"
-                    tools:visibility="visible" />
 
                 <View
                     android:layout_width="match_parent"
@@ -288,7 +254,72 @@
                         tools:text="-115,99 €" />
                 </LinearLayout>
 
-                <!-- Neto final, resaltado -->
+                <!-- Con lo cobrado apuntado: el neto calculado y lo que falta (o sobra) hasta lo cobrado -->
+                <LinearLayout
+                    android:id="@+id/contenedorBreakdownCobro"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:visibility="gone"
+                    tools:visibility="visible">
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+                        android:layout_marginVertical="14dp"
+                        android:background="@color/divider" />
+
+                    <LinearLayout style="@style/Socios.FilaCalculo">
+
+                        <TextView
+                            style="@style/Socios.EtiquetaCalculo"
+                            android:layout_marginStart="0dp"
+                            android:text="@string/irpf_neto_calculado"
+                            android:fontFamily="@font/geist_semibold" />
+
+                        <TextView
+                            android:id="@+id/tvBreakdownNetoCalculado"
+                            style="@style/Socios.ImporteCalculo"
+                            android:textSize="16sp"
+                            tools:text="300,00 €" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        style="@style/Socios.FilaCalculo"
+                        android:layout_marginTop="12dp">
+
+                        <View
+                            android:id="@+id/puntoBreakdownDescontado"
+                            style="@style/Socios.PuntoCalculo"
+                            android:backgroundTint="@color/red_text" />
+
+                        <TextView
+                            android:id="@+id/tvBreakdownDescontadoLabel"
+                            style="@style/Socios.EtiquetaCalculo"
+                            tools:text="Te han descontado" />
+
+                        <TextView
+                            android:id="@+id/tvBreakdownDescontado"
+                            style="@style/Socios.ImporteCalculo"
+                            android:textColor="@color/red_text"
+                            tools:text="-15,31 €" />
+                    </LinearLayout>
+
+                    <TextView
+                        android:id="@+id/tvBreakdownCobroNota"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="20dp"
+                        android:layout_marginTop="2dp"
+                        android:textColor="@color/text_sub"
+                        android:textSize="12.5sp"
+                        android:textStyle="italic"
+                        android:visibility="gone"
+                        tools:text="«Devolución de la 2.ª cuota de Ana»"
+                        tools:visibility="visible" />
+                </LinearLayout>
+
+                <!-- Neto final, resaltado: el cobrado si está apuntado; si no, el que toca cobrar -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -300,6 +331,7 @@
                     android:padding="14dp">
 
                     <TextView
+                        android:id="@+id/tvBreakdownNetoLabel"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
@@ -320,13 +352,13 @@
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
-        <!-- Devoluciones -->
+        <!-- Lo cobrado de verdad -->
         <TextView
             style="@style/Socios.Seccion"
-            android:text="@string/irpf_seccion_devoluciones" />
+            android:text="@string/irpf_seccion_cobro" />
 
         <include
-            android:id="@+id/btnDevolucionesBreakdown"
+            android:id="@+id/btnCobroBreakdown"
             layout="@layout/item_formato" />
 
         <!-- IRPF -->

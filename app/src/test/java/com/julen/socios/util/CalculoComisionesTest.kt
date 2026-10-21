@@ -1,7 +1,7 @@
 package com.julen.socios.util
 
 import com.julen.socios.model.BonoRegaloInfo
-import com.julen.socios.model.DevolucionInfo
+import com.julen.socios.model.CobroInfo
 import com.julen.socios.model.DiaSemana
 import com.julen.socios.model.IrpfVigencia
 import com.julen.socios.model.Socio
@@ -164,55 +164,58 @@ class CalculoComisionesTest {
     }
 
     @Test
-    fun lasDevolucionesSeRestanDelBrutoAntesDelIrpf() {
+    fun loCobradoPasaASerElNetoYLaDiferenciaEsLoDescontado() {
         val sin = CalculoComisiones.calcularResumenSemana(socios(10, "2026-W42"))
-        val con = CalculoComisiones.calcularResumenSemana(
-            socios(10, "2026-W42"), devolucion = DevolucionInfo("2026-W42", 40.0)
-        )
+        val con = CalculoComisiones.calcularResumenSemana(socios(10, "2026-W42"), cobro = CobroInfo("2026-W42", 408.70))
 
-        assertEquals(540.0, con.brutoAntesDevoluciones, 0.0)
-        assertEquals(40.0, con.devoluciones, 0.0)
-        assertEquals(500.0, con.totalBruto, 0.0)
-        // 500 × 21,48 % = 107,40 €: por los 40 € devueltos ya no se retienen 8,59 €
-        assertEquals(107.40, con.retencionIrpf, 0.0)
-        assertEquals(392.60, con.totalNeto, 0.0)
-        assertTrue(con.tieneDevoluciones)
-        assertFalse(sin.tieneDevoluciones)
-        assertEquals(31.41, CalculoComisiones.redondearCentimos(sin.totalNeto - con.totalNeto), 0.0)
-        // El bonus y la siguiente meta no cambian: dependen de los socios hechos, no del dinero.
+        assertEquals(424.01, con.netoCalculado, 0.0)
+        assertEquals(408.70, con.totalNeto, 0.0)
+        assertEquals(15.31, con.descontado, 0.0)
+        assertTrue(con.tieneCobroReal)
+        assertFalse(sin.tieneCobroReal)
+        assertEquals(0.0, sin.descontado, 0.0)
+        // El bruto, el IRPF, el bonus y la siguiente meta son los calculados: no dependen de lo cobrado.
+        assertEquals(sin.totalBruto, con.totalBruto, 0.0)
+        assertEquals(sin.retencionIrpf, con.retencionIrpf, 0.0)
         assertEquals(sin.bonusSemanal, con.bonusSemanal, 0.0)
         assertEquals(sin.siguienteMetaSocios, con.siguienteMetaSocios)
     }
 
     @Test
-    fun siLasDevolucionesSuperanLoGanadoNoSeRetieneIrpf() {
-        val resumen = CalculoComisiones.calcularResumenSemana(
-            socios(1, "2026-W42"), devolucion = DevolucionInfo("2026-W42", 70.0)
-        )
+    fun siSeCobraDeMasLoDescontadoEsNegativo() {
+        val resumen = CalculoComisiones.calcularResumenSemana(socios(10, "2026-W42"), cobro = CobroInfo("2026-W42", 430.0))
 
-        assertEquals(-30.0, resumen.totalBruto, 0.0)
-        assertEquals(0.0, resumen.retencionIrpf, 0.0)
-        assertEquals(-30.0, resumen.totalNeto, 0.0)
+        assertEquals(430.0, resumen.totalNeto, 0.0)
+        assertEquals(-5.99, resumen.descontado, 0.0)
     }
 
     @Test
-    fun unaSemanaConSoloDevolucionesCuentaEnElHistorico() {
+    fun unaSemanaConSoloLoCobradoCuentaEnElHistorico() {
         val global = CalculoComisiones.calcularResumenHistoricoGlobal(
             todosLosSocios = socios(10, "2026-W41"),
-            devolucionesMap = mapOf(
-                "2026-W42" to DevolucionInfo("2026-W42", 25.0),
-                "2026-W41" to DevolucionInfo("2026-W41", 40.0)
+            cobrosMap = mapOf(
+                "2026-W42" to CobroInfo("2026-W42", 10.0),
+                "2026-W41" to CobroInfo("2026-W41", 400.0)
             )
         )
 
         assertEquals(listOf("2026-W42", "2026-W41"), global.semanasHistoricas.map { it.semanaKey })
-        assertEquals(65.0, global.totalDevolucionesAcumulado, 0.0)
-        assertEquals(392.60 - 25.0, global.totalNetoAcumulado, 0.001)
-        assertEquals(475.0, global.totalBrutoAcumulado, 0.0)
+        // 24,01 € descontados en la W41 y 10 € cobrados de más en la W42.
+        assertEquals(14.01, global.totalDescontadoAcumulado, 0.0)
+        assertEquals(410.0, global.totalNetoAcumulado, 0.0)
+        assertEquals(540.0, global.totalBrutoAcumulado, 0.0)
 
         val mes = CalculoComisiones.agruparPorPeriodo(global.semanasHistoricas, CalculoComisiones.Periodo.MES).single()
-        assertEquals(65.0, mes.devoluciones, 0.0)
-        assertEquals(global.totalNetoAcumulado, mes.neto, 0.001)
+        assertEquals(14.01, mes.descontado, 0.0)
+        assertEquals(global.totalNetoAcumulado, mes.neto, 0.0)
+    }
+
+    @Test
+    fun lasDevolucionesDeLaVersionAnteriorSePasanAlNetoQueDaban() {
+        // En la 1.9.0, 40 € de devolución con 10 socios: 540 - 40 = 500 de bruto, 107,40 de IRPF, 392,60 de neto.
+        assertEquals(392.60, DevolucionesAntiguas.netoCobrado(socios(10, "2026-W42"), null, CalculoComisiones.IRPF_POR_DEFECTO, 40.0), 0.0)
+        // Si superaban lo ganado no se retenía nada.
+        assertEquals(-30.0, DevolucionesAntiguas.netoCobrado(socios(1, "2026-W42"), null, CalculoComisiones.IRPF_POR_DEFECTO, 70.0), 0.0)
     }
 
     @Test

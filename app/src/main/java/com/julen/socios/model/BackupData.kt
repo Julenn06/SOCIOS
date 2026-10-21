@@ -5,10 +5,10 @@ data class DatosBackup(
     val socios: List<Socio> = emptyList(),
     val bonosRegalo: List<BonoRegaloInfo> = emptyList(),
     val irpfVigencias: List<IrpfVigencia> = emptyList(),
-    val devoluciones: List<DevolucionInfo> = emptyList()
+    val cobros: List<CobroInfo> = emptyList()
 ) {
     val estaVacio: Boolean
-        get() = socios.isEmpty() && bonosRegalo.isEmpty() && irpfVigencias.isEmpty() && devoluciones.isEmpty()
+        get() = socios.isEmpty() && bonosRegalo.isEmpty() && irpfVigencias.isEmpty() && cobros.isEmpty()
 }
 
 /** Resultado de leer un archivo de importación: los datos válidos y cuántos registros se descartaron. */
@@ -23,6 +23,6 @@ data class ImportPreview(
     val sociosSobrescritos: Int,
     val bonos: Int,
     val irpfVigencias: Int,
-    val devoluciones: Int,
+    val cobros: Int,
     val descartados: Int
 )

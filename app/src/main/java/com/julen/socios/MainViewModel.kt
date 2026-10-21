@@ -13,7 +13,7 @@ import androidx.lifecycle.viewmodel.viewModelFactory
 import com.julen.socios.ajustes.PreferenciasUsuario
 import com.julen.socios.data.BackupRepository
 import com.julen.socios.data.BonoRegaloRepository
-import com.julen.socios.data.DevolucionRepository
+import com.julen.socios.data.CobroRepository
 import com.julen.socios.data.IrpfRepository
 import com.julen.socios.data.SocioRepository
 import com.julen.socios.export.AlcanceExport
@@ -22,7 +22,7 @@ import com.julen.socios.export.ExportRequest
 import com.julen.socios.export.ExportService
 import com.julen.socios.export.ImportFormat
 import com.julen.socios.model.BonoRegaloInfo
-import com.julen.socios.model.DevolucionInfo
+import com.julen.socios.model.CobroInfo
 import com.julen.socios.model.DiaSemana
 import com.julen.socios.model.ImportesPredefinidos
 import com.julen.socios.model.ImportPreview
@@ -32,7 +32,7 @@ import com.julen.socios.model.Socio
 import com.julen.socios.util.CalculoComisiones
 import com.julen.socios.util.DateUtils
 import com.julen.socios.util.UiText
-import com.julen.socios.util.toCurrencyString
+import com.julen.socios.util.toFormattedEuros
 import com.julen.socios.util.toPorcentajeString
 import java.time.Clock
 import kotlinx.coroutines.CancellationException
@@ -64,7 +64,7 @@ data class MainUiState(
     val sociosFiltrados: List<Socio> = emptyList(),
     val conteoPorDia: Map<DiaSemana, Int> = emptyMap(),
     val bonoInfoSemana: BonoRegaloInfo? = null,
-    val devolucionSemana: DevolucionInfo? = null,
+    val cobroSemana: CobroInfo? = null,
     val resumenSemana: CalculoComisiones.ResumenCalculo? = null
 )
 
@@ -86,7 +86,7 @@ class MainViewModel(
     private val socioRepository: SocioRepository,
     private val bonoRegaloRepository: BonoRegaloRepository,
     private val irpfRepository: IrpfRepository,
-    private val devolucionRepository: DevolucionRepository,
+    private val cobroRepository: CobroRepository,
     private val backupRepository: BackupRepository,
     private val exportService: ExportService,
     private val preferencias: PreferenciasUsuario,
@@ -125,7 +125,7 @@ class MainViewModel(
         val socios: List<Socio>,
         val bono: BonoRegaloInfo?,
         val porcentajeIrpf: Double,
-        val devolucion: DevolucionInfo?
+        val cobro: CobroInfo?
     )
 
     // Un único flatMapLatest: la clave, los socios y el bono de la semana llegan siempre juntos, así la
@@ -135,9 +135,9 @@ class MainViewModel(
             socioRepository.getSociosPorSemanaFlow(semanaKey),
             bonoRegaloRepository.getBonoRegaloFlow(semanaKey),
             irpfRepository.getVigenciasFlow(),
-            devolucionRepository.getDevolucionFlow(semanaKey)
-        ) { socios, bono, vigencias, devolucion ->
-            DatosSemana(offset, semanaKey, socios, bono, CalculoComisiones.irpfParaSemana(semanaKey, vigencias), devolucion)
+            cobroRepository.getCobroFlow(semanaKey)
+        ) { socios, bono, vigencias, cobro ->
+            DatosSemana(offset, semanaKey, socios, bono, CalculoComisiones.irpfParaSemana(semanaKey, vigencias), cobro)
         }
     }
 
@@ -151,9 +151,9 @@ class MainViewModel(
             sociosFiltrados = if (dia == null) datos.socios else datos.socios.filter { it.dia == dia },
             conteoPorDia = datos.socios.groupingBy { it.dia }.eachCount(),
             bonoInfoSemana = datos.bono,
-            devolucionSemana = datos.devolucion,
+            cobroSemana = datos.cobro,
             resumenSemana = CalculoComisiones.calcularResumenSemana(
-                datos.socios, datos.bono, datos.porcentajeIrpf, datos.devolucion
+                datos.socios, datos.bono, datos.porcentajeIrpf, datos.cobro
             )
         )
     }.stateIn(
@@ -168,9 +168,9 @@ class MainViewModel(
         socioRepository.getAllSociosFlow(),
         bonoRegaloRepository.getAllBonosRegaloFlow(),
         irpfRepository.getVigenciasFlow(),
-        devolucionRepository.getAllFlow()
-    ) { socios, bonos, vigencias, devoluciones ->
-        CalculoComisiones.calcularResumenHistoricoGlobal(socios, bonos, vigencias, devoluciones)
+        cobroRepository.getAllFlow()
+    ) { socios, bonos, vigencias, cobros ->
+        CalculoComisiones.calcularResumenHistoricoGlobal(socios, bonos, vigencias, cobros)
     }.flowOn(calculoDispatcher)
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
 
@@ -178,13 +178,13 @@ class MainViewModel(
     val irpfVigencias: StateFlow<List<IrpfVigencia>> = irpfRepository.getVigenciasFlow()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
-    /** Semanas con socios, con un bono manual o con devoluciones, de la más reciente a la más antigua. */
+    /** Semanas con socios, con un bono manual o con lo cobrado apuntado, de la más reciente a la más antigua. */
     val semanasDisponibles: StateFlow<List<String>> = combine(
         socioRepository.getSemanaKeysFlow(),
         bonoRegaloRepository.getSemanaKeysFlow(),
-        devolucionRepository.getSemanaKeysFlow()
-    ) { deSocios, deBonos, deDevoluciones ->
-        (deSocios + deBonos + deDevoluciones).distinct().sortedDescending()
+        cobroRepository.getSemanaKeysFlow()
+    ) { deSocios, deBonos, deCobros ->
+        (deSocios + deBonos + deCobros).distinct().sortedDescending()
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     /** Todos los socios, del más reciente al más antiguo, para buscar en el histórico. */
@@ -302,21 +302,17 @@ class MainViewModel(
         mensaje(R.string.msg_bonus_reset, TipoAviso.INFO)
     }
 
-    /** Lo descontado en la semana por devoluciones. Un importe de 0 € quita las devoluciones de la semana. */
-    fun guardarDevolucion(semanaKey: String, monto: Double, nota: String) = lanzar {
-        val importe = CalculoComisiones.redondearCentimos(monto)
-        if (importe <= 0.0) {
-            devolucionRepository.eliminar(semanaKey)
-            mensaje(R.string.msg_devolucion_eliminada, TipoAviso.INFO)
-        } else {
-            devolucionRepository.guardar(DevolucionInfo(semanaKey, importe, nota.trim()))
-            mensaje(R.string.msg_devolucion_guardada, TipoAviso.EXITO, importe.toCurrencyString(prefix = "-"))
-        }
+    /** Lo cobrado de verdad en la semana: pasa a ser su neto, y la diferencia con el calculado, lo descontado. */
+    fun guardarCobro(semanaKey: String, netoCobrado: Double, nota: String) = lanzar {
+        val importe = CalculoComisiones.redondearCentimos(netoCobrado)
+        cobroRepository.guardar(CobroInfo(semanaKey, importe, nota.trim()))
+        mensaje(R.string.msg_cobro_guardado, TipoAviso.EXITO, importe.toFormattedEuros())
     }
 
-    fun eliminarDevolucion(semanaKey: String) = lanzar {
-        devolucionRepository.eliminar(semanaKey)
-        mensaje(R.string.msg_devolucion_eliminada, TipoAviso.INFO)
+    /** La semana vuelve a usar el neto calculado. */
+    fun eliminarCobro(semanaKey: String) = lanzar {
+        cobroRepository.eliminar(semanaKey)
+        mensaje(R.string.msg_cobro_eliminado, TipoAviso.INFO)
     }
 
     fun guardarIrpf(desdeSemanaKey: String, porcentaje: Double) = lanzar {
@@ -334,7 +330,7 @@ class MainViewModel(
     fun solicitarExport(formato: ExportFormat, alcance: AlcanceExport) = lanzar(R.string.msg_error_export) {
         val datos = backupRepository.cargarDatos(alcance)
         // Una semana sin socios pero con el bonus ajustado a mano también se puede exportar.
-        if (datos.socios.isEmpty() && datos.bonosRegalo.isEmpty() && datos.devoluciones.isEmpty()) {
+        if (datos.socios.isEmpty() && datos.bonosRegalo.isEmpty() && datos.cobros.isEmpty()) {
             mensajeLargo(R.string.msg_export_vacio, TipoAviso.INFO)
         } else {
             guardarExportRequest(KEY_EXPORT_DESTINO, ExportRequest(formato, alcance))
@@ -400,7 +396,7 @@ class MainViewModel(
                     UiText.Plural(
                         R.plurals.msg_import_resultado,
                         datos.socios.size,
-                        listOf(datos.socios.size, datos.bonosRegalo.size, datos.irpfVigencias.size, datos.devoluciones.size)
+                        listOf(datos.socios.size, datos.bonosRegalo.size, datos.irpfVigencias.size, datos.cobros.size)
                     ),
                     TipoAviso.EXITO,
                     larga = true
@@ -493,7 +489,7 @@ class MainViewModel(
                     socioRepository = container.socioRepository,
                     bonoRegaloRepository = container.bonoRegaloRepository,
                     irpfRepository = container.irpfRepository,
-                    devolucionRepository = container.devolucionRepository,
+                    cobroRepository = container.cobroRepository,
                     backupRepository = container.backupRepository,
                     exportService = container.exportService,
                     preferencias = container.preferenciasUsuario,

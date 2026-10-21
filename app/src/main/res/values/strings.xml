@@ -90,12 +90,15 @@
     <string name="label_bonus_auto">Bonus</string>
     <string name="label_bonus_manual">Bonus manual</string>
     <string name="label_irpf_header">IRPF %s</string>
-    <string name="header_neto_tras_devoluciones">Neto tras devoluciones</string>
-    <string name="label_devoluciones">Devoluciones</string>
-    <string name="header_devoluciones_anadir">Añadir</string>
-    <string name="header_devoluciones_a11y">Devoluciones de la semana: %s. Toca para cambiarlas</string>
-    <string name="header_devoluciones_vacio_a11y">Sin devoluciones esta semana. Toca para apuntarlas</string>
-    <string name="header_neto_a11y">%1$s: %2$s. Toca para apuntar devoluciones</string>
+    <string name="header_neto_cobrado">Neto cobrado</string>
+    <string name="header_cobro_vacio">¿Cuánto has cobrado?</string>
+    <string name="header_cobro_apuntar">Apuntar</string>
+    <string name="header_cobro_descontado">Te han descontado</string>
+    <string name="header_cobro_de_mas">Has cobrado de más</string>
+    <string name="header_cobro_coincide">Cobrado justo lo calculado</string>
+    <string name="header_cobro_a11y">%1$s: %2$s. Calculado: %3$s. Toca para cambiar lo cobrado</string>
+    <string name="header_cobro_vacio_a11y">Aún no has apuntado lo cobrado esta semana. Toca para apuntarlo</string>
+    <string name="header_neto_a11y">%1$s: %2$s. Toca para apuntar lo cobrado</string>
 
     <!-- Bonus Card -->
     <string name="bonus_progress_format">%1$d / %2$d</string>
@@ -228,23 +231,22 @@
     <string name="bono_hint_nota">Motivo del ajuste (opcional)</string>
     <string name="msg_bono_monto_invalido">Elige o escribe el importe del bonus</string>
 
-    <!-- Devoluciones -->
-    <string name="devolucion_titulo">Devoluciones</string>
-    <string name="devolucion_explicacion">Lo que te descuentan en el pago de esta semana por cuotas devueltas (primera o segunda cuota). Se resta del bruto antes del IRPF, así que tampoco te retienen por ese dinero.</string>
-    <string name="devolucion_label_monto">¿Cuánto te han descontado?</string>
-    <string name="devolucion_hint_monto">Importe descontado (€)</string>
-    <string name="devolucion_hint_nota">Qué se ha devuelto (opcional)</string>
-    <string name="devolucion_preview_titulo">Así queda la semana</string>
-    <string name="devolucion_preview_sin">Neto sin devoluciones</string>
-    <string name="devolucion_preview_descuento">Devoluciones</string>
-    <string name="devolucion_preview_irpf">IRPF que dejas de pagar</string>
-    <string name="devolucion_preview_con">Neto tras devoluciones</string>
-    <string name="devolucion_quitar">Quitar</string>
-    <string name="msg_devolucion_invalida">Escribe el importe que te han descontado</string>
-    <string name="devolucion_accion">Apuntar devoluciones</string>
-    <string name="devolucion_accion_detalle">Lo que te descuentan esta semana por cuotas devueltas</string>
-    <string name="devolucion_accion_cambiar">Cambiar las devoluciones</string>
-    <string name="devolucion_accion_cambiar_detalle">%s descontados esta semana</string>
+    <!-- Lo cobrado de verdad -->
+    <string name="cobro_titulo">Lo que has cobrado</string>
+    <string name="cobro_explicacion">Apunta el neto que te ha llegado de verdad esta semana. Si es menos de lo calculado, verás cuánto te han descontado (devoluciones de primera o segunda cuota u otros descuentos).</string>
+    <string name="cobro_label_monto">¿Cuánto has cobrado?</string>
+    <string name="cobro_hint_monto">Neto cobrado (€)</string>
+    <string name="cobro_calculado_ayuda">Calculado: %s</string>
+    <string name="cobro_hint_nota">Por qué no coincide (opcional)</string>
+    <string name="cobro_preview_titulo">Así queda la semana</string>
+    <string name="cobro_preview_calculado">Neto calculado</string>
+    <string name="cobro_preview_cobrado">Has cobrado</string>
+    <string name="cobro_quitar">Quitar</string>
+    <string name="msg_cobro_invalido">Escribe lo que has cobrado, por ejemplo 284,69</string>
+    <string name="cobro_accion">Apuntar lo cobrado</string>
+    <string name="cobro_accion_detalle">Lo que te ha llegado de verdad, para ver lo descontado</string>
+    <string name="cobro_accion_cambiar">Cambiar lo cobrado</string>
+    <string name="cobro_accion_cambiar_detalle">%s cobrados esta semana</string>
 
     <!-- Desglose IRPF -->
     <string name="irpf_titulo">Desglose de la semana</string>
@@ -266,8 +268,9 @@
     <string name="irpf_fila_bonus_manual">Bonus ajustado a mano (automático: %s)</string>
     <string name="irpf_bonus_motivo">«%s»</string>
     <string name="irpf_total_bruto">Total bruto</string>
-    <string name="irpf_fila_devoluciones">Devoluciones descontadas</string>
-    <string name="irpf_seccion_devoluciones">Devoluciones</string>
+    <string name="irpf_neto_calculado">Neto calculado</string>
+    <string name="irpf_neto_cobrado">Neto cobrado</string>
+    <string name="irpf_seccion_cobro">Lo cobrado</string>
     <string name="irpf_retencion_label">Retención IRPF (%s)</string>
     <string name="irpf_total_neto">Neto a cobrar</string>
     <string name="irpf_cambiar">Cambiar el porcentaje</string>
@@ -291,8 +294,8 @@
     <string name="historico_irpf_label">IRPF retenido en total</string>
     <string name="historico_neto_label">Neto cobrado</string>
     <string name="historico_bonus_label">Bonus</string>
-    <string name="historico_devoluciones_label">Devoluciones</string>
-    <string name="historico_detalle_devoluciones">%1$s · %2$s devol.</string>
+    <string name="historico_descontado_label">Descontado</string>
+    <string name="historico_detalle_descontado">%1$s · %2$s desc.</string>
     <string name="historico_seccion_comparativa">Esta semana</string>
     <string name="comparativa_vs_anterior">Frente a la anterior</string>
     <plurals name="comparativa_vs_media">
@@ -404,10 +407,10 @@
         <item quantity="many">%d cambios de IRPF</item>
         <item quantity="other">%d cambios de IRPF</item>
     </plurals>
-    <plurals name="import_linea_devoluciones">
-        <item quantity="one">%d semana con devoluciones</item>
-        <item quantity="many">%d semanas con devoluciones</item>
-        <item quantity="other">%d semanas con devoluciones</item>
+    <plurals name="import_linea_cobros">
+        <item quantity="one">%d semana con lo cobrado apuntado</item>
+        <item quantity="many">%d semanas con lo cobrado apuntado</item>
+        <item quantity="other">%d semanas con lo cobrado apuntado</item>
     </plurals>
     <plurals name="import_descartados">
         <item quantity="one">%d registro no válido se ignorará</item>
@@ -426,7 +429,7 @@
     <string name="pdf_kpi_neto">Ganancia Neta</string>
     <string name="pdf_detalle_semana">"Bruto: %1$s  •  IRPF (%2$s): -%3$s"</string>
     <string name="pdf_detalle_motivo">"  •  Bonus manual: «%s»"</string>
-    <string name="pdf_detalle_devoluciones">"Devoluciones: -%s  •  "</string>
+    <string name="pdf_detalle_descontado">"Descontado: %s  •  "</string>
     <plurals name="pdf_detalle_varias_semanas">
         <item quantity="one">Bruto: %1$s  •  IRPF retenido: -%2$s  •  %3$d semana</item>
         <item quantity="many">Bruto: %1$s  •  IRPF retenido: -%2$s  •  %3$d semanas</item>
@@ -456,8 +459,8 @@
     <string name="action_deshacer">Deshacer</string>
     <string name="msg_bonus_updated">Bonus actualizado</string>
     <string name="msg_bonus_reset">El bonus vuelve a ser automático</string>
-    <string name="msg_devolucion_guardada">Devoluciones de la semana: %s</string>
-    <string name="msg_devolucion_eliminada">Esta semana ya no tiene devoluciones</string>
+    <string name="msg_cobro_guardado">Apuntado lo cobrado: %s</string>
+    <string name="msg_cobro_eliminado">La semana vuelve a usar el neto calculado</string>
     <string name="msg_irpf_actualizado">IRPF del %1$s aplicado desde la semana %2$s</string>
     <string name="msg_irpf_cambio_eliminado">Cambio de IRPF eliminado</string>
     <string name="msg_file_saved">Archivo guardado</string>
@@ -468,9 +471,9 @@
     <string name="msg_import_vacio">El archivo %s no contiene datos válidos</string>
     <string name="msg_error_generico">Se ha producido un error: %s</string>
     <plurals name="msg_import_resultado">
-        <item quantity="one">Importado %1$d socio (%2$d bonus, %3$d cambios de IRPF, %4$d devoluciones)</item>
-        <item quantity="many">Importados %1$d socios (%2$d bonus, %3$d cambios de IRPF, %4$d devoluciones)</item>
-        <item quantity="other">Importados %1$d socios (%2$d bonus, %3$d cambios de IRPF, %4$d devoluciones)</item>
+        <item quantity="one">Importado %1$d socio (%2$d bonus, %3$d cambios de IRPF, %4$d semanas con lo cobrado)</item>
+        <item quantity="many">Importados %1$d socios (%2$d bonus, %3$d cambios de IRPF, %4$d semanas con lo cobrado)</item>
+        <item quantity="other">Importados %1$d socios (%2$d bonus, %3$d cambios de IRPF, %4$d semanas con lo cobrado)</item>
     </plurals>
 
 

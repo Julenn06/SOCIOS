@@ -1,7 +1,7 @@
 package com.julen.socios.util
 
 import com.julen.socios.model.BonoRegaloInfo
-import com.julen.socios.model.DevolucionInfo
+import com.julen.socios.model.CobroInfo
 import com.julen.socios.model.IrpfVigencia
 import com.julen.socios.model.Socio
 import java.math.BigDecimal
@@ -78,13 +78,12 @@ object CalculoComisiones {
     /**
      * Cuentas de una semana:
      *
-     *     base (cuotas × 2) + bonus           = bruto antes de devoluciones
-     *     − devoluciones                      = total bruto (lo que paga la empresa)
-     *     − IRPF (porcentaje del total bruto) = neto
+     *     base (cuotas × 2) + bonus = total bruto
+     *     total bruto − IRPF        = neto calculado
      *
-     * Una devolución anula una comisión ya cobrada: la empresa la resta del pago, así que también deja de
-     * retenerse IRPF por ella. Si las devoluciones superan lo ganado, el bruto queda en negativo (se debe
-     * dinero) y no se retiene nada, porque no hay ingreso sobre el que retener.
+     * Si se ha apuntado lo cobrado de verdad, el neto de la semana es ese y lo que falta hasta el calculado
+     * es lo descontado (devoluciones u otros descuentos de la empresa). No se supone nada sobre cómo se
+     * reparte ese descuento entre bruto e IRPF: el bruto y el IRPF que se muestran son los calculados.
      */
     data class ResumenCalculo(
         val totalSociosRegistrados: Int,
@@ -94,17 +93,20 @@ object CalculoComisiones {
         val bonusSemanal: Double,           // Bonus total acumulado (automático o ajustado)
         val bonusAutomatico: Double,        // Bonus que correspondería sin ajuste manual
         val esBonoRegaloAplicado: Boolean,
-        val brutoAntesDevoluciones: Double, // Base x2 + Bonus
-        val devoluciones: Double,           // Descontado esta semana por cuotas devueltas (positivo)
-        val totalBruto: Double,             // Base x2 + Bonus - Devoluciones: sobre lo que se retiene
+        val totalBruto: Double,             // Base x2 + Bonus
         val porcentajeIrpf: Double,         // Porcentaje de IRPF aplicado a la semana
-        val retencionIrpf: Double,          // Bruto * porcentaje, redondeado a céntimos (0 si el bruto es negativo)
-        val totalNeto: Double,              // Bruto - Retención IRPF
+        val retencionIrpf: Double,          // Bruto * porcentaje, redondeado a céntimos
+        val netoCalculado: Double,          // Bruto - Retención IRPF: lo que se debería cobrar
+        val netoCobrado: Double?,           // Lo cobrado de verdad, si se ha apuntado
+        val totalNeto: Double,              // Lo cobrado si se ha apuntado; si no, el calculado
         val siguienteMetaSocios: Int,
         val siguienteMetaBonus: Double,
         val sociosFaltantesParaSiguienteMeta: Int
     ) {
-        val tieneDevoluciones: Boolean get() = devoluciones > 0.0
+        val tieneCobroReal: Boolean get() = netoCobrado != null
+
+        /** Lo que falta de lo calculado: positivo si te han descontado, negativo si has cobrado de más. */
+        val descontado: Double get() = netoCobrado?.let { redondearCentimos(netoCalculado - it) } ?: 0.0
     }
 
     data class SemanaHistoricaItem(
@@ -117,7 +119,7 @@ object CalculoComisiones {
         val totalBrutoAcumulado: Double,
         val totalBaseX2Acumulado: Double,
         val totalBonusAcumulado: Double,
-        val totalDevolucionesAcumulado: Double,
+        val totalDescontadoAcumulado: Double,
         val totalSociosHechosAcumulado: Int,
         val totalSociosRegistradosAcumulado: Int,
         val semanasHistoricas: List<SemanaHistoricaItem>
@@ -130,8 +132,8 @@ object CalculoComisiones {
         val anio: Int,
         val mes: Int?,
         val sociosHechos: Int,
-        val bruto: Double, // Ya descontadas las devoluciones, como el de cada semana
-        val devoluciones: Double,
+        val bruto: Double,
+        val descontado: Double, // Lo que se cobró de menos (o de más, en negativo) respecto a lo calculado
         val irpf: Double,
         val neto: Double
     ) {
@@ -154,7 +156,7 @@ object CalculoComisiones {
                     mes = clave.second,
                     sociosHechos = resumenes.sumOf { it.totalSociosHechos },
                     bruto = redondearCentimos(resumenes.sumOf { it.totalBruto }),
-                    devoluciones = redondearCentimos(resumenes.sumOf { it.devoluciones }),
+                    descontado = redondearCentimos(resumenes.sumOf { it.descontado }),
                     irpf = redondearCentimos(resumenes.sumOf { it.retencionIrpf }),
                     neto = redondearCentimos(resumenes.sumOf { it.totalNeto })
                 )
@@ -165,7 +167,7 @@ object CalculoComisiones {
         socios: List<Socio>,
         bonoRegalo: BonoRegaloInfo? = null,
         porcentajeIrpf: Double = IRPF_POR_DEFECTO,
-        devolucion: DevolucionInfo? = null
+        cobro: CobroInfo? = null
     ): ResumenCalculo {
         val hechos = socios.filter { it.hecho }
         val countHechos = hechos.size
@@ -181,11 +183,10 @@ object CalculoComisiones {
             else -> bonusAuto + bonoAplicado.monto
         }
 
-        val brutoAntes = redondearCentimos(baseX2 + bonusFinal)
-        val devoluciones = redondearCentimos(devolucion?.monto?.coerceAtLeast(0.0) ?: 0.0)
-        val bruto = redondearCentimos(brutoAntes - devoluciones)
-        val irpf = redondearCentimos(bruto.coerceAtLeast(0.0) * porcentajeIrpf / 100.0)
+        val bruto = redondearCentimos(baseX2 + bonusFinal)
+        val irpf = redondearCentimos(bruto * porcentajeIrpf / 100.0)
         val neto = redondearCentimos(bruto - irpf)
+        val cobrado = cobro?.netoCobrado?.let(::redondearCentimos)
 
         val (siguienteMeta, siguienteBonus) = obtenerSiguienteMetaBonus(countHechos)
 
@@ -197,12 +198,12 @@ object CalculoComisiones {
             bonusSemanal = bonusFinal,
             bonusAutomatico = bonusAuto,
             esBonoRegaloAplicado = bonoAplicado != null,
-            brutoAntesDevoluciones = brutoAntes,
-            devoluciones = devoluciones,
             totalBruto = bruto,
             porcentajeIrpf = porcentajeIrpf,
             retencionIrpf = irpf,
-            totalNeto = neto,
+            netoCalculado = neto,
+            netoCobrado = cobrado,
+            totalNeto = cobrado ?: neto,
             siguienteMetaSocios = siguienteMeta,
             siguienteMetaBonus = siguienteBonus,
             sociosFaltantesParaSiguienteMeta = (siguienteMeta - countHechos).coerceAtLeast(0)
@@ -217,17 +218,13 @@ object CalculoComisiones {
         todosLosSocios: List<Socio>,
         bonosRegaloMap: Map<String, BonoRegaloInfo> = emptyMap(),
         irpfVigencias: List<IrpfVigencia> = emptyList(),
-        devolucionesMap: Map<String, DevolucionInfo> = emptyMap()
+        cobrosMap: Map<String, CobroInfo> = emptyMap()
     ): ResumenHistoricoGlobal {
         val sociosPorSemana = todosLosSocios.groupBy { it.semanaKey }
 
-        // Todas las semanas con socios, con un bono activo o con devoluciones: una semana sin socios en la
-        // que te descuentan una devolución también cuenta (su neto es negativo).
-        val todasLasSemanas = (
-            sociosPorSemana.keys +
-                bonosRegaloMap.filterValues { it.activo }.keys +
-                devolucionesMap.filterValues { it.monto > 0.0 }.keys
-            )
+        // Todas las semanas con socios, con un bono activo o con lo cobrado apuntado: una semana sin socios
+        // en la que se cobró algo (o se descontó una devolución) también cuenta.
+        val todasLasSemanas = (sociosPorSemana.keys + bonosRegaloMap.filterValues { it.activo }.keys + cobrosMap.keys)
             .distinct()
             .sortedDescending()
 
@@ -238,7 +235,7 @@ object CalculoComisiones {
                     socios = sociosPorSemana[semanaKey].orEmpty(),
                     bonoRegalo = bonosRegaloMap[semanaKey],
                     porcentajeIrpf = irpfParaSemana(semanaKey, irpfVigencias),
-                    devolucion = devolucionesMap[semanaKey]
+                    cobro = cobrosMap[semanaKey]
                 )
             )
         }
@@ -250,7 +247,7 @@ object CalculoComisiones {
             totalBrutoAcumulado = redondearCentimos(resumenes.sumOf { it.totalBruto }),
             totalBaseX2Acumulado = redondearCentimos(resumenes.sumOf { it.gananciasBaseX2 }),
             totalBonusAcumulado = redondearCentimos(resumenes.sumOf { it.bonusSemanal }),
-            totalDevolucionesAcumulado = redondearCentimos(resumenes.sumOf { it.devoluciones }),
+            totalDescontadoAcumulado = redondearCentimos(resumenes.sumOf { it.descontado }),
             totalSociosHechosAcumulado = resumenes.sumOf { it.totalSociosHechos },
             totalSociosRegistradosAcumulado = resumenes.sumOf { it.totalSociosRegistrados },
             semanasHistoricas = itemsSemanas

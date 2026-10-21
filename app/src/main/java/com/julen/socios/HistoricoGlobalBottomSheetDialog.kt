@@ -27,6 +27,7 @@ import com.julen.socios.util.toFormattedEuros
 import java.time.Month
 import java.time.format.TextStyle
 import java.util.Locale
+import kotlin.math.abs
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.launch
@@ -112,8 +113,8 @@ class HistoricoGlobalBottomSheetDialog : BottomSheetDialogFragment() {
             resumenGlobal.totalNetoAcumulado.toCurrencyString(prefix = "+")
         binding.tvGlobalBonusTotal.text =
             resumenGlobal.totalBonusAcumulado.toCurrencyString(prefix = "+")
-        binding.tvGlobalDevolucionesTotal.text =
-            resumenGlobal.totalDevolucionesAcumulado.toCurrencyString(prefix = "-")
+        binding.tvGlobalDescontadoTotal.text =
+            importeConSigno(resumenGlobal.totalDescontadoAcumulado)
     }
 
     private fun renderComparativa(c: CalculoComisiones.Comparativa) {
@@ -235,14 +236,14 @@ class HistoricoGlobalBottomSheetDialog : BottomSheetDialogFragment() {
             id = item.semanaKey,
             etiqueta = getString(R.string.historico_etiqueta_semana, item.semanaKey.substringAfter("-W").toIntOrNull() ?: 0),
             titulo = getString(R.string.rango_semana_anio, DateUtils.rangoCorto(item.semanaKey), item.semanaKey.take(4)),
-            detalle = conDevoluciones(
+            detalle = conDescontado(
                 resources.getQuantityString(
                     if (r.esBonoRegaloAplicado) R.plurals.historico_semana_resumen_manual else R.plurals.historico_semana_resumen,
                     r.totalSociosHechos,
                     r.totalSociosHechos,
                     r.bonusSemanal.toEurosCompacto(prefix = "+")
                 ),
-                r.devoluciones
+                r.descontado
             ),
             neto = r.totalNeto,
             irpf = r.retencionIrpf,
@@ -259,24 +260,30 @@ class HistoricoGlobalBottomSheetDialog : BottomSheetDialogFragment() {
             id = "${p.anio}-${p.mes ?: 0}",
             etiqueta = etiqueta,
             titulo = titulo,
-            detalle = conDevoluciones(
+            detalle = conDescontado(
                 resources.getQuantityString(
                     R.plurals.historico_periodo_resumen, p.sociosHechos, p.sociosHechos, p.bruto.toFormattedEuros()
                 ),
-                p.devoluciones
+                p.descontado
             ),
             neto = p.neto,
             irpf = p.irpf
         )
     }
 
-    /** Añade "· -24 € devol." al resumen de una fila que tiene devoluciones. */
-    private fun conDevoluciones(detalle: String, devoluciones: Double): String =
-        if (devoluciones > 0.0) {
-            getString(R.string.historico_detalle_devoluciones, detalle, devoluciones.toEurosCompacto(prefix = "-"))
+    /** Añade "· -15,31 € desc." al resumen de una fila en la que se cobró menos (o más) de lo calculado. */
+    private fun conDescontado(detalle: String, descontado: Double): String =
+        if (descontado != 0.0) {
+            getString(R.string.historico_detalle_descontado, detalle, importeConSigno(descontado, compacto = true))
         } else {
             detalle
         }
+
+    /** Lo descontado con su signo: "-15,31 €" si se cobró menos de lo calculado, "+5 €" si más. */
+    private fun importeConSigno(descontado: Double, compacto: Boolean = false): String {
+        val signo = if (descontado < 0.0) "+" else if (descontado > 0.0) "-" else ""
+        return if (compacto) abs(descontado).toEurosCompacto(prefix = signo) else abs(descontado).toCurrencyString(prefix = signo)
+    }
 
     override fun onDestroyView() {
         super.onDestroyView()

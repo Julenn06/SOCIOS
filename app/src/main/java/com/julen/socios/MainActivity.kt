@@ -47,7 +47,7 @@ import com.julen.socios.databinding.ItemResumenImportBinding
 import com.julen.socios.export.ExportFormat
 import com.julen.socios.export.ExportRequest
 import com.julen.socios.export.ImportFormat
-import com.julen.socios.model.DevolucionInfo
+import com.julen.socios.model.CobroInfo
 import com.julen.socios.model.DiaSemana
 import com.julen.socios.model.ImportPreview
 import com.julen.socios.model.Socio
@@ -139,7 +139,7 @@ class MainActivity : AppCompatActivity() {
         AnimationExtensions.setupPressScaleAnimation(binding.fabAddSocio)
         AnimationExtensions.setupPressScaleAnimation(binding.containerBonusHeader)
         AnimationExtensions.setupPressScaleAnimation(binding.btnVerDesglose)
-        AnimationExtensions.setupPressScaleAnimation(binding.containerDevolucionesHeader)
+        AnimationExtensions.setupPressScaleAnimation(binding.containerCobroHeader)
         AnimationExtensions.setupPressScaleAnimation(binding.cardAvisoPendientes)
 
         lifecycleScope.launch {
@@ -186,7 +186,7 @@ class MainActivity : AppCompatActivity() {
         binding.btnHoyLeft.isVisible = state.weekOffset > 0
         binding.btnHoyRight.isVisible = state.weekOffset < 0
 
-        state.resumenSemana?.let { renderResumen(state.semanaKey, it, state.devolucionSemana) }
+        state.resumenSemana?.let { renderResumen(state.semanaKey, it, state.cobroSemana) }
 
         // Filtro por día, con cuántos socios hay en cada uno
         mostrarFiltro(binding.btnFiltroTodos, getString(R.string.filtro_todos), getString(R.string.filtro_todos_a11y), state.todosSociosSemana.size)
@@ -217,16 +217,16 @@ class MainActivity : AppCompatActivity() {
     private fun renderResumen(
         semanaKey: String,
         resumen: CalculoComisiones.ResumenCalculo,
-        devolucion: DevolucionInfo?
+        cobro: CobroInfo?
     ) {
         NumberAnimators.animateCurrency(binding.tvNetoHeader, resumen.totalNeto, prefix = "")
         val etiquetaNeto = getString(
-            if (resumen.tieneDevoluciones) R.string.header_neto_tras_devoluciones else R.string.header_neto_semanal
+            if (resumen.tieneCobroReal) R.string.header_neto_cobrado else R.string.header_neto_semanal
         )
         binding.tvNetoHeaderLabel.text = etiquetaNeto
         binding.containerNetoHeader.contentDescription =
             getString(R.string.header_neto_a11y, etiquetaNeto, resumen.totalNeto.toFormattedEuros())
-        renderDevoluciones(resumen, devolucion)
+        renderCobro(resumen, cobro)
         NumberAnimators.animateCurrency(
             binding.tvBaseHeader, resumen.gananciasBaseX2, prefix = "+", decimals = decimalesDe(resumen.gananciasBaseX2)
         )
@@ -267,25 +267,36 @@ class MainActivity : AppCompatActivity() {
         )
     }
 
-    /** La fila de devoluciones: lo descontado (y qué es, si se apuntó) o, si no hay, la invitación a añadirlas. */
-    private fun renderDevoluciones(resumen: CalculoComisiones.ResumenCalculo, devolucion: DevolucionInfo?) {
-        val valor = binding.tvDevolucionesHeader
-        if (resumen.tieneDevoluciones) {
-            NumberAnimators.animateCurrency(valor, resumen.devoluciones, prefix = "-")
-            binding.tvDevolucionesHeaderLabel.text = devolucion?.motivo
-                ?.let { getString(R.string.socio_dia_semana, getString(R.string.label_devoluciones), it) }
-                ?: getString(R.string.label_devoluciones)
-            binding.ivDevolucionesHeaderIcono.setImageResource(R.drawable.ic_edit_pequeno)
-            binding.containerDevolucionesHeader.contentDescription =
-                getString(R.string.header_devoluciones_a11y, resumen.devoluciones.toFormattedEuros())
+    /**
+     * La fila de lo cobrado: si está apuntado, cuánto se ha descontado de lo calculado (o cobrado de más, y por
+     * qué si se escribió); si no, la invitación a apuntarlo.
+     */
+    private fun renderCobro(resumen: CalculoComisiones.ResumenCalculo, cobro: CobroInfo?) {
+        val valor = binding.tvCobroHeader
+        if (resumen.tieneCobroReal) {
+            val descontado = resumen.descontado
+            val etiqueta = getString(
+                when {
+                    descontado > 0.0 -> R.string.header_cobro_descontado
+                    descontado < 0.0 -> R.string.header_cobro_de_mas
+                    else -> R.string.header_cobro_coincide
+                }
+            )
+            NumberAnimators.animateCurrency(valor, abs(descontado), prefix = if (descontado < 0.0) "+" else "-")
+            binding.tvCobroHeaderLabel.text =
+                cobro?.motivo?.let { getString(R.string.socio_dia_semana, etiqueta, it) } ?: etiqueta
+            binding.ivCobroHeaderIcono.setImageResource(R.drawable.ic_edit_pequeno)
+            binding.containerCobroHeader.contentDescription = getString(
+                R.string.header_cobro_a11y, etiqueta, abs(descontado).toFormattedEuros(), resumen.netoCalculado.toFormattedEuros()
+            )
         } else {
-            // Primero se para la animación: al cancelarla escribiría su último importe encima de "Añadir".
+            // Primero se para la animación: al cancelarla escribiría su último importe encima de "Apuntar".
             (valor.getTag(R.id.tag_numeric_animator) as? android.animation.ValueAnimator)?.cancel()
             valor.setTag(R.id.tag_numeric_value, 0.0)
-            valor.setText(R.string.header_devoluciones_anadir)
-            binding.tvDevolucionesHeaderLabel.setText(R.string.label_devoluciones)
-            binding.ivDevolucionesHeaderIcono.setImageResource(R.drawable.ic_add)
-            binding.containerDevolucionesHeader.contentDescription = getString(R.string.header_devoluciones_vacio_a11y)
+            valor.setText(R.string.header_cobro_apuntar)
+            binding.tvCobroHeaderLabel.setText(R.string.header_cobro_vacio)
+            binding.ivCobroHeaderIcono.setImageResource(R.drawable.ic_add)
+            binding.containerCobroHeader.contentDescription = getString(R.string.header_cobro_vacio_a11y)
         }
     }
 
@@ -443,7 +454,7 @@ class MainActivity : AppCompatActivity() {
             FilaImport(R.plurals.import_linea_sobrescritos, preview.sociosSobrescritos, R.drawable.ic_edit, R.color.orange_container, R.color.orange_text),
             FilaImport(R.plurals.import_linea_bonus, preview.bonos, R.drawable.ic_gift, R.color.amber_container, R.color.amber_text),
             FilaImport(R.plurals.import_linea_irpf, preview.irpfVigencias, R.drawable.ic_receipt, R.color.blue_container, R.color.blue_text_soft),
-            FilaImport(R.plurals.import_linea_devoluciones, preview.devoluciones, R.drawable.ic_devolucion, R.color.red_container, R.color.red_text)
+            FilaImport(R.plurals.import_linea_cobros, preview.cobros, R.drawable.ic_cobro, R.color.green_container, R.color.green_text_soft)
         ).forEach { fila ->
             val linea = ItemResumenImportBinding.inflate(layoutInflater, vista.filasImport, true)
             linea.placaResumen.backgroundTintList = ContextCompat.getColorStateList(this, fila.fondo)
@@ -591,11 +602,11 @@ class MainActivity : AppCompatActivity() {
         binding.containerBonusHeader.setOnClickListener { mostrarDialogoBonoRegalo() }
         binding.containerNetoHeader.setOnClickListener {
             HapticUtils.performClick(it)
-            mostrarDevoluciones()
+            mostrarCobro()
         }
-        binding.containerDevolucionesHeader.setOnClickListener {
+        binding.containerCobroHeader.setOnClickListener {
             HapticUtils.performClick(it)
-            mostrarDevoluciones()
+            mostrarCobro()
         }
         binding.cardAvisoPendientes.setOnClickListener {
             HapticUtils.performClick(it)
@@ -638,12 +649,12 @@ class MainActivity : AppCompatActivity() {
             .show(supportFragmentManager, BonoRegaloBottomSheetDialog.TAG)
     }
 
-    private fun mostrarDevoluciones() {
-        if (supportFragmentManager.findFragmentByTag(DevolucionesBottomSheetDialog.TAG) != null) return
+    private fun mostrarCobro() {
+        if (supportFragmentManager.findFragmentByTag(CobroBottomSheetDialog.TAG) != null) return
         val state = viewModel.uiState.value
         if (state.resumenSemana == null) return
-        DevolucionesBottomSheetDialog.newInstance(state.semanaKey, state.devolucionSemana)
-            .show(supportFragmentManager, DevolucionesBottomSheetDialog.TAG)
+        CobroBottomSheetDialog.newInstance(state.semanaKey, state.cobroSemana)
+            .show(supportFragmentManager, CobroBottomSheetDialog.TAG)
     }
 
     private fun mostrarLista(lista: ListaSociosBottomSheetDialog) {

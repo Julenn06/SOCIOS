@@ -3,7 +3,7 @@ package com.julen.socios
 import androidx.lifecycle.SavedStateHandle
 import com.julen.socios.data.BackupRepository
 import com.julen.socios.data.BonoRegaloRepository
-import com.julen.socios.data.DevolucionRepository
+import com.julen.socios.data.CobroRepository
 import com.julen.socios.data.IrpfRepository
 import com.julen.socios.data.SocioRepository
 import com.julen.socios.data.local.BonoRegaloEntity
@@ -13,7 +13,7 @@ import com.julen.socios.export.ExportFormat
 import com.julen.socios.export.ExportRequest
 import com.julen.socios.export.ImportFormat
 import com.julen.socios.fakes.FakeBonoRegaloDao
-import com.julen.socios.fakes.FakeDevolucionDao
+import com.julen.socios.fakes.FakeCobroDao
 import com.julen.socios.fakes.FakePreferenciasUsuario
 import com.julen.socios.fakes.FakeExportService
 import com.julen.socios.fakes.FakeIrpfVigenciaDao
@@ -61,7 +61,7 @@ class MainViewModelTest {
     private val socioDao = FakeSocioDao()
     private val bonoDao = FakeBonoRegaloDao()
     private val irpfDao = FakeIrpfVigenciaDao()
-    private val devolucionDao = FakeDevolucionDao()
+    private val cobroDao = FakeCobroDao()
     private val preferencias = FakePreferenciasUsuario()
     private val exportService = FakeExportService()
 
@@ -82,8 +82,8 @@ class MainViewModelTest {
         socioRepository = SocioRepository(socioDao),
         bonoRegaloRepository = BonoRegaloRepository(bonoDao),
         irpfRepository = IrpfRepository(irpfDao),
-        devolucionRepository = DevolucionRepository(devolucionDao),
-        backupRepository = BackupRepository(socioDao, bonoDao, irpfDao, devolucionDao, FakeTransactionRunner()),
+        cobroRepository = CobroRepository(cobroDao),
+        backupRepository = BackupRepository(socioDao, bonoDao, irpfDao, cobroDao, FakeTransactionRunner()),
         exportService = exportService,
         preferencias = preferencias,
         savedStateHandle = handle,
@@ -305,36 +305,37 @@ class MainViewModelTest {
     }
 
     @Test
-    fun lasDevolucionesBajanElNetoDeSuSemanaYDelHistorico() = runTest(dispatcher) {
+    fun loCobradoPasaASerElNetoDeLaSemanaYDiceCuantoSeHaDescontado() = runTest(dispatcher) {
         socioDao.socios.value = List(10) { entidad("s$it", semanaActual) }
         val viewModel = crearViewModel()
         val eventos = observar(viewModel)
         assertEquals(424.01, viewModel.uiState.value.resumenSemana!!.totalNeto, 0.0)
 
-        viewModel.guardarDevolucion(semanaActual, 40.0, "  1.ª cuota de Ana ")
+        viewModel.guardarCobro(semanaActual, 408.70, "  2.ª cuota de Ana ")
 
         val resumen = viewModel.uiState.value.resumenSemana!!
-        assertEquals(500.0, resumen.totalBruto, 0.0)
-        assertEquals(392.60, resumen.totalNeto, 0.0)
-        assertEquals("1.ª cuota de Ana", viewModel.uiState.value.devolucionSemana?.nota)
-        assertEquals(40.0, viewModel.historicoGlobal.value!!.totalDevolucionesAcumulado, 0.0)
+        assertEquals(408.70, resumen.totalNeto, 0.0)
+        assertEquals(15.31, resumen.descontado, 0.0)
+        assertEquals("2.ª cuota de Ana", viewModel.uiState.value.cobroSemana?.nota)
+        assertEquals(15.31, viewModel.historicoGlobal.value!!.totalDescontadoAcumulado, 0.0)
         assertEquals(
-            MainEvent.Mensaje(UiText.Res(R.string.msg_devolucion_guardada, listOf("-40,00 €")), TipoAviso.EXITO),
+            MainEvent.Mensaje(UiText.Res(R.string.msg_cobro_guardado, listOf("408,70 €")), TipoAviso.EXITO),
             eventos.last()
         )
 
-        // Guardar 0 € es quitarlas.
-        viewModel.guardarDevolucion(semanaActual, 0.0, "")
+        // Quitarlo vuelve al neto calculado.
+        viewModel.eliminarCobro(semanaActual)
 
-        assertNull(viewModel.uiState.value.devolucionSemana)
+        assertNull(viewModel.uiState.value.cobroSemana)
         assertEquals(424.01, viewModel.uiState.value.resumenSemana!!.totalNeto, 0.0)
+        assertEquals(MainEvent.Mensaje(UiText.Res(R.string.msg_cobro_eliminado), TipoAviso.INFO), eventos.last())
     }
 
     @Test
-    fun unaSemanaConSoloDevolucionesSePuedeExportar() = runTest(dispatcher) {
+    fun unaSemanaConSoloLoCobradoSePuedeExportar() = runTest(dispatcher) {
         val viewModel = crearViewModel()
         observar(viewModel)
-        viewModel.guardarDevolucion(semanaActual, 12.0, "")
+        viewModel.guardarCobro(semanaActual, 12.0, "")
 
         viewModel.solicitarExport(ExportFormat.JSON, AlcanceExport.Semanas(setOf(semanaActual)))
 

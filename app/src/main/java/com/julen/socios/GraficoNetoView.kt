@@ -24,7 +24,7 @@ import kotlin.math.min
  * Columnas del neto por semana, mes o año, de la más antigua a la más reciente. Una sola serie, así que no
  * lleva leyenda: la barra [destacada] (la semana o el mes actual) va en el verde de la app y el resto en un
  * paso más suave del mismo verde. Las barras crecen desde una única línea base, con la punta redondeada y
- * la base recta; un neto negativo (más devoluciones que ganancias) baja de la línea en rojo.
+ * la base recta; un neto negativo baja de la línea en rojo.
  *
  * Solo se rotulan el máximo y la destacada; el resto se lee tocando la barra, que muestra su importe.
  */

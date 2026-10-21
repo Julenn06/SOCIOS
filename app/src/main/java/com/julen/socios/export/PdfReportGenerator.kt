@@ -182,8 +182,8 @@ class PdfReportGenerator(private val context: Context) {
      */
     private fun resumen(datos: DatosBackup, alcance: AlcanceExport): Resumen {
         val bonos = datos.bonosRegalo.filter { it.activo }.associateBy { it.semanaKey }
-        val devoluciones = datos.devoluciones.associateBy { it.semanaKey }
-        val semanas = (datos.socios.map { it.semanaKey } + bonos.keys + devoluciones.keys).toSet()
+        val cobros = datos.cobros.associateBy { it.semanaKey }
+        val semanas = (datos.socios.map { it.semanaKey } + bonos.keys + cobros.keys).toSet()
             .ifEmpty { (alcance as? AlcanceExport.Semanas)?.semanaKeys.orEmpty() }
 
         if (semanas.size <= 1) {
@@ -191,8 +191,8 @@ class PdfReportGenerator(private val context: Context) {
             val porcentaje = semanaKey?.let { CalculoComisiones.irpfParaSemana(it, datos.irpfVigencias) }
                 ?: CalculoComisiones.IRPF_POR_DEFECTO
             val bono = semanaKey?.let(bonos::get)
-            val devolucion = semanaKey?.let(devoluciones::get)
-            val r = CalculoComisiones.calcularResumenSemana(datos.socios, bono, porcentaje, devolucion)
+            val cobro = semanaKey?.let(cobros::get)
+            val r = CalculoComisiones.calcularResumenSemana(datos.socios, bono, porcentaje, cobro)
             val bonusLabel = if (r.esBonoRegaloAplicado) R.string.pdf_kpi_bonus_manual else R.string.pdf_kpi_bonus_semanal
             val detalle = context.getString(
                 R.string.pdf_detalle_semana,
@@ -203,17 +203,17 @@ class PdfReportGenerator(private val context: Context) {
             val motivo = bono?.motivo?.let { context.getString(R.string.pdf_detalle_motivo, it) }.orEmpty()
             return Resumen(
                 kpis = kpis(r.totalSociosHechos, r.totalSociosRegistrados, r.gananciasBaseX2, bonusLabel, r.bonusSemanal, r.totalNeto),
-                detalle = textoDevoluciones(r.devoluciones) + detalle + motivo
+                detalle = textoDescontado(r.descontado) + detalle + motivo
             )
         }
 
-        val g = CalculoComisiones.calcularResumenHistoricoGlobal(datos.socios, bonos, datos.irpfVigencias, devoluciones)
+        val g = CalculoComisiones.calcularResumenHistoricoGlobal(datos.socios, bonos, datos.irpfVigencias, cobros)
         return Resumen(
             kpis = kpis(
                 g.totalSociosHechosAcumulado, g.totalSociosRegistradosAcumulado, g.totalBaseX2Acumulado,
                 R.string.pdf_kpi_bonus_total, g.totalBonusAcumulado, g.totalNetoAcumulado
             ),
-            detalle = textoDevoluciones(g.totalDevolucionesAcumulado) + context.resources.getQuantityString(
+            detalle = textoDescontado(g.totalDescontadoAcumulado) + context.resources.getQuantityString(
                 R.plurals.pdf_detalle_varias_semanas,
                 g.semanasHistoricas.size,
                 g.totalBrutoAcumulado.toFormattedEuros(),
@@ -223,9 +223,15 @@ class PdfReportGenerator(private val context: Context) {
         )
     }
 
-    /** "Devoluciones: -24,00 €  •  " delante del bruto, que ya las tiene descontadas; vacío si no hay. */
-    private fun textoDevoluciones(devoluciones: Double): String =
-        if (devoluciones > 0.0) context.getString(R.string.pdf_detalle_devoluciones, devoluciones.toFormattedEuros()) else ""
+    /**
+     * "Descontado: -15,31 €  •  " cuando lo cobrado no coincide con lo calculado (con "+" si se cobró de más);
+     * vacío si coincide o no se apuntó. El neto de las tarjetas ya es el cobrado.
+     */
+    private fun textoDescontado(descontado: Double): String = when {
+        descontado > 0.0 -> context.getString(R.string.pdf_detalle_descontado, "-" + descontado.toFormattedEuros())
+        descontado < 0.0 -> context.getString(R.string.pdf_detalle_descontado, "+" + (-descontado).toFormattedEuros())
+        else -> ""
+    }
 
     private fun kpis(hechos: Int, registrados: Int, base: Double, bonusLabel: Int, bonus: Double, neto: Double) = listOf(
         Kpi(context.getString(R.string.pdf_kpi_socios_hechos), "$hechos / $registrados", "#1565C0"),

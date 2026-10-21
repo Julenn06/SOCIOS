@@ -16,6 +16,8 @@ data class BackupDto(
     val socios: List<SocioDto?>? = null,
     val bonosRegalo: List<BonoRegaloDto?>? = null,
     val irpfVigencias: List<IrpfVigenciaDto?>? = null,
+    val cobros: List<CobroDto?>? = null,
+    /** Solo en copias v3, que guardaban lo descontado en lugar de lo cobrado. Se convierte al leerlas. */
     val devoluciones: List<DevolucionDto?>? = null
 )
 
@@ -44,6 +46,13 @@ data class BonoRegaloDto(
 data class IrpfVigenciaDto(
     val desdeSemanaKey: String? = null,
     val porcentaje: Double? = null
+)
+
+@Serializable
+data class CobroDto(
+    val semanaKey: String? = null,
+    val netoCobrado: Double? = null,
+    val nota: String? = null
 )
 
 @Serializable

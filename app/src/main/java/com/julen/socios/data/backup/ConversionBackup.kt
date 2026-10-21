@@ -2,12 +2,14 @@ package com.julen.socios.data.backup
 
 import com.julen.socios.model.BonoRegaloInfo
 import com.julen.socios.model.DatosBackup
-import com.julen.socios.model.DevolucionInfo
+import com.julen.socios.model.CobroInfo
 import com.julen.socios.model.DiaSemana
 import com.julen.socios.model.IrpfVigencia
 import com.julen.socios.model.ResultadoLectura
 import com.julen.socios.model.Socio
+import com.julen.socios.util.CalculoComisiones
 import com.julen.socios.util.DateUtils
+import com.julen.socios.util.DevolucionesAntiguas
 import com.julen.socios.util.ReparacionSemanaKeys
 import java.time.ZoneId
 import java.util.UUID
@@ -17,9 +19,9 @@ object ConversionBackup {
 
     /**
      * v1: socios y bonos. v2: añade las vigencias de IRPF y calcula las claves de semana con el año ISO.
-     * v3: añade las devoluciones.
+     * v3: añade las devoluciones (lo descontado). v4: las sustituye por lo cobrado de verdad cada semana.
      */
-    const val VERSION_ACTUAL = 3
+    const val VERSION_ACTUAL = 4
 
     /** Primera versión cuyas claves de semana son siempre correctas: las de antes pueden venir con el error del cambio de año. */
     private const val VERSION_CLAVES_ISO = 2
@@ -43,7 +45,7 @@ object ConversionBackup {
             BonoRegaloDto(bono.semanaKey, bono.activo, bono.esMontoFijo, bono.monto, bono.nota)
         },
         irpfVigencias = datos.irpfVigencias.map { IrpfVigenciaDto(it.desdeSemanaKey, it.porcentaje) },
-        devoluciones = datos.devoluciones.map { DevolucionDto(it.semanaKey, it.monto, it.nota) }
+        cobros = datos.cobros.map { CobroDto(it.semanaKey, it.netoCobrado, it.nota) }
     )
 
     /**
@@ -71,7 +73,10 @@ object ConversionBackup {
         val vigencias = dto.irpfVigencias.orEmpty().mapNotNull { vigenciaDto ->
             vigenciaDto?.let(::aVigencia) ?: run { descartados++; null }
         }
-        // Las devoluciones llegaron en la v3, con las claves ya bien calculadas: no hace falta repararlas.
+        // Los cobros (v4) y las devoluciones (v3) llegaron con las claves ya bien calculadas: no hace falta repararlas.
+        val cobros = dto.cobros.orEmpty().mapNotNull { cobroDto ->
+            cobroDto?.let(::aCobro) ?: run { descartados++; null }
+        }
         val devoluciones = dto.devoluciones.orEmpty().mapNotNull { devolucionDto ->
             devolucionDto?.let(::aDevolucion) ?: run { descartados++; null }
         }
@@ -88,16 +93,48 @@ object ConversionBackup {
             reparacion.bonos[bono.semanaKey]?.let { bono.copy(semanaKey = it) } ?: bono
         }
 
+        // Si un archivo repite un registro prevalece el último, igual que al guardarlo en la BD.
+        val sociosFinales = sociosReparados.associateBy { it.id }.values.toList()
+        val bonosFinales = bonosReparados.associateBy { it.semanaKey }.values.toList()
+        val vigenciasFinales = vigencias.associateBy { it.desdeSemanaKey }.values.toList()
+        val cobrosDeDevoluciones = cobrosDesdeDevoluciones(devoluciones, sociosFinales, bonosFinales, vigenciasFinales)
+
         return ResultadoLectura(
             datos = DatosBackup(
-                // Si un archivo repite un registro prevalece el último, igual que al guardarlo en la BD.
-                socios = sociosReparados.associateBy { it.id }.values.toList(),
-                bonosRegalo = bonosReparados.associateBy { it.semanaKey }.values.toList(),
-                irpfVigencias = vigencias.associateBy { it.desdeSemanaKey }.values.toList(),
-                devoluciones = devoluciones.associateBy { it.semanaKey }.values.toList()
+                socios = sociosFinales,
+                bonosRegalo = bonosFinales,
+                irpfVigencias = vigenciasFinales,
+                // Si una semana trae las dos cosas, manda lo cobrado.
+                cobros = (cobrosDeDevoluciones + cobros).associateBy { it.semanaKey }.values.toList()
             ),
             descartados = descartados
         )
+    }
+
+    /**
+     * Las devoluciones de una copia v3 pasadas a lo cobrado, con las cuentas de esa versión y los socios, bonos
+     * e IRPF del propio archivo: así cada semana conserva el neto que tenía.
+     */
+    private fun cobrosDesdeDevoluciones(
+        devoluciones: List<DevolucionV3>,
+        socios: List<Socio>,
+        bonos: List<BonoRegaloInfo>,
+        vigencias: List<IrpfVigencia>
+    ): List<CobroInfo> {
+        val sociosPorSemana = socios.groupBy { it.semanaKey }
+        val bonosPorSemana = bonos.associateBy { it.semanaKey }
+        return devoluciones.associateBy { it.semanaKey }.values.map { (semanaKey, monto, nota) ->
+            CobroInfo(
+                semanaKey = semanaKey,
+                netoCobrado = DevolucionesAntiguas.netoCobrado(
+                    socios = sociosPorSemana[semanaKey].orEmpty(),
+                    bono = bonosPorSemana[semanaKey],
+                    porcentajeIrpf = CalculoComisiones.irpfParaSemana(semanaKey, vigencias),
+                    devolucion = monto
+                ),
+                nota = nota
+            )
+        }
     }
 
     /**
@@ -143,9 +180,19 @@ object ConversionBackup {
         return IrpfVigencia(desde, porcentaje)
     }
 
-    private fun aDevolucion(dto: DevolucionDto): DevolucionInfo? {
+    private fun aCobro(dto: CobroDto): CobroInfo? {
+        val semanaKey = claveValida(dto.semanaKey) ?: return null
+        // Puede ser negativo: así quedaban las semanas de la 1.9.0 con más devoluciones que ganancias.
+        val neto = dto.netoCobrado?.takeIf { it.isFinite() } ?: return null
+        return CobroInfo(semanaKey = semanaKey, netoCobrado = neto, nota = dto.nota.orEmpty())
+    }
+
+    /** Una devolución de una copia v3: semana, importe descontado (en bruto) y nota. */
+    private data class DevolucionV3(val semanaKey: String, val monto: Double, val nota: String)
+
+    private fun aDevolucion(dto: DevolucionDto): DevolucionV3? {
         val semanaKey = claveValida(dto.semanaKey) ?: return null
         val monto = dto.monto?.takeIf { it.isFinite() && it > 0 } ?: return null
-        return DevolucionInfo(semanaKey = semanaKey, monto = monto, nota = dto.nota.orEmpty())
+        return DevolucionV3(semanaKey, monto, dto.nota.orEmpty())
     }
 }

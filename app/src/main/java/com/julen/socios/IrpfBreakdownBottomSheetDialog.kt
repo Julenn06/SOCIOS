@@ -1,10 +1,12 @@
 package com.julen.socios
 
 import android.app.Dialog
+import android.content.res.ColorStateList
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Lifecycle
@@ -24,6 +26,7 @@ import com.julen.socios.util.toFormattedEuros
 import com.julen.socios.util.toImporteInput
 import com.julen.socios.util.toPorcentajeString
 import com.julen.socios.util.setTextoAccesible
+import kotlin.math.abs
 import kotlinx.coroutines.launch
 
 /** Desglose de la semana visible. Observa el ViewModel, así se actualiza solo y sobrevive a recreaciones. */
@@ -54,9 +57,9 @@ class IrpfBreakdownBottomSheetDialog : BottomSheetDialogFragment() {
         binding.btnCambiarIrpf.configurar(
             R.drawable.ic_edit, R.color.blue_container, R.color.blue_text_soft, R.string.irpf_cambiar, R.string.irpf_cambiar_detalle
         ) { mostrarDialogoIrpf() }
-        binding.btnDevolucionesBreakdown.configurar(
-            R.drawable.ic_devolucion, R.color.red_container, R.color.red_text, R.string.devolucion_accion, R.string.devolucion_accion_detalle
-        ) { mostrarDevoluciones() }
+        binding.btnCobroBreakdown.configurar(
+            R.drawable.ic_cobro, R.color.green_container, R.color.green_text_soft, R.string.cobro_accion, R.string.cobro_accion_detalle
+        ) { mostrarCobro() }
         binding.btnVerCambiosIrpf.configurar(
             R.drawable.ic_history, R.color.orange_container, R.color.orange_text, R.string.irpf_ver_cambios, R.string.irpf_ver_cambios_detalle
         ) { mostrarCambiosIrpf() }
@@ -119,6 +122,9 @@ class IrpfBreakdownBottomSheetDialog : BottomSheetDialogFragment() {
         val netoFormatted = resumen.totalNeto.toFormattedEuros()
         binding.tvBreakdownNetoBig.text = netoFormatted
         binding.tvBreakdownNetoSmall.text = netoFormatted
+        // "Neto cobrado" si se ha apuntado lo que llegó de verdad; si no, "Neto a cobrar".
+        binding.tvBreakdownNetoBigLabel.setText(if (resumen.tieneCobroReal) R.string.irpf_neto_cobrado else R.string.irpf_neto_final)
+        binding.tvBreakdownNetoLabel.setText(if (resumen.tieneCobroReal) R.string.irpf_neto_cobrado else R.string.irpf_total_neto)
 
         binding.tvBreakdownSociosCount.text = resources.getQuantityString(
             R.plurals.irpf_breakdown_count,
@@ -142,19 +148,7 @@ class IrpfBreakdownBottomSheetDialog : BottomSheetDialogFragment() {
         binding.tvBreakdownBonusNota.isVisible = motivo != null
         binding.tvBreakdownBonusNota.text = motivo?.let { getString(R.string.irpf_bonus_motivo, it) }
 
-        binding.filaBreakdownDevoluciones.isVisible = resumen.tieneDevoluciones
-        binding.tvBreakdownDevoluciones.text = resumen.devoluciones.toCurrencyString(prefix = "-")
-        val motivoDevolucion = state.devolucionSemana?.motivo?.takeIf { resumen.tieneDevoluciones }
-        binding.tvBreakdownDevolucionesNota.isVisible = motivoDevolucion != null
-        binding.tvBreakdownDevolucionesNota.text = motivoDevolucion?.let { getString(R.string.irpf_bonus_motivo, it) }
-        if (resumen.tieneDevoluciones) {
-            binding.btnDevolucionesBreakdown.tvFormato.setText(R.string.devolucion_accion_cambiar)
-            binding.btnDevolucionesBreakdown.tvFormatoDetalle.text =
-                getString(R.string.devolucion_accion_cambiar_detalle, resumen.devoluciones.toFormattedEuros())
-        } else {
-            binding.btnDevolucionesBreakdown.tvFormato.setText(R.string.devolucion_accion)
-            binding.btnDevolucionesBreakdown.tvFormatoDetalle.setText(R.string.devolucion_accion_detalle)
-        }
+        renderCobro(resumen, state.cobroSemana?.motivo)
 
         binding.tvBreakdownBruto.text = resumen.totalBruto.toFormattedEuros()
         binding.tvBreakdownIrpfLabel.text =
@@ -162,13 +156,42 @@ class IrpfBreakdownBottomSheetDialog : BottomSheetDialogFragment() {
         binding.tvBreakdownIrpf.text = resumen.retencionIrpf.toCurrencyString(prefix = "-")
     }
 
-    /** Encima del desglose, que se actualiza solo al guardarlas. */
-    private fun mostrarDevoluciones() {
+    /** Con lo cobrado apuntado: el neto calculado y la diferencia, en rojo si es un descuento y en verde si sobra. */
+    private fun renderCobro(resumen: CalculoComisiones.ResumenCalculo, motivo: String?) {
+        binding.contenedorBreakdownCobro.isVisible = resumen.tieneCobroReal
+        val cobrado = resumen.netoCobrado
+        if (cobrado == null) {
+            binding.btnCobroBreakdown.tvFormato.setText(R.string.cobro_accion)
+            binding.btnCobroBreakdown.tvFormatoDetalle.setText(R.string.cobro_accion_detalle)
+            return
+        }
+        val descontado = resumen.descontado
+        val color = ContextCompat.getColor(requireContext(), if (descontado > 0.0) R.color.red_text else R.color.green_text_soft)
+        binding.tvBreakdownNetoCalculado.text = resumen.netoCalculado.toFormattedEuros()
+        binding.tvBreakdownDescontadoLabel.setText(
+            when {
+                descontado > 0.0 -> R.string.header_cobro_descontado
+                descontado < 0.0 -> R.string.header_cobro_de_mas
+                else -> R.string.header_cobro_coincide
+            }
+        )
+        binding.tvBreakdownDescontado.text =
+            abs(descontado).toCurrencyString(prefix = if (descontado > 0.0) "-" else if (descontado < 0.0) "+" else "")
+        binding.tvBreakdownDescontado.setTextColor(color)
+        binding.puntoBreakdownDescontado.backgroundTintList = ColorStateList.valueOf(color)
+        binding.tvBreakdownCobroNota.isVisible = motivo != null
+        binding.tvBreakdownCobroNota.text = motivo?.let { getString(R.string.irpf_bonus_motivo, it) }
+        binding.btnCobroBreakdown.tvFormato.setText(R.string.cobro_accion_cambiar)
+        binding.btnCobroBreakdown.tvFormatoDetalle.text = getString(R.string.cobro_accion_cambiar_detalle, cobrado.toFormattedEuros())
+    }
+
+    /** Encima del desglose, que se actualiza solo al guardarlo. */
+    private fun mostrarCobro() {
         val fragmentos = parentFragmentManager
-        if (fragmentos.findFragmentByTag(DevolucionesBottomSheetDialog.TAG) != null) return
+        if (fragmentos.findFragmentByTag(CobroBottomSheetDialog.TAG) != null) return
         val state = viewModel.uiState.value
-        DevolucionesBottomSheetDialog.newInstance(state.semanaKey, state.devolucionSemana)
-            .show(fragmentos, DevolucionesBottomSheetDialog.TAG)
+        CobroBottomSheetDialog.newInstance(state.semanaKey, state.cobroSemana)
+            .show(fragmentos, CobroBottomSheetDialog.TAG)
     }
 
     private fun mostrarDialogoIrpf() {

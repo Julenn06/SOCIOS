@@ -148,7 +148,7 @@
                         android:gravity="center_vertical"
                         android:orientation="horizontal">
 
-                        <!-- El neto: al tocarlo se apuntan las devoluciones de la semana -->
+                        <!-- El neto: al tocarlo se apunta lo cobrado de verdad -->
                         <LinearLayout
                             android:id="@+id/containerNetoHeader"
                             android:layout_width="0dp"
@@ -306,9 +306,9 @@
                         </LinearLayout>
                     </LinearLayout>
 
-                    <!-- Devoluciones: lo descontado esta semana por cuotas devueltas, antes del IRPF -->
+                    <!-- Lo cobrado de verdad: invita a apuntarlo y, apuntado, dice cuánto se ha descontado de lo calculado -->
                     <LinearLayout
-                        android:id="@+id/containerDevolucionesHeader"
+                        android:id="@+id/containerCobroHeader"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="8dp"
@@ -326,40 +326,40 @@
                             android:layout_width="18dp"
                             android:layout_height="18dp"
                             android:importantForAccessibility="no"
-                            android:src="@drawable/ic_devolucion"
-                            app:tint="@color/header_label_devoluciones" />
+                            android:src="@drawable/ic_cobro"
+                            app:tint="@color/header_label_cobro" />
 
                         <TextView
-                            android:id="@+id/tvDevolucionesHeaderLabel"
+                            android:id="@+id/tvCobroHeaderLabel"
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_marginHorizontal="8dp"
                             android:layout_weight="1"
                             android:ellipsize="end"
                             android:maxLines="1"
-                            android:text="@string/label_devoluciones"
-                            android:textColor="@color/header_label_devoluciones"
+                            android:text="@string/header_cobro_vacio"
+                            android:textColor="@color/header_label_cobro"
                             android:textSize="12.5sp"
-                            tools:text="Devoluciones · 2.ª cuota de Ana" />
+                            tools:text="Te han descontado" />
 
                         <TextView
-                            android:id="@+id/tvDevolucionesHeader"
+                            android:id="@+id/tvCobroHeader"
                             style="@style/Socios.Cifra"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:maxLines="1"
-                            android:textColor="@color/header_devoluciones"
+                            android:textColor="@color/header_cobro"
                             android:textSize="15sp"
-                            tools:text="−24,00 €" />
+                            tools:text="-15,31 €" />
 
                         <ImageView
-                            android:id="@+id/ivDevolucionesHeaderIcono"
+                            android:id="@+id/ivCobroHeaderIcono"
                             android:layout_width="14dp"
                             android:layout_height="14dp"
                             android:layout_marginStart="6dp"
                             android:importantForAccessibility="no"
                             android:src="@drawable/ic_edit_pequeno"
-                            app:tint="@color/header_label_devoluciones" />
+                            app:tint="@color/header_label_cobro" />
                     </LinearLayout>
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>

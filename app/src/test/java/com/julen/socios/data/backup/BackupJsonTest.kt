@@ -1,8 +1,8 @@
 package com.julen.socios.data.backup
 
 import com.julen.socios.model.BonoRegaloInfo
+import com.julen.socios.model.CobroInfo
 import com.julen.socios.model.DatosBackup
-import com.julen.socios.model.DevolucionInfo
 import com.julen.socios.model.DiaSemana
 import com.julen.socios.model.IrpfVigencia
 import com.julen.socios.model.Socio
@@ -28,7 +28,7 @@ class BackupJsonTest {
             ),
             bonosRegalo = listOf(BonoRegaloInfo("2026-W10", activo = true, esMontoFijo = true, monto = 100.0)),
             irpfVigencias = listOf(IrpfVigencia("2026-W01", 18.0)),
-            devoluciones = listOf(DevolucionInfo("2026-W10", 32.0, "1.ª cuota"))
+            cobros = listOf(CobroInfo("2026-W10", 284.69, "2.ª cuota de Ana"))
         )
         val out = ByteArrayOutputStream()
         BackupJson.escribir(datos, out, timestamp = 0)
@@ -50,11 +50,22 @@ class BackupJsonTest {
     }
 
     @Test
-    fun unaCopiaSinDevolucionesSeLeeSinNinguna() {
+    fun unaCopiaSinCobrosSeLeeSinNinguno() {
         val resultado = leer("""{"version":2,"socios":[{"colaboracion":20.0,"diaSemanaId":2,"semanaKey":"2026-W10"}]}""")
 
-        assertTrue(resultado.datos.devoluciones.isEmpty())
+        assertTrue(resultado.datos.cobros.isEmpty())
         assertEquals(0, resultado.descartados)
+    }
+
+    @Test
+    fun lasDevolucionesDeUnaCopiaV3SePasanALoCobrado() {
+        val socios = (1..10).joinToString(",") { """{"id":"s$it","colaboracion":20.0,"diaSemanaId":1,"semanaKey":"2026-W10"}""" }
+        val resultado = leer(
+            """{"version":3,"socios":[$socios],"devoluciones":[{"semanaKey":"2026-W10","monto":40.0,"nota":"1.ª cuota"}]}"""
+        )
+
+        // Con las cuentas de la 1.9.0: 540 - 40 = 500 de bruto, 107,40 de IRPF y 392,60 de neto.
+        assertEquals(listOf(CobroInfo("2026-W10", 392.60, "1.ª cuota")), resultado.datos.cobros)
     }
 
     @Test
