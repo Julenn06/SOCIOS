@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Lo cobrado de verdad en una semana: el neto que ha llegado, por qué no coincide y cuánto se ha descontado. -->
+<!-- Ajustar el neto de una semana a lo cobrado de verdad: interruptor, importe y cuánto se ha descontado. -->
 <androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
@@ -9,8 +9,10 @@
     tools:targetApi="q">
 
     <LinearLayout
+        android:id="@+id/contenidoCobro"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:focusableInTouchMode="true"
         android:orientation="vertical"
         android:paddingHorizontal="20dp"
         android:paddingTop="12dp"
@@ -76,209 +78,199 @@
                 style="@style/Socios.BotonCerrar" />
         </LinearLayout>
 
-        <!-- Para qué sirve -->
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="18dp"
-            android:background="@drawable/bg_icono_tile"
-            android:backgroundTint="@color/surface_muted"
-            android:orientation="horizontal"
-            android:padding="14dp">
-
-            <ImageView
-                android:layout_width="20dp"
-                android:layout_height="20dp"
-                android:importantForAccessibility="no"
-                android:src="@drawable/ic_info"
-                app:tint="@color/text_sub" />
-
-            <TextView
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="10dp"
-                android:layout_weight="1"
-                android:lineSpacingExtra="2dp"
-                android:text="@string/cobro_explicacion"
-                android:textColor="@color/text_sub"
-                android:textSize="13sp" />
-        </LinearLayout>
-
-        <TextView
-            style="@style/Socios.Seccion"
-            android:text="@string/cobro_label_monto" />
-
-        <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/tilNetoCobrado"
-            style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="@string/cobro_hint_monto"
-            app:boxCornerRadiusBottomEnd="14dp"
-            app:boxCornerRadiusBottomStart="14dp"
-            app:boxCornerRadiusTopEnd="14dp"
-            app:boxCornerRadiusTopStart="14dp"
-            app:helperTextEnabled="true"
-            app:startIconDrawable="@drawable/ic_euro"
-            tools:helperText="Calculado: 300,00 €">
-
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/etNetoCobrado"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:fontFamily="@font/geist_semibold"
-                android:fontFeatureSettings="tnum"
-                android:imeOptions="actionNext"
-                android:inputType="numberDecimal"
-                android:textSize="18sp" />
-        </com.google.android.material.textfield.TextInputLayout>
-
-        <com.google.android.material.textfield.TextInputLayout
-            style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
-            android:hint="@string/cobro_hint_nota"
-            app:boxCornerRadiusBottomEnd="14dp"
-            app:boxCornerRadiusBottomStart="14dp"
-            app:boxCornerRadiusTopEnd="14dp"
-            app:boxCornerRadiusTopStart="14dp"
-            app:startIconDrawable="@drawable/ic_notes">
-
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/etNotaCobro"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:inputType="textCapSentences"
-                android:maxLines="2" />
-        </com.google.android.material.textfield.TextInputLayout>
-
-        <!-- Cómo queda la semana con lo escrito -->
-        <TextView
-            style="@style/Socios.Seccion"
-            android:text="@string/cobro_preview_titulo" />
-
+        <!-- Activar el ajuste: apagado, la semana usa el neto calculado -->
         <com.google.android.material.card.MaterialCardView
+            android:id="@+id/cardActivarCobro"
             style="@style/Socios.TarjetaFila"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:padding="16dp">
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:padding="14dp">
 
-                <LinearLayout style="@style/Socios.FilaCalculo">
-
-                    <View
-                        style="@style/Socios.PuntoCalculo"
-                        android:backgroundTint="@color/text_sub" />
-
-                    <TextView
-                        style="@style/Socios.EtiquetaCalculo"
-                        android:text="@string/cobro_preview_calculado" />
-
-                    <TextView
-                        android:id="@+id/tvPreviewCalculado"
-                        style="@style/Socios.ImporteCalculo"
-                        tools:text="300,00 €" />
-                </LinearLayout>
-
-                <LinearLayout
-                    style="@style/Socios.FilaCalculo"
-                    android:layout_marginTop="12dp">
-
-                    <View
-                        style="@style/Socios.PuntoCalculo"
-                        android:backgroundTint="@color/primary" />
-
-                    <TextView
-                        style="@style/Socios.EtiquetaCalculo"
-                        android:text="@string/cobro_preview_cobrado" />
-
-                    <TextView
-                        android:id="@+id/tvPreviewCobrado"
-                        style="@style/Socios.ImporteCalculo"
-                        tools:text="284,69 €" />
-                </LinearLayout>
-
-                <!-- La diferencia: rojo si te han descontado, verde si coincide o has cobrado de más -->
-                <LinearLayout
-                    android:id="@+id/placaPreviewDiferencia"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="16dp"
+                <FrameLayout
+                    android:layout_width="44dp"
+                    android:layout_height="44dp"
                     android:background="@drawable/bg_icono_tile"
-                    android:backgroundTint="@color/red_container"
-                    android:gravity="center_vertical"
-                    android:orientation="horizontal"
-                    android:padding="14dp">
+                    android:backgroundTint="@color/green_container">
+
+                    <ImageView
+                        android:layout_width="22dp"
+                        android:layout_height="22dp"
+                        android:layout_gravity="center"
+                        android:importantForAccessibility="no"
+                        android:src="@drawable/ic_edit"
+                        app:tint="@color/green_text_soft" />
+                </FrameLayout>
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginHorizontal="14dp"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
 
                     <TextView
-                        android:id="@+id/tvPreviewDiferenciaLabel"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:textColor="@color/red_text"
-                        android:textSize="15sp"
-                        android:fontFamily="@font/geist_semibold"
-                        tools:text="Te han descontado" />
-
-                    <TextView
-                        android:id="@+id/tvPreviewDiferencia"
-                        style="@style/Socios.Cifra"
+                        style="@style/Socios.TituloFila"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:textColor="@color/red_text"
-                        android:textSize="18sp"
-                        tools:text="-15,31 €" />
+                        android:text="@string/cobro_switch" />
+
+                    <TextView
+                        style="@style/Socios.DescripcionFila"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/cobro_switch_detalle" />
                 </LinearLayout>
+
+                <!-- Toda la tarjeta lo activa; el interruptor se lee con el título -->
+                <com.google.android.material.materialswitch.MaterialSwitch
+                    android:id="@+id/switchActivarCobro"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:contentDescription="@string/cobro_switch" />
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
-        <!-- Botones: misma altura y alineados -->
         <LinearLayout
+            android:id="@+id/containerCobroConfig"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="22dp"
-            android:orientation="horizontal">
+            android:orientation="vertical"
+            android:visibility="gone"
+            tools:visibility="visible">
 
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnQuitarCobro"
-                style="@style/Widget.Material3.Button.OutlinedButton"
-                android:layout_width="0dp"
-                android:layout_height="56dp"
-                android:layout_marginEnd="12dp"
-                android:layout_weight="1"
-                android:insetTop="0dp"
-                android:insetBottom="0dp"
-                android:text="@string/cobro_quitar"
-                android:textColor="@color/red_text"
-                android:textSize="15sp"
-                android:fontFamily="@font/geist_semibold"
-                android:visibility="gone"
-                app:cornerRadius="16dp"
-                app:icon="@drawable/ic_delete"
-                app:iconGravity="textStart"
-                app:iconTint="@color/red_text"
-                app:strokeColor="@color/stroke"
-                tools:visibility="visible" />
+            <TextView
+                style="@style/Socios.Seccion"
+                android:text="@string/cobro_label_monto" />
 
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnGuardarCobro"
-                style="@style/Widget.Material3.Button"
-                android:layout_width="0dp"
-                android:layout_height="56dp"
-                android:layout_weight="1.4"
-                android:insetTop="0dp"
-                android:insetBottom="0dp"
-                android:text="@string/action_save"
-                android:textSize="15sp"
-                android:fontFamily="@font/geist_semibold"
-                app:cornerRadius="16dp"
-                app:icon="@drawable/ic_check"
-                app:iconGravity="textStart" />
+            <!-- El teclado sale al tocar el campo, no al abrir el panel -->
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/tilNetoCobrado"
+                style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="@string/cobro_hint_monto"
+                app:boxCornerRadiusBottomEnd="14dp"
+                app:boxCornerRadiusBottomStart="14dp"
+                app:boxCornerRadiusTopEnd="14dp"
+                app:boxCornerRadiusTopStart="14dp"
+                app:helperTextEnabled="true"
+                app:startIconDrawable="@drawable/ic_euro"
+                tools:helperText="Calculado: 300,00 €">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/etNetoCobrado"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="@font/geist_semibold"
+                    android:fontFeatureSettings="tnum"
+                    android:imeOptions="actionDone"
+                    android:inputType="numberDecimal"
+                    android:textSize="18sp" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <!-- Cómo queda la semana con lo escrito -->
+            <com.google.android.material.card.MaterialCardView
+                style="@style/Socios.TarjetaFila"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="14dp"
+                android:stateListAnimator="@null">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <LinearLayout style="@style/Socios.FilaCalculo">
+
+                        <View
+                            style="@style/Socios.PuntoCalculo"
+                            android:backgroundTint="@color/text_sub" />
+
+                        <TextView
+                            style="@style/Socios.EtiquetaCalculo"
+                            android:text="@string/cobro_preview_calculado" />
+
+                        <TextView
+                            android:id="@+id/tvPreviewCalculado"
+                            style="@style/Socios.ImporteCalculo"
+                            tools:text="300,00 €" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        style="@style/Socios.FilaCalculo"
+                        android:layout_marginTop="12dp">
+
+                        <View
+                            style="@style/Socios.PuntoCalculo"
+                            android:backgroundTint="@color/primary" />
+
+                        <TextView
+                            style="@style/Socios.EtiquetaCalculo"
+                            android:text="@string/cobro_preview_cobrado" />
+
+                        <TextView
+                            android:id="@+id/tvPreviewCobrado"
+                            style="@style/Socios.ImporteCalculo"
+                            tools:text="284,69 €" />
+                    </LinearLayout>
+
+                    <!-- La diferencia: rojo si te han descontado, verde si coincide o has cobrado de más -->
+                    <LinearLayout
+                        android:id="@+id/placaPreviewDiferencia"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="16dp"
+                        android:background="@drawable/bg_icono_tile"
+                        android:backgroundTint="@color/red_container"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal"
+                        android:padding="14dp">
+
+                        <TextView
+                            android:id="@+id/tvPreviewDiferenciaLabel"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:textColor="@color/red_text"
+                            android:textSize="15sp"
+                            android:fontFamily="@font/geist_semibold"
+                            tools:text="Te han descontado" />
+
+                        <TextView
+                            android:id="@+id/tvPreviewDiferencia"
+                            style="@style/Socios.Cifra"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textColor="@color/red_text"
+                            android:textSize="18sp"
+                            tools:text="-15,31 €" />
+                    </LinearLayout>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
         </LinearLayout>
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnGuardarCobro"
+            style="@style/Widget.Material3.Button"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:layout_marginTop="22dp"
+            android:insetTop="0dp"
+            android:insetBottom="0dp"
+            android:text="@string/action_save"
+            android:textSize="15sp"
+            android:fontFamily="@font/geist_semibold"
+            app:cornerRadius="16dp"
+            app:icon="@drawable/ic_check"
+            app:iconGravity="textStart" />
     </LinearLayout>
 </androidx.core.widget.NestedScrollView>

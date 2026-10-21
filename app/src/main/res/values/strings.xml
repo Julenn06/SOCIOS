@@ -91,14 +91,11 @@
     <string name="label_bonus_manual">Bonus manual</string>
     <string name="label_irpf_header">IRPF %s</string>
     <string name="header_neto_cobrado">Neto cobrado</string>
-    <string name="header_cobro_vacio">¿Cuánto has cobrado?</string>
-    <string name="header_cobro_apuntar">Apuntar</string>
     <string name="header_cobro_descontado">Te han descontado</string>
     <string name="header_cobro_de_mas">Has cobrado de más</string>
     <string name="header_cobro_coincide">Cobrado justo lo calculado</string>
     <string name="header_cobro_a11y">%1$s: %2$s. Calculado: %3$s. Toca para cambiar lo cobrado</string>
-    <string name="header_cobro_vacio_a11y">Aún no has apuntado lo cobrado esta semana. Toca para apuntarlo</string>
-    <string name="header_neto_a11y">%1$s: %2$s. Toca para apuntar lo cobrado</string>
+    <string name="header_neto_a11y">%1$s: %2$s</string>
 
     <!-- Bonus Card -->
     <string name="bonus_progress_format">%1$d / %2$d</string>
@@ -233,18 +230,17 @@
 
     <!-- Lo cobrado de verdad -->
     <string name="cobro_titulo">Lo que has cobrado</string>
-    <string name="cobro_explicacion">Apunta el neto que te ha llegado de verdad esta semana. Si es menos de lo calculado, verás cuánto te han descontado (devoluciones de primera o segunda cuota u otros descuentos).</string>
-    <string name="cobro_label_monto">¿Cuánto has cobrado?</string>
+    <string name="cobro_switch">Ajustar a lo cobrado</string>
+    <string name="cobro_switch_detalle">Usa lo que te ha llegado de verdad en lugar del neto calculado</string>
+    <string name="cobro_accion_a11y">ajustar a lo cobrado</string>
+    <string name="cobro_label_monto">Lo que te ha llegado</string>
     <string name="cobro_hint_monto">Neto cobrado (€)</string>
     <string name="cobro_calculado_ayuda">Calculado: %s</string>
-    <string name="cobro_hint_nota">Por qué no coincide (opcional)</string>
-    <string name="cobro_preview_titulo">Así queda la semana</string>
     <string name="cobro_preview_calculado">Neto calculado</string>
     <string name="cobro_preview_cobrado">Has cobrado</string>
-    <string name="cobro_quitar">Quitar</string>
     <string name="msg_cobro_invalido">Escribe lo que has cobrado, por ejemplo 284,69</string>
-    <string name="cobro_accion">Apuntar lo cobrado</string>
-    <string name="cobro_accion_detalle">Lo que te ha llegado de verdad, para ver lo descontado</string>
+    <string name="cobro_accion">Ajustar a lo cobrado</string>
+    <string name="cobro_accion_detalle">También con un doble toque en el neto de la cabecera</string>
     <string name="cobro_accion_cambiar">Cambiar lo cobrado</string>
     <string name="cobro_accion_cambiar_detalle">%s cobrados esta semana</string>
 

@@ -2,9 +2,12 @@ package com.julen.socios
 
 import android.app.Dialog
 import android.os.Bundle
+import android.transition.AutoTransition
+import android.transition.TransitionManager
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.WindowManager
 import androidx.core.content.ContextCompat
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
@@ -31,8 +34,9 @@ import kotlin.math.abs
 import kotlinx.coroutines.launch
 
 /**
- * Lo cobrado de verdad en la semana visible. Mientras se escribe, enseña la diferencia con el neto calculado:
- * lo que te han descontado (devoluciones u otros descuentos) o lo que has cobrado de más.
+ * Ajuste del neto de la semana visible a lo cobrado de verdad, como el del bonus: con el interruptor encendido
+ * se escribe el importe y se ve cuánto se ha descontado de lo calculado; apagado y guardado, la semana vuelve
+ * al neto calculado. Se abre con un doble toque en el neto de la cabecera.
  */
 class CobroBottomSheetDialog : BottomSheetDialogFragment() {
 
@@ -47,6 +51,8 @@ class CobroBottomSheetDialog : BottomSheetDialogFragment() {
         (super.onCreateDialog(savedInstanceState) as BottomSheetDialog).apply {
             behavior.state = BottomSheetBehavior.STATE_EXPANDED
             behavior.skipCollapsed = true
+            // Aunque el campo del importe se vea, el teclado espera a que se toque.
+            window?.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN)
         }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
@@ -61,15 +67,23 @@ class CobroBottomSheetDialog : BottomSheetDialogFragment() {
 
         binding.tvSubtituloCobro.text =
             getString(R.string.rango_semana_anio, DateUtils.rangoCorto(semanaKey), semanaKey.take(4))
-        binding.btnQuitarCobro.isVisible = tieneCobro
 
+        // El teclado no sale al abrir: solo al tocar el campo.
         if (savedInstanceState == null) {
+            binding.switchActivarCobro.isChecked = tieneCobro
             if (tieneCobro) binding.etNetoCobrado.setText(args.getDouble(ARG_NETO).toImporteInput())
-            binding.etNotaCobro.setText(args.getString(ARG_NOTA).orEmpty())
-            // Sin nada apuntado todavía: directamente a escribirlo.
-            if (!tieneCobro) mostrarTeclado()
         }
 
+        binding.cardActivarCobro.setOnClickListener {
+            HapticUtils.performToggle(it)
+            binding.switchActivarCobro.toggle()
+        }
+        binding.switchActivarCobro.setOnCheckedChangeListener { _, activado ->
+            TransitionManager.beginDelayedTransition(binding.contenidoCobro, AutoTransition().setDuration(DURACION_MS))
+            binding.containerCobroConfig.isVisible = activado
+            binding.tilNetoCobrado.error = null
+            if (!activado) ocultarTeclado()
+        }
         binding.etNetoCobrado.doOnTextChanged { _, _, _, _ ->
             binding.tilNetoCobrado.error = null
             actualizarVistaPrevia()
@@ -77,20 +91,20 @@ class CobroBottomSheetDialog : BottomSheetDialogFragment() {
         binding.btnCerrarCobro.setOnClickListener { dismiss() }
         binding.btnGuardarCobro.setOnClickListener {
             HapticUtils.performConfirm(it)
-            guardar()
+            guardar(tieneCobro)
         }
-        binding.btnQuitarCobro.setOnClickListener {
-            HapticUtils.performClick(it)
-            viewModel.eliminarCobro(semanaKey)
-            dismiss()
-        }
-        listOf(binding.btnGuardarCobro, binding.btnQuitarCobro).forEach(AnimationExtensions::setupPressScaleAnimation)
+        AnimationExtensions.setupPressScaleAnimation(binding.btnGuardarCobro)
 
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 viewModel.uiState.collect { actualizarVistaPrevia() }
             }
         }
+    }
+
+    override fun onViewStateRestored(savedInstanceState: Bundle?) {
+        super.onViewStateRestored(savedInstanceState)
+        binding.containerCobroConfig.isVisible = binding.switchActivarCobro.isChecked
     }
 
     /** Lo escrito, redondeado a céntimos; null si está vacío o no es un importe válido. */
@@ -127,21 +141,27 @@ class CobroBottomSheetDialog : BottomSheetDialogFragment() {
         }
     }
 
-    private fun guardar() {
+    /** Apagado: vuelve al neto calculado (si había algo apuntado). Encendido: guarda lo escrito. */
+    private fun guardar(teniaCobro: Boolean) {
+        if (!binding.switchActivarCobro.isChecked) {
+            if (teniaCobro) viewModel.eliminarCobro(semanaKey)
+            dismiss()
+            return
+        }
         val cobrado = netoEscrito()
         if (cobrado == null) {
             binding.tilNetoCobrado.error = getString(R.string.msg_cobro_invalido)
-            mostrarTeclado()
             return
         }
-        viewModel.guardarCobro(semanaKey, cobrado, binding.etNotaCobro.text?.toString().orEmpty())
+        // La nota ya no se escribe aquí, pero se conserva la que tuviera (por ejemplo, de la versión 1.9.0).
+        viewModel.guardarCobro(semanaKey, cobrado, requireArguments().getString(ARG_NOTA).orEmpty())
         dismiss()
     }
 
-    private fun mostrarTeclado() {
-        binding.etNetoCobrado.requestFocus()
+    private fun ocultarTeclado() {
         val ventana = dialog?.window ?: return
-        WindowCompat.getInsetsController(ventana, binding.etNetoCobrado).show(WindowInsetsCompat.Type.ime())
+        WindowCompat.getInsetsController(ventana, binding.root).hide(WindowInsetsCompat.Type.ime())
+        ventana.currentFocus?.clearFocus()
     }
 
     override fun onDestroyView() {
@@ -155,6 +175,7 @@ class CobroBottomSheetDialog : BottomSheetDialogFragment() {
         private const val ARG_SEMANA = "semanaKey"
         private const val ARG_NETO = "netoCobrado"
         private const val ARG_NOTA = "nota"
+        private const val DURACION_MS = 200L
 
         fun newInstance(semanaKey: String, actual: CobroInfo?) = CobroBottomSheetDialog().apply {
             arguments = Bundle().apply {

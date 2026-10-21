@@ -1,5 +1,6 @@
 package com.julen.socios
 
+import android.annotation.SuppressLint
 import android.content.ClipData
 import android.content.Intent
 import android.os.Bundle
@@ -30,6 +31,7 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
+import androidx.core.view.accessibility.AccessibilityNodeInfoCompat
 import androidx.core.view.updatePadding
 import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.Lifecycle
@@ -268,11 +270,12 @@ class MainActivity : AppCompatActivity() {
     }
 
     /**
-     * La fila de lo cobrado: si está apuntado, cuánto se ha descontado de lo calculado (o cobrado de más, y por
-     * qué si se escribió); si no, la invitación a apuntarlo.
+     * La fila de lo cobrado: solo con el neto ajustado a lo cobrado, y dice cuánto se ha descontado de lo
+     * calculado (o cobrado de más, y por qué si había nota).
      */
     private fun renderCobro(resumen: CalculoComisiones.ResumenCalculo, cobro: CobroInfo?) {
         val valor = binding.tvCobroHeader
+        binding.containerCobroHeader.isVisible = resumen.tieneCobroReal
         if (resumen.tieneCobroReal) {
             val descontado = resumen.descontado
             val etiqueta = getString(
@@ -290,13 +293,9 @@ class MainActivity : AppCompatActivity() {
                 R.string.header_cobro_a11y, etiqueta, abs(descontado).toFormattedEuros(), resumen.netoCalculado.toFormattedEuros()
             )
         } else {
-            // Primero se para la animación: al cancelarla escribiría su último importe encima de "Apuntar".
+            // Oculta: la próxima vez que salga, el importe crece desde 0 en lugar de desde el de otra semana.
             (valor.getTag(R.id.tag_numeric_animator) as? android.animation.ValueAnimator)?.cancel()
             valor.setTag(R.id.tag_numeric_value, 0.0)
-            valor.setText(R.string.header_cobro_apuntar)
-            binding.tvCobroHeaderLabel.setText(R.string.header_cobro_vacio)
-            binding.ivCobroHeaderIcono.setImageResource(R.drawable.ic_add)
-            binding.containerCobroHeader.contentDescription = getString(R.string.header_cobro_vacio_a11y)
         }
     }
 
@@ -600,10 +599,7 @@ class MainActivity : AppCompatActivity() {
     private fun setupHeaderClickListeners() {
         binding.btnVerDesglose.setOnClickListener { mostrarDesgloseIrpf() }
         binding.containerBonusHeader.setOnClickListener { mostrarDialogoBonoRegalo() }
-        binding.containerNetoHeader.setOnClickListener {
-            HapticUtils.performClick(it)
-            mostrarCobro()
-        }
+        setupDobleToqueNeto()
         binding.containerCobroHeader.setOnClickListener {
             HapticUtils.performClick(it)
             mostrarCobro()
@@ -647,6 +643,33 @@ class MainActivity : AppCompatActivity() {
         val state = viewModel.uiState.value
         BonoRegaloBottomSheetDialog.newInstance(state.semanaKey, state.bonoInfoSemana)
             .show(supportFragmentManager, BonoRegaloBottomSheetDialog.TAG)
+    }
+
+    /**
+     * Doble toque en el neto: ajustarlo a lo cobrado de verdad. Un toque solo no hace nada (se ve el pulsado),
+     * para no abrirlo sin querer. Con TalkBack, su doble toque de siempre hace lo mismo.
+     */
+    @SuppressLint("ClickableViewAccessibility") // TalkBack lo abre con la acción de clic que se sustituye abajo.
+    private fun setupDobleToqueNeto() {
+        val neto = binding.containerNetoHeader
+        val detector = GestureDetector(this, object : GestureDetector.SimpleOnGestureListener() {
+            override fun onDoubleTap(e: MotionEvent): Boolean {
+                HapticUtils.performConfirm(neto)
+                mostrarCobro()
+                return true
+            }
+        })
+        // El detector solo mira; la vista sigue recibiendo el toque para dibujar el pulsado.
+        neto.setOnTouchListener { _, evento ->
+            detector.onTouchEvent(evento)
+            false
+        }
+        ViewCompat.replaceAccessibilityAction(
+            neto, AccessibilityNodeInfoCompat.AccessibilityActionCompat.ACTION_CLICK, getString(R.string.cobro_accion_a11y)
+        ) { _, _ ->
+            mostrarCobro()
+            true
+        }
     }
 
     private fun mostrarCobro() {

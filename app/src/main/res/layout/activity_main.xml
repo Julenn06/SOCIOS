@@ -148,7 +148,7 @@
                         android:gravity="center_vertical"
                         android:orientation="horizontal">
 
-                        <!-- El neto: al tocarlo se apunta lo cobrado de verdad -->
+                        <!-- El neto: con un doble toque se ajusta a lo cobrado de verdad -->
                         <LinearLayout
                             android:id="@+id/containerNetoHeader"
                             android:layout_width="0dp"
@@ -306,11 +306,13 @@
                         </LinearLayout>
                     </LinearLayout>
 
-                    <!-- Lo cobrado de verdad: invita a apuntarlo y, apuntado, dice cuánto se ha descontado de lo calculado -->
+                    <!-- Solo con el neto ajustado a lo cobrado: cuánto se ha descontado de lo calculado -->
                     <LinearLayout
                         android:id="@+id/containerCobroHeader"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
+                        android:visibility="gone"
+                        tools:visibility="visible"
                         android:layout_marginTop="8dp"
                         android:background="@drawable/bg_caja_translucida"
                         android:clickable="true"
@@ -337,7 +339,7 @@
                             android:layout_weight="1"
                             android:ellipsize="end"
                             android:maxLines="1"
-                            android:text="@string/header_cobro_vacio"
+                            android:text="@string/header_cobro_descontado"
                             android:textColor="@color/header_label_cobro"
                             android:textSize="12.5sp"
                             tools:text="Te han descontado" />
