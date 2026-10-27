@@ -21,10 +21,13 @@ class DeslizarEntreSemanas(
 ) {
     private var gestoSobreControlHorizontal = false
 
-    private val detector = GestureDetector(context, object : GestureDetector.SimpleOnGestureListener() {
-        private val swipeThreshold = 80
-        private val swipeVelocityThreshold = 80
+    // En dp y no en píxeles: así el gesto pide el mismo recorrido en cualquier pantalla. 30 dp son los
+    // 80 px de antes en un móvil normal; en uno de baja densidad 80 px eran casi media pantalla.
+    private val densidad = context.resources.displayMetrics.density
+    private val distanciaMinima = DISTANCIA_MINIMA_DP * densidad
+    private val velocidadMinima = VELOCIDAD_MINIMA_DP * densidad
 
+    private val detector = GestureDetector(context, object : GestureDetector.SimpleOnGestureListener() {
         override fun onFling(
             e1: MotionEvent?, e2: MotionEvent, velocityX: Float, velocityY: Float
         ): Boolean {
@@ -33,7 +36,7 @@ class DeslizarEntreSemanas(
             val diffY = e2.y - e1.y
 
             if (abs(diffX) > abs(diffY) * 1.3f &&
-                abs(diffX) > swipeThreshold && abs(velocityX) > swipeVelocityThreshold
+                abs(diffX) > distanciaMinima && abs(velocityX) > velocidadMinima
             ) {
                 alDeslizar(if (diffX < 0) 1 else -1)
                 return true
@@ -72,5 +75,10 @@ class DeslizarEntreSemanas(
             }
         }
         return false
+    }
+
+    private companion object {
+        const val DISTANCIA_MINIMA_DP = 30f
+        const val VELOCIDAD_MINIMA_DP = 30f
     }
 }

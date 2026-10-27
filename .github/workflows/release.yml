@@ -125,6 +125,13 @@ jobs:
           target: google_apis
           script: ./gradlew connectedDebugAndroidTest
 
+      - name: Upload instrumented test report
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: informe-tests-emulador
+          path: app/build/reports/androidTests/
+
   # Solo con un tag, y solo si el build y los tests en el emulador han pasado: una migración rota no debe
   # llegar a la release, porque la app la instala sola y podría estropear los datos al actualizar.
   release:
