@@ -1,5 +1,7 @@
 package com.julen.socios
 
+import android.content.res.ColorStateList
+import android.graphics.Color
 import android.os.Bundle
 import android.view.View
 import androidx.core.content.ContextCompat
@@ -120,14 +122,27 @@ class MasBottomSheetDialog : PanelInferior<BottomSheetMasBinding>(BottomSheetMas
         b.tvEstadoVersion.text = titulo
         b.tvDetalleEstadoVersion.text = detalle
 
-        val boton = when (estado) {
-            EstadoVersion.SinComprobar, is EstadoVersion.UltimaPublicada -> R.string.action_buscar
-            EstadoVersion.Error -> R.string.action_reintentar
-            is EstadoVersion.Disponible -> R.string.action_actualizar
-            EstadoVersion.Buscando, EstadoVersion.AlDia -> null
-        }
-        b.btnEstadoVersion.isVisible = boton != null
-        boton?.let(b.btnEstadoVersion::setText)
+        // El botón está siempre: también al día (para volver a mirar) y mientras busca (desactivado), así el
+        // panel no cambia de forma. Con una versión nueva se rellena de blanco para que destaque.
+        val disponible = estado is EstadoVersion.Disponible
+        b.btnEstadoVersion.setText(
+            when (estado) {
+                EstadoVersion.SinComprobar, EstadoVersion.AlDia, is EstadoVersion.UltimaPublicada -> R.string.action_buscar
+                EstadoVersion.Buscando -> R.string.action_buscando
+                EstadoVersion.Error -> R.string.action_reintentar
+                is EstadoVersion.Disponible -> R.string.action_actualizar
+            }
+        )
+        b.btnEstadoVersion.isEnabled = !buscando
+        b.btnEstadoVersion.alpha = if (buscando) 0.6f else 1f
+        b.btnEstadoVersion.setIconResource(if (disponible) R.drawable.ic_system_update else R.drawable.ic_refresh)
+        val colorTexto = ContextCompat.getColor(requireContext(), if (disponible) R.color.header_button_text else android.R.color.white)
+        b.btnEstadoVersion.setTextColor(colorTexto)
+        b.btnEstadoVersion.iconTint = ColorStateList.valueOf(colorTexto)
+        b.btnEstadoVersion.backgroundTintList = ColorStateList.valueOf(
+            if (disponible) Color.WHITE else ContextCompat.getColor(requireContext(), R.color.header_filo)
+        )
+        b.btnEstadoVersion.strokeWidth = if (disponible) 0 else resources.displayMetrics.density.toInt().coerceAtLeast(1)
         b.btnEstadoVersion.setOnClickListener {
             if (estado is EstadoVersion.Disponible) {
                 val actividad = requireActivity()

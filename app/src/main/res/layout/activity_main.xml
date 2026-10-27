@@ -213,7 +213,10 @@
                             app:iconTint="@android:color/white" />
                     </LinearLayout>
 
-                    <!-- Base, bonus (se puede ajustar) e IRPF -->
+                    <!-- Base, bonus (se puede ajustar) e IRPF. Las cajas que se tocan no llevan el resalte
+                         estándar: es rectangular y claro, y sobre la cabecera se veía como una caja blanca.
+                         Al tocarlas se encogen un poco y vibran (ver MainActivity). -->
+
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -262,7 +265,6 @@
                             android:background="@drawable/bg_caja_translucida"
                             android:clickable="true"
                             android:focusable="true"
-                            android:foreground="?attr/selectableItemBackground"
                             android:orientation="vertical"
                             android:padding="12dp">
 
@@ -339,7 +341,6 @@
                         android:background="@drawable/bg_caja_translucida"
                         android:clickable="true"
                         android:focusable="true"
-                        android:foreground="?attr/selectableItemBackground"
                         android:gravity="center_vertical"
                         android:minHeight="44dp"
                         android:orientation="horizontal"

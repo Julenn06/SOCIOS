@@ -103,6 +103,7 @@ class AddSocioBottomSheetDialog :
             botones.forEach { boton ->
                 boton.updateLayoutParams<LinearLayout.LayoutParams> {
                     width = ViewGroup.LayoutParams.MATCH_PARENT
+                    height = ViewGroup.LayoutParams.WRAP_CONTENT
                     weight = 0f
                     marginEnd = 0
                     bottomMargin = if (boton == binding.btnGuardarSocio) 0 else separacion

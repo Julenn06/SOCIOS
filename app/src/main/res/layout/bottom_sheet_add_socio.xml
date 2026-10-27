@@ -518,11 +518,13 @@
         android:layout_height="1dp"
         android:background="@color/divider" />
 
-    <!-- Con la letra muy grande del sistema los botones se apilan (ver AddSocioBottomSheetDialog) -->
+    <!-- Los botones, a la misma altura aunque uno parta su texto en dos líneas (sin alinear por el texto y
+         todos con el alto del más alto). Con la letra muy grande se apilan (ver AddSocioBottomSheetDialog). -->
     <LinearLayout
         android:id="@+id/barraBotones"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:baselineAligned="false"
         android:background="@color/surface_card"
         android:orientation="horizontal"
         android:paddingHorizontal="20dp"
@@ -534,7 +536,7 @@
             android:id="@+id/btnGuardarYOtro"
             style="@style/Widget.Material3.Button.TonalButton"
             android:layout_width="0dp"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
             android:minHeight="56dp"
             android:layout_marginEnd="12dp"
             android:layout_weight="1"
@@ -559,7 +561,7 @@
             android:id="@+id/btnEliminarSocio"
             style="@style/Widget.Material3.Button.OutlinedButton"
             android:layout_width="0dp"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
             android:minHeight="56dp"
             android:layout_marginEnd="12dp"
             android:layout_weight="1"
@@ -579,7 +581,7 @@
             android:id="@+id/btnGuardarSocio"
             style="@style/Widget.Material3.Button"
             android:layout_width="0dp"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
             android:minHeight="56dp"
             android:layout_weight="1.6"
             android:insetTop="0dp"

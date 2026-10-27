@@ -151,17 +151,26 @@
                             tools:text="Última comprobación: hoy a las 16:05" />
                     </LinearLayout>
 
+                    <!-- Siempre visible. Pastilla translúcida con icono, como "Desglose" en la cabecera; con
+                         una versión nueva pasa a blanca para destacar (colores e icono desde código). -->
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/btnEstadoVersion"
                         style="@style/Widget.Material3.Button"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:minHeight="44dp"
-                        android:paddingHorizontal="16dp"
-                        android:textColor="@color/header_button_text"
+                        android:paddingHorizontal="14dp"
+                        android:textColor="@android:color/white"
                         android:textSize="13sp"
                         android:fontFamily="@font/geist_semibold"
-                        app:backgroundTint="@android:color/white"
+                        app:backgroundTint="#1FFFFFFF"
+                        app:cornerRadius="999dp"
+                        app:icon="@drawable/ic_refresh"
+                        app:iconPadding="6dp"
+                        app:iconSize="16dp"
+                        app:iconTint="@android:color/white"
+                        app:strokeColor="@color/header_filo"
+                        app:strokeWidth="1dp"
                         tools:text="Buscar" />
                 </LinearLayout>
             </LinearLayout>

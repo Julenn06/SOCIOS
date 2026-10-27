@@ -53,6 +53,7 @@
     <string name="version_error">No se ha podido comprobar</string>
     <string name="version_error_detalle">Revisa la conexión a internet</string>
     <string name="action_buscar">Buscar</string>
+    <string name="action_buscando">Buscando…</string>
 
     <!-- Tema -->
     <string name="tema_sistema">Sistema</string>
