@@ -11,6 +11,8 @@
 
     <!-- Main Navigation & Titles -->
     <string name="title_app_bar">Gestión de Socios</string>
+    <!-- Con la letra grande del sistema el título completo no cabe junto a los iconos de la barra -->
+    <string name="title_app_bar_corto">Socios</string>
     <string name="btn_hoy">Hoy</string>
     <string name="subtitle_current_week">Semana actual</string>
     <string name="rango_semana_anio">%1$s %2$s</string>
@@ -178,7 +180,7 @@
         <item quantity="many">%d pendientes de semanas anteriores</item>
         <item quantity="other">%d pendientes de semanas anteriores</item>
     </plurals>
-    <string name="pendientes_aviso_detalle">Toca para revisarlos</string>
+    <string name="pendientes_accion_revisar">Revisar los pendientes</string>
     <string name="cd_ocultar_aviso_pendientes">Ocultar el aviso de pendientes</string>
     <string name="pendientes_titulo">Pendientes anteriores</string>
     <string name="pendientes_subtitulo">Socios sin conseguir de semanas pasadas</string>
@@ -481,5 +483,7 @@
     <string name="cd_semana_siguiente">Semana siguiente</string>
     <string name="cd_editar_socio">Editar socio</string>
     <string name="cd_eliminar_socio">Eliminar socio</string>
+    <string name="socio_menu_editar">Editar</string>
+    <string name="socio_accion_abrir_semana">Abrir su semana</string>
     <string name="menu_historico_a11y">Histórico acumulado</string>
 </resources>

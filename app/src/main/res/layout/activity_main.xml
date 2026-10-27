@@ -69,10 +69,16 @@
                         android:gravity="center"
                         android:orientation="vertical">
 
+                        <!-- Con la letra grande del sistema se encoge en vez de partir la fecha en dos líneas -->
                         <TextView
                             android:id="@+id/tvRangoSemana"
-                            android:layout_width="wrap_content"
+                            android:layout_width="match_parent"
                             android:layout_height="wrap_content"
+                            android:autoSizeMaxTextSize="16sp"
+                            android:autoSizeMinTextSize="11sp"
+                            android:autoSizeTextType="uniform"
+                            android:gravity="center"
+                            android:maxLines="1"
                             android:textColor="@color/text_main"
                             android:textSize="16sp"
                             android:fontFamily="@font/geist_semibold"
@@ -354,7 +360,7 @@
                             android:layout_marginHorizontal="8dp"
                             android:layout_weight="1"
                             android:ellipsize="end"
-                            android:maxLines="1"
+                            android:maxLines="2"
                             android:text="@string/header_cobro_descontado"
                             android:textColor="@color/header_label_cobro"
                             android:textSize="12.5sp"
@@ -381,15 +387,17 @@
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Aviso de socios pendientes en semanas anteriores: lleva a revisarlos; la ✕ lo oculta -->
+            <!-- Aviso de socios pendientes en semanas anteriores: una franja fina que lleva a revisarlos; la ✕
+                 lo oculta hasta que haya otro. Fina para no quitarle sitio a la semana que se está viendo. -->
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/cardAvisoPendientes"
                 style="@style/Socios.TarjetaFila"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="14dp"
+                android:layout_marginTop="12dp"
                 android:visibility="gone"
                 app:cardBackgroundColor="@color/amber_container"
+                app:cardCornerRadius="16dp"
                 app:strokeColor="@color/amber_stroke"
                 tools:visibility="visible">
 
@@ -398,51 +406,36 @@
                     android:layout_height="wrap_content"
                     android:gravity="center_vertical"
                     android:orientation="horizontal"
-                    android:paddingVertical="10dp"
                     android:paddingStart="14dp"
-                    android:paddingEnd="6dp">
+                    android:paddingEnd="2dp">
 
-                    <FrameLayout
-                        android:layout_width="40dp"
-                        android:layout_height="40dp"
-                        android:background="@drawable/bg_icono_ambar">
+                    <ImageView
+                        android:layout_width="20dp"
+                        android:layout_height="20dp"
+                        android:importantForAccessibility="no"
+                        android:src="@drawable/ic_pendientes"
+                        app:tint="@color/amber_text" />
 
-                        <ImageView
-                            android:layout_width="22dp"
-                            android:layout_height="22dp"
-                            android:layout_gravity="center"
-                            android:importantForAccessibility="no"
-                            android:src="@drawable/ic_pendientes"
-                            app:tint="@android:color/white" />
-                    </FrameLayout>
-
-                    <LinearLayout
+                    <TextView
+                        android:id="@+id/tvAvisoPendientes"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:layout_marginHorizontal="12dp"
+                        android:layout_marginHorizontal="10dp"
                         android:layout_weight="1"
-                        android:orientation="vertical">
-
-                        <TextView
-                            android:id="@+id/tvAvisoPendientes"
-                            style="@style/Socios.TituloFila"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:textColor="@color/amber_text"
-                            tools:text="3 pendientes de semanas anteriores" />
-
-                        <TextView
-                            style="@style/Socios.DescripcionFila"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="@string/pendientes_aviso_detalle" />
-                    </LinearLayout>
+                        android:fontFamily="@font/geist_semibold"
+                        android:paddingVertical="6dp"
+                        android:textColor="@color/amber_text"
+                        android:textSize="14sp"
+                        tools:text="3 pendientes de semanas anteriores" />
 
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/btnOcultarAvisoPendientes"
                         style="@style/Socios.BotonAccionSocio"
+                        android:layout_width="48dp"
+                        android:layout_height="48dp"
                         android:contentDescription="@string/cd_ocultar_aviso_pendientes"
                         app:icon="@drawable/ic_close"
+                        app:iconSize="18dp"
                         app:iconTint="@color/amber_text" />
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>

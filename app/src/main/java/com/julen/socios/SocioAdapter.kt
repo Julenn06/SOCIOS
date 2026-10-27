@@ -2,11 +2,16 @@ package com.julen.socios
 
 import android.animation.ValueAnimator
 import android.graphics.drawable.GradientDrawable
+import android.view.Gravity
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
+import androidx.appcompat.widget.PopupMenu
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.ColorUtils
+import androidx.core.view.ViewCompat
+import androidx.core.view.accessibility.AccessibilityNodeInfoCompat.AccessibilityActionCompat
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
@@ -54,8 +59,9 @@ sealed interface FilaSocio {
 }
 
 /**
- * Socios con su interruptor, lápiz y papelera. En la pantalla principal van agrupados por día; en la búsqueda
- * y en los pendientes ([mostrarSemana]) cada uno dice de qué semana es y, al tocarlo, se abre esa semana.
+ * Socios con su interruptor. Tocar uno lo edita y mantenerlo pulsado ofrece editar o eliminar. En la pantalla
+ * principal van agrupados por día; en la búsqueda y en los pendientes ([mostrarSemana]) cada uno dice de qué
+ * semana es y tocarlo abre esa semana en lugar de editarlo.
  */
 class SocioAdapter(
     private val onCambiarHecho: (Socio, Boolean) -> Unit,
@@ -69,6 +75,8 @@ class SocioAdapter(
         private const val PAYLOAD_HECHO_CHANGED = "PAYLOAD_HECHO_CHANGED"
         private const val TIPO_CABECERA = 0
         private const val TIPO_SOCIO = 1
+        private const val MENU_EDITAR = 1
+        private const val MENU_ELIMINAR = 2
     }
 
     override fun getItemViewType(position: Int) = when (getItem(position)) {
@@ -146,24 +154,49 @@ class SocioAdapter(
                 socioActual()?.let { onCambiarHecho(it, binding.switchHecho.isChecked) }
             }
 
-            binding.btnEditar.setOnClickListener { view ->
+            // Tocar la tarjeta la edita (o, en búsqueda y pendientes, abre su semana); mantenerla pulsada
+            // ofrece editar y eliminar. Así la fila solo lleva el interruptor y deja sitio al nombre.
+            val alTocar = onAbrir ?: onEdit
+            binding.root.setOnClickListener { view ->
                 HapticUtils.performClick(view)
-                socioActual()?.let(onEdit)
+                socioActual()?.let(alTocar)
+            }
+            binding.root.setOnLongClickListener { view ->
+                HapticUtils.performConfirm(view)
+                mostrarMenu(view)
+                true
             }
 
-            binding.btnEliminar.setOnClickListener { view ->
-                HapticUtils.performClick(view)
-                socioActual()?.let(onDelete)
-            }
-
-            // En la pantalla principal tocar la tarjeta no hace nada: editar va solo con el lápiz.
-            onAbrir?.let { abrir ->
-                binding.root.setOnClickListener { view ->
-                    HapticUtils.performClick(view)
-                    socioActual()?.let(abrir)
+            // Con TalkBack, las mismas acciones sin tener que abrir el menú.
+            val recursos = binding.root.resources
+            ViewCompat.replaceAccessibilityAction(
+                binding.root, AccessibilityActionCompat.ACTION_CLICK,
+                recursos.getString(if (onAbrir != null) R.string.socio_accion_abrir_semana else R.string.cd_editar_socio)
+            ) { _, _ -> socioActual()?.let(alTocar); true }
+            if (onAbrir != null) {
+                ViewCompat.addAccessibilityAction(binding.root, recursos.getString(R.string.cd_editar_socio)) { _, _ ->
+                    socioActual()?.let(onEdit); true
                 }
             }
-            binding.root.isClickable = onAbrir != null
+            ViewCompat.addAccessibilityAction(binding.root, recursos.getString(R.string.cd_eliminar_socio)) { _, _ ->
+                socioActual()?.let(onDelete); true
+            }
+        }
+
+        private fun mostrarMenu(ancla: View) {
+            val socio = socioActual() ?: return
+            PopupMenu(ancla.context, ancla, Gravity.END).apply {
+                menu.add(0, MENU_EDITAR, 0, R.string.socio_menu_editar)
+                menu.add(0, MENU_ELIMINAR, 1, R.string.action_delete)
+                setOnMenuItemClickListener { item ->
+                    when (item.itemId) {
+                        MENU_EDITAR -> onEdit(socio)
+                        MENU_ELIMINAR -> onDelete(socio)
+                    }
+                    true
+                }
+                show()
+            }
         }
 
         private fun socioActual(): Socio? =

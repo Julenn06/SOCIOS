@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Un socio de la lista, en una sola fila: placa del importe, nombre con día y estado, y a la derecha
-     el interruptor (lo marca como conseguido) con el lápiz (lo edita) y la papelera (lo borra) debajo. -->
+     el interruptor que lo marca como conseguido. -->
 <com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
@@ -19,7 +19,7 @@
         android:paddingStart="12dp"
         android:paddingTop="12dp"
         android:paddingEnd="8dp"
-        android:paddingBottom="8dp">
+        android:paddingBottom="12dp">
 
         <!-- Placa del importe: el fondo (verde o ámbar según el estado) se pone desde código. Tamaño mínimo
              y no fijo, para que con la letra grande del sistema crezca en lugar de cortar el importe. -->
@@ -126,41 +126,16 @@
                 tools:text="Firma realizada en punto presencial" />
         </LinearLayout>
 
-        <!-- Solo el interruptor cambia el estado; el lápiz edita y la papelera borra (con confirmación) -->
-        <LinearLayout
+        <!-- Solo el interruptor cambia el estado. Tocar la tarjeta la edita y mantenerla pulsada ofrece
+             editar o eliminar (con confirmación y opción de deshacer). -->
+        <com.google.android.material.materialswitch.MaterialSwitch
+            android:id="@+id/switchHecho"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
             android:layout_marginStart="4dp"
-            android:gravity="end"
-            android:orientation="vertical">
-
-            <com.google.android.material.materialswitch.MaterialSwitch
-                android:id="@+id/switchHecho"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginEnd="4dp"
-                android:contentDescription="@string/item_switch_hecho"
-                android:minHeight="40dp" />
-
-            <LinearLayout
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal">
-
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btnEditar"
-                    style="@style/Socios.BotonAccionSocio"
-                    android:contentDescription="@string/cd_editar_socio"
-                    app:icon="@drawable/ic_edit"
-                    app:iconTint="@color/text_sub" />
-
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btnEliminar"
-                    style="@style/Socios.BotonAccionSocio"
-                    android:contentDescription="@string/cd_eliminar_socio"
-                    app:icon="@drawable/ic_delete"
-                    app:iconTint="@color/red_text" />
-            </LinearLayout>
-        </LinearLayout>
+            android:layout_marginEnd="4dp"
+            android:contentDescription="@string/item_switch_hecho"
+            android:minHeight="48dp" />
     </LinearLayout>
 </com.google.android.material.card.MaterialCardView>

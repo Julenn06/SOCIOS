@@ -23,8 +23,12 @@ object NumberAnimators {
         val startValue = (textView.getTag(R.id.tag_numeric_value) as? Double) ?: 0.0
         textView.setTag(R.id.tag_numeric_value, newValue)
 
+        // El cero, sin signo ni decimales: "0 €" y no "-0,00 €" en una semana sin nada.
+        fun texto(valor: Double) =
+            if (abs(valor) < 0.005) 0.0.toCurrencyString(decimals = 0) else valor.toCurrencyString(decimals, prefix)
+
         if (abs(startValue - newValue) < 0.001) {
-            textView.text = newValue.toCurrencyString(decimals, prefix)
+            textView.text = texto(newValue)
             return
         }
 
@@ -33,12 +37,12 @@ object NumberAnimators {
             interpolator = FastOutSlowInInterpolator()
             addUpdateListener { anim ->
                 val current = (anim.animatedValue as Float).toDouble()
-                textView.text = current.toCurrencyString(decimals, prefix)
+                textView.text = texto(current)
             }
             addListener(object : AnimatorListenerAdapter() {
                 override fun onAnimationEnd(animation: Animator) {
                     // Terminar siempre en el valor exacto, sin el error de redondeo del Float.
-                    textView.text = newValue.toCurrencyString(decimals, prefix)
+                    textView.text = texto(newValue)
                     textView.setTag(R.id.tag_numeric_animator, null)
                 }
             })

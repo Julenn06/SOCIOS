@@ -101,11 +101,16 @@
                             android:textSize="13sp"
                             android:fontFamily="@font/geist_medium" />
 
+                        <!-- Con la letra grande del sistema se encoge en vez de partirse por la coma -->
                         <TextView
                             android:id="@+id/tvPreviewBaseX2"
-                            android:layout_width="wrap_content"
+                            android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="2dp"
+                            android:autoSizeMaxTextSize="38sp"
+                            android:autoSizeMinTextSize="18sp"
+                            android:autoSizeTextType="uniform"
+                            android:maxLines="1"
                             android:textColor="@android:color/white"
                             android:textSize="38sp"
                             android:fontFamily="@font/geist_semibold"
@@ -521,7 +526,8 @@
         android:paddingHorizontal="20dp"
         android:paddingVertical="12dp">
 
-        <!-- Solo al añadir: guarda y deja el formulario listo para el siguiente socio -->
+        <!-- Solo al añadir: guarda y deja el formulario listo para el siguiente socio. Los textos de los
+             botones pueden ocupar dos líneas (ver AddSocioBottomSheetDialog) en vez de cortarse ("Guarda…"). -->
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnGuardarYOtro"
             style="@style/Widget.Material3.Button.TonalButton"
@@ -532,6 +538,7 @@
             android:layout_weight="1"
             android:insetTop="0dp"
             android:insetBottom="0dp"
+            android:paddingHorizontal="16dp"
             android:text="@string/action_guardar_y_otro"
             android:textColor="@color/on_primary_container"
             android:textSize="15sp"

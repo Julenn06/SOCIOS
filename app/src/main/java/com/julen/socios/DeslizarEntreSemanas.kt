@@ -42,20 +42,20 @@ class DeslizarEntreSemanas(
         }
     })
 
-    fun onTouchEvent(ev: MotionEvent) {
+    /** Devuelve true si el gesto ha cambiado de semana: entonces no debe contar también como un toque. */
+    fun onTouchEvent(ev: MotionEvent): Boolean {
         if (ev.actionMasked == MotionEvent.ACTION_DOWN) {
             // Un deslizamiento que empieza en un control que ya se arrastra en horizontal (switch,
             // chip, fila desplazable) es para ese control, no para cambiar de semana.
             gestoSobreControlHorizontal = hayControlHorizontalEn(raiz, ev.rawX, ev.rawY)
         }
 
-        if (!gestoSobreControlHorizontal) {
-            detector.onTouchEvent(ev)
-        }
+        val cambiado = !gestoSobreControlHorizontal && detector.onTouchEvent(ev)
 
         if (ev.actionMasked == MotionEvent.ACTION_UP || ev.actionMasked == MotionEvent.ACTION_CANCEL) {
             gestoSobreControlHorizontal = false
         }
+        return cambiado
     }
 
     private fun hayControlHorizontalEn(view: View, rawX: Float, rawY: Float): Boolean {

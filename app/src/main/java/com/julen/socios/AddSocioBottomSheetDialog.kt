@@ -82,6 +82,12 @@ class AddSocioBottomSheetDialog :
         // Al añadir, el segundo botón guarda y prepara otro; para cancelar están la ✕ y deslizar hacia abajo.
         binding.btnGuardarYOtro.isVisible = socio == null
         binding.btnCancelarAdd.isVisible = socio != null
+        // Los botones de Material van en una línea y cortan "Guardar y otro" (o, con la letra grande,
+        // "Guardar cambios"): mejor partirlo en dos.
+        listOf(binding.btnGuardarYOtro, binding.btnCancelarAdd, binding.btnGuardarSocio).forEach {
+            it.isSingleLine = false
+            it.maxLines = 2
+        }
 
         if (savedInstanceState == null) {
             if (socio != null) {

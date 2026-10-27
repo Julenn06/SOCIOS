@@ -108,6 +108,9 @@ class MainActivity : AppCompatActivity() {
         }
 
         setSupportActionBar(binding.toolbar)
+        if (resources.configuration.fontScale >= ESCALA_LETRA_TITULO_CORTO) {
+            binding.toolbar.setTitle(R.string.title_app_bar_corto)
+        }
 
         cabecera = CabeceraResumen(binding)
         setupRecyclerView()
@@ -345,7 +348,13 @@ class MainActivity : AppCompatActivity() {
     // --- Gestos ---
 
     override fun dispatchTouchEvent(ev: MotionEvent): Boolean {
-        deslizarEntreSemanas.onTouchEvent(ev)
+        if (deslizarEntreSemanas.onTouchEvent(ev)) {
+            // El gesto ha cambiado de semana: la tarjeta que había debajo no debe tomarlo también por un toque.
+            val cancelar = MotionEvent.obtain(ev).apply { action = MotionEvent.ACTION_CANCEL }
+            super.dispatchTouchEvent(cancelar)
+            cancelar.recycle()
+            return true
+        }
         return super.dispatchTouchEvent(ev)
     }
 
@@ -413,6 +422,14 @@ class MainActivity : AppCompatActivity() {
         binding.cardAvisoPendientes.setOnClickListener {
             HapticUtils.performClick(it)
             mostrarLista { ListaSociosBottomSheetDialog.pendientes() }
+        }
+        ViewCompat.replaceAccessibilityAction(
+            binding.cardAvisoPendientes,
+            AccessibilityNodeInfoCompat.AccessibilityActionCompat.ACTION_CLICK,
+            getString(R.string.pendientes_accion_revisar)
+        ) { _, _ ->
+            mostrarLista { ListaSociosBottomSheetDialog.pendientes() }
+            true
         }
         binding.btnOcultarAvisoPendientes.setOnClickListener {
             HapticUtils.performClick(it)
@@ -520,5 +537,8 @@ class MainActivity : AppCompatActivity() {
         private const val ATAJO_NUEVO_SOCIO = "nuevo_socio"
 
         private const val DURACION_AVISO_VERSION_MS = 10_000
+
+        /** A partir de esta letra del sistema, "Gestión de Socios" no cabe junto a los tres iconos de la barra. */
+        private const val ESCALA_LETRA_TITULO_CORTO = 1.3f
     }
 }
