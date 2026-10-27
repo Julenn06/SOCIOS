@@ -68,7 +68,7 @@ object BackupCsv {
     }
 
     fun leer(inputStream: InputStream): ResultadoLectura {
-        val texto = inputStream.bufferedReader(Charsets.UTF_8).use { it.readText() }.removePrefix(BOM_UTF8)
+        val texto = leerTextoCopia(inputStream)
 
         val socios = mutableListOf<SocioDto>()
         val bonos = mutableListOf<BonoRegaloDto>()

@@ -466,6 +466,9 @@
     <string name="msg_error_import">Error al importar: %s</string>
     <string name="msg_import_vacio">El archivo %s no contiene datos válidos</string>
     <string name="msg_error_generico">Se ha producido un error: %s</string>
+    <string name="error_sin_espacio">no queda espacio libre en el móvil</string>
+    <string name="error_archivo_inaccesible">no se ha podido abrir el archivo; puede que se haya movido o que no haya permiso para usarlo</string>
+    <string name="error_inesperado">error inesperado (%s)</string>
     <plurals name="msg_import_resultado">
         <item quantity="one">Importado %1$d socio (%2$d bonus, %3$d cambios de IRPF, %4$d semanas con lo cobrado)</item>
         <item quantity="many">Importados %1$d socios (%2$d bonus, %3$d cambios de IRPF, %4$d semanas con lo cobrado)</item>

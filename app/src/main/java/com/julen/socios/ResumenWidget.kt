@@ -28,7 +28,9 @@ class ResumenWidgetProvider : AppWidgetProvider() {
         val pendiente = goAsync()
         CoroutineScope(SupervisorJob() + Dispatchers.IO).launch {
             try {
-                ResumenWidget.actualizar(context, appWidgetIds)
+                // Este alcance no tiene quien recoja los errores: uno sin capturar cerraría la app entera.
+                // Si falla, el widget se queda como estaba hasta la próxima actualización.
+                runCatching { ResumenWidget.actualizar(context, appWidgetIds) }
             } finally {
                 pendiente.finish()
             }

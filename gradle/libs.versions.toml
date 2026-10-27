@@ -17,6 +17,7 @@ recyclerview = "1.4.0"
 coordinatorlayout = "1.3.0"
 coroutines = "1.11.0"
 room = "2.8.5"
+# La 1.12 trae la stdlib de Kotlin 2.4 y no compila con el Kotlin 2.2 de AGP: subirla junto con AGP.
 kotlinxSerialization = "1.11.0"
 
 [libraries]

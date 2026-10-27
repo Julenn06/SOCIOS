@@ -32,9 +32,10 @@ object BackupJson {
     /**
      * Lee una copia completa (objeto con socios, bonos e IRPF) o el formato antiguo (lista de socios).
      * @throws SerializationException si el archivo no es un JSON con alguno de esos formatos.
+     * @throws java.io.IOException si el archivo es demasiado grande para ser una copia.
      */
     fun leer(inputStream: InputStream): ResultadoLectura {
-        val texto = inputStream.bufferedReader(Charsets.UTF_8).use { it.readText() }.removePrefix(BOM_UTF8)
+        val texto = leerTextoCopia(inputStream)
         val dto = try {
             when (val raiz = json.parseToJsonElement(texto)) {
                 is JsonObject -> json.decodeFromJsonElement(BackupDto.serializer(), raiz)

@@ -32,6 +32,7 @@ import com.julen.socios.model.Socio
 import com.julen.socios.util.CalculoComisiones
 import com.julen.socios.util.DateUtils
 import com.julen.socios.util.UiText
+import com.julen.socios.util.motivoDeError
 import com.julen.socios.util.toFormattedEuros
 import com.julen.socios.util.toPorcentajeString
 import java.time.Clock
@@ -456,7 +457,7 @@ class MainViewModel(
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {
-                mensajeLargo(errorRes, TipoAviso.ERROR, e.message ?: e.javaClass.simpleName)
+                mensajeLargo(errorRes, TipoAviso.ERROR, motivoDeError(e))
             }
         }
     }

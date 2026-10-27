@@ -7,10 +7,10 @@ import com.julen.socios.data.backup.BackupCsv
 import com.julen.socios.data.backup.BackupJson
 import com.julen.socios.model.DatosBackup
 import com.julen.socios.model.ResultadoLectura
+import com.julen.socios.util.ErrorParaUsuario
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.File
-import java.io.IOException
 import java.io.OutputStream
 import java.time.Clock
 import java.time.LocalDateTime
@@ -50,7 +50,7 @@ class ExportadorArchivos(
     override suspend fun escribirEnUri(request: ExportRequest, datos: DatosBackup, uri: Uri) =
         withContext(Dispatchers.IO) {
             val out = appContext.contentResolver.openOutputStream(uri)
-                ?: throw IOException("No se pudo abrir el archivo de destino")
+                ?: throw ErrorParaUsuario("no se ha podido abrir el archivo de destino")
             out.use { escribir(request, datos, it) }
         }
 
@@ -66,7 +66,7 @@ class ExportadorArchivos(
     override suspend fun leerImportacion(uri: Uri, formato: ImportFormat): ResultadoLectura =
         withContext(Dispatchers.IO) {
             val input = appContext.contentResolver.openInputStream(uri)
-                ?: throw IOException("No se pudo abrir el archivo seleccionado")
+                ?: throw ErrorParaUsuario("no se ha podido abrir el archivo seleccionado")
             input.use {
                 when (formato) {
                     ImportFormat.JSON -> BackupJson.leer(it)
