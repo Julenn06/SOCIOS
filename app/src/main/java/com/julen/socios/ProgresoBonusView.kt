@@ -8,7 +8,6 @@ import android.graphics.Paint
 import android.graphics.RectF
 import android.graphics.Shader
 import android.util.AttributeSet
-import android.util.TypedValue
 import android.view.View
 import androidx.core.content.ContextCompat
 import androidx.core.content.res.ResourcesCompat
@@ -16,6 +15,7 @@ import androidx.interpolator.view.animation.FastOutSlowInInterpolator
 import com.julen.socios.util.CalculoComisiones
 import com.julen.socios.util.toEurosCompacto
 import kotlin.math.max
+import kotlin.math.min
 
 /**
  * Progreso hacia los tramos del bonus: una barra con un hito por tramo (5 socios → 50 €, 7 → 100 €…),
@@ -29,7 +29,10 @@ class ProgresoBonusView @JvmOverloads constructor(
 ) : View(context, attrs, defStyleAttr) {
 
     private val densidad = resources.displayMetrics.density
-    private val radioHito = 12 * densidad
+
+    // Los textos van dentro de los hitos y entre hitos cercanos: crecen con la letra del sistema, pero solo
+    // hasta ESCALA_TEXTO_MAX para no pisarse. TalkBack ya lee el progreso completo (ver MainActivity).
+    private val escalaTexto = min(resources.configuration.fontScale, ESCALA_TEXTO_MAX)
     private val grosor = 8 * densidad
 
     private var inicio = 0
@@ -64,11 +67,16 @@ class ProgresoBonusView @JvmOverloads constructor(
         fontFeatureSettings = "tnum"
         textSize = sp(11.5f)
     }
+    private val tamanoImporte = pintaImporte.textSize
+
+    /** 12dp, o más si el número de socios no cabe dentro con la letra grande. */
+    private val radioHito = max(12 * densidad, pintaNumero.measureText("00") / 2 + 4 * densidad)
+
     private val colorTexto = ContextCompat.getColor(context, R.color.text_main)
     private val colorTextoSuave = ContextCompat.getColor(context, R.color.text_sub)
     private val rect = RectF()
 
-    private fun sp(valor: Float) = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, valor, resources.displayMetrics)
+    private fun sp(valor: Float) = valor * densidad * escalaTexto
 
     /** Muestra [socios] hechos; con [animar], la barra avanza (o retrocede) hasta ellos. */
     fun mostrar(socios: Int, animar: Boolean) {
@@ -99,7 +107,9 @@ class ProgresoBonusView @JvmOverloads constructor(
         listOf(5, 7) + generateSequence(10) { it + 3 }.takeWhile { it <= fin }.toList()
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
-        val alto = (radioHito * 2 + 22 * densidad).toInt() + paddingTop + paddingBottom
+        val altoImporte = pintaImporte.descent() - pintaImporte.ascent()
+        val alto = (radioHito * 2 + SEPARACION_IMPORTE * densidad + altoImporte + MARGEN_INFERIOR * densidad).toInt() +
+            paddingTop + paddingBottom
         setMeasuredDimension(getDefaultSize(suggestedMinimumWidth, widthMeasureSpec), resolveSize(alto, heightMeasureSpec))
     }
 
@@ -115,11 +125,22 @@ class ProgresoBonusView @JvmOverloads constructor(
     }
 
     override fun onDraw(canvas: Canvas) {
-        // Margen para que el importe del último hito no se corte.
+        pintaImporte.textSize = tamanoImporte
+        val importes = hitos.map { CalculoComisiones.calcularBonusSemanal(it).toEurosCompacto(prefix = "+") }
         val izquierda = paddingLeft + radioHito
-        val derecha = width - paddingRight - radioHito * 1.6f
+        // Margen para que el importe del último hito no se corte.
+        val anchoUltimo = importes.lastOrNull()?.let(pintaImporte::measureText) ?: 0f
+        val derecha = width - paddingRight - max(radioHito * 1.6f, anchoUltimo / 2)
         val centroY = paddingTop + radioHito
         fun x(valor: Float) = izquierda + (valor - inicio) / (fin - inicio) * (derecha - izquierda)
+
+        // Si dos importes vecinos no caben (hitos juntos o letra grande), se encogen lo justo para no pisarse.
+        val factor = (1 until hitos.size).minOfOrNull { i ->
+            val disponible = x(hitos[i].toFloat()) - x(hitos[i - 1].toFloat()) - 6 * densidad
+            val necesario = (pintaImporte.measureText(importes[i - 1]) + pintaImporte.measureText(importes[i])) / 2
+            min(1f, disponible / necesario)
+        } ?: 1f
+        if (factor < 1f) pintaImporte.textSize = tamanoImporte * factor
 
         rect.set(izquierda, centroY - grosor / 2, derecha, centroY + grosor / 2)
         canvas.drawRoundRect(rect, grosor, grosor, pintaPista)
@@ -130,8 +151,8 @@ class ProgresoBonusView @JvmOverloads constructor(
         }
 
         val baseNumero = centroY - (pintaNumero.descent() + pintaNumero.ascent()) / 2
-        val baseImporte = centroY + radioHito + 16 * densidad
-        for (hito in hitos) {
+        val baseImporte = centroY + radioHito + SEPARACION_IMPORTE * densidad - pintaImporte.ascent()
+        for ((indice, hito) in hitos.withIndex()) {
             val cx = x(hito.toFloat())
             val alcanzado = mostrado >= hito
             if (alcanzado) {
@@ -146,9 +167,7 @@ class ProgresoBonusView @JvmOverloads constructor(
             pintaNumero.color = if (alcanzado) colorFondo else colorTextoSuave
             canvas.drawText(hito.toString(), cx, baseNumero, pintaNumero)
             pintaImporte.color = if (alcanzado) colorTexto else colorTextoSuave
-            canvas.drawText(
-                CalculoComisiones.calcularBonusSemanal(hito).toEurosCompacto(prefix = "+"), cx, baseImporte, pintaImporte
-            )
+            canvas.drawText(importes[indice], cx, baseImporte, pintaImporte)
         }
     }
 
@@ -157,5 +176,10 @@ class ProgresoBonusView @JvmOverloads constructor(
         const val TRAMO_FIJO_MAX = 10
         const val VENTANA = 9
         const val DURACION_MS = 650L
+        const val ESCALA_TEXTO_MAX = 1.3f
+
+        /** En dp: del hito al importe y del importe al borde inferior (con la letra normal, como antes). */
+        const val SEPARACION_IMPORTE = 5f
+        const val MARGEN_INFERIOR = 3.5f
     }
 }

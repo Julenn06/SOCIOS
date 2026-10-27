@@ -21,11 +21,14 @@
         android:paddingEnd="8dp"
         android:paddingBottom="8dp">
 
-        <!-- Placa del importe: el fondo (verde o ámbar según el estado) se pone desde código -->
+        <!-- Placa del importe: el fondo (verde o ámbar según el estado) se pone desde código. Tamaño mínimo
+             y no fijo, para que con la letra grande del sistema crezca en lugar de cortar el importe. -->
         <LinearLayout
             android:id="@+id/placaImporte"
-            android:layout_width="60dp"
-            android:layout_height="60dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:minWidth="60dp"
+            android:minHeight="60dp"
             android:gravity="center"
             android:orientation="vertical">
 

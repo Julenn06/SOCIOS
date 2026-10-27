@@ -170,12 +170,17 @@
                                 android:textSize="13sp"
                                 android:fontFamily="@font/geist_medium" />
 
+                            <!-- Con la letra grande del sistema la cifra se encoge en vez de partirse por la coma -->
                             <TextView
                                 android:id="@+id/tvNetoHeader"
                                 style="@style/Socios.CifraGrande"
-                                android:layout_width="wrap_content"
+                                android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
                                 android:layout_marginTop="8dp"
+                                android:autoSizeMaxTextSize="44sp"
+                                android:autoSizeMinTextSize="20sp"
+                                android:autoSizeTextType="uniform"
+                                android:maxLines="1"
                                 android:textColor="@android:color/white"
                                 android:textSize="44sp"
                                 tools:text="424,01 €" />
@@ -221,6 +226,7 @@
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
+                                android:ellipsize="end"
                                 android:maxLines="1"
                                 android:text="@string/label_base_x2"
                                 android:textColor="@color/header_label_base"
@@ -228,9 +234,12 @@
 
                             <TextView
                                 android:id="@+id/tvBaseHeader"
-                                android:layout_width="wrap_content"
+                                android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
                                 android:layout_marginTop="2dp"
+                                android:autoSizeMaxTextSize="16sp"
+                                android:autoSizeMinTextSize="10sp"
+                                android:autoSizeTextType="uniform"
                                 android:maxLines="1"
                                 android:textColor="@android:color/white"
                                 android:textSize="16sp"
@@ -256,6 +265,7 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:drawablePadding="4dp"
+                                android:ellipsize="end"
                                 android:maxLines="1"
                                 android:textColor="@color/header_label_bonus"
                                 android:textSize="11.5sp"
@@ -265,9 +275,12 @@
 
                             <TextView
                                 android:id="@+id/tvBonusHeader"
-                                android:layout_width="wrap_content"
+                                android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
                                 android:layout_marginTop="2dp"
+                                android:autoSizeMaxTextSize="16sp"
+                                android:autoSizeMinTextSize="10sp"
+                                android:autoSizeTextType="uniform"
                                 android:maxLines="1"
                                 android:textColor="@color/header_bonus"
                                 android:textSize="16sp"
@@ -287,6 +300,7 @@
                                 android:id="@+id/tvIrpfHeaderLabel"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
+                                android:ellipsize="end"
                                 android:maxLines="1"
                                 android:textColor="@color/header_label_irpf"
                                 android:textSize="11.5sp"
@@ -294,9 +308,12 @@
 
                             <TextView
                                 android:id="@+id/tvIrpfHeader"
-                                android:layout_width="wrap_content"
+                                android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
                                 android:layout_marginTop="2dp"
+                                android:autoSizeMaxTextSize="16sp"
+                                android:autoSizeMinTextSize="10sp"
+                                android:autoSizeTextType="uniform"
                                 android:maxLines="1"
                                 android:textColor="@color/header_irpf"
                                 android:textSize="16sp"
