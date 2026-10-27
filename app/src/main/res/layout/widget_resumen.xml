@@ -34,10 +34,14 @@
                 android:textColor="@color/header_label_neto"
                 android:textSize="12sp" />
 
+            <!-- Con la letra grande del sistema se encoge en vez de cortarse: el widget tiene alto fijo -->
             <TextView
                 android:id="@+id/tvWidgetNeto"
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:autoSizeMaxTextSize="30sp"
+                android:autoSizeMinTextSize="16sp"
+                android:autoSizeTextType="uniform"
                 android:fontFamily="sans-serif-medium"
                 android:fontFeatureSettings="tnum"
                 android:includeFontPadding="false"

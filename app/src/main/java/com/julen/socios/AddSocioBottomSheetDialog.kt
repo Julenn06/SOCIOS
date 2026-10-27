@@ -7,12 +7,16 @@ import android.os.Bundle
 import android.transition.AutoTransition
 import android.transition.TransitionManager
 import android.view.View
+import android.view.ViewGroup
 import android.widget.GridLayout
+import android.widget.LinearLayout
+import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.ColorUtils
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.isVisible
+import androidx.core.view.updateLayoutParams
 import androidx.core.widget.doOnTextChanged
 import androidx.fragment.app.activityViewModels
 import com.google.android.material.button.MaterialButton
@@ -64,6 +68,8 @@ class AddSocioBottomSheetDialog :
     private val fondoHero = GradientDrawable().apply { orientation = GradientDrawable.Orientation.TL_BR }
     private var animacionFondo: ValueAnimator? = null
 
+    private var dialogoEliminar: AlertDialog? = null
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
@@ -79,14 +85,29 @@ class AddSocioBottomSheetDialog :
         val socio = socioToEdit
         binding.tvTitleBottomSheet.setText(if (socio != null) R.string.title_edit_socio else R.string.title_add_socio)
         binding.btnGuardarSocio.setText(if (socio != null) R.string.action_guardar_cambios else R.string.action_save_socio)
-        // Al añadir, el segundo botón guarda y prepara otro; para cancelar están la ✕ y deslizar hacia abajo.
+        // Al añadir, el segundo botón guarda y prepara otro; al editar, lo elimina. Para cancelar están la ✕
+        // y deslizar hacia abajo.
         binding.btnGuardarYOtro.isVisible = socio == null
-        binding.btnCancelarAdd.isVisible = socio != null
+        binding.btnEliminarSocio.isVisible = socio != null
         // Los botones de Material van en una línea y cortan "Guardar y otro" (o, con la letra grande,
         // "Guardar cambios"): mejor partirlo en dos.
-        listOf(binding.btnGuardarYOtro, binding.btnCancelarAdd, binding.btnGuardarSocio).forEach {
+        val botones = listOf(binding.btnGuardarYOtro, binding.btnEliminarSocio, binding.btnGuardarSocio)
+        botones.forEach {
             it.isSingleLine = false
             it.maxLines = 2
+        }
+        // Con la letra muy grande ni en dos líneas caben uno al lado del otro: se apilan a lo ancho.
+        if (resources.configuration.fontScale >= ESCALA_LETRA_BOTONES_APILADOS) {
+            binding.barraBotones.orientation = LinearLayout.VERTICAL
+            val separacion = (8 * resources.displayMetrics.density).toInt()
+            botones.forEach { boton ->
+                boton.updateLayoutParams<LinearLayout.LayoutParams> {
+                    width = ViewGroup.LayoutParams.MATCH_PARENT
+                    weight = 0f
+                    marginEnd = 0
+                    bottomMargin = if (boton == binding.btnGuardarSocio) 0 else separacion
+                }
+            }
         }
 
         if (savedInstanceState == null) {
@@ -119,9 +140,16 @@ class AddSocioBottomSheetDialog :
         binding.etNombreSocio.doOnTextChanged { _, _, _, _ -> actualizarResumenDetalles() }
         binding.etNotas.doOnTextChanged { _, _, _, _ -> actualizarResumenDetalles() }
 
-        binding.btnCancelarAdd.setOnClickListener {
+        binding.btnEliminarSocio.setOnClickListener {
             HapticUtils.performClick(it)
-            dismiss()
+            val socioGuardado = socioToEdit ?: return@setOnClickListener
+            if (dialogoEliminar?.isShowing == true) return@setOnClickListener
+            // Se borra el socio tal como está guardado, no con lo que se haya cambiado en el formulario:
+            // así "Deshacer" lo deja exactamente como estaba.
+            dialogoEliminar = confirmarEliminarSocio(requireContext(), socioGuardado) {
+                viewModel.eliminarSocio(socioGuardado)
+                dismiss()
+            }.apply { setOnDismissListener { dialogoEliminar = null } }
         }
         binding.btnCerrarAddSocio.setOnClickListener { dismiss() }
         binding.btnGuardarSocio.setOnClickListener {
@@ -135,7 +163,7 @@ class AddSocioBottomSheetDialog :
         binding.btnFormSemanaAnterior.setOnClickListener { moverSemana(-1) }
         binding.btnFormSemanaSiguiente.setOnClickListener { moverSemana(1) }
         listOf(
-            binding.cardEstadoHecho, binding.cardEstadoPendiente, binding.btnGuardarSocio, binding.btnCancelarAdd,
+            binding.cardEstadoHecho, binding.cardEstadoPendiente, binding.btnGuardarSocio, binding.btnEliminarSocio,
             binding.btnGuardarYOtro
         ).forEach(AnimationExtensions::setupPressScaleAnimation)
     }
@@ -159,6 +187,7 @@ class AddSocioBottomSheetDialog :
 
     override fun onDestroyView() {
         animacionFondo?.cancel()
+        dialogoEliminar?.dismiss()
         super.onDestroyView()
     }
 
@@ -419,6 +448,9 @@ class AddSocioBottomSheetDialog :
         private const val STATE_DETALLES = "detallesAbiertos"
         private const val STATE_SEMANA = "semana"
         private const val STATE_ANADIDOS = "anadidos"
+
+        /** A partir de esta letra del sistema los botones de abajo no caben uno al lado del otro. */
+        private const val ESCALA_LETRA_BOTONES_APILADOS = 1.6f
         private const val DURACION_MS = 200L
 
         fun nuevo(semanaKey: String, dia: DiaSemana) = AddSocioBottomSheetDialog().apply {

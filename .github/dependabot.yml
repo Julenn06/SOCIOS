@@ -9,6 +9,11 @@ updates:
     groups:
       dependencias:
         update-types: ["minor", "patch"]
+    ignore:
+      # Desde la 1.12 necesita Kotlin 2.4 y la app compila con el Kotlin 2.2 que trae AGP: subirla junto
+      # con AGP, a mano. Ver gradle/libs.versions.toml.
+      - dependency-name: "org.jetbrains.kotlinx:kotlinx-serialization-json"
+        versions: [">= 1.12.0"]
 
   - package-ecosystem: "github-actions"
     directory: "/"

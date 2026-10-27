@@ -1,7 +1,8 @@
 name: Build and Release
 
 # - Cada push a main y cada pull request: tests + APK como artefacto del workflow.
-# - Cada tag vX.Y.Z: además, publica una GitHub Release con el APK firmado.
+# - Cada tag vX.Y.Z: además, publica una GitHub Release con el APK firmado, solo si también han pasado
+#   los tests en el emulador.
 #
 # Todos los APK de release se firman con la misma clave (secrets del repositorio), así que se pueden
 # instalar como actualización sin desinstalar la app ni perder sus datos. Ver README.md.
@@ -18,7 +19,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     permissions:
-      contents: write
+      contents: read
     env:
       HAS_KEYSTORE: ${{ secrets.SOCIOS_KEYSTORE_BASE64 != '' }}
 
@@ -89,19 +90,8 @@ jobs:
           name: socios-${{ env.SOCIOS_VERSION_NAME }}
           path: socios-*.apk
 
-      - name: Create GitHub Release
-        if: startsWith(github.ref, 'refs/tags/v')
-        uses: softprops/action-gh-release@v3
-        with:
-          tag_name: ${{ github.ref_name }}
-          name: Release ${{ github.ref_name }}
-          body: "APK firmado generado automáticamente para `${{ github.ref_name }}`."
-          files: socios-${{ env.SOCIOS_VERSION_NAME }}.apk
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-  # Tests de migraciones de Room y del DAO en un emulador. Va en paralelo al job de build para no
-  # retrasar la publicación del APK; si falla, la ejecución aparece en rojo igualmente.
+  # Tests en un emulador: migraciones de Room, el DAO y los flujos principales de la pantalla. Van en
+  # paralelo al build, y la release espera a los dos (ver el job release).
   instrumented-tests:
     runs-on: ubuntu-latest
     permissions:
@@ -134,3 +124,31 @@ jobs:
           arch: x86_64
           target: google_apis
           script: ./gradlew connectedDebugAndroidTest
+
+  # Solo con un tag, y solo si el build y los tests en el emulador han pasado: una migración rota no debe
+  # llegar a la release, porque la app la instala sola y podría estropear los datos al actualizar.
+  release:
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: [build, instrumented-tests]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Download APK artifact
+        uses: actions/download-artifact@v8
+        with:
+          pattern: socios-*
+          merge-multiple: true
+          path: apk
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v3
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: Release ${{ github.ref_name }}
+          body: "APK firmado generado automáticamente para `${{ github.ref_name }}`."
+          files: apk/*.apk
+          fail_on_unmatched_files: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

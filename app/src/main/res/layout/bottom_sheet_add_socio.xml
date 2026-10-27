@@ -518,7 +518,9 @@
         android:layout_height="1dp"
         android:background="@color/divider" />
 
+    <!-- Con la letra muy grande del sistema los botones se apilan (ver AddSocioBottomSheetDialog) -->
     <LinearLayout
+        android:id="@+id/barraBotones"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="@color/surface_card"
@@ -551,8 +553,10 @@
             app:iconTint="@color/on_primary_container"
             tools:visibility="visible" />
 
+        <!-- Solo al editar: borra el socio (con confirmación y opción de deshacer). Para cancelar están la ✕
+             y deslizar hacia abajo. -->
         <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnCancelarAdd"
+            android:id="@+id/btnEliminarSocio"
             style="@style/Widget.Material3.Button.OutlinedButton"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
@@ -561,11 +565,14 @@
             android:layout_weight="1"
             android:insetTop="0dp"
             android:insetBottom="0dp"
-            android:text="@string/action_cancel"
-            android:textColor="@color/text_main"
+            android:text="@string/action_delete"
+            android:textColor="@color/red_text"
             android:textSize="15sp"
             android:fontFamily="@font/geist_semibold"
             app:cornerRadius="16dp"
+            app:icon="@drawable/ic_delete"
+            app:iconGravity="textStart"
+            app:iconTint="@color/red_text"
             app:strokeColor="@color/stroke" />
 
         <com.google.android.material.button.MaterialButton

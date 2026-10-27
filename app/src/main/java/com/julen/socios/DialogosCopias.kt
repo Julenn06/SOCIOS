@@ -82,9 +82,9 @@ fun confirmarImportacion(
 
 /** Una línea del resumen de importación. */
 private class FilaImport(
-    @PluralsRes val plural: Int,
+    @param:PluralsRes val plural: Int,
     val cantidad: Int,
-    @DrawableRes val icono: Int,
-    @ColorRes val fondo: Int,
-    @ColorRes val color: Int
+    @param:DrawableRes val icono: Int,
+    @param:ColorRes val fondo: Int,
+    @param:ColorRes val color: Int
 )

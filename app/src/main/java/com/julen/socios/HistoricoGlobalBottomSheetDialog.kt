@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.View
 import android.widget.TextView
 import androidx.core.content.ContextCompat
+import androidx.core.view.ViewCompat
 import androidx.core.view.isVisible
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Lifecycle
@@ -55,8 +56,11 @@ class HistoricoGlobalBottomSheetDialog :
             mostrarFilas()
         }
         binding.btnCerrarHistorico.setOnClickListener { dismiss() }
+        // La barra elegida como estado del gráfico: TalkBack lo lee al cambiar (announceForAccessibility
+        // está obsoleto desde Android 16).
         binding.graficoNeto.alSeleccionar = { columna ->
-            binding.graficoNeto.announceForAccessibility(
+            ViewCompat.setStateDescription(
+                binding.graficoNeto,
                 getString(R.string.grafico_seleccion, columna.etiquetaLarga, columna.neto.toFormattedEuros())
             )
         }

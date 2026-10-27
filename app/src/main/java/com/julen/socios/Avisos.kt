@@ -20,7 +20,11 @@ import com.julen.socios.databinding.ItemAvisoBinding
  */
 object Avisos {
 
-    private class Estilo(@DrawableRes val icono: Int, @ColorRes val fondo: Int, @ColorRes val color: Int)
+    private class Estilo(
+        @param:DrawableRes val icono: Int,
+        @param:ColorRes val fondo: Int,
+        @param:ColorRes val color: Int
+    )
 
     private fun estilo(tipo: TipoAviso) = when (tipo) {
         TipoAviso.EXITO -> Estilo(R.drawable.ic_check_circle, R.color.green_container, R.color.green_text_soft)
