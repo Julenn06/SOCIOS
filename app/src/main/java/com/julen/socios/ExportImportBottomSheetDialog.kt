@@ -1,11 +1,9 @@
 package com.julen.socios
 
 import android.os.Bundle
-import android.transition.AutoTransition
-import android.transition.TransitionManager
 import android.view.View
-import androidx.core.view.isVisible
 import androidx.fragment.app.activityViewModels
+import androidx.interpolator.view.animation.FastOutSlowInInterpolator
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
@@ -48,8 +46,7 @@ class ExportImportBottomSheetDialog :
         binding.toggleModo.addOnButtonCheckedListener { _, id, marcado ->
             if (!marcado) return@addOnButtonCheckedListener
             HapticUtils.performClick(binding.toggleModo)
-            TransitionManager.beginDelayedTransition(binding.contenidoExportImport, AutoTransition().setDuration(DURACION_MS))
-            mostrarModo(importar = id == R.id.btnModoImportar)
+            mostrarModo(importar = id == R.id.btnModoImportar, animar = true)
         }
 
         configurarAlcances()
@@ -97,9 +94,36 @@ class ExportImportBottomSheetDialog :
         outState.putString(STATE_ALCANCE, alcance.name)
     }
 
-    private fun mostrarModo(importar: Boolean) {
-        binding.contenedorExportar.isVisible = !importar
-        binding.contenedorImportar.isVisible = importar
+    /**
+     * Exportar e importar están uno encima del otro (ver el layout): el que entra aparece mientras el que sale
+     * se desvanece, con un pequeño desplazamiento hacia el lado de su pestaña. Nunca queda el panel vacío.
+     */
+    private fun mostrarModo(importar: Boolean, animar: Boolean = false) {
+        val entra = if (importar) binding.contenedorImportar else binding.contenedorExportar
+        val sale = if (importar) binding.contenedorExportar else binding.contenedorImportar
+        entra.animate().cancel()
+        sale.animate().cancel()
+        // Delante el que entra, para que reciba los toques aunque el otro aún se esté desvaneciendo.
+        entra.bringToFront()
+        entra.visibility = View.VISIBLE
+        if (!animar) {
+            entra.alpha = 1f
+            entra.translationX = 0f
+            sale.visibility = View.INVISIBLE
+            return
+        }
+        val desplazamiento = DESPLAZAMIENTO_DP * resources.displayMetrics.density * (if (importar) 1 else -1)
+        entra.alpha = 0f
+        entra.translationX = desplazamiento
+        entra.animate().alpha(1f).translationX(0f).setDuration(DURACION_MS)
+            .setInterpolator(FastOutSlowInInterpolator()).start()
+        sale.animate().alpha(0f).translationX(-desplazamiento).setDuration(DURACION_MS)
+            .setInterpolator(FastOutSlowInInterpolator())
+            .withEndAction {
+                sale.visibility = View.INVISIBLE
+                sale.alpha = 1f
+                sale.translationX = 0f
+            }.start()
     }
 
     private fun configurarAlcances() {
@@ -192,5 +216,6 @@ class ExportImportBottomSheetDialog :
         private const val STATE_SEMANAS = "semanasSeleccionadas"
         private const val STATE_ALCANCE = "alcance"
         private const val DURACION_MS = 220L
+        private const val DESPLAZAMIENTO_DP = 24f
     }
 }

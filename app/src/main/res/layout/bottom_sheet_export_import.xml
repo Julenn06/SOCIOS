@@ -109,114 +109,121 @@
                 app:iconTint="@color/opcion_texto" />
         </com.google.android.material.button.MaterialButtonToggleGroup>
 
-        <!-- ===== EXPORTAR ===== -->
-        <LinearLayout
-            android:id="@+id/contenedorExportar"
+        <!-- Exportar e importar ocupan el mismo sitio: al cambiar de pestaña uno se funde con el otro y el
+             panel no cambia de alto (mide lo del más alto), así no da saltos ni se queda un instante vacío. -->
+        <FrameLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical">
+            android:layout_height="wrap_content">
 
-            <TextView
-                style="@style/Socios.Seccion"
-                android:text="@string/export_alcance_label" />
-
+            <!-- ===== EXPORTAR ===== -->
             <LinearLayout
+                android:id="@+id/contenedorExportar"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:baselineAligned="false"
-                android:orientation="horizontal">
-
-                <include
-                    android:id="@+id/alcanceSemana"
-                    layout="@layout/item_alcance"
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:layout_weight="1" />
-
-                <include
-                    android:id="@+id/alcanceElegir"
-                    layout="@layout/item_alcance"
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:layout_marginHorizontal="10dp"
-                    android:layout_weight="1" />
-
-                <include
-                    android:id="@+id/alcanceTodo"
-                    layout="@layout/item_alcance"
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:layout_weight="1" />
-            </LinearLayout>
-
-            <TextView
-                style="@style/Socios.Seccion"
-                android:text="@string/export_formato_label" />
-
-            <include
-                android:id="@+id/formatoPdf"
-                layout="@layout/item_formato" />
-
-            <include
-                android:id="@+id/formatoCsv"
-                layout="@layout/item_formato"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="10dp" />
-
-            <include
-                android:id="@+id/formatoJson"
-                layout="@layout/item_formato"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="10dp" />
-        </LinearLayout>
-
-        <!-- ===== IMPORTAR ===== -->
-        <LinearLayout
-            android:id="@+id/contenedorImportar"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:visibility="gone"
-            tools:visibility="visible">
-
-            <com.google.android.material.card.MaterialCardView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="20dp"
-                app:cardBackgroundColor="@color/amber_container"
-                app:cardCornerRadius="16dp"
-                app:cardElevation="0dp"
-                app:strokeColor="@color/amber_stroke"
-                app:strokeWidth="1dp">
+                android:orientation="vertical">
 
                 <TextView
+                    style="@style/Socios.Seccion"
+                    android:text="@string/export_alcance_label" />
+
+                <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:drawablePadding="10dp"
-                    app:drawableTint="@color/amber_text"
-                    android:padding="14dp"
-                    android:text="@string/import_aviso"
-                    android:textColor="@color/text_main"
-                    android:textSize="13sp"
-                    app:drawableStartCompat="@drawable/ic_info" />
-            </com.google.android.material.card.MaterialCardView>
+                    android:baselineAligned="false"
+                    android:orientation="horizontal">
 
-            <TextView
-                style="@style/Socios.Seccion"
-                android:text="@string/import_archivo_label" />
+                    <include
+                        android:id="@+id/alcanceSemana"
+                        layout="@layout/item_alcance"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1" />
 
-            <include
-                android:id="@+id/importarJson"
-                layout="@layout/item_formato" />
+                    <include
+                        android:id="@+id/alcanceElegir"
+                        layout="@layout/item_alcance"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_marginHorizontal="10dp"
+                        android:layout_weight="1" />
 
-            <include
-                android:id="@+id/importarCsv"
-                layout="@layout/item_formato"
+                    <include
+                        android:id="@+id/alcanceTodo"
+                        layout="@layout/item_alcance"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1" />
+                </LinearLayout>
+
+                <TextView
+                    style="@style/Socios.Seccion"
+                    android:text="@string/export_formato_label" />
+
+                <include
+                    android:id="@+id/formatoPdf"
+                    layout="@layout/item_formato" />
+
+                <include
+                    android:id="@+id/formatoCsv"
+                    layout="@layout/item_formato"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp" />
+
+                <include
+                    android:id="@+id/formatoJson"
+                    layout="@layout/item_formato"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp" />
+            </LinearLayout>
+
+            <!-- ===== IMPORTAR ===== -->
+            <LinearLayout
+                android:id="@+id/contenedorImportar"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="10dp" />
-        </LinearLayout>
+                android:orientation="vertical"
+                android:visibility="invisible"
+                tools:visibility="visible">
+
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="20dp"
+                    app:cardBackgroundColor="@color/amber_container"
+                    app:cardCornerRadius="16dp"
+                    app:cardElevation="0dp"
+                    app:strokeColor="@color/amber_stroke"
+                    app:strokeWidth="1dp">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:drawablePadding="10dp"
+                        app:drawableTint="@color/amber_text"
+                        android:padding="14dp"
+                        android:text="@string/import_aviso"
+                        android:textColor="@color/text_main"
+                        android:textSize="13sp"
+                        app:drawableStartCompat="@drawable/ic_info" />
+                </com.google.android.material.card.MaterialCardView>
+
+                <TextView
+                    style="@style/Socios.Seccion"
+                    android:text="@string/import_archivo_label" />
+
+                <include
+                    android:id="@+id/importarJson"
+                    layout="@layout/item_formato" />
+
+                <include
+                    android:id="@+id/importarCsv"
+                    layout="@layout/item_formato"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp" />
+            </LinearLayout>
+        </FrameLayout>
     </LinearLayout>
 </androidx.core.widget.NestedScrollView>
