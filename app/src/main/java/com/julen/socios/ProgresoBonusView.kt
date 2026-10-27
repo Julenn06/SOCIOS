@@ -11,8 +11,8 @@ import android.util.AttributeSet
 import android.view.View
 import androidx.core.content.ContextCompat
 import androidx.core.content.res.ResourcesCompat
-import androidx.interpolator.view.animation.FastOutSlowInInterpolator
 import com.julen.socios.util.CalculoComisiones
+import com.julen.socios.util.Movimiento
 import com.julen.socios.util.toEurosCompacto
 import kotlin.math.max
 import kotlin.math.min
@@ -93,7 +93,7 @@ class ProgresoBonusView @JvmOverloads constructor(
         }
         animacion = ValueAnimator.ofFloat(mostrado, socios.toFloat()).apply {
             duration = DURACION_MS
-            interpolator = FastOutSlowInInterpolator()
+            interpolator = Movimiento.curva(context)
             addUpdateListener {
                 mostrado = it.animatedValue as Float
                 invalidate()

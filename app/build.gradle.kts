@@ -71,6 +71,7 @@ dependencies {
     implementation(libs.androidx.lifecycle.viewmodel.savedstate)
     implementation(libs.androidx.recyclerview)
     implementation(libs.androidx.coordinatorlayout)
+    implementation(libs.androidx.dynamicanimation)
     implementation(libs.material)
     implementation(libs.kotlinx.coroutines.android)
     // Copias de seguridad JSON. Además fija kotlinx-serialization-core: androidx.savedstate trae la 1.7.3,

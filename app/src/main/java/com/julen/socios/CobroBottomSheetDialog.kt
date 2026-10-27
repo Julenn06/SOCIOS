@@ -2,8 +2,6 @@ package com.julen.socios
 
 import android.app.Dialog
 import android.os.Bundle
-import android.transition.AutoTransition
-import android.transition.TransitionManager
 import android.view.View
 import android.view.WindowManager
 import androidx.core.content.ContextCompat
@@ -21,6 +19,7 @@ import com.julen.socios.util.AnimationExtensions
 import com.julen.socios.util.CalculoComisiones
 import com.julen.socios.util.DateUtils
 import com.julen.socios.util.HapticUtils
+import com.julen.socios.util.Movimiento
 import com.julen.socios.util.parseImporte
 import com.julen.socios.util.toCurrencyString
 import com.julen.socios.util.toFormattedEuros
@@ -64,7 +63,7 @@ class CobroBottomSheetDialog : PanelInferior<BottomSheetCobroBinding>(BottomShee
             binding.switchActivarCobro.toggle()
         }
         binding.switchActivarCobro.setOnCheckedChangeListener { _, activado ->
-            TransitionManager.beginDelayedTransition(binding.contenidoCobro, AutoTransition().setDuration(DURACION_MS))
+            Movimiento.animarCambios(binding.contenidoCobro)
             binding.containerCobroConfig.isVisible = activado
             binding.tilNetoCobrado.error = null
             if (!activado) ocultarTeclado()
@@ -155,7 +154,6 @@ class CobroBottomSheetDialog : PanelInferior<BottomSheetCobroBinding>(BottomShee
         private const val ARG_SEMANA = "semanaKey"
         private const val ARG_NETO = "netoCobrado"
         private const val ARG_NOTA = "nota"
-        private const val DURACION_MS = 200L
 
         fun newInstance(semanaKey: String, actual: CobroInfo?) = CobroBottomSheetDialog().apply {
             arguments = Bundle().apply {

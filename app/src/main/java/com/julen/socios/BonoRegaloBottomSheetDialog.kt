@@ -1,8 +1,6 @@
 package com.julen.socios
 
 import android.os.Bundle
-import android.transition.AutoTransition
-import android.transition.TransitionManager
 import android.view.View
 import android.widget.GridLayout
 import androidx.core.view.WindowCompat
@@ -18,6 +16,7 @@ import com.julen.socios.util.AnimationExtensions
 import com.julen.socios.util.CalculoComisiones
 import com.julen.socios.util.DateUtils
 import com.julen.socios.util.HapticUtils
+import com.julen.socios.util.Movimiento
 import com.julen.socios.util.parseImporte
 import com.julen.socios.util.toEurosCompacto
 import com.julen.socios.util.toImporteInput
@@ -63,7 +62,7 @@ class BonoRegaloBottomSheetDialog : PanelInferior<BottomSheetBonoRegaloBinding>(
             binding.switchActivarBono.toggle()
         }
         binding.switchActivarBono.setOnCheckedChangeListener { _, activado ->
-            TransitionManager.beginDelayedTransition(binding.contenidoBono, AutoTransition().setDuration(DURACION_MS))
+            Movimiento.animarCambios(binding.contenidoBono)
             binding.containerBonoConfig.isVisible = activado
             if (!activado) ocultarTeclado()
         }
@@ -115,7 +114,7 @@ class BonoRegaloBottomSheetDialog : PanelInferior<BottomSheetBonoRegaloBinding>(
                 setOnClickListener { opcion ->
                     HapticUtils.performClick(opcion)
                     marcarMonto(this)
-                    TransitionManager.beginDelayedTransition(binding.contenidoBono, AutoTransition().setDuration(DURACION_MS))
+                    Movimiento.animarCambios(binding.contenidoBono)
                     if (this == opcionOtro) {
                         binding.tilCustomMonto.isVisible = true
                         mostrarTeclado(binding.etCustomMonto)
@@ -215,7 +214,6 @@ class BonoRegaloBottomSheetDialog : PanelInferior<BottomSheetBonoRegaloBinding>(
         private const val ARG_MOTIVO = "motivo"
         private const val STATE_MONTO_INDEX = "montoIndex"
         private const val STATE_MONTO_FIJO = "montoFijo"
-        private const val DURACION_MS = 200L
 
         fun newInstance(semanaKey: String, bonoActual: BonoRegaloInfo?) =
             BonoRegaloBottomSheetDialog().apply {

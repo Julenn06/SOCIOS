@@ -2,4 +2,7 @@
 <resources>
     <item name="tag_numeric_value" type="id" />
     <item name="tag_numeric_animator" type="id" />
+    <!-- Muelles de escala guardados en la propia vista (ver util/Movimiento) -->
+    <item name="tag_muelle_escala_x" type="id" />
+    <item name="tag_muelle_escala_y" type="id" />
 </resources>

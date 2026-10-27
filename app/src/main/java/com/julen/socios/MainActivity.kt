@@ -43,6 +43,7 @@ import com.julen.socios.model.Socio
 import com.julen.socios.util.AnimationExtensions
 import com.julen.socios.util.DateUtils
 import com.julen.socios.util.HapticUtils
+import com.julen.socios.util.Movimiento
 import kotlinx.coroutines.launch
 
 class MainActivity : AppCompatActivity() {
@@ -64,6 +65,9 @@ class MainActivity : AppCompatActivity() {
         ).toMap()
     }
     private var sincronizandoFiltro = false
+
+    /** La semana y el día que se pintaron la última vez, para animar solo lo que cambia. */
+    private var vistaAnterior: Pair<String, DiaSemana?>? = null
 
     private var dialogoDestinoExport: AlertDialog? = null
     private var dialogoConfirmarImport: AlertDialog? = null
@@ -161,6 +165,8 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun renderUiState(state: MainUiState) {
+        animarCambioDeVista(state)
+
         // Rango corto de la semana y cuánto queda de la actual
         binding.tvRangoSemana.text =
             getString(R.string.rango_semana_anio, DateUtils.rangoCorto(state.semanaKey), state.semanaKey.take(4))
@@ -200,6 +206,27 @@ class MainActivity : AppCompatActivity() {
         binding.tvListaResumenDia.text = getString(
             R.string.list_summary_day_format, state.sociosFiltrados.count { it.hecho }, state.sociosFiltrados.size
         )
+    }
+
+    /**
+     * Al cambiar de semana, la página entra desde el lado hacia el que se va (la siguiente por la derecha,
+     * la anterior por la izquierda), como al pasar una hoja. Al cambiar de día, los socios entran uno tras
+     * otro. La primera vez y al recrearse la pantalla no se anima nada.
+     */
+    private fun animarCambioDeVista(state: MainUiState) {
+        val anterior = vistaAnterior
+        vistaAnterior = state.semanaKey to state.diaFiltro
+        if (anterior == null) return
+        val (semanaAnterior, diaAnterior) = anterior
+        if (semanaAnterior != state.semanaKey) {
+            // Las claves ISO ("2026-W43") se ordenan bien como texto.
+            val direccion = if (state.semanaKey > semanaAnterior) 1 else -1
+            Movimiento.entrarDeLado(binding.contenidoSemana, direccion)
+            Movimiento.entrarDeLado(binding.tvRangoSemana, direccion, distanciaDp = 16f)
+            Movimiento.entrarDeLado(binding.tvSemanaSubtitulo, direccion, distanciaDp = 16f)
+        } else if (diaAnterior != state.diaFiltro && Movimiento.activas()) {
+            binding.rvSocios.scheduleLayoutAnimation()
+        }
     }
 
     private fun mostrarAvisoPendientes(pendientes: List<Socio>) {
@@ -397,11 +424,7 @@ class MainActivity : AppCompatActivity() {
         binding.toggleFiltroDias.addOnButtonCheckedListener { grupo, id, marcado ->
             if (!marcado || sincronizandoFiltro) return@addOnButtonCheckedListener
             HapticUtils.performClick(grupo)
-            grupo.findViewById<View>(id)?.let { boton ->
-                boton.animate().scaleX(1.08f).scaleY(1.08f).setDuration(100).withEndAction {
-                    boton.animate().scaleX(1.0f).scaleY(1.0f).setDuration(100).start()
-                }.start()
-            }
+            grupo.findViewById<View>(id)?.let { Movimiento.latido(it, hacia = 0.6f) }
             viewModel.setDiaFiltro(botonesFiltroDia.entries.firstOrNull { it.value.id == id }?.key)
         }
     }

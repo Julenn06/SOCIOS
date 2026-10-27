@@ -1,11 +1,11 @@
 package com.julen.socios
 
 import android.animation.ValueAnimator
-import android.view.animation.OvershootInterpolator
 import androidx.core.view.isVisible
 import com.julen.socios.databinding.ActivityMainBinding
 import com.julen.socios.model.CobroInfo
 import com.julen.socios.util.CalculoComisiones
+import com.julen.socios.util.Movimiento
 import com.julen.socios.util.NumberAnimators
 import com.julen.socios.util.setTextoAccesible
 import com.julen.socios.util.toEurosCompacto
@@ -60,12 +60,10 @@ class CabeceraResumen(private val binding: ActivityMainBinding) {
         val anterior = bonusAnterior
         val mismaSemana = anterior != null && anterior.first == semanaKey
         binding.progressBonus.mostrar(hechos, animar = mismaSemana)
-        // Pequeño rebote al subir de nivel dentro de la misma semana.
+        // Un latido al subir de tramo dentro de la misma semana, en el título y en la caja del bonus.
         if (anterior != null && mismaSemana && anterior.second < resumen.bonusSemanal) {
-            binding.tvBonusTitle.animate().scaleX(1.12f).scaleY(1.12f).setDuration(200)
-                .setInterpolator(OvershootInterpolator(2.5f)).withEndAction {
-                    binding.tvBonusTitle.animate().scaleX(1.0f).scaleY(1.0f).setDuration(150).start()
-                }.start()
+            Movimiento.latido(binding.tvBonusTitle)
+            Movimiento.latido(binding.containerBonusHeader)
         }
         bonusAnterior = semanaKey to resumen.bonusSemanal
 

@@ -4,8 +4,6 @@ import android.animation.ValueAnimator
 import android.graphics.drawable.GradientDrawable
 import android.graphics.drawable.LayerDrawable
 import android.os.Bundle
-import android.transition.AutoTransition
-import android.transition.TransitionManager
 import android.view.View
 import android.view.ViewGroup
 import android.widget.GridLayout
@@ -28,6 +26,7 @@ import com.julen.socios.util.AnimationExtensions
 import com.julen.socios.util.CalculoComisiones
 import com.julen.socios.util.DateUtils
 import com.julen.socios.util.HapticUtils
+import com.julen.socios.util.Movimiento
 import com.julen.socios.util.NumberAnimators
 import com.julen.socios.util.parseImporte
 import com.julen.socios.util.setTextoAccesible
@@ -236,7 +235,7 @@ class AddSocioBottomSheetDialog :
                 setOnClickListener { opcion ->
                     HapticUtils.performClick(opcion)
                     marcarCuota(this)
-                    TransitionManager.beginDelayedTransition(binding.contenidoAddSocio, AutoTransition().setDuration(DURACION_MS))
+                    Movimiento.animarCambios(binding.contenidoAddSocio)
                     if (this == opcionOtro) {
                         binding.tilCustomAmount.isVisible = true
                         mostrarTeclado(binding.etCustomAmount)
@@ -314,7 +313,8 @@ class AddSocioBottomSheetDialog :
             return
         }
         animacionFondo = ValueAnimator.ofFloat(0f, 1f).apply {
-            duration = DURACION_MS * 2
+            duration = Movimiento.LARGA_MS
+            interpolator = Movimiento.curva(contexto)
             addUpdateListener { animacion ->
                 val f = animacion.animatedValue as Float
                 fondoHero.colors = intArrayOf(
@@ -341,7 +341,7 @@ class AddSocioBottomSheetDialog :
     private fun alternarDetalles() {
         HapticUtils.performClick(binding.filaDetalles)
         detallesAbiertos = !detallesAbiertos
-        TransitionManager.beginDelayedTransition(binding.contenidoAddSocio, AutoTransition().setDuration(DURACION_MS))
+        Movimiento.animarCambios(binding.contenidoAddSocio)
         if (detallesAbiertos) {
             mostrarDetalles()
             mostrarTeclado(binding.etNombreSocio)
@@ -353,7 +353,8 @@ class AddSocioBottomSheetDialog :
 
     private fun mostrarDetalles() {
         binding.contenedorDetalles.isVisible = detallesAbiertos
-        binding.ivDetallesFlecha.animate().rotation(if (detallesAbiertos) 180f else 0f).setDuration(DURACION_MS).start()
+        binding.ivDetallesFlecha.animate().rotation(if (detallesAbiertos) 180f else 0f)
+            .setDuration(Movimiento.MEDIA_MS).setInterpolator(Movimiento.curva(requireContext())).start()
         binding.filaDetalles.contentDescription = getString(
             if (detallesAbiertos) R.string.detalles_ocultar_a11y else R.string.detalles_mostrar_a11y
         )
@@ -427,15 +428,13 @@ class AddSocioBottomSheetDialog :
         ocultarTeclado()
         binding.etNombreSocio.text = null
         binding.etNotas.text = null
-        TransitionManager.beginDelayedTransition(binding.contenidoAddSocio, AutoTransition().setDuration(DURACION_MS))
+        Movimiento.animarCambios(binding.contenidoAddSocio)
         detallesAbiertos = false
         mostrarDetalles()
         mostrarSemana()
         binding.scrollAddSocio.smoothScrollTo(0, 0)
-        // Un latido de la cabecera para que se note que se ha guardado y empieza uno nuevo.
-        binding.fondoHero.animate().scaleX(0.97f).scaleY(0.97f).setDuration(110).withEndAction {
-            bindingSiExiste?.fondoHero?.animate()?.scaleX(1f)?.scaleY(1f)?.setDuration(160)?.start()
-        }.start()
+        // Un latido de la cabecera (se encoge un instante y rebota) para que se note que se ha guardado.
+        Movimiento.latido(binding.fondoHero, hacia = -1f)
     }
 
     companion object {
@@ -452,7 +451,6 @@ class AddSocioBottomSheetDialog :
 
         /** A partir de esta letra del sistema los botones de abajo no caben uno al lado del otro. */
         private const val ESCALA_LETRA_BOTONES_APILADOS = 1.6f
-        private const val DURACION_MS = 200L
 
         fun nuevo(semanaKey: String, dia: DiaSemana) = AddSocioBottomSheetDialog().apply {
             arguments = Bundle().apply {

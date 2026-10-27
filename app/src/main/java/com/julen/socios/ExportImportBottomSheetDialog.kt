@@ -3,7 +3,6 @@ package com.julen.socios
 import android.os.Bundle
 import android.view.View
 import androidx.fragment.app.activityViewModels
-import androidx.interpolator.view.animation.FastOutSlowInInterpolator
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
@@ -16,6 +15,7 @@ import com.julen.socios.export.ImportFormat
 import com.julen.socios.util.AnimationExtensions
 import com.julen.socios.util.DateUtils
 import com.julen.socios.util.HapticUtils
+import com.julen.socios.util.Movimiento
 import kotlinx.coroutines.launch
 
 /** Copias y exportación: exporta a PDF, CSV o JSON lo que se elija, o importa una copia. */
@@ -115,10 +115,9 @@ class ExportImportBottomSheetDialog :
         val desplazamiento = DESPLAZAMIENTO_DP * resources.displayMetrics.density * (if (importar) 1 else -1)
         entra.alpha = 0f
         entra.translationX = desplazamiento
-        entra.animate().alpha(1f).translationX(0f).setDuration(DURACION_MS)
-            .setInterpolator(FastOutSlowInInterpolator()).start()
-        sale.animate().alpha(0f).translationX(-desplazamiento).setDuration(DURACION_MS)
-            .setInterpolator(FastOutSlowInInterpolator())
+        val curva = Movimiento.curva(requireContext())
+        entra.animate().alpha(1f).translationX(0f).setDuration(Movimiento.MEDIA_MS).setInterpolator(curva).start()
+        sale.animate().alpha(0f).translationX(-desplazamiento).setDuration(Movimiento.MEDIA_MS).setInterpolator(curva)
             .withEndAction {
                 sale.visibility = View.INVISIBLE
                 sale.alpha = 1f
@@ -215,7 +214,6 @@ class ExportImportBottomSheetDialog :
         const val TAG = "ExportImportDialog"
         private const val STATE_SEMANAS = "semanasSeleccionadas"
         private const val STATE_ALCANCE = "alcance"
-        private const val DURACION_MS = 220L
         private const val DESPLAZAMIENTO_DP = 24f
     }
 }

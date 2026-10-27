@@ -4,7 +4,6 @@ import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
 import android.animation.ValueAnimator
 import android.widget.TextView
-import androidx.interpolator.view.animation.FastOutSlowInInterpolator
 import com.julen.socios.R
 import kotlin.math.abs
 
@@ -33,8 +32,8 @@ object NumberAnimators {
         }
 
         val animator = ValueAnimator.ofFloat(startValue.toFloat(), newValue.toFloat()).apply {
-            duration = 350L
-            interpolator = FastOutSlowInInterpolator()
+            duration = Movimiento.LARGA_MS
+            interpolator = Movimiento.curva(textView.context)
             addUpdateListener { anim ->
                 val current = (anim.animatedValue as Float).toDouble()
                 textView.text = texto(current)

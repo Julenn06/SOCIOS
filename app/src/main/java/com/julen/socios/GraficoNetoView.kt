@@ -13,8 +13,8 @@ import android.view.View
 import android.view.ViewConfiguration
 import androidx.core.content.ContextCompat
 import androidx.core.content.res.ResourcesCompat
-import androidx.interpolator.view.animation.FastOutSlowInInterpolator
 import com.julen.socios.util.HapticUtils
+import com.julen.socios.util.Movimiento
 import com.julen.socios.util.toEurosCompacto
 import kotlin.math.abs
 import kotlin.math.ceil
@@ -114,7 +114,7 @@ class GraficoNetoView @JvmOverloads constructor(
         }
         animacion = ValueAnimator.ofFloat(0f, 1f).apply {
             duration = 450L
-            interpolator = FastOutSlowInInterpolator()
+            interpolator = Movimiento.curva(context)
             addUpdateListener {
                 progreso = it.animatedValue as Float
                 invalidate()

@@ -17,6 +17,8 @@ fragmentKtx = "1.9.1"
 lifecycle = "2.11.0"
 recyclerview = "1.4.0"
 coordinatorlayout = "1.3.0"
+# Muelles para las animaciones. Material ya la trae en esta versión; se declara porque la app la usa directamente.
+dynamicanimation = "1.1.0"
 coroutines = "1.11.0"
 room = "2.8.5"
 # La 1.12 trae la stdlib de Kotlin 2.4 y no compila con el Kotlin 2.2 de AGP: subirla junto con AGP.
@@ -37,6 +39,7 @@ androidx-lifecycle-viewmodel-ktx = { group = "androidx.lifecycle", name = "lifec
 androidx-lifecycle-viewmodel-savedstate = { group = "androidx.lifecycle", name = "lifecycle-viewmodel-savedstate", version.ref = "lifecycle" }
 androidx-recyclerview = { group = "androidx.recyclerview", name = "recyclerview", version.ref = "recyclerview" }
 androidx-coordinatorlayout = { group = "androidx.coordinatorlayout", name = "coordinatorlayout", version.ref = "coordinatorlayout" }
+androidx-dynamicanimation = { group = "androidx.dynamicanimation", name = "dynamicanimation", version.ref = "dynamicanimation" }
 kotlinx-coroutines-android = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-android", version.ref = "coroutines" }
 kotlinx-coroutines-test = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-test", version.ref = "coroutines" }
 kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "kotlinxSerialization" }
