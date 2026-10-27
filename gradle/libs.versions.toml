@@ -2,7 +2,7 @@
 agp = "9.4.1"
 # Plugin de serialización: igual a la versión de Kotlin que trae AGP. Si se sube, todo el proyecto
 # pasa a compilarse con esa versión de Kotlin.
-kotlin = "2.2.10"
+kotlin = "2.4.21"
 ksp = "2.3.12"
 coreKtx = "1.19.1"
 junit = "4.13.2"
