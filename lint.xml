@@ -7,4 +7,7 @@
         <ignore regexp="org\.jetbrains\.kotlin\.plugin\.serialization" />
         <ignore regexp="org\.jetbrains\.kotlinx:kotlinx-serialization-json" />
     </issue>
+    <!-- Recursos e ids que ya nada usa (lint no los revisa por defecto): que la CI avise si queda alguno. -->
+    <issue id="UnusedResources" severity="warning" />
+    <issue id="UnusedIds" severity="warning" />
 </lint>

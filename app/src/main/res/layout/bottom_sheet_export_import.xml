@@ -9,7 +9,6 @@
     tools:targetApi="q">
 
     <LinearLayout
-        android:id="@+id/contenidoExportImport"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"

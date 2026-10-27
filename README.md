@@ -16,8 +16,8 @@ lo cobrado de verdad, ese pasa a ser el neto de la semana y la diferencia con el
 | `model` | Modelo de dominio (`Socio`, `DiaSemana`, `BonoRegaloInfo`, `IrpfVigencia`, importes predefinidos). |
 | `data` | Repositorios, Room (`data/local`, con migraciones) y formato de copias de seguridad (`data/backup`). |
 | `export` | Generación del PDF y lectura/escritura de archivos (Storage Access Framework y FileProvider). |
-| `util` | Cálculos (`CalculoComisiones`), semanas ISO (`DateUtils`), formato de importes y animaciones. |
-| raíz | `SociosApp` (dependencias), `MainActivity`, `MainViewModel`, bottom sheets y adapters. |
+| `util` | Cálculos (`CalculoComisiones`), semanas ISO (`DateUtils`), formato de importes, textos de los avisos (`UiText`) y movimiento (`Movimiento`: la curva, las duraciones y los muelles de todas las animaciones). |
+| raíz | `SociosApp` (dependencias), `MainActivity` y `MainViewModel`, los paneles inferiores (todos heredan de `PanelInferior`), los avisos (`Avisos`), los adapters y las vistas propias (gráfico, barra del bonus). |
 
 Las semanas se identifican con su clave ISO-8601 (`2026-W01` va del 29-dic-2025 al 4-ene-2026).
 
@@ -25,11 +25,12 @@ Las semanas se identifican con su clave ISO-8601 (`2026-W01` va del 29-dic-2025 
 
 ```bash
 ./gradlew test                    # tests unitarios (cálculos, fechas, CSV/JSON, ViewModel)
-./gradlew connectedAndroidTest    # tests instrumentados (migraciones de Room y DAO); necesita un dispositivo
+./gradlew connectedAndroidTest    # tests en un dispositivo: migraciones de Room, DAO y pantalla principal (Espresso)
 ```
 
 > `connectedAndroidTest` desinstala la app del dispositivo al terminar, **borrando sus datos**. No lo
-> lances contra un móvil con datos reales.
+> lances contra un móvil con datos reales. Los tests de la pantalla principal usan la base de datos de la
+> app, pero apuntan su propio socio y lo borran al acabar.
 
 Los esquemas de Room se exportan a `app/schemas/`. Al cambiar una entidad hay que subir la versión de
 `AppDatabase`, añadir la `Migration` correspondiente y un test en `MigracionesTest`.
@@ -37,7 +38,9 @@ Los esquemas de Room se exportan a `app/schemas/`. Al cambiar una entidad hay qu
 ## Publicar una versión
 
 1. Crea y sube un tag: `git tag v1.1.0 && git push origin v1.1.0`.
-2. El workflow `Build and Release` pasa los tests, firma el APK y crea la GitHub Release `v1.1.0`.
+2. El workflow `Build and Release` pasa los tests y lint, firma el APK y, cuando también han pasado los
+   tests en el emulador, crea la GitHub Release `v1.1.0`. Si fallan, no se publica nada y el informe de
+   los tests queda como artefacto del workflow.
 
 Los push a `main` solo generan el APK como artefacto del workflow, sin publicar release. El
 `versionCode` es el número de ejecución del workflow, así que cada APK es una actualización del anterior.
