@@ -89,41 +89,6 @@ object Movimiento {
     fun latido(vista: View, hacia: Float = 1f) =
         escalarConMuelle(vista, 1f, SpringForce.STIFFNESS_LOW, AMORTIGUACION_LATIDO, VELOCIDAD_LATIDO * hacia)
 
-    /**
-     * Entrada lateral: [vista] llega desde un lado mientras aparece. [direccion] 1 entra desde la derecha
-     * (lo siguiente) y -1 desde la izquierda (lo anterior), como al pasar una página.
-     */
-    fun entrarDeLado(vista: View, direccion: Int, distanciaDp: Float = DISTANCIA_LATERAL_DP) {
-        prepararEntradaDeLado(vista, direccion, distanciaDp)
-        completarEntrada(vista)
-    }
-
-    /**
-     * Primera mitad de [entrarDeLado]: deja [vista] a un lado y casi transparente, sin moverla aún. Sirve
-     * cuando el contenido nuevo tarda un momento en estar listo (una lista que calcula sus cambios): así no
-     * se ve el contenido viejo entrando. Después hay que llamar a [completarEntrada].
-     */
-    fun prepararEntradaDeLado(vista: View, direccion: Int, distanciaDp: Float = DISTANCIA_LATERAL_DP) {
-        vista.animate().cancel()
-        if (!activas() || direccion == 0) {
-            vista.translationX = 0f
-            vista.alpha = 1f
-            return
-        }
-        vista.translationX = distanciaDp * vista.resources.displayMetrics.density * direccion
-        vista.alpha = ALFA_ENTRADA
-    }
-
-    /** Lleva [vista] a su sitio y la hace visible del todo (segunda mitad de [entrarDeLado]). */
-    fun completarEntrada(vista: View) {
-        vista.animate()
-            .translationX(0f)
-            .alpha(1f)
-            .setDuration(MEDIA_MS)
-            .setInterpolator(curva(vista.context))
-            .start()
-    }
-
     private fun muelle(vista: View, propiedad: DynamicAnimation.ViewProperty): SpringAnimation {
         val tag = if (propiedad == DynamicAnimation.SCALE_X) R.id.tag_muelle_escala_x else R.id.tag_muelle_escala_y
         return vista.getTag(tag) as? SpringAnimation
@@ -136,6 +101,4 @@ object Movimiento {
     private const val AMORTIGUACION_REBOTE = 0.5f
     private const val AMORTIGUACION_LATIDO = 0.35f
     private const val VELOCIDAD_LATIDO = 3f
-    private const val DISTANCIA_LATERAL_DP = 36f
-    private const val ALFA_ENTRADA = 0.5f
 }

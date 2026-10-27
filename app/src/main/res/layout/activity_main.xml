@@ -119,9 +119,7 @@
         android:clipToPadding="false"
         app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
-        <!-- Todo lo de la semana visible: al cambiar de semana entra desde un lado (ver MainActivity) -->
         <LinearLayout
-            android:id="@+id/contenidoSemana"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"

@@ -4,6 +4,7 @@ import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
 import android.animation.ValueAnimator
 import android.widget.TextView
+import androidx.interpolator.view.animation.FastOutSlowInInterpolator
 import com.julen.socios.R
 import kotlin.math.abs
 
@@ -32,8 +33,9 @@ object NumberAnimators {
         }
 
         val animator = ValueAnimator.ofFloat(startValue.toFloat(), newValue.toFloat()).apply {
-            duration = Movimiento.LARGA_MS
-            interpolator = Movimiento.curva(textView.context)
+            // Fuera de util/Movimiento a propósito: así contaban los importes al cambiar de semana y se quiere así.
+            duration = DURACION_MS
+            interpolator = FastOutSlowInInterpolator()
             addUpdateListener { anim ->
                 val current = (anim.animatedValue as Float).toDouble()
                 textView.text = texto(current)
@@ -50,4 +52,6 @@ object NumberAnimators {
         textView.setTag(R.id.tag_numeric_animator, animator)
         animator.start()
     }
+
+    private const val DURACION_MS = 350L
 }

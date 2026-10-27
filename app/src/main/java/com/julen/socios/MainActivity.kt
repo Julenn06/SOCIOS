@@ -210,43 +210,24 @@ class MainActivity : AppCompatActivity() {
     }
 
     /**
-     * Al cambiar de semana, la página entra desde el lado hacia el que se va (la siguiente por la derecha,
-     * la anterior por la izquierda), como al pasar una hoja. Al cambiar de día, los socios entran uno tras
-     * otro. La primera vez y al recrearse la pantalla no se anima nada.
-     *
-     * La lista calcula sus cambios aparte y llega un instante después que el resto: la página se deja
-     * preparada ya (a un lado y medio transparente) y se mueve solo cuando la lista nueva está puesta, con
-     * lo que se devuelve. Si no, se veían entrar los socios de la semana anterior y cambiar de golpe.
+     * Al cambiar de día, los socios entran uno tras otro, cuando la lista nueva ya está puesta (se devuelve lo
+     * que hay que hacer entonces). Al cambiar de semana no se anima la página: solo los importes, que cuentan
+     * hasta su valor, y las filas, con la animación normal de la lista. Moverla entera daba un parpadeo.
+     * La primera vez y al recrearse la pantalla no se anima nada.
      */
     private fun prepararCambioDeVista(state: MainUiState): (() -> Unit)? {
         val anterior = vistaAnterior
         vistaAnterior = state.semanaKey to state.diaFiltro
         if (anterior == null || !Movimiento.activas()) return null
         val (semanaAnterior, diaAnterior) = anterior
-        return when {
-            semanaAnterior != state.semanaKey -> {
-                // Las claves ISO ("2026-W43") se ordenan bien como texto.
-                val direccion = if (state.semanaKey > semanaAnterior) 1 else -1
-                val vistas = listOf(binding.contenidoSemana, binding.tvRangoSemana, binding.tvSemanaSubtitulo)
-                Movimiento.prepararEntradaDeLado(binding.contenidoSemana, direccion)
-                Movimiento.prepararEntradaDeLado(binding.tvRangoSemana, direccion, distanciaDp = 16f)
-                Movimiento.prepararEntradaDeLado(binding.tvSemanaSubtitulo, direccion, distanciaDp = 16f)
-                sinAnimarFilas()
-                val entrar: () -> Unit = { vistas.forEach(Movimiento::completarEntrada) }
-                entrar
-            }
-            diaAnterior != state.diaFiltro -> {
-                sinAnimarFilas()
-                val entrarFilas: () -> Unit = { binding.rvSocios.scheduleLayoutAnimation() }
-                entrarFilas
-            }
-            else -> null
-        }
+        if (semanaAnterior != state.semanaKey || diaAnterior == state.diaFiltro) return null
+        sinAnimarFilas()
+        return { binding.rvSocios.scheduleLayoutAnimation() }
     }
 
     /**
      * Quita un momento las animaciones de cada fila (desvanecer las que se van, hacer aparecer las nuevas):
-     * al cambiar de semana o de día se mueve la lista entera, y las dos animaciones juntas parpadeaban.
+     * al cambiar de día entran todas una tras otra, y las dos animaciones juntas parpadeaban.
      */
     private fun sinAnimarFilas() {
         val lista = binding.rvSocios
