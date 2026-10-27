@@ -1,21 +1,15 @@
 package com.julen.socios
 
-import android.app.Dialog
 import android.os.Bundle
 import android.transition.AutoTransition
 import android.transition.TransitionManager
-import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
 import android.widget.GridLayout
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.isVisible
 import androidx.core.widget.doOnTextChanged
 import androidx.fragment.app.activityViewModels
-import com.google.android.material.bottomsheet.BottomSheetBehavior
-import com.google.android.material.bottomsheet.BottomSheetDialog
-import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.google.android.material.button.MaterialButton
 import com.julen.socios.databinding.BottomSheetBonoRegaloBinding
 import com.julen.socios.model.BonoRegaloInfo
@@ -29,12 +23,9 @@ import com.julen.socios.util.toEurosCompacto
 import com.julen.socios.util.toImporteInput
 
 /** Ajuste manual del bonus de una semana: sustituye al automático o se suma a él. */
-class BonoRegaloBottomSheetDialog : BottomSheetDialogFragment() {
+class BonoRegaloBottomSheetDialog : PanelInferior<BottomSheetBonoRegaloBinding>(BottomSheetBonoRegaloBinding::inflate) {
 
     private val viewModel: MainViewModel by activityViewModels { MainViewModel.Factory }
-
-    private var _binding: BottomSheetBonoRegaloBinding? = null
-    private val binding get() = _binding!!
 
     private val semanaKey: String by lazy { requireNotNull(requireArguments().getString(ARG_SEMANA)) }
 
@@ -43,17 +34,6 @@ class BonoRegaloBottomSheetDialog : BottomSheetDialogFragment() {
     private val opcionOtro get() = opcionesMonto.last()
 
     private var montoFijo = true
-
-    override fun onCreateDialog(savedInstanceState: Bundle?): Dialog =
-        (super.onCreateDialog(savedInstanceState) as BottomSheetDialog).apply {
-            behavior.state = BottomSheetBehavior.STATE_EXPANDED
-            behavior.skipCollapsed = true
-        }
-
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
-        _binding = BottomSheetBonoRegaloBinding.inflate(inflater, container, false)
-        return binding.root
-    }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -114,13 +94,8 @@ class BonoRegaloBottomSheetDialog : BottomSheetDialogFragment() {
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
-        _binding?.let { outState.putInt(STATE_MONTO_INDEX, opcionesMonto.indexOfFirst { it.isChecked }) }
+        bindingSiExiste?.let { outState.putInt(STATE_MONTO_INDEX, opcionesMonto.indexOfFirst { it.isChecked }) }
         outState.putBoolean(STATE_MONTO_FIJO, montoFijo)
-    }
-
-    override fun onDestroyView() {
-        super.onDestroyView()
-        _binding = null
     }
 
     private fun crearOpcionesMonto() {

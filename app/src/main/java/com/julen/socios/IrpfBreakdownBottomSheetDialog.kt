@@ -1,20 +1,14 @@
 package com.julen.socios
 
-import android.app.Dialog
 import android.content.res.ColorStateList
 import android.os.Bundle
-import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
 import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
-import com.google.android.material.bottomsheet.BottomSheetBehavior
-import com.google.android.material.bottomsheet.BottomSheetDialog
-import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.julen.socios.databinding.BottomSheetIrpfBreakdownBinding
 import com.julen.socios.databinding.DialogIrpfBinding
@@ -30,25 +24,10 @@ import kotlin.math.abs
 import kotlinx.coroutines.launch
 
 /** Desglose de la semana visible. Observa el ViewModel, así se actualiza solo y sobrevive a recreaciones. */
-class IrpfBreakdownBottomSheetDialog : BottomSheetDialogFragment() {
+class IrpfBreakdownBottomSheetDialog :
+    PanelInferior<BottomSheetIrpfBreakdownBinding>(BottomSheetIrpfBreakdownBinding::inflate) {
 
     private val viewModel: MainViewModel by activityViewModels { MainViewModel.Factory }
-
-    private var _binding: BottomSheetIrpfBreakdownBinding? = null
-    private val binding get() = _binding!!
-
-    override fun onCreateDialog(savedInstanceState: Bundle?): Dialog =
-        (super.onCreateDialog(savedInstanceState) as BottomSheetDialog).apply {
-            behavior.state = BottomSheetBehavior.STATE_EXPANDED
-            behavior.skipCollapsed = true
-        }
-
-    override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
-    ): View {
-        _binding = BottomSheetIrpfBreakdownBinding.inflate(inflater, container, false)
-        return binding.root
-    }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -187,11 +166,10 @@ class IrpfBreakdownBottomSheetDialog : BottomSheetDialogFragment() {
 
     /** Encima del desglose, que se actualiza solo al guardarlo. */
     private fun mostrarCobro() {
-        val fragmentos = parentFragmentManager
-        if (fragmentos.findFragmentByTag(CobroBottomSheetDialog.TAG) != null) return
         val state = viewModel.uiState.value
-        CobroBottomSheetDialog.newInstance(state.semanaKey, state.cobroSemana)
-            .show(fragmentos, CobroBottomSheetDialog.TAG)
+        parentFragmentManager.mostrarSiNoEsta(CobroBottomSheetDialog.TAG) {
+            CobroBottomSheetDialog.newInstance(state.semanaKey, state.cobroSemana)
+        }
     }
 
     private fun mostrarDialogoIrpf() {
@@ -218,11 +196,6 @@ class IrpfBreakdownBottomSheetDialog : BottomSheetDialogFragment() {
                 dialog.dismiss()
             }
         }
-    }
-
-    override fun onDestroyView() {
-        super.onDestroyView()
-        _binding = null
     }
 
     companion object {

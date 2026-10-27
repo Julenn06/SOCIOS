@@ -1,14 +1,11 @@
 package com.julen.socios
 
-import android.app.Dialog
 import android.content.ActivityNotFoundException
 import android.content.DialogInterface
 import android.content.Intent
 import android.os.Bundle
 import android.text.format.Formatter
-import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
 import androidx.core.content.FileProvider
 import androidx.core.view.isVisible
 import androidx.fragment.app.FragmentActivity
@@ -16,9 +13,6 @@ import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
-import com.google.android.material.bottomsheet.BottomSheetBehavior
-import com.google.android.material.bottomsheet.BottomSheetDialog
-import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.julen.socios.ActualizacionesViewModel.Descarga
 import com.julen.socios.actualizaciones.VersionPublicada
 import com.julen.socios.databinding.BottomSheetActualizacionBinding
@@ -29,12 +23,10 @@ import kotlinx.coroutines.launch
  * Descarga de una versión nueva con su animación. Al terminar abre el instalador de Android, que pide
  * confirmación (y, la primera vez, permiso para instalar aplicaciones desde socios).
  */
-class ActualizacionBottomSheetDialog : BottomSheetDialogFragment() {
+class ActualizacionBottomSheetDialog :
+    PanelInferior<BottomSheetActualizacionBinding>(BottomSheetActualizacionBinding::inflate) {
 
     private val viewModel: ActualizacionesViewModel by activityViewModels { ActualizacionesViewModel.Factory }
-
-    private var _binding: BottomSheetActualizacionBinding? = null
-    private val binding get() = _binding!!
 
     /** Para no volver a abrir el instalador solo al girar la pantalla. */
     private var instaladorAbierto = false
@@ -46,19 +38,6 @@ class ActualizacionBottomSheetDialog : BottomSheetDialogFragment() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         instaladorAbierto = savedInstanceState?.getBoolean(STATE_INSTALADOR_ABIERTO) == true
-    }
-
-    override fun onCreateDialog(savedInstanceState: Bundle?): Dialog =
-        (super.onCreateDialog(savedInstanceState) as BottomSheetDialog).apply {
-            behavior.state = BottomSheetBehavior.STATE_EXPANDED
-            behavior.skipCollapsed = true
-        }
-
-    override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
-    ): View {
-        _binding = BottomSheetActualizacionBinding.inflate(inflater, container, false)
-        return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -97,7 +76,6 @@ class ActualizacionBottomSheetDialog : BottomSheetDialogFragment() {
         binding.animacionDescarga.alCompletar = null
         binding.animacionDescarga.alTerminar = null
         mostrado = null
-        _binding = null
         super.onDestroyView()
     }
 
@@ -146,14 +124,14 @@ class ActualizacionBottomSheetDialog : BottomSheetDialogFragment() {
     }
 
     private fun mostrarTamano(fraccion: Float) {
-        val b = _binding ?: return
+        val b = bindingSiExiste ?: return
         if (mostrado is Descarga.Fallida) return
         b.tvDetalleDescarga.text =
             getString(R.string.descarga_progreso, tamano((tamanoTotal * fraccion).toLong()), tamano(tamanoTotal))
     }
 
     private fun mostrarCompletada() {
-        val b = _binding ?: return
+        val b = bindingSiExiste ?: return
         val completada = mostrado as? Descarga.Completada ?: return
         b.tvTituloDescarga.text = getString(R.string.descarga_titulo_completada, completada.publicada.version.toString())
         b.tvDetalleDescarga.setText(
@@ -186,7 +164,7 @@ class ActualizacionBottomSheetDialog : BottomSheetDialogFragment() {
     }
 
     private fun abrirInstalador(soloLaPrimeraVez: Boolean) {
-        val b = _binding ?: return
+        val b = bindingSiExiste ?: return
         val completada = mostrado as? Descarga.Completada ?: return
         if (soloLaPrimeraVez && instaladorAbierto) return
         if (!completada.apk.exists()) {
@@ -222,8 +200,7 @@ class ActualizacionBottomSheetDialog : BottomSheetDialogFragment() {
         fun empezar(activity: FragmentActivity, viewModel: ActualizacionesViewModel, publicada: VersionPublicada): Boolean {
             if (publicada.apk == null) return activity.abrirEnlace(publicada.url)
             viewModel.descargar(publicada)
-            val fragmentos = activity.supportFragmentManager
-            if (fragmentos.findFragmentByTag(TAG) == null) ActualizacionBottomSheetDialog().show(fragmentos, TAG)
+            activity.supportFragmentManager.mostrarSiNoEsta(TAG, ::ActualizacionBottomSheetDialog)
             return true
         }
     }

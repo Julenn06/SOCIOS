@@ -4,9 +4,7 @@ import android.app.Dialog
 import android.os.Bundle
 import android.transition.AutoTransition
 import android.transition.TransitionManager
-import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
 import android.view.WindowManager
 import androidx.core.content.ContextCompat
 import androidx.core.view.WindowCompat
@@ -17,9 +15,6 @@ import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
-import com.google.android.material.bottomsheet.BottomSheetBehavior
-import com.google.android.material.bottomsheet.BottomSheetDialog
-import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.julen.socios.databinding.BottomSheetCobroBinding
 import com.julen.socios.model.CobroInfo
 import com.julen.socios.util.AnimationExtensions
@@ -38,27 +33,17 @@ import kotlinx.coroutines.launch
  * se escribe el importe y se ve cuánto se ha descontado de lo calculado; apagado y guardado, la semana vuelve
  * al neto calculado. Se abre con un doble toque en el neto de la cabecera.
  */
-class CobroBottomSheetDialog : BottomSheetDialogFragment() {
+class CobroBottomSheetDialog : PanelInferior<BottomSheetCobroBinding>(BottomSheetCobroBinding::inflate) {
 
     private val viewModel: MainViewModel by activityViewModels { MainViewModel.Factory }
-
-    private var _binding: BottomSheetCobroBinding? = null
-    private val binding get() = _binding!!
 
     private val semanaKey: String by lazy { requireNotNull(requireArguments().getString(ARG_SEMANA)) }
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog =
-        (super.onCreateDialog(savedInstanceState) as BottomSheetDialog).apply {
-            behavior.state = BottomSheetBehavior.STATE_EXPANDED
-            behavior.skipCollapsed = true
+        super.onCreateDialog(savedInstanceState).apply {
             // Aunque el campo del importe se vea, el teclado espera a que se toque.
             window?.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN)
         }
-
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
-        _binding = BottomSheetCobroBinding.inflate(inflater, container, false)
-        return binding.root
-    }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -112,7 +97,7 @@ class CobroBottomSheetDialog : BottomSheetDialogFragment() {
         parseImporte(binding.etNetoCobrado.text)?.takeIf { it >= 0.0 }?.let(CalculoComisiones::redondearCentimos)
 
     private fun actualizarVistaPrevia() {
-        val b = _binding ?: return
+        val b = bindingSiExiste ?: return
         val state = viewModel.uiState.value
         // El panel se abre para la semana visible; hasta que llegan sus datos no hay nada que comparar.
         if (state.semanaKey != semanaKey) return
@@ -162,11 +147,6 @@ class CobroBottomSheetDialog : BottomSheetDialogFragment() {
         val ventana = dialog?.window ?: return
         WindowCompat.getInsetsController(ventana, binding.root).hide(WindowInsetsCompat.Type.ime())
         ventana.currentFocus?.clearFocus()
-    }
-
-    override fun onDestroyView() {
-        super.onDestroyView()
-        _binding = null
     }
 
     companion object {

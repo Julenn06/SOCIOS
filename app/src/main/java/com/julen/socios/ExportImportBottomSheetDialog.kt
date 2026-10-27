@@ -1,20 +1,14 @@
 package com.julen.socios
 
-import android.app.Dialog
 import android.os.Bundle
 import android.transition.AutoTransition
 import android.transition.TransitionManager
-import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
 import androidx.core.view.isVisible
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
-import com.google.android.material.bottomsheet.BottomSheetBehavior
-import com.google.android.material.bottomsheet.BottomSheetDialog
-import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.julen.socios.databinding.BottomSheetExportImportBinding
 import com.julen.socios.databinding.ItemAlcanceBinding
@@ -27,14 +21,12 @@ import com.julen.socios.util.HapticUtils
 import kotlinx.coroutines.launch
 
 /** Copias y exportación: exporta a PDF, CSV o JSON lo que se elija, o importa una copia. */
-class ExportImportBottomSheetDialog : BottomSheetDialogFragment() {
+class ExportImportBottomSheetDialog :
+    PanelInferior<BottomSheetExportImportBinding>(BottomSheetExportImportBinding::inflate) {
 
     private enum class Alcance { SEMANA, ELEGIR, TODO }
 
     private val viewModel: MainViewModel by activityViewModels { MainViewModel.Factory }
-
-    private var _binding: BottomSheetExportImportBinding? = null
-    private val binding get() = _binding!!
 
     private val tarjetasAlcance: Map<Alcance, ItemAlcanceBinding> by lazy {
         mapOf(Alcance.SEMANA to binding.alcanceSemana, Alcance.ELEGIR to binding.alcanceElegir, Alcance.TODO to binding.alcanceTodo)
@@ -45,17 +37,6 @@ class ExportImportBottomSheetDialog : BottomSheetDialogFragment() {
 
     /** null hasta que se conocen las semanas disponibles y se elige la selección inicial. */
     private var semanasSeleccionadas: MutableSet<String>? = null
-
-    override fun onCreateDialog(savedInstanceState: Bundle?): Dialog =
-        (super.onCreateDialog(savedInstanceState) as BottomSheetDialog).apply {
-            behavior.state = BottomSheetBehavior.STATE_EXPANDED
-            behavior.skipCollapsed = true
-        }
-
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
-        _binding = BottomSheetExportImportBinding.inflate(inflater, container, false)
-        return binding.root
-    }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -114,11 +95,6 @@ class ExportImportBottomSheetDialog : BottomSheetDialogFragment() {
         super.onSaveInstanceState(outState)
         semanasSeleccionadas?.let { outState.putStringArrayList(STATE_SEMANAS, ArrayList(it)) }
         outState.putString(STATE_ALCANCE, alcance.name)
-    }
-
-    override fun onDestroyView() {
-        super.onDestroyView()
-        _binding = null
     }
 
     private fun mostrarModo(importar: Boolean) {

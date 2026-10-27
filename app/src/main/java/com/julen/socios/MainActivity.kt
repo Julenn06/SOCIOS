@@ -9,21 +9,13 @@ import android.view.Menu
 import android.view.MenuItem
 import android.view.MotionEvent
 import android.view.View
-import android.view.ViewGroup
-import android.view.animation.OvershootInterpolator
-import android.widget.CompoundButton
-import android.widget.HorizontalScrollView
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
-import androidx.annotation.ColorRes
-import androidx.annotation.DrawableRes
-import androidx.annotation.PluralsRes
 import androidx.annotation.StringRes
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.coordinatorlayout.widget.CoordinatorLayout
-import androidx.core.content.ContextCompat
 import androidx.core.content.pm.ShortcutManagerCompat
 import androidx.core.text.buildSpannedString
 import androidx.core.text.scale
@@ -39,37 +31,26 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.button.MaterialButton
-import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
 import com.julen.socios.actualizaciones.VersionPublicada
 import com.julen.socios.databinding.ActivityMainBinding
-import com.julen.socios.databinding.DialogoConfirmarImportBinding
-import com.julen.socios.databinding.DialogoDestinoExportBinding
-import com.julen.socios.databinding.ItemResumenImportBinding
 import com.julen.socios.export.ExportFormat
 import com.julen.socios.export.ExportRequest
 import com.julen.socios.export.ImportFormat
-import com.julen.socios.model.CobroInfo
 import com.julen.socios.model.DiaSemana
 import com.julen.socios.model.ImportPreview
 import com.julen.socios.model.Socio
 import com.julen.socios.util.AnimationExtensions
-import com.julen.socios.util.CalculoComisiones
 import com.julen.socios.util.DateUtils
 import com.julen.socios.util.HapticUtils
-import com.julen.socios.util.NumberAnimators
-import com.julen.socios.util.toEurosCompacto
-import com.julen.socios.util.toFormattedEuros
-import com.julen.socios.util.toPorcentajeString
-import com.julen.socios.util.setTextoAccesible
-import kotlin.math.abs
 import kotlinx.coroutines.launch
 
 class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
     private lateinit var adapter: SocioAdapter
-    private lateinit var gestureDetector: GestureDetector
+    private lateinit var cabecera: CabeceraResumen
+    private lateinit var deslizarEntreSemanas: DeslizarEntreSemanas
 
     private val viewModel: MainViewModel by viewModels { MainViewModel.Factory }
     private val actualizaciones: ActualizacionesViewModel by viewModels { ActualizacionesViewModel.Factory }
@@ -83,8 +64,6 @@ class MainActivity : AppCompatActivity() {
         ).toMap()
     }
     private var sincronizandoFiltro = false
-
-    private var bonusAnterior: Pair<String, Double>? = null
 
     private var dialogoDestinoExport: AlertDialog? = null
     private var dialogoConfirmarImport: AlertDialog? = null
@@ -130,12 +109,16 @@ class MainActivity : AppCompatActivity() {
 
         setSupportActionBar(binding.toolbar)
 
+        cabecera = CabeceraResumen(binding)
         setupRecyclerView()
         setupWeekNavigation()
         setupFiltroDias()
         setupFab()
         setupHeaderClickListeners()
-        setupGestureDetector()
+        deslizarEntreSemanas = DeslizarEntreSemanas(this, binding.root) { delta ->
+            HapticUtils.performClick(if (delta > 0) binding.btnSemanaSiguiente else binding.btnSemanaAnterior)
+            viewModel.cambiarSemana(delta)
+        }
 
         // Micro-animaciones táctiles
         AnimationExtensions.setupPressScaleAnimation(binding.fabAddSocio)
@@ -188,7 +171,7 @@ class MainActivity : AppCompatActivity() {
         binding.btnHoyLeft.isVisible = state.weekOffset > 0
         binding.btnHoyRight.isVisible = state.weekOffset < 0
 
-        state.resumenSemana?.let { renderResumen(state.semanaKey, it, state.cobroSemana) }
+        state.resumenSemana?.let { cabecera.mostrar(state.semanaKey, it, state.cobroSemana) }
 
         // Filtro por día, con cuántos socios hay en cada uno
         mostrarFiltro(binding.btnFiltroTodos, getString(R.string.filtro_todos), getString(R.string.filtro_todos_a11y), state.todosSociosSemana.size)
@@ -216,95 +199,11 @@ class MainActivity : AppCompatActivity() {
         )
     }
 
-    private fun renderResumen(
-        semanaKey: String,
-        resumen: CalculoComisiones.ResumenCalculo,
-        cobro: CobroInfo?
-    ) {
-        NumberAnimators.animateCurrency(binding.tvNetoHeader, resumen.totalNeto, prefix = "")
-        val etiquetaNeto = getString(
-            if (resumen.tieneCobroReal) R.string.header_neto_cobrado else R.string.header_neto_semanal
-        )
-        binding.tvNetoHeaderLabel.text = etiquetaNeto
-        binding.containerNetoHeader.contentDescription =
-            getString(R.string.header_neto_a11y, etiquetaNeto, resumen.totalNeto.toFormattedEuros())
-        renderCobro(resumen, cobro)
-        NumberAnimators.animateCurrency(
-            binding.tvBaseHeader, resumen.gananciasBaseX2, prefix = "+", decimals = decimalesDe(resumen.gananciasBaseX2)
-        )
-        NumberAnimators.animateCurrency(
-            binding.tvBonusHeader, resumen.bonusSemanal, prefix = "+", decimals = decimalesDe(resumen.bonusSemanal)
-        )
-        NumberAnimators.animateCurrency(binding.tvIrpfHeader, resumen.retencionIrpf, prefix = "-")
-
-        binding.tvBonusHeaderLabel.setTextoAccesible(
-            getString(if (resumen.esBonoRegaloAplicado) R.string.label_bonus_manual else R.string.label_bonus_auto)
-        )
-        binding.tvIrpfHeaderLabel.text = getString(R.string.label_irpf_header, resumen.porcentajeIrpf.toPorcentajeString())
-
-        val hechos = resumen.totalSociosHechos
-        val metaSocios = resumen.siguienteMetaSocios
-
-        binding.tvBonusTitle.text = getString(R.string.bonus_titulo, resumen.bonusSemanal.toEurosCompacto(prefix = "+"))
-        binding.tvBonusProgressCount.text = getString(R.string.bonus_progress_format, hechos, metaSocios)
-        binding.tvBonusProgressCount.contentDescription = getString(R.string.bonus_progress_a11y, hechos, metaSocios)
-
-        // La barra avanza dentro de la misma semana; al cambiar de semana se coloca sin animar.
-        val anterior = bonusAnterior
-        val mismaSemana = anterior != null && anterior.first == semanaKey
-        binding.progressBonus.mostrar(hechos, animar = mismaSemana)
-        // Pequeño rebote al subir de nivel dentro de la misma semana.
-        if (anterior != null && mismaSemana && anterior.second < resumen.bonusSemanal) {
-            binding.tvBonusTitle.animate().scaleX(1.12f).scaleY(1.12f).setDuration(200)
-                .setInterpolator(OvershootInterpolator(2.5f)).withEndAction {
-                    binding.tvBonusTitle.animate().scaleX(1.0f).scaleY(1.0f).setDuration(150).start()
-                }.start()
-        }
-        bonusAnterior = semanaKey to resumen.bonusSemanal
-
-        // Siempre hay un tramo más: después de 10 socios, uno cada 3.
-        val faltan = resumen.sociosFaltantesParaSiguienteMeta
-        binding.tvBonusSiguienteMeta.text = resources.getQuantityString(
-            R.plurals.bonus_next_goal, faltan, faltan, resumen.siguienteMetaBonus.toEurosCompacto(prefix = "+")
-        )
-    }
-
-    /**
-     * La fila de lo cobrado: solo con el neto ajustado a lo cobrado, y dice cuánto se ha descontado de lo
-     * calculado (o cobrado de más, y por qué si había nota).
-     */
-    private fun renderCobro(resumen: CalculoComisiones.ResumenCalculo, cobro: CobroInfo?) {
-        val valor = binding.tvCobroHeader
-        binding.containerCobroHeader.isVisible = resumen.tieneCobroReal
-        if (resumen.tieneCobroReal) {
-            val descontado = resumen.descontado
-            val etiqueta = getString(
-                when {
-                    descontado > 0.0 -> R.string.header_cobro_descontado
-                    descontado < 0.0 -> R.string.header_cobro_de_mas
-                    else -> R.string.header_cobro_coincide
-                }
-            )
-            NumberAnimators.animateCurrency(valor, abs(descontado), prefix = if (descontado < 0.0) "+" else "-")
-            binding.tvCobroHeaderLabel.text =
-                cobro?.motivo?.let { getString(R.string.socio_dia_semana, etiqueta, it) } ?: etiqueta
-            binding.containerCobroHeader.contentDescription = getString(
-                R.string.header_cobro_a11y, etiqueta, abs(descontado).toFormattedEuros(), resumen.netoCalculado.toFormattedEuros()
-            )
-        } else {
-            // Oculta: la próxima vez que salga, el importe crece desde 0 en lugar de desde el de otra semana.
-            (valor.getTag(R.id.tag_numeric_animator) as? android.animation.ValueAnimator)?.cancel()
-            valor.setTag(R.id.tag_numeric_value, 0.0)
-        }
-    }
-
     private fun mostrarAvisoPendientes(pendientes: List<Socio>) {
         binding.cardAvisoPendientes.isVisible = pendientes.isNotEmpty()
         binding.tvAvisoPendientes.text =
             resources.getQuantityString(R.plurals.pendientes_aviso, pendientes.size, pendientes.size)
     }
-
-    private fun decimalesDe(importe: Double) = if (importe % 1.0 == 0.0) 0 else 2
 
     /** El nombre en una línea y, debajo, cuántos socios hay. */
     private fun mostrarFiltro(boton: MaterialButton, nombre: String, nombreLeido: String, socios: Int) {
@@ -407,24 +306,15 @@ class MainActivity : AppCompatActivity() {
         if (dialogoDestinoExport?.isShowing == true) return
 
         // Al elegir, el ViewModel deja de tener la petición pendiente y el diálogo se cierra solo.
-        val vista = DialogoDestinoExportBinding.inflate(layoutInflater)
-        vista.opcionCompartir.configurar(
-            R.drawable.ic_share, R.color.blue_container, R.color.blue_text_soft,
-            R.string.export_destino_compartir, R.string.export_destino_compartir_detalle
-        ) { viewModel.exportarCompartiendo() }
-        vista.opcionGuardar.configurar(
-            R.drawable.ic_import, R.color.green_container, R.color.green_text_soft,
-            R.string.export_destino_guardar, R.string.export_destino_guardar_detalle
-        ) { viewModel.exportarGuardando() }
-        dialogoDestinoExport = MaterialAlertDialogBuilder(this)
-            .setTitle(getString(R.string.export_destino_titulo, request.formato.name))
-            .setView(vista.root)
-            .setNegativeButton(R.string.action_cancel, null)
-            .setOnDismissListener {
-                dialogoDestinoExport = null
-                viewModel.cancelarExport()
-            }
-            .show()
+        dialogoDestinoExport = preguntarDestinoExport(
+            this,
+            request.formato,
+            alCompartir = viewModel::exportarCompartiendo,
+            alGuardar = viewModel::exportarGuardando
+        ) {
+            dialogoDestinoExport = null
+            viewModel.cancelarExport()
+        }
     }
 
     /** Pide confirmación antes de borrar un socio; después aún se puede deshacer desde el aviso. */
@@ -446,100 +336,17 @@ class MainActivity : AppCompatActivity() {
         }
         if (dialogoConfirmarImport?.isShowing == true) return
 
-        val vista = DialogoConfirmarImportBinding.inflate(layoutInflater)
-        listOf(
-            FilaImport(R.plurals.import_linea_nuevos, preview.sociosNuevos, R.drawable.ic_person, R.color.green_container, R.color.green_text_soft),
-            FilaImport(R.plurals.import_linea_sobrescritos, preview.sociosSobrescritos, R.drawable.ic_edit, R.color.orange_container, R.color.orange_text),
-            FilaImport(R.plurals.import_linea_bonus, preview.bonos, R.drawable.ic_gift, R.color.amber_container, R.color.amber_text),
-            FilaImport(R.plurals.import_linea_irpf, preview.irpfVigencias, R.drawable.ic_receipt, R.color.blue_container, R.color.blue_text_soft),
-            FilaImport(R.plurals.import_linea_cobros, preview.cobros, R.drawable.ic_cobro, R.color.green_container, R.color.green_text_soft)
-        ).forEach { fila ->
-            val linea = ItemResumenImportBinding.inflate(layoutInflater, vista.filasImport, true)
-            linea.placaResumen.backgroundTintList = ContextCompat.getColorStateList(this, fila.fondo)
-            linea.ivResumen.setImageResource(fila.icono)
-            linea.ivResumen.imageTintList = ContextCompat.getColorStateList(this, fila.color)
-            linea.tvResumen.text = resources.getQuantityString(fila.plural, fila.cantidad, fila.cantidad)
+        dialogoConfirmarImport = confirmarImportacion(this, preview, alConfirmar = viewModel::confirmarImport) {
+            dialogoConfirmarImport = null
+            viewModel.cancelarImport()
         }
-        vista.tvDescartadosImport.isVisible = preview.descartados > 0
-        vista.tvDescartadosImport.text =
-            resources.getQuantityString(R.plurals.import_descartados, preview.descartados, preview.descartados)
-        dialogoConfirmarImport = MaterialAlertDialogBuilder(this)
-            .setTitle(R.string.import_confirmar_titulo)
-            .setView(vista.root)
-            .setPositiveButton(R.string.action_importar) { _, _ -> viewModel.confirmarImport() }
-            .setNegativeButton(R.string.action_cancel, null)
-            .setOnDismissListener {
-                dialogoConfirmarImport = null
-                viewModel.cancelarImport()
-            }
-            .show()
     }
 
     // --- Gestos ---
 
-    private fun setupGestureDetector() {
-        gestureDetector = GestureDetector(this, object : GestureDetector.SimpleOnGestureListener() {
-            private val swipeThreshold = 80
-            private val swipeVelocityThreshold = 80
-
-            override fun onFling(
-                e1: MotionEvent?, e2: MotionEvent, velocityX: Float, velocityY: Float
-            ): Boolean {
-                if (e1 == null) return false
-                val diffX = e2.x - e1.x
-                val diffY = e2.y - e1.y
-
-                if (abs(diffX) > abs(diffY) * 1.3f &&
-                    abs(diffX) > swipeThreshold && abs(velocityX) > swipeVelocityThreshold
-                ) {
-                    if (diffX < 0) {
-                        HapticUtils.performClick(binding.btnSemanaSiguiente)
-                        viewModel.cambiarSemana(1)
-                    } else {
-                        HapticUtils.performClick(binding.btnSemanaAnterior)
-                        viewModel.cambiarSemana(-1)
-                    }
-                    return true
-                }
-                return false
-            }
-        })
-    }
-
-    private var gestoSobreControlHorizontal = false
-
     override fun dispatchTouchEvent(ev: MotionEvent): Boolean {
-        if (ev.actionMasked == MotionEvent.ACTION_DOWN) {
-            // Un deslizamiento que empieza en un control que ya se arrastra en horizontal (switch,
-            // chip, fila desplazable) es para ese control, no para cambiar de semana.
-            gestoSobreControlHorizontal = hayControlHorizontalEn(binding.root, ev.rawX, ev.rawY)
-        }
-
-        if (!gestoSobreControlHorizontal) {
-            gestureDetector.onTouchEvent(ev)
-        }
-
-        if (ev.actionMasked == MotionEvent.ACTION_UP || ev.actionMasked == MotionEvent.ACTION_CANCEL) {
-            gestoSobreControlHorizontal = false
-        }
-
+        deslizarEntreSemanas.onTouchEvent(ev)
         return super.dispatchTouchEvent(ev)
-    }
-
-    private fun hayControlHorizontalEn(view: View, rawX: Float, rawY: Float): Boolean {
-        if (!view.isShown) return false
-        val location = IntArray(2)
-        view.getLocationOnScreen(location)
-        val dentro = rawX >= location[0] && rawX <= location[0] + view.width &&
-            rawY >= location[1] && rawY <= location[1] + view.height
-        if (!dentro) return false
-        if (view is HorizontalScrollView || view is CompoundButton) return true
-        if (view is ViewGroup) {
-            for (i in 0 until view.childCount) {
-                if (hayControlHorizontalEn(view.getChildAt(i), rawX, rawY)) return true
-            }
-        }
-        return false
     }
 
     // --- Configuración de vistas ---
@@ -605,7 +412,7 @@ class MainActivity : AppCompatActivity() {
         }
         binding.cardAvisoPendientes.setOnClickListener {
             HapticUtils.performClick(it)
-            mostrarLista(ListaSociosBottomSheetDialog.pendientes())
+            mostrarLista { ListaSociosBottomSheetDialog.pendientes() }
         }
         binding.btnOcultarAvisoPendientes.setOnClickListener {
             HapticUtils.performClick(it)
@@ -616,32 +423,29 @@ class MainActivity : AppCompatActivity() {
     // --- Diálogos ---
 
     private fun openAddEditDialog(socioToEdit: Socio?) {
-        if (supportFragmentManager.findFragmentByTag(AddSocioBottomSheetDialog.TAG) != null) return
         val state = viewModel.uiState.value
-        val dialog = if (socioToEdit != null) {
-            AddSocioBottomSheetDialog.editar(socioToEdit)
-        } else {
-            AddSocioBottomSheetDialog.nuevo(state.semanaKey, state.diaFiltro ?: DateUtils.getDiaSemanaActual())
+        supportFragmentManager.mostrarSiNoEsta(AddSocioBottomSheetDialog.TAG) {
+            if (socioToEdit != null) {
+                AddSocioBottomSheetDialog.editar(socioToEdit)
+            } else {
+                AddSocioBottomSheetDialog.nuevo(state.semanaKey, state.diaFiltro ?: DateUtils.getDiaSemanaActual())
+            }
         }
-        dialog.show(supportFragmentManager, AddSocioBottomSheetDialog.TAG)
     }
 
     private fun mostrarDesgloseIrpf() {
-        if (supportFragmentManager.findFragmentByTag(IrpfBreakdownBottomSheetDialog.TAG) != null) return
         if (viewModel.uiState.value.resumenSemana == null) return
-        IrpfBreakdownBottomSheetDialog().show(supportFragmentManager, IrpfBreakdownBottomSheetDialog.TAG)
+        supportFragmentManager.mostrarSiNoEsta(IrpfBreakdownBottomSheetDialog.TAG, ::IrpfBreakdownBottomSheetDialog)
     }
 
-    private fun mostrarHistoricoGlobal() {
-        if (supportFragmentManager.findFragmentByTag(HistoricoGlobalBottomSheetDialog.TAG) != null) return
-        HistoricoGlobalBottomSheetDialog().show(supportFragmentManager, HistoricoGlobalBottomSheetDialog.TAG)
-    }
+    private fun mostrarHistoricoGlobal() =
+        supportFragmentManager.mostrarSiNoEsta(HistoricoGlobalBottomSheetDialog.TAG, ::HistoricoGlobalBottomSheetDialog)
 
     private fun mostrarDialogoBonoRegalo() {
-        if (supportFragmentManager.findFragmentByTag(BonoRegaloBottomSheetDialog.TAG) != null) return
         val state = viewModel.uiState.value
-        BonoRegaloBottomSheetDialog.newInstance(state.semanaKey, state.bonoInfoSemana)
-            .show(supportFragmentManager, BonoRegaloBottomSheetDialog.TAG)
+        supportFragmentManager.mostrarSiNoEsta(BonoRegaloBottomSheetDialog.TAG) {
+            BonoRegaloBottomSheetDialog.newInstance(state.semanaKey, state.bonoInfoSemana)
+        }
     }
 
     /**
@@ -672,22 +476,17 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun mostrarCobro() {
-        if (supportFragmentManager.findFragmentByTag(CobroBottomSheetDialog.TAG) != null) return
         val state = viewModel.uiState.value
         if (state.resumenSemana == null) return
-        CobroBottomSheetDialog.newInstance(state.semanaKey, state.cobroSemana)
-            .show(supportFragmentManager, CobroBottomSheetDialog.TAG)
+        supportFragmentManager.mostrarSiNoEsta(CobroBottomSheetDialog.TAG) {
+            CobroBottomSheetDialog.newInstance(state.semanaKey, state.cobroSemana)
+        }
     }
 
-    private fun mostrarLista(lista: ListaSociosBottomSheetDialog) {
-        if (supportFragmentManager.findFragmentByTag(ListaSociosBottomSheetDialog.TAG) != null) return
-        lista.show(supportFragmentManager, ListaSociosBottomSheetDialog.TAG)
-    }
+    private fun mostrarLista(crear: () -> ListaSociosBottomSheetDialog) =
+        supportFragmentManager.mostrarSiNoEsta(ListaSociosBottomSheetDialog.TAG, crear)
 
-    private fun mostrarMas() {
-        if (supportFragmentManager.findFragmentByTag(MasBottomSheetDialog.TAG) != null) return
-        MasBottomSheetDialog().show(supportFragmentManager, MasBottomSheetDialog.TAG)
-    }
+    private fun mostrarMas() = supportFragmentManager.mostrarSiNoEsta(MasBottomSheetDialog.TAG, ::MasBottomSheetDialog)
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
         menuInflater.inflate(R.menu.menu_main, menu)
@@ -697,7 +496,7 @@ class MainActivity : AppCompatActivity() {
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {
             R.id.action_buscar -> {
-                mostrarLista(ListaSociosBottomSheetDialog.buscar())
+                mostrarLista { ListaSociosBottomSheetDialog.buscar() }
                 true
             }
 
@@ -714,15 +513,6 @@ class MainActivity : AppCompatActivity() {
             else -> super.onOptionsItemSelected(item)
         }
     }
-
-    /** Una línea del resumen de importación. */
-    private class FilaImport(
-        @PluralsRes val plural: Int,
-        val cantidad: Int,
-        @DrawableRes val icono: Int,
-        @ColorRes val fondo: Int,
-        @ColorRes val color: Int
-    )
 
     companion object {
         // Deben coincidir con res/xml/shortcuts.xml. El botón "+" del widget usa la misma acción.

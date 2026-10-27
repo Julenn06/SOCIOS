@@ -1,10 +1,7 @@
 package com.julen.socios
 
-import android.app.Dialog
 import android.os.Bundle
-import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
 import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import androidx.core.widget.TextViewCompat
@@ -12,9 +9,6 @@ import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
-import com.google.android.material.bottomsheet.BottomSheetBehavior
-import com.google.android.material.bottomsheet.BottomSheetDialog
-import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.julen.socios.ActualizacionesViewModel.EstadoVersion
 import com.julen.socios.ajustes.Tema
 import com.julen.socios.databinding.BottomSheetMasBinding
@@ -28,28 +22,14 @@ import kotlinx.coroutines.launch
  * Panel "Más", en lugar del menú ⋮: versión de la app y búsqueda de actualizaciones, acceso a copias y
  * exportación y selector de tema.
  */
-class MasBottomSheetDialog : BottomSheetDialogFragment() {
+class MasBottomSheetDialog : PanelInferior<BottomSheetMasBinding>(BottomSheetMasBinding::inflate) {
 
     private val actualizaciones: ActualizacionesViewModel by activityViewModels { ActualizacionesViewModel.Factory }
-
-    private var _binding: BottomSheetMasBinding? = null
-    private val binding get() = _binding!!
 
     private val preferenciasTema by lazy { (requireActivity().application as SociosApp).container.preferenciasTema }
 
     private val opcionesTema: Map<Tema, ItemTemaBinding> by lazy {
         mapOf(Tema.SISTEMA to binding.temaSistema, Tema.CLARO to binding.temaClaro, Tema.OSCURO to binding.temaOscuro)
-    }
-
-    override fun onCreateDialog(savedInstanceState: Bundle?): Dialog =
-        (super.onCreateDialog(savedInstanceState) as BottomSheetDialog).apply {
-            behavior.state = BottomSheetBehavior.STATE_EXPANDED
-            behavior.skipCollapsed = true
-        }
-
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
-        _binding = BottomSheetMasBinding.inflate(inflater, container, false)
-        return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -58,10 +38,7 @@ class MasBottomSheetDialog : BottomSheetDialogFragment() {
 
         binding.cardExportarImportar.setOnClickListener {
             dismiss()
-            val fragmentos = parentFragmentManager
-            if (fragmentos.findFragmentByTag(ExportImportBottomSheetDialog.TAG) == null) {
-                ExportImportBottomSheetDialog().show(fragmentos, ExportImportBottomSheetDialog.TAG)
-            }
+            parentFragmentManager.mostrarSiNoEsta(ExportImportBottomSheetDialog.TAG, ::ExportImportBottomSheetDialog)
         }
         listOf(binding.cardExportarImportar, binding.btnEstadoVersion)
             .forEach(AnimationExtensions::setupPressScaleAnimation)
@@ -73,11 +50,6 @@ class MasBottomSheetDialog : BottomSheetDialogFragment() {
                 actualizaciones.estadoVersion.collect(::mostrarEstadoVersion)
             }
         }
-    }
-
-    override fun onDestroyView() {
-        super.onDestroyView()
-        _binding = null
     }
 
     private fun configurarTemas() {
@@ -105,7 +77,7 @@ class MasBottomSheetDialog : BottomSheetDialogFragment() {
         opcionesTema.forEach { (t, opcion) -> opcion.root.isChecked = t == tema }
         preferenciasTema.tema = tema
         // Un instante para que se vea la marca antes de que la pantalla se recree con los colores nuevos.
-        binding.root.postDelayed({ if (_binding != null) tema.aplicar() }, RETRASO_TEMA_MS)
+        binding.root.postDelayed({ if (bindingSiExiste != null) tema.aplicar() }, RETRASO_TEMA_MS)
     }
 
     private fun mostrarEstadoVersion(estado: EstadoVersion) {

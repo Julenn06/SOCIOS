@@ -1,10 +1,7 @@
 package com.julen.socios
 
-import android.app.Dialog
 import android.os.Bundle
-import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
 import android.widget.TextView
 import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
@@ -13,9 +10,6 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.google.android.material.bottomsheet.BottomSheetBehavior
-import com.google.android.material.bottomsheet.BottomSheetDialog
-import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.julen.socios.databinding.BottomSheetHistoricoGlobalBinding
 import com.julen.socios.util.CalculoComisiones
 import com.julen.socios.util.CalculoComisiones.Periodo
@@ -32,12 +26,10 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.launch
 
-class HistoricoGlobalBottomSheetDialog : BottomSheetDialogFragment() {
+class HistoricoGlobalBottomSheetDialog :
+    PanelInferior<BottomSheetHistoricoGlobalBinding>(BottomSheetHistoricoGlobalBinding::inflate) {
 
     private val viewModel: MainViewModel by activityViewModels { MainViewModel.Factory }
-
-    private var _binding: BottomSheetHistoricoGlobalBinding? = null
-    private val binding get() = _binding!!
 
     private val adapter = HistoricoAdapter { semanaKey ->
         viewModel.irASemana(semanaKey)
@@ -50,19 +42,6 @@ class HistoricoGlobalBottomSheetDialog : BottomSheetDialogFragment() {
     /** Agrupación con la que se dibujó el gráfico, para animarlo solo al cambiarla. */
     private var periodoDelGrafico: Periodo? = null
     private var graficoDibujado = false
-
-    override fun onCreateDialog(savedInstanceState: Bundle?): Dialog =
-        (super.onCreateDialog(savedInstanceState) as BottomSheetDialog).apply {
-            behavior.state = BottomSheetBehavior.STATE_EXPANDED
-            behavior.skipCollapsed = true
-        }
-
-    override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
-    ): View {
-        _binding = BottomSheetHistoricoGlobalBinding.inflate(inflater, container, false)
-        return binding.root
-    }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -283,11 +262,6 @@ class HistoricoGlobalBottomSheetDialog : BottomSheetDialogFragment() {
     private fun importeConSigno(descontado: Double, compacto: Boolean = false): String {
         val signo = if (descontado < 0.0) "+" else if (descontado > 0.0) "-" else ""
         return if (compacto) abs(descontado).toEurosCompacto(prefix = signo) else abs(descontado).toCurrencyString(prefix = signo)
-    }
-
-    override fun onDestroyView() {
-        super.onDestroyView()
-        _binding = null
     }
 
     companion object {

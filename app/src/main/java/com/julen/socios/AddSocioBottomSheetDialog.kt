@@ -1,15 +1,12 @@
 package com.julen.socios
 
 import android.animation.ValueAnimator
-import android.app.Dialog
 import android.graphics.drawable.GradientDrawable
 import android.graphics.drawable.LayerDrawable
 import android.os.Bundle
 import android.transition.AutoTransition
 import android.transition.TransitionManager
-import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
 import android.widget.GridLayout
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.ColorUtils
@@ -18,9 +15,6 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.isVisible
 import androidx.core.widget.doOnTextChanged
 import androidx.fragment.app.activityViewModels
-import com.google.android.material.bottomsheet.BottomSheetBehavior
-import com.google.android.material.bottomsheet.BottomSheetDialog
-import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.google.android.material.button.MaterialButton
 import com.julen.socios.databinding.BottomSheetAddSocioBinding
 import com.julen.socios.model.DiaSemana
@@ -40,12 +34,10 @@ import com.julen.socios.util.toImporteInput
  * Alta o edición de un socio. Recibe sus datos por argumentos (no por constructor) para que el sistema
  * pueda recrearlo tras un giro de pantalla o la muerte del proceso, y guarda a través del ViewModel.
  */
-class AddSocioBottomSheetDialog : BottomSheetDialogFragment() {
+class AddSocioBottomSheetDialog :
+    PanelInferior<BottomSheetAddSocioBinding>(BottomSheetAddSocioBinding::inflate, pantallaCompleta = true) {
 
     private val viewModel: MainViewModel by activityViewModels { MainViewModel.Factory }
-
-    private var _binding: BottomSheetAddSocioBinding? = null
-    private val binding get() = _binding!!
 
     private val socioToEdit: Socio? by lazy { requireArguments().getBundle(ARG_SOCIO)?.toSocio() }
 
@@ -71,23 +63,6 @@ class AddSocioBottomSheetDialog : BottomSheetDialogFragment() {
 
     private val fondoHero = GradientDrawable().apply { orientation = GradientDrawable.Orientation.TL_BR }
     private var animacionFondo: ValueAnimator? = null
-
-    override fun onCreateDialog(savedInstanceState: Bundle?): Dialog =
-        (super.onCreateDialog(savedInstanceState) as BottomSheetDialog).apply {
-            behavior.state = BottomSheetBehavior.STATE_EXPANDED
-            behavior.skipCollapsed = true
-            setOnShowListener {
-                // A pantalla completa, para que los botones queden siempre abajo.
-                findViewById<View>(com.google.android.material.R.id.design_bottom_sheet)?.let { hoja ->
-                    hoja.layoutParams = hoja.layoutParams.apply { height = ViewGroup.LayoutParams.MATCH_PARENT }
-                }
-            }
-        }
-
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
-        _binding = BottomSheetAddSocioBinding.inflate(inflater, container, false)
-        return binding.root
-    }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -169,7 +144,7 @@ class AddSocioBottomSheetDialog : BottomSheetDialogFragment() {
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
-        _binding?.let { outState.putInt(STATE_CUOTA_INDEX, opcionesCuota.indexOfFirst { it.isChecked }) }
+        bindingSiExiste?.let { outState.putInt(STATE_CUOTA_INDEX, opcionesCuota.indexOfFirst { it.isChecked }) }
         outState.putBoolean(STATE_HECHO, esHecho)
         outState.putBoolean(STATE_DETALLES, detallesAbiertos)
         outState.putString(STATE_SEMANA, semanaKey)
@@ -179,7 +154,6 @@ class AddSocioBottomSheetDialog : BottomSheetDialogFragment() {
     override fun onDestroyView() {
         animacionFondo?.cancel()
         super.onDestroyView()
-        _binding = null
     }
 
     private fun moverSemana(delta: Int) {
@@ -424,7 +398,7 @@ class AddSocioBottomSheetDialog : BottomSheetDialogFragment() {
         binding.scrollAddSocio.smoothScrollTo(0, 0)
         // Un latido de la cabecera para que se note que se ha guardado y empieza uno nuevo.
         binding.fondoHero.animate().scaleX(0.97f).scaleY(0.97f).setDuration(110).withEndAction {
-            _binding?.fondoHero?.animate()?.scaleX(1f)?.scaleY(1f)?.setDuration(160)?.start()
+            bindingSiExiste?.fondoHero?.animate()?.scaleX(1f)?.scaleY(1f)?.setDuration(160)?.start()
         }.start()
     }
 

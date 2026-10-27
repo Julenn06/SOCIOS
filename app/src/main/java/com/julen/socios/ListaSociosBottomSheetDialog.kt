@@ -1,10 +1,7 @@
 package com.julen.socios
 
-import android.app.Dialog
 import android.os.Bundle
-import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
 import androidx.appcompat.app.AlertDialog
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
@@ -15,9 +12,6 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.google.android.material.bottomsheet.BottomSheetBehavior
-import com.google.android.material.bottomsheet.BottomSheetDialog
-import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.julen.socios.databinding.BottomSheetListaSociosBinding
 import com.julen.socios.model.Socio
 import com.julen.socios.util.BusquedaSocios
@@ -30,14 +24,12 @@ import kotlinx.coroutines.launch
  * Socios de varias semanas a la vez: los pendientes de semanas anteriores o los que coinciden con una
  * búsqueda. Desde aquí se pueden marcar como conseguidos, editar o borrar, y tocar uno abre su semana.
  */
-class ListaSociosBottomSheetDialog : BottomSheetDialogFragment() {
+class ListaSociosBottomSheetDialog :
+    PanelInferior<BottomSheetListaSociosBinding>(BottomSheetListaSociosBinding::inflate, pantallaCompleta = true) {
 
     enum class Modo { PENDIENTES, BUSCAR }
 
     private val viewModel: MainViewModel by activityViewModels { MainViewModel.Factory }
-
-    private var _binding: BottomSheetListaSociosBinding? = null
-    private val binding get() = _binding!!
 
     private val modo: Modo by lazy { Modo.valueOf(requireNotNull(requireArguments().getString(ARG_MODO))) }
 
@@ -61,23 +53,6 @@ class ListaSociosBottomSheetDialog : BottomSheetDialogFragment() {
                 dismiss()
             }
         )
-    }
-
-    override fun onCreateDialog(savedInstanceState: Bundle?): Dialog =
-        (super.onCreateDialog(savedInstanceState) as BottomSheetDialog).apply {
-            behavior.state = BottomSheetBehavior.STATE_EXPANDED
-            behavior.skipCollapsed = true
-            setOnShowListener {
-                // A pantalla completa: la lista cambia de tamaño al escribir y el panel no debe dar saltos.
-                findViewById<View>(com.google.android.material.R.id.design_bottom_sheet)?.let { hoja ->
-                    hoja.layoutParams = hoja.layoutParams.apply { height = ViewGroup.LayoutParams.MATCH_PARENT }
-                }
-            }
-        }
-
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
-        _binding = BottomSheetListaSociosBinding.inflate(inflater, container, false)
-        return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -131,10 +106,7 @@ class ListaSociosBottomSheetDialog : BottomSheetDialogFragment() {
     }
 
     private fun editar(socio: Socio) {
-        val fragmentos = parentFragmentManager
-        if (fragmentos.findFragmentByTag(AddSocioBottomSheetDialog.TAG) == null) {
-            AddSocioBottomSheetDialog.editar(socio).show(fragmentos, AddSocioBottomSheetDialog.TAG)
-        }
+        parentFragmentManager.mostrarSiNoEsta(AddSocioBottomSheetDialog.TAG) { AddSocioBottomSheetDialog.editar(socio) }
     }
 
     private fun mostrarTeclado() {
@@ -146,7 +118,6 @@ class ListaSociosBottomSheetDialog : BottomSheetDialogFragment() {
     override fun onDestroyView() {
         dialogoEliminar?.dismiss()
         super.onDestroyView()
-        _binding = null
     }
 
     companion object {
