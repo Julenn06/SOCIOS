@@ -23,6 +23,7 @@ import com.julen.socios.export.ExportService
 import com.julen.socios.export.ImportFormat
 import com.julen.socios.model.BonoRegaloInfo
 import com.julen.socios.model.CobroInfo
+import com.julen.socios.model.DatosBackup
 import com.julen.socios.model.DiaSemana
 import com.julen.socios.model.ImportesPredefinidos
 import com.julen.socios.model.ImportPreview
@@ -33,6 +34,7 @@ import com.julen.socios.util.CalculoComisiones
 import com.julen.socios.util.DateUtils
 import com.julen.socios.util.UiText
 import com.julen.socios.util.motivoDeError
+import com.julen.socios.util.toEurosCompacto
 import com.julen.socios.util.toFormattedEuros
 import com.julen.socios.util.toPorcentajeString
 import java.time.Clock
@@ -71,7 +73,8 @@ data class MainUiState(
 
 /** Acciones puntuales que la Activity debe ejecutar una sola vez. */
 sealed interface MainEvent {
-    data class Mensaje(val texto: UiText, val tipo: TipoAviso, val larga: Boolean = false) : MainEvent
+    /** Un aviso: [titulo] dice qué ha pasado y [detalle], si hay, a qué o por qué. */
+    data class Mensaje(val titulo: UiText, val tipo: TipoAviso, val detalle: UiText? = null) : MainEvent
     data class CrearDocumento(val formato: ExportFormat, val nombreSugerido: String) : MainEvent
     data class Compartir(val uri: Uri, val formato: ExportFormat) : MainEvent {
         val mimeType: String get() = formato.mimeType
@@ -250,11 +253,7 @@ class MainViewModel(
 
     fun setSocioHecho(socioId: String, hecho: Boolean) = lanzar {
         if (socioRepository.setHecho(socioId, hecho)) {
-            if (hecho) {
-                mensaje(R.string.msg_socio_hecho, TipoAviso.EXITO)
-            } else {
-                mensaje(R.string.msg_socio_pendiente, TipoAviso.PENDIENTE)
-            }
+            if (hecho) avisar(R.string.msg_socio_hecho, TipoAviso.EXITO) else avisar(R.string.msg_socio_pendiente, TipoAviso.PENDIENTE)
         }
     }
 
@@ -264,17 +263,20 @@ class MainViewModel(
             esNuevo -> {
                 socioRepository.addSocio(socio)
                 preferencias.ultimaCuota = socio.colaboracion
-                mensaje(R.string.msg_socio_saved, TipoAviso.EXITO)
+                avisar(R.string.msg_socio_saved, TipoAviso.EXITO, UiText.Res(R.string.socio_dia_semana, listOf(nombreDe(socio), socio.dia.nombreCompleto)))
             }
 
             semanaOriginal != null && semanaOriginal != socio.semanaKey -> {
                 socioRepository.updateSocio(socio)
-                mensaje(R.string.msg_socio_movido, TipoAviso.EXITO, DateUtils.rangoCorto(socio.semanaKey))
+                avisar(
+                    R.string.msg_socio_movido, TipoAviso.EXITO,
+                    UiText.Res(R.string.msg_socio_movido_detalle, listOf(nombreDe(socio), DateUtils.rangoCorto(socio.semanaKey)))
+                )
             }
 
             else -> {
                 socioRepository.updateSocio(socio)
-                mensaje(R.string.msg_socio_updated, TipoAviso.EXITO)
+                avisar(R.string.msg_socio_updated, TipoAviso.EXITO, nombreDe(socio))
             }
         }
     }
@@ -290,40 +292,44 @@ class MainViewModel(
     /** Vuelve a guardar un socio recién borrado, con el mismo id y fecha de alta. */
     fun restaurarSocio(socio: Socio) = lanzar {
         socioRepository.addSocio(socio)
-        mensaje(R.string.msg_socio_restaurado, TipoAviso.EXITO)
+        avisar(R.string.msg_socio_restaurado, TipoAviso.EXITO, nombreDe(socio))
     }
 
     fun guardarBono(bono: BonoRegaloInfo) = lanzar {
         bonoRegaloRepository.saveBonoRegalo(bono)
-        mensaje(R.string.msg_bonus_updated, TipoAviso.EXITO)
+        val detalle = if (bono.esMontoFijo) R.string.msg_bonus_detalle_fijo else R.string.msg_bonus_detalle_suma
+        avisar(R.string.msg_bonus_updated, TipoAviso.EXITO, UiText.Res(detalle, listOf(bono.monto.toEurosCompacto())))
     }
 
     fun eliminarBono(semanaKey: String) = lanzar {
         bonoRegaloRepository.deleteBonoRegalo(semanaKey)
-        mensaje(R.string.msg_bonus_reset, TipoAviso.INFO)
+        avisar(R.string.msg_bonus_reset, TipoAviso.INFO, UiText.Res(R.string.msg_bonus_reset_detalle))
     }
 
     /** Lo cobrado de verdad en la semana: pasa a ser su neto, y la diferencia con el calculado, lo descontado. */
     fun guardarCobro(semanaKey: String, netoCobrado: Double, nota: String) = lanzar {
         val importe = CalculoComisiones.redondearCentimos(netoCobrado)
         cobroRepository.guardar(CobroInfo(semanaKey, importe, nota.trim()))
-        mensaje(R.string.msg_cobro_guardado, TipoAviso.EXITO, importe.toFormattedEuros())
+        avisar(R.string.msg_cobro_guardado, TipoAviso.EXITO, UiText.Res(R.string.msg_cobro_guardado_detalle, listOf(importe.toFormattedEuros())))
     }
 
     /** La semana vuelve a usar el neto calculado. */
     fun eliminarCobro(semanaKey: String) = lanzar {
         cobroRepository.eliminar(semanaKey)
-        mensaje(R.string.msg_cobro_eliminado, TipoAviso.INFO)
+        avisar(R.string.msg_cobro_eliminado, TipoAviso.INFO, UiText.Res(R.string.msg_cobro_eliminado_detalle))
     }
 
     fun guardarIrpf(desdeSemanaKey: String, porcentaje: Double) = lanzar {
         irpfRepository.guardarVigencia(desdeSemanaKey, porcentaje)
-        mensaje(R.string.msg_irpf_actualizado, TipoAviso.EXITO, porcentaje.toPorcentajeString(), desdeSemanaKey)
+        avisar(
+            R.string.msg_irpf_actualizado, TipoAviso.EXITO,
+            UiText.Res(R.string.msg_irpf_actualizado_detalle, listOf(porcentaje.toPorcentajeString(), DateUtils.rangoCorto(desdeSemanaKey)))
+        )
     }
 
     fun eliminarIrpf(desdeSemanaKey: String) = lanzar {
         irpfRepository.eliminarVigencia(desdeSemanaKey)
-        mensaje(R.string.msg_irpf_cambio_eliminado, TipoAviso.INFO)
+        avisar(R.string.msg_irpf_cambio_eliminado, TipoAviso.INFO)
     }
 
     // --- Exportación ---
@@ -332,7 +338,7 @@ class MainViewModel(
         val datos = backupRepository.cargarDatos(alcance)
         // Una semana sin socios pero con el bonus ajustado a mano también se puede exportar.
         if (datos.socios.isEmpty() && datos.bonosRegalo.isEmpty() && datos.cobros.isEmpty()) {
-            mensajeLargo(R.string.msg_export_vacio, TipoAviso.INFO)
+            avisar(R.string.msg_export_vacio, TipoAviso.INFO, UiText.Res(R.string.msg_export_vacio_detalle))
         } else {
             guardarExportRequest(KEY_EXPORT_DESTINO, ExportRequest(formato, alcance))
         }
@@ -361,7 +367,7 @@ class MainViewModel(
         if (uri == null) return
         lanzar(R.string.msg_error_file_save) {
             exportService.escribirEnUri(request, backupRepository.cargarDatos(request.alcance), uri)
-            mensajeLargo(R.string.msg_file_saved, TipoAviso.EXITO)
+            avisar(R.string.msg_file_saved, TipoAviso.EXITO, UiText.Res(R.string.msg_file_saved_detalle, listOf(request.formato.name)))
         }
     }
 
@@ -380,7 +386,7 @@ class MainViewModel(
     @VisibleForTesting
     internal suspend fun prepararImportacion(lectura: ResultadoLectura, formato: ImportFormat) {
         if (lectura.datos.estaVacio) {
-            mensajeLargo(R.string.msg_import_vacio, TipoAviso.ERROR, formato.name)
+            avisar(R.string.msg_import_vacio, TipoAviso.ERROR, UiText.Res(R.string.msg_import_vacio_detalle, listOf(formato.name)))
             return
         }
         lecturaPendiente = lectura
@@ -392,17 +398,7 @@ class MainViewModel(
         cancelarImport()
         lanzar(R.string.msg_error_import) {
             backupRepository.importar(datos)
-            enviar(
-                MainEvent.Mensaje(
-                    UiText.Plural(
-                        R.plurals.msg_import_resultado,
-                        datos.socios.size,
-                        listOf(datos.socios.size, datos.bonosRegalo.size, datos.irpfVigencias.size, datos.cobros.size)
-                    ),
-                    TipoAviso.EXITO,
-                    larga = true
-                )
-            )
+            avisar(R.string.msg_import_hecho, TipoAviso.EXITO, resumenImportado(datos))
         }
     }
 
@@ -443,11 +439,24 @@ class MainViewModel(
         eventos.trySend(evento)
     }
 
-    private fun mensaje(@StringRes id: Int, tipo: TipoAviso, vararg args: Any) =
-        enviar(MainEvent.Mensaje(UiText.Res(id, args.toList()), tipo))
+    private fun avisar(@StringRes titulo: Int, tipo: TipoAviso, detalle: UiText? = null) =
+        enviar(MainEvent.Mensaje(UiText.Res(titulo), tipo, detalle))
 
-    private fun mensajeLargo(@StringRes id: Int, tipo: TipoAviso, vararg args: Any) =
-        enviar(MainEvent.Mensaje(UiText.Res(id, args.toList()), tipo, larga = true))
+    /** El nombre del socio, o "Socio 20 €" si no tiene. */
+    private fun nombreDe(socio: Socio): UiText =
+        socio.nombreSocio.takeIf { it.isNotBlank() }?.let(UiText::Texto)
+            ?: UiText.Res(R.string.socio_default_name, listOf(socio.colaboracion.toEurosCompacto()))
+
+    /** "12 socios, 2 bonus y 3 semanas con lo cobrado", sin lo que no venía en la copia. */
+    private fun resumenImportado(datos: DatosBackup): UiText = UiText.Lista(
+        listOf(
+            R.plurals.msg_import_socios to datos.socios.size,
+            R.plurals.msg_import_bonus to datos.bonosRegalo.size,
+            R.plurals.msg_import_irpf to datos.irpfVigencias.size,
+            R.plurals.msg_import_cobros to datos.cobros.size
+        ).filter { (_, cantidad) -> cantidad > 0 }
+            .map { (plural, cantidad) -> UiText.Plural(plural, cantidad, listOf(cantidad)) }
+    )
 
     /** Ejecuta una operación y convierte cualquier error en un mensaje, en lugar de cerrar la app. */
     private fun lanzar(@StringRes errorRes: Int = R.string.msg_error_generico, bloque: suspend () -> Unit) {
@@ -457,7 +466,7 @@ class MainViewModel(
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {
-                mensajeLargo(errorRes, TipoAviso.ERROR, motivoDeError(e))
+                enviar(MainEvent.Mensaje(UiText.Res(errorRes), TipoAviso.ERROR, motivoDeError(e)))
             }
         }
     }

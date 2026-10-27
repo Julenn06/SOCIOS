@@ -5,4 +5,6 @@
     <!-- Muelles de escala guardados en la propia vista (ver util/Movimiento) -->
     <item name="tag_muelle_escala_x" type="id" />
     <item name="tag_muelle_escala_y" type="id" />
+    <!-- Vista que se arrastra en horizontal (un aviso): deslizar sobre ella no cambia de semana -->
+    <item name="tag_arrastre_horizontal" type="id" />
 </resources>

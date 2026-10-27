@@ -94,6 +94,16 @@ object Movimiento {
      * (lo siguiente) y -1 desde la izquierda (lo anterior), como al pasar una página.
      */
     fun entrarDeLado(vista: View, direccion: Int, distanciaDp: Float = DISTANCIA_LATERAL_DP) {
+        prepararEntradaDeLado(vista, direccion, distanciaDp)
+        completarEntrada(vista)
+    }
+
+    /**
+     * Primera mitad de [entrarDeLado]: deja [vista] a un lado y casi transparente, sin moverla aún. Sirve
+     * cuando el contenido nuevo tarda un momento en estar listo (una lista que calcula sus cambios): así no
+     * se ve el contenido viejo entrando. Después hay que llamar a [completarEntrada].
+     */
+    fun prepararEntradaDeLado(vista: View, direccion: Int, distanciaDp: Float = DISTANCIA_LATERAL_DP) {
         vista.animate().cancel()
         if (!activas() || direccion == 0) {
             vista.translationX = 0f
@@ -102,6 +112,10 @@ object Movimiento {
         }
         vista.translationX = distanciaDp * vista.resources.displayMetrics.density * direccion
         vista.alpha = ALFA_ENTRADA
+    }
+
+    /** Lleva [vista] a su sitio y la hace visible del todo (segunda mitad de [entrarDeLado]). */
+    fun completarEntrada(vista: View) {
         vista.animate()
             .translationX(0f)
             .alpha(1f)
@@ -123,5 +137,5 @@ object Movimiento {
     private const val AMORTIGUACION_LATIDO = 0.35f
     private const val VELOCIDAD_LATIDO = 3f
     private const val DISTANCIA_LATERAL_DP = 36f
-    private const val ALFA_ENTRADA = 0.2f
+    private const val ALFA_ENTRADA = 0.5f
 }

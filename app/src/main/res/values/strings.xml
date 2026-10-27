@@ -61,7 +61,8 @@
     <string name="tema_oscuro">Oscuro</string>
 
     <!-- Versiones nuevas -->
-    <string name="actualizacion_disponible">Hay una versión nueva: %1$s (tienes la %2$s)</string>
+    <string name="actualizacion_disponible">Versión %s disponible</string>
+    <string name="actualizacion_disponible_detalle">Ahora tienes la %s</string>
     <string name="action_actualizar">Actualizar</string>
     <string name="msg_sin_navegador">No hay ninguna app para abrir el enlace</string>
 
@@ -445,38 +446,68 @@
     <string name="pdf_pie">Gestión de Socios • Documento Oficial</string>
     <string name="pdf_pagina">Página %d</string>
 
-    <!-- Snackbar Messages -->
+    <!-- Avisos: un título que dice qué ha pasado y, debajo, un detalle con a qué o por qué -->
     <string name="msg_socio_hecho">Marcado como conseguido</string>
     <string name="msg_socio_pendiente">Marcado como pendiente</string>
     <string name="msg_socio_saved">Socio añadido</string>
-    <string name="msg_socio_updated">Socio actualizado</string>
-    <string name="msg_socio_movido">Socio movido a la semana del %s</string>
+    <string name="msg_socio_updated">Cambios guardados</string>
+    <string name="msg_socio_movido">Socio movido de semana</string>
+    <string name="msg_socio_movido_detalle">%1$s · ahora en la del %2$s</string>
     <string name="msg_socio_deleted">Socio eliminado</string>
     <string name="eliminar_socio_titulo">¿Eliminar a %s?</string>
     <string name="eliminar_socio_mensaje">Se quitará de la lista y de las cuentas de la semana. Justo después podrás deshacerlo.</string>
-    <string name="msg_socio_restaurado">Socio restaurado</string>
+    <string name="msg_socio_restaurado">Socio recuperado</string>
     <string name="action_deshacer">Deshacer</string>
-    <string name="msg_bonus_updated">Bonus actualizado</string>
-    <string name="msg_bonus_reset">El bonus vuelve a ser automático</string>
-    <string name="msg_cobro_guardado">Apuntado lo cobrado: %s</string>
-    <string name="msg_cobro_eliminado">La semana vuelve a usar el neto calculado</string>
-    <string name="msg_irpf_actualizado">IRPF del %1$s aplicado desde la semana %2$s</string>
+    <string name="msg_bonus_updated">Bonus ajustado a mano</string>
+    <string name="msg_bonus_detalle_fijo">%s en lugar del automático</string>
+    <string name="msg_bonus_detalle_suma">%s más el automático</string>
+    <string name="msg_bonus_reset">Bonus automático</string>
+    <string name="msg_bonus_reset_detalle">Vuelve a calcularse con los socios hechos</string>
+    <string name="msg_cobro_guardado">Cobro apuntado</string>
+    <string name="msg_cobro_guardado_detalle">%s como neto de la semana</string>
+    <string name="msg_cobro_eliminado">Cobro quitado</string>
+    <string name="msg_cobro_eliminado_detalle">La semana vuelve al neto calculado</string>
+    <string name="msg_irpf_actualizado">IRPF actualizado</string>
+    <string name="msg_irpf_actualizado_detalle">%1$s desde la semana del %2$s</string>
     <string name="msg_irpf_cambio_eliminado">Cambio de IRPF eliminado</string>
     <string name="msg_file_saved">Archivo guardado</string>
-    <string name="msg_error_file_save">Error al guardar el archivo: %s</string>
-    <string name="msg_error_export">Error al exportar: %s</string>
-    <string name="msg_export_vacio">No hay datos para exportar en el rango seleccionado</string>
-    <string name="msg_error_import">Error al importar: %s</string>
-    <string name="msg_import_vacio">El archivo %s no contiene datos válidos</string>
-    <string name="msg_error_generico">Se ha producido un error: %s</string>
-    <string name="error_sin_espacio">no queda espacio libre en el móvil</string>
-    <string name="error_archivo_inaccesible">no se ha podido abrir el archivo; puede que se haya movido o que no haya permiso para usarlo</string>
-    <string name="error_inesperado">error inesperado (%s)</string>
-    <plurals name="msg_import_resultado">
-        <item quantity="one">Importado %1$d socio (%2$d bonus, %3$d cambios de IRPF, %4$d semanas con lo cobrado)</item>
-        <item quantity="many">Importados %1$d socios (%2$d bonus, %3$d cambios de IRPF, %4$d semanas con lo cobrado)</item>
-        <item quantity="other">Importados %1$d socios (%2$d bonus, %3$d cambios de IRPF, %4$d semanas con lo cobrado)</item>
+    <string name="msg_file_saved_detalle">%s en la carpeta que elegiste</string>
+    <string name="msg_export_vacio">Nada que exportar</string>
+    <string name="msg_export_vacio_detalle">No hay datos en lo que has elegido</string>
+    <string name="msg_import_vacio">El archivo no tiene datos</string>
+    <string name="msg_import_vacio_detalle">No hay socios ni datos válidos en este %s</string>
+    <string name="msg_import_hecho">Copia importada</string>
+    <plurals name="msg_import_socios">
+        <item quantity="one">%d socio</item>
+        <item quantity="many">%d socios</item>
+        <item quantity="other">%d socios</item>
     </plurals>
+    <plurals name="msg_import_bonus">
+        <item quantity="one">%d bonus</item>
+        <item quantity="many">%d bonus</item>
+        <item quantity="other">%d bonus</item>
+    </plurals>
+    <plurals name="msg_import_irpf">
+        <item quantity="one">%d cambio de IRPF</item>
+        <item quantity="many">%d cambios de IRPF</item>
+        <item quantity="other">%d cambios de IRPF</item>
+    </plurals>
+    <plurals name="msg_import_cobros">
+        <item quantity="one">%d semana con lo cobrado</item>
+        <item quantity="many">%d semanas con lo cobrado</item>
+        <item quantity="other">%d semanas con lo cobrado</item>
+    </plurals>
+    <!-- Errores: el título dice qué no se ha podido hacer; el detalle, por qué -->
+    <string name="msg_error_file_save">No se ha podido guardar el archivo</string>
+    <string name="msg_error_export">No se ha podido exportar</string>
+    <string name="msg_error_import">No se ha podido importar</string>
+    <string name="msg_error_generico">Algo ha fallado</string>
+    <string name="error_sin_espacio">No queda espacio libre en el móvil</string>
+    <string name="error_archivo_inaccesible">No se puede abrir el archivo: puede que se haya movido o que no haya permiso para usarlo</string>
+    <string name="error_inesperado">Error inesperado (%s)</string>
+    <!-- Enumeración en los avisos: "12 socios, 2 bonus y 3 semanas con lo cobrado" -->
+    <string name="lista_ultimo">%1$s y %2$s</string>
+    <string name="cd_cerrar_aviso">Cerrar el aviso</string>
 
 
     <!-- Accesibilidad: textos que lee TalkBack en lugar de iconos o títulos con emoji -->

@@ -19,6 +19,7 @@ import com.julen.socios.fakes.FakeExportService
 import com.julen.socios.fakes.FakeIrpfVigenciaDao
 import com.julen.socios.fakes.FakeSocioDao
 import com.julen.socios.fakes.FakeTransactionRunner
+import com.julen.socios.model.CobroInfo
 import com.julen.socios.model.DatosBackup
 import com.julen.socios.model.DiaSemana
 import com.julen.socios.model.ImportPreview
@@ -299,7 +300,42 @@ class MainViewModelTest {
         assertEquals(setOf("existente", "nuevo"), socioDao.socios.value.map { it.id }.toSet())
         assertEquals(30.0, socioDao.socios.value.first { it.id == "existente" }.colaboracion, 0.0)
         assertEquals(
-            MainEvent.Mensaje(UiText.Plural(R.plurals.msg_import_resultado, 2, listOf(2, 0, 0, 0)), TipoAviso.EXITO, larga = true),
+            // Solo lo que venía en la copia: "2 socios", sin "0 bonus, 0 cambios de IRPF...".
+            MainEvent.Mensaje(
+                UiText.Res(R.string.msg_import_hecho),
+                TipoAviso.EXITO,
+                UiText.Lista(listOf(UiText.Plural(R.plurals.msg_import_socios, 2, listOf(2))))
+            ),
+            eventos.last()
+        )
+    }
+
+    @Test
+    fun elAvisoDeImportarEnumeraSoloLoQueVeniaEnLaCopia() = runTest(dispatcher) {
+        val viewModel = crearViewModel()
+        val eventos = observar(viewModel)
+        val lectura = ResultadoLectura(
+            datos = DatosBackup(
+                socios = listOf(Socio(id = "s", colaboracion = 20.0, dia = DiaSemana.LUNES, semanaKey = semanaActual)),
+                cobros = listOf(CobroInfo(semanaActual, 100.0, ""), CobroInfo(semanaSiguiente, 90.0, ""))
+            ),
+            descartados = 0
+        )
+
+        viewModel.prepararImportacion(lectura, ImportFormat.JSON)
+        viewModel.confirmarImport()
+
+        assertEquals(
+            MainEvent.Mensaje(
+                UiText.Res(R.string.msg_import_hecho),
+                TipoAviso.EXITO,
+                UiText.Lista(
+                    listOf(
+                        UiText.Plural(R.plurals.msg_import_socios, 1, listOf(1)),
+                        UiText.Plural(R.plurals.msg_import_cobros, 2, listOf(2))
+                    )
+                )
+            ),
             eventos.last()
         )
     }
@@ -319,7 +355,11 @@ class MainViewModelTest {
         assertEquals("2.ª cuota de Ana", viewModel.uiState.value.cobroSemana?.nota)
         assertEquals(15.31, viewModel.historicoGlobal.value!!.totalDescontadoAcumulado, 0.0)
         assertEquals(
-            MainEvent.Mensaje(UiText.Res(R.string.msg_cobro_guardado, listOf("408,70 €")), TipoAviso.EXITO),
+            MainEvent.Mensaje(
+                UiText.Res(R.string.msg_cobro_guardado),
+                TipoAviso.EXITO,
+                UiText.Res(R.string.msg_cobro_guardado_detalle, listOf("408,70 €"))
+            ),
             eventos.last()
         )
 
@@ -328,7 +368,10 @@ class MainViewModelTest {
 
         assertNull(viewModel.uiState.value.cobroSemana)
         assertEquals(424.01, viewModel.uiState.value.resumenSemana!!.totalNeto, 0.0)
-        assertEquals(MainEvent.Mensaje(UiText.Res(R.string.msg_cobro_eliminado), TipoAviso.INFO), eventos.last())
+        assertEquals(
+            MainEvent.Mensaje(UiText.Res(R.string.msg_cobro_eliminado), TipoAviso.INFO, UiText.Res(R.string.msg_cobro_eliminado_detalle)),
+            eventos.last()
+        )
     }
 
     @Test
@@ -392,7 +435,15 @@ class MainViewModelTest {
         assertTrue(viewModel.uiState.value.todosSociosSemana.isEmpty())
         assertEquals(semanaSiguiente, socioDao.socios.value.single().semanaKey)
         assertEquals(
-            MainEvent.Mensaje(UiText.Res(R.string.msg_socio_movido, listOf(DateUtils.rangoCorto(semanaSiguiente))), TipoAviso.EXITO),
+            // Sin nombre, el socio se llama por su cuota.
+            MainEvent.Mensaje(
+                UiText.Res(R.string.msg_socio_movido),
+                TipoAviso.EXITO,
+                UiText.Res(
+                    R.string.msg_socio_movido_detalle,
+                    listOf(UiText.Res(R.string.socio_default_name, listOf("20 €")), DateUtils.rangoCorto(semanaSiguiente))
+                )
+            ),
             eventos.last()
         )
     }
@@ -420,7 +471,10 @@ class MainViewModelTest {
         viewModel.solicitarExport(ExportFormat.PDF, AlcanceExport.Semanas(setOf(semanaActual)))
 
         assertNull(viewModel.exportPendienteDeDestino.value)
-        assertEquals(MainEvent.Mensaje(UiText.Res(R.string.msg_export_vacio), TipoAviso.INFO, larga = true), eventos.last())
+        assertEquals(
+            MainEvent.Mensaje(UiText.Res(R.string.msg_export_vacio), TipoAviso.INFO, UiText.Res(R.string.msg_export_vacio_detalle)),
+            eventos.last()
+        )
     }
 
     @Test

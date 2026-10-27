@@ -21,6 +21,7 @@ import androidx.core.text.buildSpannedString
 import androidx.core.text.scale
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.doOnNextLayout
 import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
 import androidx.core.view.accessibility.AccessibilityNodeInfoCompat
@@ -31,7 +32,6 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.button.MaterialButton
-import com.google.android.material.snackbar.Snackbar
 import com.julen.socios.actualizaciones.VersionPublicada
 import com.julen.socios.databinding.ActivityMainBinding
 import com.julen.socios.export.ExportFormat
@@ -44,6 +44,7 @@ import com.julen.socios.util.AnimationExtensions
 import com.julen.socios.util.DateUtils
 import com.julen.socios.util.HapticUtils
 import com.julen.socios.util.Movimiento
+import com.julen.socios.util.toEurosCompacto
 import kotlinx.coroutines.launch
 
 class MainActivity : AppCompatActivity() {
@@ -165,7 +166,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun renderUiState(state: MainUiState) {
-        animarCambioDeVista(state)
+        val alTenerLaLista = prepararCambioDeVista(state)
 
         // Rango corto de la semana y cuánto queda de la actual
         binding.tvRangoSemana.text =
@@ -196,7 +197,7 @@ class MainActivity : AppCompatActivity() {
             } else {
                 FilaSocio.sinAgrupar(state.sociosFiltrados.sortedBy { it.timestamp })
             }
-        )
+        ) { alTenerLaLista?.invoke() }
         binding.containerEmptyState.isVisible = state.sociosFiltrados.isEmpty()
         binding.rvSocios.isVisible = state.sociosFiltrados.isNotEmpty()
 
@@ -212,21 +213,46 @@ class MainActivity : AppCompatActivity() {
      * Al cambiar de semana, la página entra desde el lado hacia el que se va (la siguiente por la derecha,
      * la anterior por la izquierda), como al pasar una hoja. Al cambiar de día, los socios entran uno tras
      * otro. La primera vez y al recrearse la pantalla no se anima nada.
+     *
+     * La lista calcula sus cambios aparte y llega un instante después que el resto: la página se deja
+     * preparada ya (a un lado y medio transparente) y se mueve solo cuando la lista nueva está puesta, con
+     * lo que se devuelve. Si no, se veían entrar los socios de la semana anterior y cambiar de golpe.
      */
-    private fun animarCambioDeVista(state: MainUiState) {
+    private fun prepararCambioDeVista(state: MainUiState): (() -> Unit)? {
         val anterior = vistaAnterior
         vistaAnterior = state.semanaKey to state.diaFiltro
-        if (anterior == null) return
+        if (anterior == null || !Movimiento.activas()) return null
         val (semanaAnterior, diaAnterior) = anterior
-        if (semanaAnterior != state.semanaKey) {
-            // Las claves ISO ("2026-W43") se ordenan bien como texto.
-            val direccion = if (state.semanaKey > semanaAnterior) 1 else -1
-            Movimiento.entrarDeLado(binding.contenidoSemana, direccion)
-            Movimiento.entrarDeLado(binding.tvRangoSemana, direccion, distanciaDp = 16f)
-            Movimiento.entrarDeLado(binding.tvSemanaSubtitulo, direccion, distanciaDp = 16f)
-        } else if (diaAnterior != state.diaFiltro && Movimiento.activas()) {
-            binding.rvSocios.scheduleLayoutAnimation()
+        return when {
+            semanaAnterior != state.semanaKey -> {
+                // Las claves ISO ("2026-W43") se ordenan bien como texto.
+                val direccion = if (state.semanaKey > semanaAnterior) 1 else -1
+                val vistas = listOf(binding.contenidoSemana, binding.tvRangoSemana, binding.tvSemanaSubtitulo)
+                Movimiento.prepararEntradaDeLado(binding.contenidoSemana, direccion)
+                Movimiento.prepararEntradaDeLado(binding.tvRangoSemana, direccion, distanciaDp = 16f)
+                Movimiento.prepararEntradaDeLado(binding.tvSemanaSubtitulo, direccion, distanciaDp = 16f)
+                sinAnimarFilas()
+                val entrar: () -> Unit = { vistas.forEach(Movimiento::completarEntrada) }
+                entrar
+            }
+            diaAnterior != state.diaFiltro -> {
+                sinAnimarFilas()
+                val entrarFilas: () -> Unit = { binding.rvSocios.scheduleLayoutAnimation() }
+                entrarFilas
+            }
+            else -> null
         }
+    }
+
+    /**
+     * Quita un momento las animaciones de cada fila (desvanecer las que se van, hacer aparecer las nuevas):
+     * al cambiar de semana o de día se mueve la lista entera, y las dos animaciones juntas parpadeaban.
+     */
+    private fun sinAnimarFilas() {
+        val lista = binding.rvSocios
+        val animador = lista.itemAnimator ?: return
+        lista.itemAnimator = null
+        lista.doOnNextLayout { lista.post { lista.itemAnimator = animador } }
     }
 
     private fun mostrarAvisoPendientes(pendientes: List<Socio>) {
@@ -256,11 +282,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun manejarEvento(evento: MainEvent) {
         when (evento) {
-            is MainEvent.Mensaje -> aviso(
-                evento.texto.resolver(this),
-                evento.tipo,
-                if (evento.larga) Snackbar.LENGTH_LONG else Snackbar.LENGTH_SHORT
-            )
+            is MainEvent.Mensaje -> aviso(evento.titulo.resolver(this), evento.tipo, evento.detalle?.resolver(this))
 
             is MainEvent.CrearDocumento ->
                 crearDocumentoLaunchers.getValue(evento.formato).launch(evento.nombreSugerido)
@@ -284,7 +306,12 @@ class MainActivity : AppCompatActivity() {
             }
 
             is MainEvent.SocioEliminado -> aviso(
-                getString(R.string.msg_socio_deleted), TipoAviso.BORRADO, accion = R.string.action_deshacer
+                getString(R.string.msg_socio_deleted),
+                TipoAviso.BORRADO,
+                evento.socio.nombreSocio.ifBlank {
+                    getString(R.string.socio_default_name, evento.socio.colaboracion.toEurosCompacto())
+                },
+                accion = R.string.action_deshacer
             ) { viewModel.restaurarSocio(evento.socio) }
         }
     }
@@ -295,9 +322,9 @@ class MainActivity : AppCompatActivity() {
      * en la pantalla principal quedaría tapado.
      */
     private fun aviso(
-        texto: CharSequence,
+        titulo: CharSequence,
         tipo: TipoAviso,
-        duracion: Int = Snackbar.LENGTH_LONG,
+        detalle: CharSequence? = null,
         @StringRes accion: Int? = null,
         alPulsarAccion: (() -> Unit)? = null
     ) {
@@ -306,18 +333,20 @@ class MainActivity : AppCompatActivity() {
                 ?.decorView?.findViewById<View>(android.R.id.content)
         }
         if (panel != null) {
-            Avisos.mostrar(panel, texto, tipo, duracion, accion = accion, alPulsarAccion = alPulsarAccion)
+            Avisos.mostrar(panel, titulo, tipo, detalle, accion = accion, alPulsarAccion = alPulsarAccion)
         } else {
-            Avisos.mostrar(binding.root, texto, tipo, duracion, binding.fabAddSocio, accion, alPulsarAccion)
+            Avisos.mostrar(binding.root, titulo, tipo, detalle, anclaje = binding.fabAddSocio, accion = accion, alPulsarAccion = alPulsarAccion)
         }
     }
 
     private fun avisarNuevaVersion(publicada: VersionPublicada) {
-        val texto = getString(
-            R.string.actualizacion_disponible, publicada.version.toString(), actualizaciones.versionInstalada
-        )
-        // Más tiempo que un aviso normal: es fácil no verlo al abrir la app.
-        aviso(texto, TipoAviso.NOVEDAD, DURACION_AVISO_VERSION_MS, R.string.action_actualizar) {
+        // Dura más que un aviso normal (ver TipoAviso.NOVEDAD): es fácil no verlo al abrir la app.
+        aviso(
+            getString(R.string.actualizacion_disponible, publicada.version.toString()),
+            TipoAviso.NOVEDAD,
+            getString(R.string.actualizacion_disponible_detalle, actualizaciones.versionInstalada),
+            R.string.action_actualizar
+        ) {
             if (!ActualizacionBottomSheetDialog.empezar(this, actualizaciones, publicada)) {
                 aviso(getString(R.string.msg_sin_navegador), TipoAviso.ERROR)
             }
@@ -558,8 +587,6 @@ class MainActivity : AppCompatActivity() {
         // Deben coincidir con res/xml/shortcuts.xml. El botón "+" del widget usa la misma acción.
         const val ACTION_NUEVO_SOCIO = "com.julen.socios.action.NUEVO_SOCIO"
         private const val ATAJO_NUEVO_SOCIO = "nuevo_socio"
-
-        private const val DURACION_AVISO_VERSION_MS = 10_000
 
         /** A partir de esta letra del sistema, "Gestión de Socios" no cabe junto a los tres iconos de la barra. */
         private const val ESCALA_LETRA_TITULO_CORTO = 1.3f

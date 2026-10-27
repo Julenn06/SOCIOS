@@ -69,6 +69,8 @@ class DeslizarEntreSemanas(
             rawY >= location[1] && rawY <= location[1] + view.height
         if (!dentro) return false
         if (view is HorizontalScrollView || view is CompoundButton) return true
+        // Vistas propias que también se arrastran a los lados, como los avisos (se descartan así).
+        if (view.getTag(R.id.tag_arrastre_horizontal) == true) return true
         if (view is ViewGroup) {
             for (i in 0 until view.childCount) {
                 if (hayControlHorizontalEn(view.getChildAt(i), rawX, rawY)) return true
