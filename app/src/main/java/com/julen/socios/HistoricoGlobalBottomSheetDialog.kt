@@ -2,8 +2,6 @@ package com.julen.socios
 
 import android.os.Bundle
 import android.view.View
-import android.widget.TextView
-import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.isVisible
 import androidx.fragment.app.activityViewModels
@@ -11,7 +9,6 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.julen.socios.databinding.BottomSheetHistoricoGlobalBinding
 import com.julen.socios.util.CalculoComisiones
 import com.julen.socios.util.CalculoComisiones.Periodo
-import com.julen.socios.util.DateUtils
 import com.julen.socios.util.HapticUtils
 import com.julen.socios.util.LOCALE_ES
 import com.julen.socios.util.NumberAnimators
@@ -19,10 +16,8 @@ import com.julen.socios.util.descontadoConSigno
 import com.julen.socios.util.rangoSemanaConAnio
 import com.julen.socios.util.toCurrencyString
 import com.julen.socios.util.toEurosCompacto
-import com.julen.socios.util.toPorcentajeString
 import java.time.Month
 import java.time.format.TextStyle
-import kotlin.math.roundToInt
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.filterNotNull
 
@@ -71,7 +66,7 @@ class HistoricoGlobalBottomSheetDialog :
                 resumenActual = resumen
                 semanaActual = actual
                 renderTotales(resumen)
-                renderComparativa(CalculoComisiones.comparar(actual, resumen.semanasHistoricas))
+                renderMejorSemana(CalculoComisiones.mejorSemana(resumen.semanasHistoricas))
                 mostrarFilas()
             }
         }
@@ -82,7 +77,7 @@ class HistoricoGlobalBottomSheetDialog :
         mostrarFilas()
     }
 
-    /** Lo cobrado en grande (cuenta hasta su valor), su media, qué parte del bruto se queda y de dónde sale. */
+    /** Lo cobrado en grande (cuenta hasta su valor), su media por semana y de dónde sale. */
     private fun renderTotales(r: CalculoComisiones.ResumenHistoricoGlobal) {
         val semanas = r.semanasHistoricas.size
         binding.tvGlobalSemanasCount.text = resources.getQuantityString(R.plurals.global_history_count, semanas, semanas)
@@ -92,68 +87,23 @@ class HistoricoGlobalBottomSheetDialog :
             val media = CalculoComisiones.redondearCentimos(r.totalNetoAcumulado / semanas)
             binding.tvGlobalMediaSemana.text = getString(R.string.historico_media_semana, media.toCurrencyString())
         }
-
-        val parte = r.totalNetoAcumulado.takeIf { r.totalBrutoAcumulado > 0.0 }
-            ?.let { (it / r.totalBrutoAcumulado).coerceIn(0.0, 1.0) }
-        binding.contenedorParteBruto.isVisible = parte != null
-        if (parte != null) {
-            binding.tvGlobalParteBruto.text =
-                getString(R.string.historico_parte_bruto, (parte * 100).roundToInt().toDouble().toPorcentajeString())
-            binding.tvGlobalBrutoTotal.text =
-                getString(R.string.historico_bruto_total, r.totalBrutoAcumulado.toEurosCompacto())
-            binding.progresoParteBruto.setProgress((parte * binding.progresoParteBruto.max).roundToInt(), true)
-        }
-
         binding.tvGlobalBaseTotal.text = r.totalBaseX2Acumulado.toEurosCompacto(prefix = "+")
         binding.tvGlobalBonusTotal.text = r.totalBonusAcumulado.toEurosCompacto(prefix = "+")
         binding.tvGlobalIrpfTotal.text = r.totalIrpfRetenidoAcumulado.toEurosCompacto(prefix = "-")
     }
 
-    private fun renderComparativa(c: CalculoComisiones.Comparativa) {
-        binding.tvComparativaNeto.text = c.neto.toCurrencyString()
-        mostrarDiferencia(binding.cajaComparativaAnterior, binding.tvComparativaAnterior, c.diferenciaSemanaAnterior)
-        binding.tvComparativaMediaLabel.text =
-            resources.getQuantityString(R.plurals.comparativa_vs_media, c.semanasEnMedia, c.semanasEnMedia)
-        mostrarDiferencia(binding.cajaComparativaMedia, binding.tvComparativaMedia, c.diferenciaMedia)
-
-        val mejor = c.mejorSemana
-        binding.tvMejorSemanaRango.text = when {
-            mejor == null -> getString(R.string.comparativa_sin_datos)
-            c.esLaMejor -> getString(R.string.comparativa_es_esta)
-            else -> requireContext().rangoSemanaConAnio(mejor.semanaKey)
+    /** La mejor semana, con su resumen; no se muestra hasta que alguna haya dado neto. Al tocarla se abre. */
+    private fun renderMejorSemana(mejor: CalculoComisiones.SemanaHistoricaItem?) {
+        binding.tarjetaMejorSemana.isVisible = mejor != null
+        if (mejor == null) return
+        binding.tvMejorSemanaRango.text = requireContext().rangoSemanaConAnio(mejor.semanaKey)
+        binding.tvMejorSemanaDetalle.text = resumenDeSemana(mejor.resumenSemana)
+        binding.tvMejorSemanaNeto.text = mejor.resumenSemana.totalNeto.toCurrencyString()
+        binding.filaMejorSemana.setOnClickListener {
+            HapticUtils.performClick(it)
+            viewModel.irASemana(mejor.semanaKey)
+            dismiss()
         }
-        binding.tvMejorSemanaNeto.isVisible = mejor != null
-        binding.tvMejorSemanaNeto.text = mejor?.resumenSemana?.totalNeto?.toCurrencyString()
-        val abrible = mejor?.takeIf { !c.esLaMejor }
-        binding.ivMejorSemanaFlecha.isVisible = abrible != null
-        binding.filaMejorSemana.isClickable = abrible != null
-        binding.filaMejorSemana.setOnClickListener(
-            if (abrible != null) View.OnClickListener {
-                HapticUtils.performClick(it)
-                viewModel.irASemana(abrible.semanaKey)
-                dismiss()
-            } else null
-        )
-    }
-
-    /**
-     * "↑ 32,10 €" sobre verde si se gana más, "↓ 12,00 €" sobre rojo si menos; "Sin datos" sobre neutro si no hay
-     * con qué comparar.
-     */
-    private fun mostrarDiferencia(caja: View, vista: TextView, diferencia: Double?) {
-        val (texto, colorTexto, colorFondo) = when {
-            diferencia == null -> Triple(getString(R.string.comparativa_sin_datos), R.color.text_sub, R.color.surface_card)
-            diferencia >= 0.0 -> Triple(
-                getString(R.string.comparativa_sube, diferencia.toCurrencyString()), R.color.green_text_soft, R.color.green_container
-            )
-            else -> Triple(
-                getString(R.string.comparativa_baja, (-diferencia).toCurrencyString()), R.color.red_text, R.color.red_container
-            )
-        }
-        val contexto = requireContext()
-        vista.text = texto
-        vista.setTextColor(ContextCompat.getColor(contexto, colorTexto))
-        caja.backgroundTintList = ContextCompat.getColorStateList(contexto, colorFondo)
     }
 
     private fun mostrarFilas() {
@@ -180,7 +130,10 @@ class HistoricoGlobalBottomSheetDialog :
         mostrarGrafico(semanas, periodo, periodos.orEmpty())
     }
 
-    /** Las últimas 12 semanas, los últimos 12 meses o los años, hasta la semana actual (la destacada). */
+    /**
+     * Todas las semanas, meses o años desde el primero con datos hasta el actual (el destacado), que se ven
+     * desplazando el gráfico. Cada año nuevo lleva su marca.
+     */
     private fun mostrarGrafico(
         semanas: List<CalculoComisiones.SemanaHistoricaItem>,
         periodo: Periodo?,
@@ -188,21 +141,26 @@ class HistoricoGlobalBottomSheetDialog :
     ) {
         if (semanaActual.isEmpty()) return
         val columnas = if (periodo == null) {
-            CalculoComisiones.ultimasSemanas(semanas, semanaActual).map { barra ->
+            val barras = CalculoComisiones.evolucionSemanas(semanas, semanaActual)
+            barras.mapIndexed { i, barra ->
                 GraficoNetoView.Columna(
                     etiqueta = etiquetaSemana(barra.clave),
-                    etiquetaLarga = DateUtils.rangoCorto(barra.clave),
-                    neto = barra.neto
+                    etiquetaLarga = requireContext().rangoSemanaConAnio(barra.clave),
+                    neto = barra.neto,
+                    separador = marcaDeAnio(barras, i)
                 )
             }
         } else {
-            CalculoComisiones.ultimosPeriodos(periodos, periodo, semanaActual).map { barra ->
+            val barras = CalculoComisiones.evolucionPeriodos(periodos, periodo, semanaActual)
+            barras.mapIndexed { i, barra ->
                 val anio = barra.clave.take(4)
                 val mes = barra.clave.substringAfter('-', "").toIntOrNull()?.let(Month::of)
                 GraficoNetoView.Columna(
                     etiqueta = mes?.let(::mesCorto) ?: anio,
                     etiquetaLarga = mes?.let { nombreMes(it, anio) } ?: anio,
-                    neto = barra.neto
+                    neto = barra.neto,
+                    // Por años no hace falta: cada columna ya es uno.
+                    separador = if (periodo == Periodo.MES) marcaDeAnio(barras, i) else null
                 )
             }
         }
@@ -211,6 +169,9 @@ class HistoricoGlobalBottomSheetDialog :
         binding.graficoNeto.mostrar(columnas, destacada = columnas.lastIndex, animar = animar)
         graficoDibujado = true
         periodoDelGrafico = periodo
+        val media = binding.graficoNeto.media
+        binding.tvGraficoMedia.isVisible = media != null
+        binding.tvGraficoMedia.text = media?.let { getString(R.string.grafico_media, it.toEurosCompacto()) }
 
         val mejor = columnas.maxByOrNull { it.neto }?.takeIf { it.neto > 0.0 }
         binding.graficoNeto.contentDescription = if (mejor == null || columnas.isEmpty()) {
@@ -225,6 +186,15 @@ class HistoricoGlobalBottomSheetDialog :
                 mejor.etiquetaLarga
             )
         }
+    }
+
+    /**
+     * El año de la barra [i] si es la primera o con ella empieza un año nuevo, para marcarlo en el gráfico; las
+     * claves de semana y de mes empiezan por el año ("2026-W01", "2026-01").
+     */
+    private fun marcaDeAnio(barras: List<CalculoComisiones.Barra>, i: Int): String? {
+        val anio = barras[i].clave.take(4)
+        return anio.takeIf { i == 0 || barras[i - 1].clave.take(4) != anio }
     }
 
     /** "Octubre 2026". */
@@ -244,21 +214,21 @@ class HistoricoGlobalBottomSheetDialog :
             id = item.semanaKey,
             etiqueta = etiquetaSemana(item.semanaKey),
             titulo = requireContext().rangoSemanaConAnio(item.semanaKey),
-            detalle = conDescontado(
-                resources.getQuantityString(
-                    if (r.esBonoRegaloAplicado) R.plurals.historico_semana_resumen_manual else R.plurals.historico_semana_resumen,
-                    r.totalSociosHechos,
-                    r.totalSociosHechos,
-                    r.bonusSemanal.toEurosCompacto(prefix = "+")
-                ),
-                r.descontado
-            ),
+            detalle = conDescontado(resumenDeSemana(r), r.descontado),
             neto = r.totalNeto,
             irpf = r.retencionIrpf,
             semanaKey = item.semanaKey,
             destacada = item.semanaKey == semanaActual
         )
     }
+
+    /** "13 socios hechos · +220 € bonus" (con 🎁 si el bonus se ajustó a mano). */
+    private fun resumenDeSemana(r: CalculoComisiones.ResumenCalculo): String = resources.getQuantityString(
+        if (r.esBonoRegaloAplicado) R.plurals.historico_semana_resumen_manual else R.plurals.historico_semana_resumen,
+        r.totalSociosHechos,
+        r.totalSociosHechos,
+        r.bonusSemanal.toEurosCompacto(prefix = "+")
+    )
 
     private fun filaPeriodo(p: CalculoComisiones.ResumenPeriodo, destacada: Boolean): FilaHistorico {
         val titulo = p.mes?.let { mes -> nombreMes(Month.of(mes), p.anio.toString()) } ?: p.anio.toString()

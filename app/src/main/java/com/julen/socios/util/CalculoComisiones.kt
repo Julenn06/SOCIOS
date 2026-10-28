@@ -248,42 +248,36 @@ object CalculoComisiones {
         )
     }
 
-    // --- Comparativa y evolución ---
+    // --- Mejor semana y evolución ---
 
-    /** Cómo va una semana frente a la anterior, a la media del resto y a la mejor. */
-    data class Comparativa(
-        val semanaKey: String,
-        val neto: Double,
-        /** Neto de la semana inmediatamente anterior, o null si esa semana no tiene nada registrado. */
-        val netoSemanaAnterior: Double?,
-        /** Media del neto de las demás semanas registradas, o null si no hay ninguna más. */
-        val mediaNeto: Double?,
-        val semanasEnMedia: Int,
-        /** Semana con más neto (puede ser la propia [semanaKey]), o null si no hay ninguna. */
-        val mejorSemana: SemanaHistoricaItem?
-    ) {
-        val diferenciaSemanaAnterior: Double? get() = netoSemanaAnterior?.let { redondearCentimos(neto - it) }
-        val diferenciaMedia: Double? get() = mediaNeto?.let { redondearCentimos(neto - it) }
-        val esLaMejor: Boolean get() = mejorSemana?.semanaKey == semanaKey
-    }
-
-    fun comparar(semanaKey: String, semanas: List<SemanaHistoricaItem>): Comparativa {
-        val porClave = semanas.associateBy { it.semanaKey }
-        val resto = semanas.filter { it.semanaKey != semanaKey }
-        val anterior = DateUtils.semanaKeyDesplazada(semanaKey, -1)?.let(porClave::get)
-        return Comparativa(
-            semanaKey = semanaKey,
-            neto = porClave[semanaKey]?.resumenSemana?.totalNeto ?: 0.0,
-            netoSemanaAnterior = anterior?.resumenSemana?.totalNeto,
-            mediaNeto = resto.takeIf { it.isNotEmpty() }
-                ?.let { redondearCentimos(it.sumOf { s -> s.resumenSemana.totalNeto } / it.size) },
-            semanasEnMedia = resto.size,
-            mejorSemana = semanas.maxByOrNull { it.resumenSemana.totalNeto }?.takeIf { it.resumenSemana.totalNeto > 0.0 }
-        )
-    }
+    /** La semana con más neto, o null si ninguna ha dado neto. */
+    fun mejorSemana(semanas: List<SemanaHistoricaItem>): SemanaHistoricaItem? =
+        semanas.maxByOrNull { it.resumenSemana.totalNeto }?.takeIf { it.resumenSemana.totalNeto > 0.0 }
 
     /** Una barra del gráfico de evolución: una semana ("2026-W42"), un mes ("2026-10") o un año ("2026"). */
     data class Barra(val clave: String, val neto: Double)
+
+    /** Diez años de semanas: el gráfico se desplaza, pero no crece sin límite si hay una fecha absurda. */
+    const val MAX_BARRAS = 520
+
+    /**
+     * Todas las semanas del gráfico, de la primera con algo registrado hasta [hasta], seguidas; al menos las
+     * [minimo] últimas, para que con poco historial no queden cuatro barras sueltas.
+     */
+    fun evolucionSemanas(semanas: List<SemanaHistoricaItem>, hasta: String, minimo: Int = 12): List<Barra> {
+        val desdeLaPrimera = semanas.minOfOrNull { it.semanaKey }?.let { DateUtils.semanasEntre(it, hasta) }?.plus(1) ?: 0
+        return ultimasSemanas(semanas, hasta, desdeLaPrimera.coerceIn(minimo, MAX_BARRAS))
+    }
+
+    /** Como [evolucionSemanas], con todos los meses o años desde el primero con datos hasta el de [hasta]. */
+    fun evolucionPeriodos(periodos: List<ResumenPeriodo>, periodo: Periodo, hasta: String, minimo: Int = 12): List<Barra> {
+        val jueves = juevesDe(hasta) ?: return emptyList()
+        val desdeElPrimero = when (periodo) {
+            Periodo.MES -> periodos.minOfOrNull { it.anio * 12 + (it.mes ?: 1) }?.let { jueves.year * 12 + jueves.monthValue - it + 1 }
+            Periodo.ANIO -> periodos.minOfOrNull { it.anio }?.let { jueves.year - it + 1 }
+        } ?: 0
+        return ultimosPeriodos(periodos, periodo, hasta, desdeElPrimero.coerceIn(minimo, MAX_BARRAS))
+    }
 
     /**
      * Las [cantidad] semanas que terminan en [hasta], seguidas y en orden: las que no tienen nada registrado

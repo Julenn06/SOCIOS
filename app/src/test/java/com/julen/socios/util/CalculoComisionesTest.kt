@@ -220,33 +220,56 @@ class CalculoComisionesTest {
     }
 
     @Test
-    fun comparaLaSemanaConLaAnteriorLaMediaYLaMejor() {
+    fun laMejorSemanaEsLaDeMasNeto() {
         val semanas = CalculoComisiones.calcularResumenHistoricoGlobal(
             socios(5, "2026-W40") + socios(10, "2026-W41") + socios(7, "2026-W42")
         ).semanasHistoricas
 
-        val c = CalculoComisiones.comparar("2026-W42", semanas)
-
-        assertEquals(298.38, c.neto, 0.0)
-        assertEquals(424.01, c.netoSemanaAnterior!!, 0.0)
-        assertEquals(-125.63, c.diferenciaSemanaAnterior!!, 0.0)
-        assertEquals(310.16, c.mediaNeto!!, 0.0) // (196,30 + 424,01) / 2
-        assertEquals(2, c.semanasEnMedia)
-        assertEquals(-11.78, c.diferenciaMedia!!, 0.0)
-        assertEquals("2026-W41", c.mejorSemana?.semanaKey)
-        assertFalse(c.esLaMejor)
+        assertEquals("2026-W41", CalculoComisiones.mejorSemana(semanas)?.semanaKey)
+        assertEquals(null, CalculoComisiones.mejorSemana(emptyList()))
     }
 
     @Test
-    fun sinSemanaAnteriorNiOtrasSemanasNoHayConQueComparar() {
-        val semanas = CalculoComisiones.calcularResumenHistoricoGlobal(socios(5, "2026-W42")).semanasHistoricas
+    fun sinNetoNoHayMejorSemana() {
+        // Una semana solo con pendientes no ha dado nada: no es "la mejor".
+        val semanas = CalculoComisiones.calcularResumenHistoricoGlobal(
+            socios(3, "2026-W42", hecho = false)
+        ).semanasHistoricas
 
-        val c = CalculoComisiones.comparar("2026-W42", semanas)
+        assertEquals(null, CalculoComisiones.mejorSemana(semanas))
+    }
 
-        assertEquals(null, c.netoSemanaAnterior)
-        assertEquals(null, c.mediaNeto)
-        assertTrue(c.esLaMejor)
-        assertEquals(null, CalculoComisiones.comparar("2026-W42", emptyList()).mejorSemana)
+    @Test
+    fun laEvolucionEmpiezaEnLaPrimeraSemanaConDatos() {
+        val semanas = CalculoComisiones.calcularResumenHistoricoGlobal(
+            socios(5, "2025-W40") + socios(10, "2026-W02")
+        ).semanasHistoricas
+
+        val barras = CalculoComisiones.evolucionSemanas(semanas, hasta = "2026-W02")
+
+        // De la 2025-W40 a la 2026-W02 (2025 tiene 52 semanas): 15 semanas seguidas, más de las 12 mínimas.
+        assertEquals(15, barras.size)
+        assertEquals("2025-W40", barras.first().clave)
+        assertEquals("2026-W02", barras.last().clave)
+        // Con poco historial (solo la última semana, la primera de la lista) se ven igualmente las 12 últimas.
+        assertEquals(12, CalculoComisiones.evolucionSemanas(semanas.take(1), hasta = "2026-W02").size)
+    }
+
+    @Test
+    fun laEvolucionPorMesesYAniosEmpiezaEnElPrimeroConDatos() {
+        val semanas = CalculoComisiones.calcularResumenHistoricoGlobal(
+            socios(5, "2024-W10") + socios(10, "2026-W02")
+        ).semanasHistoricas
+        val meses = CalculoComisiones.agruparPorPeriodo(semanas, CalculoComisiones.Periodo.MES)
+        val anios = CalculoComisiones.agruparPorPeriodo(semanas, CalculoComisiones.Periodo.ANIO)
+
+        val porMes = CalculoComisiones.evolucionPeriodos(meses, CalculoComisiones.Periodo.MES, "2026-W02")
+        assertEquals("2024-03", porMes.first().clave) // El jueves de la 2024-W10 es el 7 de marzo.
+        assertEquals("2026-01", porMes.last().clave)
+        assertEquals(23, porMes.size)
+
+        val porAnio = CalculoComisiones.evolucionPeriodos(anios, CalculoComisiones.Periodo.ANIO, "2026-W02")
+        assertEquals(listOf("2024", "2025", "2026"), porAnio.map { it.clave })
     }
 
     @Test
