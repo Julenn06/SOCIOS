@@ -6,7 +6,6 @@ import androidx.annotation.ColorRes
 import androidx.annotation.DrawableRes
 import androidx.annotation.PluralsRes
 import androidx.appcompat.app.AlertDialog
-import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.julen.socios.databinding.DialogoConfirmarImportBinding
@@ -63,9 +62,7 @@ fun confirmarImportacion(
         FilaImport(R.plurals.import_linea_cobros, preview.cobros, R.drawable.ic_cobro, R.color.green_container, R.color.green_text_soft)
     ).forEach { fila ->
         val linea = ItemResumenImportBinding.inflate(inflater, vista.filasImport, true)
-        linea.placaResumen.backgroundTintList = ContextCompat.getColorStateList(context, fila.fondo)
-        linea.ivResumen.setImageResource(fila.icono)
-        linea.ivResumen.imageTintList = ContextCompat.getColorStateList(context, fila.color)
+        pintarPlaca(linea.placaResumen, linea.ivResumen, fila.icono, fila.fondo, fila.color)
         linea.tvResumen.text = context.resources.getQuantityString(fila.plural, fila.cantidad, fila.cantidad)
     }
     vista.tvDescartadosImport.isVisible = preview.descartados > 0

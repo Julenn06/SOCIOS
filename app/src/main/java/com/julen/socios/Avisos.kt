@@ -183,9 +183,7 @@ object Avisos {
         val color = ContextCompat.getColor(contexto, estilo.color)
         aviso.franjaAviso.setBackgroundColor(color)
         aviso.barraTiempoAviso.setBackgroundColor(color)
-        aviso.placaAviso.backgroundTintList = ContextCompat.getColorStateList(contexto, estilo.fondo)
-        aviso.ivAviso.setImageResource(estilo.icono)
-        aviso.ivAviso.imageTintList = ContextCompat.getColorStateList(contexto, estilo.color)
+        pintarPlaca(aviso.placaAviso, aviso.ivAviso, estilo.icono, estilo.fondo, estilo.color)
         aviso.tvAviso.text = titulo
         // Los motivos de los errores pueden venir en minúscula (pensados para ir detrás de otra frase).
         val detalleVisible = detalle?.toString()?.replaceFirstChar { it.uppercaseChar() }

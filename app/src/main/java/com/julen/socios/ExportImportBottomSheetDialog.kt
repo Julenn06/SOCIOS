@@ -3,9 +3,6 @@ package com.julen.socios
 import android.os.Bundle
 import android.view.View
 import androidx.fragment.app.activityViewModels
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.lifecycleScope
-import androidx.lifecycle.repeatOnLifecycle
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.julen.socios.databinding.BottomSheetExportImportBinding
 import com.julen.socios.databinding.ItemAlcanceBinding
@@ -16,7 +13,6 @@ import com.julen.socios.util.AnimationExtensions
 import com.julen.socios.util.DateUtils
 import com.julen.socios.util.HapticUtils
 import com.julen.socios.util.Movimiento
-import kotlinx.coroutines.launch
 
 /** Copias y exportación: exporta a PDF, CSV o JSON lo que se elija, o importa una copia. */
 class ExportImportBottomSheetDialog :
@@ -67,17 +63,15 @@ class ExportImportBottomSheetDialog :
             R.drawable.ic_table, R.color.green_container, R.color.green_text_soft, R.string.import_csv, R.string.import_csv_detalle
         ) { importar(ImportFormat.CSV) }
 
-        viewLifecycleOwner.lifecycleScope.launch {
-            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                viewModel.semanasDisponibles.collect { semanas ->
-                    semanasDisponibles = semanas
-                    if (semanasSeleccionadas == null && semanas.isNotEmpty()) {
-                        // Por defecto, la semana visible si tiene datos; si no, la más reciente.
-                        val activa = viewModel.uiState.value.semanaKey
-                        semanasSeleccionadas = mutableSetOf(if (activa in semanas) activa else semanas.first())
-                    }
-                    actualizarDetallesAlcance()
+        mientrasSeVea {
+            viewModel.semanasDisponibles.collect { semanas ->
+                semanasDisponibles = semanas
+                if (semanasSeleccionadas == null && semanas.isNotEmpty()) {
+                    // Por defecto, la semana visible si tiene datos; si no, la más reciente.
+                    val activa = viewModel.uiState.value.semanaKey
+                    semanasSeleccionadas = mutableSetOf(if (activa in semanas) activa else semanas.first())
                 }
+                actualizarDetallesAlcance()
             }
         }
     }

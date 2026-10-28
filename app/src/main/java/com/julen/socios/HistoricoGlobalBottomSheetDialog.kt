@@ -7,9 +7,6 @@ import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.isVisible
 import androidx.fragment.app.activityViewModels
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.lifecycleScope
-import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.julen.socios.databinding.BottomSheetHistoricoGlobalBinding
 import com.julen.socios.util.CalculoComisiones
@@ -25,7 +22,6 @@ import java.time.format.TextStyle
 import java.util.Locale
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.filterNotNull
-import kotlinx.coroutines.launch
 
 class HistoricoGlobalBottomSheetDialog :
     PanelInferior<BottomSheetHistoricoGlobalBinding>(BottomSheetHistoricoGlobalBinding::inflate) {
@@ -65,17 +61,15 @@ class HistoricoGlobalBottomSheetDialog :
             )
         }
 
-        viewLifecycleOwner.lifecycleScope.launch {
-            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                combine(viewModel.historicoGlobal.filterNotNull(), viewModel.semanaActual) { resumen, actual ->
-                    resumen to actual
-                }.collect { (resumen, actual) ->
-                    resumenActual = resumen
-                    semanaActual = actual
-                    renderTotales(resumen)
-                    renderComparativa(CalculoComisiones.comparar(actual, resumen.semanasHistoricas))
-                    mostrarFilas()
-                }
+        mientrasSeVea {
+            combine(viewModel.historicoGlobal.filterNotNull(), viewModel.semanaActual) { resumen, actual ->
+                resumen to actual
+            }.collect { (resumen, actual) ->
+                resumenActual = resumen
+                semanaActual = actual
+                renderTotales(resumen)
+                renderComparativa(CalculoComisiones.comparar(actual, resumen.semanasHistoricas))
+                mostrarFilas()
             }
         }
     }

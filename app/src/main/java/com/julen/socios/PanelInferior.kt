@@ -5,12 +5,16 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.CompoundButton
 import android.widget.GridLayout
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.isVisible
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.FragmentManager
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.viewbinding.ViewBinding
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
@@ -21,6 +25,8 @@ import com.julen.socios.util.AnimationExtensions
 import com.julen.socios.util.HapticUtils
 import com.julen.socios.util.Movimiento
 import com.julen.socios.util.toEurosCompacto
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
 
 /**
  * Panel inferior de la app. Se abre ya desplegado, sin quedarse a media altura, y guarda su ViewBinding
@@ -58,6 +64,36 @@ abstract class PanelInferior<B : ViewBinding>(
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
+    }
+
+    /** Ejecuta [bloque] mientras el panel se ve: se para al pasar a segundo plano y vuelve a empezar al volver. */
+    protected fun mientrasSeVea(bloque: suspend CoroutineScope.() -> Unit) {
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED, bloque)
+        }
+    }
+
+    /**
+     * Tarjeta con un interruptor que muestra u oculta [opciones]: tocar la tarjeta lo cambia, el cambio se anima
+     * en [contenido] y, al apagarlo, se cierra el teclado. [alCambiar] hace lo propio de cada panel.
+     */
+    protected fun configurarInterruptor(
+        tarjeta: View,
+        interruptor: CompoundButton,
+        contenido: ViewGroup,
+        opciones: View,
+        alCambiar: (activado: Boolean) -> Unit = {}
+    ) {
+        tarjeta.setOnClickListener {
+            HapticUtils.performToggle(it)
+            interruptor.toggle()
+        }
+        interruptor.setOnCheckedChangeListener { _, activado ->
+            Movimiento.animarCambios(contenido)
+            opciones.isVisible = activado
+            alCambiar(activado)
+            if (!activado) ocultarTeclado()
+        }
     }
 
     protected fun mostrarTeclado(campo: View) {

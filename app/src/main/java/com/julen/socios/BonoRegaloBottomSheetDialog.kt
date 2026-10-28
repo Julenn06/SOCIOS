@@ -10,7 +10,6 @@ import com.julen.socios.model.BonoRegaloInfo
 import com.julen.socios.model.ImportesPredefinidos
 import com.julen.socios.util.AnimationExtensions
 import com.julen.socios.util.HapticUtils
-import com.julen.socios.util.Movimiento
 import com.julen.socios.util.rangoSemanaConAnio
 
 /** Ajuste manual del bonus de una semana: sustituye al automático o se suma a él. */
@@ -48,15 +47,9 @@ class BonoRegaloBottomSheetDialog : PanelInferior<BottomSheetBonoRegaloBinding>(
             montos.restaurar(savedInstanceState.getInt(STATE_MONTO_INDEX, -1))
         }
 
-        binding.cardActivarBono.setOnClickListener {
-            HapticUtils.performToggle(it)
-            binding.switchActivarBono.toggle()
-        }
-        binding.switchActivarBono.setOnCheckedChangeListener { _, activado ->
-            Movimiento.animarCambios(binding.contenidoBono)
-            binding.containerBonoConfig.isVisible = activado
-            if (!activado) ocultarTeclado()
-        }
+        configurarInterruptor(
+            binding.cardActivarBono, binding.switchActivarBono, binding.contenidoBono, binding.containerBonoConfig
+        )
         binding.cardModoFijo.setOnClickListener { elegirModo(fijo = true) }
         binding.cardModoSumar.setOnClickListener { elegirModo(fijo = false) }
         binding.etCustomMonto.doOnTextChanged { _, _, _, _ -> binding.tilCustomMonto.error = null }

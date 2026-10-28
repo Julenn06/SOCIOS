@@ -1,5 +1,7 @@
 package com.julen.socios
 
+import android.view.View
+import android.widget.ImageView
 import androidx.annotation.ColorRes
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
@@ -17,10 +19,7 @@ fun ItemFormatoBinding.configurar(
     @StringRes detalle: Int,
     accion: () -> Unit
 ) {
-    val contexto = root.context
-    placaFormato.backgroundTintList = ContextCompat.getColorStateList(contexto, fondo)
-    ivFormato.setImageResource(icono)
-    ivFormato.imageTintList = ContextCompat.getColorStateList(contexto, color)
+    pintarPlaca(placaFormato, ivFormato, icono, fondo, color)
     tvFormato.setText(titulo)
     tvFormatoDetalle.setText(detalle)
     root.setOnClickListener {
@@ -28,4 +27,12 @@ fun ItemFormatoBinding.configurar(
         accion()
     }
     AnimationExtensions.setupPressScaleAnimation(root)
+}
+
+/** Placa de color [fondo] con el [icono] en [color], como la de las filas, los avisos y el resumen de importación. */
+fun pintarPlaca(placa: View, imagen: ImageView, @DrawableRes icono: Int, @ColorRes fondo: Int, @ColorRes color: Int) {
+    val contexto = placa.context
+    placa.backgroundTintList = ContextCompat.getColorStateList(contexto, fondo)
+    imagen.setImageResource(icono)
+    imagen.imageTintList = ContextCompat.getColorStateList(contexto, color)
 }

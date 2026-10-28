@@ -10,7 +10,6 @@ import android.graphics.Shader
 import android.util.AttributeSet
 import android.view.View
 import androidx.core.content.ContextCompat
-import androidx.core.content.res.ResourcesCompat
 import com.julen.socios.util.CalculoComisiones
 import com.julen.socios.util.Movimiento
 import com.julen.socios.util.toEurosCompacto
@@ -55,18 +54,8 @@ class ProgresoBonusView @JvmOverloads constructor(
         style = Paint.Style.STROKE
         strokeWidth = 2 * densidad
     }
-    private val pintaNumero = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        textAlign = Paint.Align.CENTER
-        typeface = ResourcesCompat.getFont(context, R.font.geist_semibold)
-        fontFeatureSettings = "tnum"
-        textSize = sp(11f)
-    }
-    private val pintaImporte = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        textAlign = Paint.Align.CENTER
-        typeface = ResourcesCompat.getFont(context, R.font.geist_semibold)
-        fontFeatureSettings = "tnum"
-        textSize = sp(11.5f)
-    }
+    private val pintaNumero = pinturaCifra(context, sp(11f))
+    private val pintaImporte = pinturaCifra(context, sp(11.5f))
     private val tamanoImporte = pintaImporte.textSize
 
     /** 12dp, o más si el número de socios no cabe dentro con la letra grande. */
@@ -91,14 +80,9 @@ class ProgresoBonusView @JvmOverloads constructor(
             invalidate()
             return
         }
-        animacion = ValueAnimator.ofFloat(mostrado, socios.toFloat()).apply {
-            duration = DURACION_MS
-            interpolator = Movimiento.curva(context)
-            addUpdateListener {
-                mostrado = it.animatedValue as Float
-                invalidate()
-            }
-            start()
+        animacion = Movimiento.animarValor(context, mostrado, socios.toFloat(), DURACION_MS) {
+            mostrado = it
+            invalidate()
         }
     }
 

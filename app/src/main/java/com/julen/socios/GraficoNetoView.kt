@@ -80,21 +80,9 @@ class GraficoNetoView @JvmOverloads constructor(
         textSize = sp(10.5f)
         color = colorTextoSuave
     }
-    private val pintaRotulo = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        textAlign = Paint.Align.CENTER
-        typeface = ResourcesCompat.getFont(context, R.font.geist_semibold)
-        fontFeatureSettings = "tnum"
-        textSize = sp(11f)
-        color = colorTexto
-    }
+    private val pintaRotulo = pinturaCifra(context, sp(11f)).apply { color = colorTexto }
     private val pintaAvisoFondo = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = colorAvisoFondo }
-    private val pintaAvisoTexto = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        textAlign = Paint.Align.CENTER
-        typeface = ResourcesCompat.getFont(context, R.font.geist_semibold)
-        fontFeatureSettings = "tnum"
-        textSize = sp(12f)
-        color = colorAvisoTexto
-    }
+    private val pintaAvisoTexto = pinturaCifra(context, sp(12f)).apply { color = colorAvisoTexto }
     private val rect = RectF()
     private val path = Path()
 
@@ -112,14 +100,9 @@ class GraficoNetoView @JvmOverloads constructor(
             invalidate()
             return
         }
-        animacion = ValueAnimator.ofFloat(0f, 1f).apply {
-            duration = 450L
-            interpolator = Movimiento.curva(context)
-            addUpdateListener {
-                progreso = it.animatedValue as Float
-                invalidate()
-            }
-            start()
+        animacion = Movimiento.animarValor(context, 0f, 1f, Movimiento.LARGA_MS) {
+            progreso = it
+            invalidate()
         }
     }
 

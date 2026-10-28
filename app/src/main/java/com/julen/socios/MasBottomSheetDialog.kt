@@ -8,9 +8,6 @@ import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import androidx.core.widget.TextViewCompat
 import androidx.fragment.app.activityViewModels
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.lifecycleScope
-import androidx.lifecycle.repeatOnLifecycle
 import com.julen.socios.ActualizacionesViewModel.EstadoVersion
 import com.julen.socios.ajustes.Tema
 import com.julen.socios.databinding.BottomSheetMasBinding
@@ -18,7 +15,6 @@ import com.julen.socios.databinding.ItemTemaBinding
 import com.julen.socios.util.AnimationExtensions
 import com.julen.socios.util.DateUtils
 import com.julen.socios.util.HapticUtils
-import kotlinx.coroutines.launch
 
 /**
  * Panel "Más", en lugar del menú ⋮: versión de la app y búsqueda de actualizaciones, acceso a copias y
@@ -47,11 +43,7 @@ class MasBottomSheetDialog : PanelInferior<BottomSheetMasBinding>(BottomSheetMas
 
         configurarTemas()
 
-        viewLifecycleOwner.lifecycleScope.launch {
-            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                actualizaciones.estadoVersion.collect(::mostrarEstadoVersion)
-            }
-        }
+        mientrasSeVea { actualizaciones.estadoVersion.collect(::mostrarEstadoVersion) }
     }
 
     private fun configurarTemas() {

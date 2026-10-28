@@ -6,9 +6,6 @@ import android.view.View
 import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import androidx.fragment.app.activityViewModels
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.lifecycleScope
-import androidx.lifecycle.repeatOnLifecycle
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.julen.socios.databinding.BottomSheetIrpfBreakdownBinding
 import com.julen.socios.databinding.DialogIrpfBinding
@@ -44,12 +41,10 @@ class IrpfBreakdownBottomSheetDialog :
             R.drawable.ic_history, R.color.orange_container, R.color.orange_text, R.string.irpf_ver_cambios, R.string.irpf_ver_cambios_detalle
         ) { mostrarCambiosIrpf() }
 
-        viewLifecycleOwner.lifecycleScope.launch {
-            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                launch { viewModel.uiState.collect(::render) }
-                // Mantiene la lista de cambios cargada para mostrarla al instante.
-                launch { viewModel.irpfVigencias.collect {} }
-            }
+        mientrasSeVea {
+            launch { viewModel.uiState.collect(::render) }
+            // Mantiene la lista de cambios cargada para mostrarla al instante.
+            launch { viewModel.irpfVigencias.collect {} }
         }
     }
 

@@ -6,9 +6,6 @@ import androidx.appcompat.app.AlertDialog
 import androidx.core.view.isVisible
 import androidx.core.widget.doOnTextChanged
 import androidx.fragment.app.activityViewModels
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.lifecycleScope
-import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.julen.socios.databinding.BottomSheetListaSociosBinding
 import com.julen.socios.model.Socio
@@ -16,7 +13,6 @@ import com.julen.socios.util.BusquedaSocios
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.launch
 
 /**
  * Socios de varias semanas a la vez: los pendientes de semanas anteriores o los que coinciden con una
@@ -79,11 +75,7 @@ class ListaSociosBottomSheetDialog :
             viewModel.pendientesAnteriores
         }
 
-        viewLifecycleOwner.lifecycleScope.launch {
-            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                socios.collect(::mostrar)
-            }
-        }
+        mientrasSeVea { socios.collect(::mostrar) }
     }
 
     private fun mostrar(socios: List<Socio>) {

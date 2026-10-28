@@ -9,22 +9,17 @@ import androidx.core.view.isVisible
 import androidx.core.widget.doOnTextChanged
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.activityViewModels
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.lifecycleScope
-import androidx.lifecycle.repeatOnLifecycle
 import com.julen.socios.databinding.BottomSheetCobroBinding
 import com.julen.socios.model.CobroInfo
 import com.julen.socios.util.AnimationExtensions
 import com.julen.socios.util.CalculoComisiones
 import com.julen.socios.util.HapticUtils
-import com.julen.socios.util.Movimiento
 import com.julen.socios.util.descontadoConSigno
 import com.julen.socios.util.etiquetaDescontado
 import com.julen.socios.util.parseImporte
 import com.julen.socios.util.rangoSemanaConAnio
 import com.julen.socios.util.toCurrencyString
 import com.julen.socios.util.toImporteInput
-import kotlinx.coroutines.launch
 
 /**
  * Ajuste del neto de la semana visible a lo cobrado de verdad, como el del bonus: con el interruptor encendido
@@ -56,16 +51,9 @@ class CobroBottomSheetDialog : PanelInferior<BottomSheetCobroBinding>(BottomShee
             if (tieneCobro) binding.etNetoCobrado.setText(args.getDouble(ARG_NETO).toImporteInput())
         }
 
-        binding.cardActivarCobro.setOnClickListener {
-            HapticUtils.performToggle(it)
-            binding.switchActivarCobro.toggle()
-        }
-        binding.switchActivarCobro.setOnCheckedChangeListener { _, activado ->
-            Movimiento.animarCambios(binding.contenidoCobro)
-            binding.containerCobroConfig.isVisible = activado
-            binding.tilNetoCobrado.error = null
-            if (!activado) ocultarTeclado()
-        }
+        configurarInterruptor(
+            binding.cardActivarCobro, binding.switchActivarCobro, binding.contenidoCobro, binding.containerCobroConfig
+        ) { binding.tilNetoCobrado.error = null }
         binding.etNetoCobrado.doOnTextChanged { _, _, _, _ ->
             binding.tilNetoCobrado.error = null
             actualizarVistaPrevia()
@@ -77,11 +65,7 @@ class CobroBottomSheetDialog : PanelInferior<BottomSheetCobroBinding>(BottomShee
         }
         AnimationExtensions.setupPressScaleAnimation(binding.btnGuardarCobro)
 
-        viewLifecycleOwner.lifecycleScope.launch {
-            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                viewModel.uiState.collect { actualizarVistaPrevia() }
-            }
-        }
+        mientrasSeVea { viewModel.uiState.collect { actualizarVistaPrevia() } }
     }
 
     override fun onViewStateRestored(savedInstanceState: Bundle?) {

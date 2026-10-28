@@ -45,6 +45,15 @@ object Movimiento {
             .setDuration(duracion)
             .setInterpolator(curva(context))
 
+    /** Lleva un número de [desde] a [hasta] con la curva de la app (la altura de las barras, el avance del bonus…). */
+    fun animarValor(context: Context, desde: Float, hasta: Float, duracion: Long, alCambiar: (Float) -> Unit): ValueAnimator =
+        ValueAnimator.ofFloat(desde, hasta).apply {
+            duration = duracion
+            interpolator = curva(context)
+            addUpdateListener { alCambiar(it.animatedValue as Float) }
+            start()
+        }
+
     /** Anima los cambios que se hagan a continuación dentro de [raiz] (mostrar, ocultar, cambiar de tamaño). */
     fun animarCambios(raiz: ViewGroup, duracion: Long = MEDIA_MS) {
         if (activas()) TransitionManager.beginDelayedTransition(raiz, transicionSuave(raiz.context, duracion))

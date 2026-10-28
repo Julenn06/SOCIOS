@@ -56,7 +56,7 @@ class PdfReportGenerator(private val context: Context) {
         val fechaReporte = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm", Locale.ROOT).format(LocalDateTime.now(clock))
 
         // --- ENCABEZADO PRINCIPAL ---
-        val headerPaint = Paint().apply { color = "#0D47A1".toColorInt(); style = Paint.Style.FILL }
+        val headerPaint = relleno("#0D47A1")
         canvas.drawRect(0f, 0f, PAGE_WIDTH.toFloat(), 85f, headerPaint)
 
         paint.color = Color.WHITE
@@ -74,10 +74,8 @@ class PdfReportGenerator(private val context: Context) {
         // --- TARJETAS KPI ---
         var y = 105f
         val resumen = resumen(datos, alcance)
-        val kpiBgPaint = Paint().apply { color = "#F4F6F9".toColorInt(); style = Paint.Style.FILL }
-        val kpiBorderPaint = Paint().apply {
-            color = "#E0E0E0".toColorInt(); style = Paint.Style.STROKE; strokeWidth = 1f
-        }
+        val kpiBgPaint = relleno("#F4F6F9")
+        val kpiBorderPaint = borde("#E0E0E0", 1f)
         val cardWidth = 125f
         val cardHeight = 55f
         val gap = 11f
@@ -109,11 +107,9 @@ class PdfReportGenerator(private val context: Context) {
         // --- TABLA ---
         y = dibujarCabeceraTabla(canvas, y, paint)
 
-        val rowBgEven = Paint().apply { color = "#FFFFFF".toColorInt(); style = Paint.Style.FILL }
-        val rowBgOdd = Paint().apply { color = "#F8FAFC".toColorInt(); style = Paint.Style.FILL }
-        val rowBorder = Paint().apply {
-            color = "#E2E8F0".toColorInt(); style = Paint.Style.STROKE; strokeWidth = 0.8f
-        }
+        val rowBgEven = relleno("#FFFFFF")
+        val rowBgOdd = relleno("#F8FAFC")
+        val rowBorder = borde("#E2E8F0", 0.8f)
         val rowHeight = 22f
 
         val socios = datos.socios.sortedWith(
@@ -240,7 +236,7 @@ class PdfReportGenerator(private val context: Context) {
     )
 
     private fun dibujarCabeceraTabla(canvas: Canvas, y: Float, paint: TextPaint): Float {
-        val tableHeaderPaint = Paint().apply { color = "#1565C0".toColorInt(); style = Paint.Style.FILL }
+        val tableHeaderPaint = relleno("#1565C0")
         canvas.drawRoundRect(RectF(MARGEN, y, PAGE_WIDTH - MARGEN, y + 26f), 4f, 4f, tableHeaderPaint)
 
         paint.color = Color.WHITE
@@ -266,6 +262,11 @@ class PdfReportGenerator(private val context: Context) {
         canvas.drawText(context.getString(R.string.pdf_pie), MARGEN, PAGE_HEIGHT - 20f, paint)
         canvas.drawText(context.getString(R.string.pdf_pagina, pageNum), PAGE_WIDTH - 70f, PAGE_HEIGHT - 20f, paint)
     }
+
+    private fun relleno(colorHex: String) = Paint().apply { color = colorHex.toColorInt(); style = Paint.Style.FILL }
+
+    private fun borde(colorHex: String, grosor: Float) =
+        Paint().apply { color = colorHex.toColorInt(); style = Paint.Style.STROKE; strokeWidth = grosor }
 
     private fun Canvas.drawCelda(texto: String, columna: Columna, baseline: Float, paint: TextPaint) {
         drawText(ajustar(texto, paint, columna.ancho), columna.x, baseline, paint)

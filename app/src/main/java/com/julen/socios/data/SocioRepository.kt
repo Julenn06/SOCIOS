@@ -10,16 +10,16 @@ import kotlinx.coroutines.flow.map
 class SocioRepository(private val socioDao: SocioDao) {
 
     fun getSociosPorSemanaFlow(semanaKey: String): Flow<List<Socio>> =
-        socioDao.getSociosPorSemanaFlow(semanaKey).map { list -> list.map { it.toSocio() } }
+        socioDao.getSociosPorSemanaFlow(semanaKey).aSocios()
 
     fun getAllSociosFlow(): Flow<List<Socio>> =
-        socioDao.getAllSociosFlow().map { list -> list.map { it.toSocio() } }
+        socioDao.getAllSociosFlow().aSocios()
 
     fun getSemanaKeysFlow(): Flow<List<String>> = socioDao.getSemanaKeysFlow()
 
     /** Socios que siguen pendientes en semanas anteriores a [semanaKey], de la más reciente a la más antigua. */
     fun getPendientesAnterioresFlow(semanaKey: String): Flow<List<Socio>> =
-        socioDao.getPendientesAnterioresFlow(semanaKey).map { list -> list.map { it.toSocio() } }
+        socioDao.getPendientesAnterioresFlow(semanaKey).aSocios()
 
     suspend fun addSocio(socio: Socio) = socioDao.insertSocio(SocioEntity.fromSocio(socio))
 
@@ -29,4 +29,6 @@ class SocioRepository(private val socioDao: SocioDao) {
 
     /** Devuelve true si el socio existía y se ha actualizado. */
     suspend fun setHecho(socioId: String, hecho: Boolean): Boolean = socioDao.setHecho(socioId, hecho) > 0
+
+    private fun Flow<List<SocioEntity>>.aSocios(): Flow<List<Socio>> = map { lista -> lista.map { it.toSocio() } }
 }

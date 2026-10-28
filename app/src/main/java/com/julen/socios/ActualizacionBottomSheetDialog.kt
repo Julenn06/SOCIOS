@@ -10,14 +10,10 @@ import androidx.core.content.FileProvider
 import androidx.core.view.isVisible
 import androidx.fragment.app.FragmentActivity
 import androidx.fragment.app.activityViewModels
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.lifecycleScope
-import androidx.lifecycle.repeatOnLifecycle
 import com.julen.socios.ActualizacionesViewModel.Descarga
 import com.julen.socios.actualizaciones.VersionPublicada
 import com.julen.socios.databinding.BottomSheetActualizacionBinding
 import com.julen.socios.util.abrirEnlace
-import kotlinx.coroutines.launch
 
 /**
  * Descarga de una versión nueva con su animación. Al terminar abre el instalador de Android, que pide
@@ -46,11 +42,7 @@ class ActualizacionBottomSheetDialog :
         binding.animacionDescarga.alCompletar = ::mostrarCompletada
         binding.animacionDescarga.alTerminar = { abrirInstalador(soloLaPrimeraVez = true) }
 
-        viewLifecycleOwner.lifecycleScope.launch {
-            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                viewModel.descarga.collect(::render)
-            }
-        }
+        mientrasSeVea { viewModel.descarga.collect(::render) }
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
