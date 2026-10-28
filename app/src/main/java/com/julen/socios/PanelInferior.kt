@@ -5,12 +5,22 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.GridLayout
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.isVisible
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.FragmentManager
 import androidx.viewbinding.ViewBinding
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
+import com.google.android.material.button.MaterialButton
+import com.google.android.material.textfield.TextInputLayout
+import com.julen.socios.util.AnimationExtensions
+import com.julen.socios.util.HapticUtils
+import com.julen.socios.util.Movimiento
+import com.julen.socios.util.toEurosCompacto
 
 /**
  * Panel inferior de la app. Se abre ya desplegado, sin quedarse a media altura, y guarda su ViewBinding
@@ -48,6 +58,68 @@ abstract class PanelInferior<B : ViewBinding>(
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
+    }
+
+    protected fun mostrarTeclado(campo: View) {
+        campo.requestFocus()
+        val ventana = dialog?.window ?: return
+        WindowCompat.getInsetsController(ventana, campo).show(WindowInsetsCompat.Type.ime())
+    }
+
+    /** Cierra el teclado y quita el foco del campo en el que se estaba escribiendo. */
+    protected fun ocultarTeclado() {
+        val ventana = dialog?.window ?: return
+        WindowCompat.getInsetsController(ventana, binding.root).hide(WindowInsetsCompat.Type.ime())
+        ventana.currentFocus?.clearFocus()
+    }
+
+    /**
+     * Rellena [rejilla] con un botón por cada importe de [importes] y, al final, "Otro", que muestra [campo]
+     * para escribirlo. Al pulsar uno se marca solo ese, [contenido] anima el cambio y se llama a [alElegir].
+     */
+    protected fun crearOpcionesImporte(
+        rejilla: GridLayout,
+        importes: List<Double>,
+        campo: TextInputLayout,
+        contenido: ViewGroup,
+        alElegir: () -> Unit = {}
+    ): OpcionesImporte {
+        val margen = (4 * resources.displayMetrics.density).toInt()
+        val textos = importes.map { it.toEurosCompacto() } + getString(R.string.chip_otro)
+        val botones = textos.mapIndexed { index, texto ->
+            (layoutInflater.inflate(R.layout.item_opcion_cuota, rejilla, false) as MaterialButton).apply {
+                id = View.generateViewId()
+                text = texto
+                tag = importes.getOrNull(index)
+                layoutParams = GridLayout.LayoutParams(
+                    GridLayout.spec(GridLayout.UNDEFINED), GridLayout.spec(GridLayout.UNDEFINED, 1f)
+                ).apply {
+                    width = 0
+                    setMargins(margen, margen, margen, margen)
+                }
+                rejilla.addView(this)
+            }
+        }
+        val opciones = OpcionesImporte(botones, campo)
+        val escrito = requireNotNull(campo.editText)
+        for (boton in botones) {
+            boton.setOnClickListener {
+                HapticUtils.performClick(it)
+                opciones.marcar(boton)
+                Movimiento.animarCambios(contenido)
+                if (boton == opciones.otro) {
+                    campo.isVisible = true
+                    mostrarTeclado(escrito)
+                } else {
+                    // Si se pulsó "Otro" sin querer, el teclado del importe se va con su campo.
+                    if (escrito.hasFocus()) ocultarTeclado()
+                    campo.isVisible = false
+                }
+                alElegir()
+            }
+            AnimationExtensions.setupPressScaleAnimation(boton)
+        }
+        return opciones
     }
 }
 

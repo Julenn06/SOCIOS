@@ -9,8 +9,8 @@ import android.content.Intent
 import android.widget.RemoteViews
 import com.julen.socios.util.CalculoComisiones
 import com.julen.socios.util.DateUtils
+import com.julen.socios.util.toCurrencyString
 import com.julen.socios.util.toEurosCompacto
-import com.julen.socios.util.toFormattedEuros
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -68,7 +68,7 @@ object ResumenWidget {
                 R.id.tvWidgetEtiqueta,
                 context.getString(if (r.tieneCobroReal) R.string.header_neto_cobrado else R.string.header_neto_semanal)
             )
-            setTextViewText(R.id.tvWidgetNeto, r.totalNeto.toFormattedEuros())
+            setTextViewText(R.id.tvWidgetNeto, r.totalNeto.toCurrencyString())
             setTextViewText(
                 R.id.tvWidgetSocios,
                 context.getString(

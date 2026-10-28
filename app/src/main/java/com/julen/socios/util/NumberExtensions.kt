@@ -2,6 +2,7 @@ package com.julen.socios.util
 
 import java.math.BigDecimal
 import java.util.Locale
+import kotlin.math.abs
 
 private val spanishLocale = Locale.forLanguageTag("es-ES")
 
@@ -15,17 +16,24 @@ fun Double.toCurrencyString(decimals: Int = 2, prefix: String = ""): String {
 }
 
 /**
- * Formats a Double as euros (e.g., "12,50 €").
+ * Decimals of a compact amount: none when it is whole ("20 €"), two otherwise ("10,50 €").
  */
-fun Double.toFormattedEuros(decimals: Int = 2): String {
-    return this.toCurrencyString(decimals = decimals)
-}
+fun Double.decimalesCompactos(): Int = if (this % 1.0 == 0.0) 0 else 2
 
 /**
  * Formats euros without decimals when the amount is whole ("20 €") and with cents otherwise ("10,50 €").
  */
 fun Double.toEurosCompacto(prefix: String = ""): String =
-    toCurrencyString(decimals = if (this % 1.0 == 0.0) 0 else 2, prefix = prefix)
+    toCurrencyString(decimals = decimalesCompactos(), prefix = prefix)
+
+/**
+ * What was deducted from the calculated net, with its sign: "-15,31 €" if less was paid, "+5,00 €" if more
+ * and "0,00 €" if it matches. [compacto] drops the decimals of whole amounts.
+ */
+fun Double.descontadoConSigno(compacto: Boolean = false): String {
+    val signo = if (this < 0.0) "+" else if (this > 0.0) "-" else ""
+    return if (compacto) abs(this).toEurosCompacto(prefix = signo) else abs(this).toCurrencyString(prefix = signo)
+}
 
 /**
  * Formats a percentage with Spanish decimals, without trailing zeros (e.g., "21,48 %", "15 %").

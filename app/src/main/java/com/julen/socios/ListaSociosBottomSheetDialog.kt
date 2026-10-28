@@ -3,8 +3,6 @@ package com.julen.socios
 import android.os.Bundle
 import android.view.View
 import androidx.appcompat.app.AlertDialog
-import androidx.core.view.WindowCompat
-import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.isVisible
 import androidx.core.widget.doOnTextChanged
 import androidx.fragment.app.activityViewModels
@@ -72,7 +70,7 @@ class ListaSociosBottomSheetDialog :
         if (buscando) {
             textoBusqueda.value = binding.etBuscar.text?.toString().orEmpty()
             binding.etBuscar.doOnTextChanged { texto, _, _, _ -> textoBusqueda.value = texto?.toString().orEmpty() }
-            if (savedInstanceState == null) mostrarTeclado()
+            if (savedInstanceState == null) mostrarTeclado(binding.etBuscar)
         }
 
         val socios: Flow<List<Socio>> = if (buscando) {
@@ -107,12 +105,6 @@ class ListaSociosBottomSheetDialog :
 
     private fun editar(socio: Socio) {
         parentFragmentManager.mostrarSiNoEsta(AddSocioBottomSheetDialog.TAG) { AddSocioBottomSheetDialog.editar(socio) }
-    }
-
-    private fun mostrarTeclado() {
-        binding.etBuscar.requestFocus()
-        val ventana = dialog?.window ?: return
-        WindowCompat.getInsetsController(ventana, binding.etBuscar).show(WindowInsetsCompat.Type.ime())
     }
 
     override fun onDestroyView() {

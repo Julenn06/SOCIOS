@@ -61,7 +61,7 @@ object ReparacionSemanaKeys {
     fun claveCorregida(semanaKey: String, timestamp: Long, zona: ZoneId = ZoneId.systemDefault()): String? {
         claveImposibleCorregida(semanaKey)?.let { return it }
 
-        val (anio, semana) = partes(semanaKey) ?: return null
+        val (anio, semana) = DateUtils.partesDeSemanaKey(semanaKey) ?: return null
         if (semana != 1) return null
         // Solo hay ambigüedad si la semana 1 del año siguiente empieza en diciembre de este año.
         val lunesSemana1Siguiente = DateUtils.lunesDeSemanaKey(String.format(Locale.ROOT, "%04d-W01", anio + 1)) ?: return null
@@ -76,13 +76,8 @@ object ReparacionSemanaKeys {
 
     /** "AAAA-W53" en un año ISO que solo tiene 52 semanas era la semana 53 del año anterior; null si no es el caso. */
     fun claveImposibleCorregida(semanaKey: String): String? {
-        val (anio, semana) = partes(semanaKey) ?: return null
+        val (anio, semana) = DateUtils.partesDeSemanaKey(semanaKey) ?: return null
         if (semana != 53 || DateUtils.semanasEnAnio(anio) == 53) return null
         return if (DateUtils.semanasEnAnio(anio - 1) == 53) String.format(Locale.ROOT, "%04d-W53", anio - 1) else null
-    }
-
-    private fun partes(semanaKey: String): Pair<Int, Int>? {
-        val match = Regex("""(\d{4})-W(\d{2})""").matchEntire(semanaKey) ?: return null
-        return match.groupValues[1].toInt() to match.groupValues[2].toInt()
     }
 }

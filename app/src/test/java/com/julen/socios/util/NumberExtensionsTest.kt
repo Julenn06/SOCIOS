@@ -8,7 +8,7 @@ class NumberExtensionsTest {
 
     @Test
     fun formatoDeMonedaEspanol() {
-        assertEquals("123,46 €", 123.456.toFormattedEuros())
+        assertEquals("123,46 €", 123.456.toCurrencyString())
         assertEquals("+123,46 €", 123.456.toCurrencyString(prefix = "+"))
     }
 
@@ -17,6 +17,14 @@ class NumberExtensionsTest {
         assertEquals("20 €", 20.0.toEurosCompacto())
         assertEquals("10,50 €", 10.5.toEurosCompacto())
         assertEquals("+140 €", 140.0.toEurosCompacto(prefix = "+"))
+    }
+
+    @Test
+    fun descontadoConSuSigno() {
+        assertEquals("-15,31 €", 15.31.descontadoConSigno())
+        assertEquals("+5,00 €", (-5.0).descontadoConSigno())
+        assertEquals("0,00 €", 0.0.descontadoConSigno())
+        assertEquals("+5 €", (-5.0).descontadoConSigno(compacto = true))
     }
 
     @Test

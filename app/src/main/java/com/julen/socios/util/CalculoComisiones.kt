@@ -138,8 +138,13 @@ object CalculoComisiones {
         val neto: Double
     ) {
         /** "2026-10" para un mes, "2026" para un año. */
-        val clave: String get() = mes?.let { String.format(Locale.ROOT, "%04d-%02d", anio, it) } ?: anio.toString()
+        val clave: String get() = mes?.let { claveMes(anio, it) } ?: anio.toString()
     }
+
+    private fun claveMes(anio: Int, mes: Int) = String.format(Locale.ROOT, "%04d-%02d", anio, mes)
+
+    /** El jueves de la semana [semanaKey], que decide a qué mes y año pertenece (criterio ISO-8601). */
+    private fun juevesDe(semanaKey: String) = DateUtils.lunesDeSemanaKey(semanaKey)?.plusDays(3)
 
     /**
      * Agrupa las semanas por mes o por año. Una semana que cruza de mes o de año cuenta en el de su
@@ -147,7 +152,7 @@ object CalculoComisiones {
      */
     fun agruparPorPeriodo(semanas: List<SemanaHistoricaItem>, periodo: Periodo): List<ResumenPeriodo> =
         semanas
-            .mapNotNull { item -> DateUtils.lunesDeSemanaKey(item.semanaKey)?.plusDays(3)?.let { it to item } }
+            .mapNotNull { item -> juevesDe(item.semanaKey)?.let { it to item } }
             .groupBy { (jueves, _) -> jueves.year to (if (periodo == Periodo.MES) jueves.monthValue else null) }
             .map { (clave, items) ->
                 val resumenes = items.map { it.second.resumenSemana }
@@ -312,12 +317,12 @@ object CalculoComisiones {
         hasta: String,
         cantidad: Int = 12
     ): List<Barra> {
-        val jueves = DateUtils.lunesDeSemanaKey(hasta)?.plusDays(3) ?: return emptyList()
+        val jueves = juevesDe(hasta) ?: return emptyList()
         val netos = periodos.associate { it.clave to it.neto }
         return when (periodo) {
             Periodo.MES -> (cantidad - 1 downTo 0).map { atras ->
                 val mes = jueves.withDayOfMonth(1).minusMonths(atras.toLong())
-                val clave = String.format(Locale.ROOT, "%04d-%02d", mes.year, mes.monthValue)
+                val clave = claveMes(mes.year, mes.monthValue)
                 Barra(clave, netos[clave] ?: 0.0)
             }
 

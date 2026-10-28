@@ -8,6 +8,7 @@ import java.util.Locale
 object BusquedaSocios {
 
     private val MARCAS_DIACRITICAS = Regex("\\p{Mn}+")
+    private val ESPACIOS = Regex("\\s+")
 
     /**
      * Socios cuyo nombre o notas contienen todas las palabras de [texto], sin distinguir mayúsculas ni tildes
@@ -31,6 +32,6 @@ object BusquedaSocios {
         Normalizer.normalize(texto, Normalizer.Form.NFD)
             .replace(MARCAS_DIACRITICAS, "")
             .lowercase(Locale.ROOT)
-            .replace(Regex("\\s+"), " ")
+            .replace(ESPACIOS, " ")
             .trim()
 }

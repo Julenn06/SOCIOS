@@ -44,7 +44,9 @@ import com.julen.socios.util.AnimationExtensions
 import com.julen.socios.util.DateUtils
 import com.julen.socios.util.HapticUtils
 import com.julen.socios.util.Movimiento
-import com.julen.socios.util.toEurosCompacto
+import com.julen.socios.util.nombreVisible
+import com.julen.socios.util.rangoSemanaConAnio
+import com.julen.socios.util.semanaRelativa
 import kotlinx.coroutines.launch
 
 class MainActivity : AppCompatActivity() {
@@ -158,24 +160,23 @@ class MainActivity : AppCompatActivity() {
         // Los diálogos se vuelven a mostrar desde el estado del ViewModel si la Activity se recrea.
         // El de eliminar no se restaura: tras girar la pantalla basta con volver a pulsar la papelera.
         dialogoEliminar?.dismiss()
-        listOfNotNull(dialogoDestinoExport, dialogoConfirmarImport).forEach {
-            it.setOnDismissListener(null)
-            it.dismiss()
-        }
+        dialogoDestinoExport?.cerrarSinAvisar()
+        dialogoConfirmarImport?.cerrarSinAvisar()
         super.onDestroy()
+    }
+
+    /** Lo cierra sin que su listener tome el cierre por una cancelación del usuario. */
+    private fun AlertDialog.cerrarSinAvisar() {
+        setOnDismissListener(null)
+        dismiss()
     }
 
     private fun renderUiState(state: MainUiState) {
         val alTenerLaLista = prepararCambioDeVista(state)
 
         // Rango corto de la semana y cuánto queda de la actual
-        binding.tvRangoSemana.text =
-            getString(R.string.rango_semana_anio, DateUtils.rangoCorto(state.semanaKey), state.semanaKey.take(4))
-        binding.tvSemanaSubtitulo.text = when {
-            state.weekOffset == 0 -> getString(R.string.subtitle_current_week)
-            state.weekOffset < 0 -> resources.getQuantityString(R.plurals.semana_pasada, -state.weekOffset, -state.weekOffset)
-            else -> resources.getQuantityString(R.plurals.semana_futura, state.weekOffset, state.weekOffset)
-        }
+        binding.tvRangoSemana.text = rangoSemanaConAnio(state.semanaKey)
+        binding.tvSemanaSubtitulo.text = semanaRelativa(state.weekOffset, R.string.subtitle_current_week)
 
         // Botón Hoy dinámico
         binding.btnHoyLeft.isVisible = state.weekOffset > 0
@@ -289,9 +290,7 @@ class MainActivity : AppCompatActivity() {
             is MainEvent.SocioEliminado -> aviso(
                 getString(R.string.msg_socio_deleted),
                 TipoAviso.BORRADO,
-                evento.socio.nombreSocio.ifBlank {
-                    getString(R.string.socio_default_name, evento.socio.colaboracion.toEurosCompacto())
-                },
+                evento.socio.nombreVisible().resolver(this),
                 accion = R.string.action_deshacer
             ) { viewModel.restaurarSocio(evento.socio) }
         }
@@ -336,10 +335,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun mostrarDialogoDestinoExport(request: ExportRequest?) {
         if (request == null) {
-            dialogoDestinoExport?.let {
-                it.setOnDismissListener(null)
-                it.dismiss()
-            }
+            dialogoDestinoExport?.cerrarSinAvisar()
             dialogoDestinoExport = null
             return
         }
@@ -367,10 +363,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun mostrarDialogoConfirmarImport(preview: ImportPreview?) {
         if (preview == null) {
-            dialogoConfirmarImport?.let {
-                it.setOnDismissListener(null)
-                it.dismiss()
-            }
+            dialogoConfirmarImport?.cerrarSinAvisar()
             dialogoConfirmarImport = null
             return
         }
@@ -454,14 +447,14 @@ class MainActivity : AppCompatActivity() {
         }
         binding.cardAvisoPendientes.setOnClickListener {
             HapticUtils.performClick(it)
-            mostrarLista { ListaSociosBottomSheetDialog.pendientes() }
+            mostrarPendientes()
         }
         ViewCompat.replaceAccessibilityAction(
             binding.cardAvisoPendientes,
             AccessibilityNodeInfoCompat.AccessibilityActionCompat.ACTION_CLICK,
             getString(R.string.pendientes_accion_revisar)
         ) { _, _ ->
-            mostrarLista { ListaSociosBottomSheetDialog.pendientes() }
+            mostrarPendientes()
             true
         }
         binding.btnOcultarAvisoPendientes.setOnClickListener {
@@ -528,13 +521,13 @@ class MainActivity : AppCompatActivity() {
     private fun mostrarCobro() {
         val state = viewModel.uiState.value
         if (state.resumenSemana == null) return
-        supportFragmentManager.mostrarSiNoEsta(CobroBottomSheetDialog.TAG) {
-            CobroBottomSheetDialog.newInstance(state.semanaKey, state.cobroSemana)
-        }
+        CobroBottomSheetDialog.mostrar(supportFragmentManager, state)
     }
 
     private fun mostrarLista(crear: () -> ListaSociosBottomSheetDialog) =
         supportFragmentManager.mostrarSiNoEsta(ListaSociosBottomSheetDialog.TAG, crear)
+
+    private fun mostrarPendientes() = mostrarLista { ListaSociosBottomSheetDialog.pendientes() }
 
     private fun mostrarMas() = supportFragmentManager.mostrarSiNoEsta(MasBottomSheetDialog.TAG, ::MasBottomSheetDialog)
 

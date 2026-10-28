@@ -6,11 +6,11 @@ import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.julen.socios.model.Socio
-import com.julen.socios.util.toEurosCompacto
+import com.julen.socios.util.nombreVisible
 
 /** Pide confirmación antes de borrar un socio; después aún se puede deshacer desde el aviso. */
 fun confirmarEliminarSocio(context: Context, socio: Socio, alConfirmar: () -> Unit): AlertDialog {
-    val nombre = socio.nombreSocio.ifBlank { context.getString(R.string.socio_default_name, socio.colaboracion.toEurosCompacto()) }
+    val nombre = socio.nombreVisible().resolver(context)
     val icono = ContextCompat.getDrawable(context, R.drawable.ic_delete)?.mutate()?.apply {
         setTint(ContextCompat.getColor(context, R.color.red_text))
     }

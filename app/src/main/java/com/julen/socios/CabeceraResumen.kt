@@ -7,9 +7,11 @@ import com.julen.socios.model.CobroInfo
 import com.julen.socios.util.CalculoComisiones
 import com.julen.socios.util.Movimiento
 import com.julen.socios.util.NumberAnimators
+import com.julen.socios.util.decimalesCompactos
+import com.julen.socios.util.etiquetaDescontado
 import com.julen.socios.util.setTextoAccesible
+import com.julen.socios.util.toCurrencyString
 import com.julen.socios.util.toEurosCompacto
-import com.julen.socios.util.toFormattedEuros
 import com.julen.socios.util.toPorcentajeString
 import kotlin.math.abs
 
@@ -31,13 +33,13 @@ class CabeceraResumen(private val binding: ActivityMainBinding) {
         )
         binding.tvNetoHeaderLabel.text = etiquetaNeto
         binding.containerNetoHeader.contentDescription =
-            context.getString(R.string.header_neto_a11y, etiquetaNeto, resumen.totalNeto.toFormattedEuros())
+            context.getString(R.string.header_neto_a11y, etiquetaNeto, resumen.totalNeto.toCurrencyString())
         mostrarCobro(resumen, cobro)
         NumberAnimators.animateCurrency(
-            binding.tvBaseHeader, resumen.gananciasBaseX2, prefix = "+", decimals = decimalesDe(resumen.gananciasBaseX2)
+            binding.tvBaseHeader, resumen.gananciasBaseX2, prefix = "+", decimals = resumen.gananciasBaseX2.decimalesCompactos()
         )
         NumberAnimators.animateCurrency(
-            binding.tvBonusHeader, resumen.bonusSemanal, prefix = "+", decimals = decimalesDe(resumen.bonusSemanal)
+            binding.tvBonusHeader, resumen.bonusSemanal, prefix = "+", decimals = resumen.bonusSemanal.decimalesCompactos()
         )
         NumberAnimators.animateCurrency(binding.tvIrpfHeader, resumen.retencionIrpf, prefix = "-")
 
@@ -83,18 +85,12 @@ class CabeceraResumen(private val binding: ActivityMainBinding) {
         binding.containerCobroHeader.isVisible = resumen.tieneCobroReal
         if (resumen.tieneCobroReal) {
             val descontado = resumen.descontado
-            val etiqueta = context.getString(
-                when {
-                    descontado > 0.0 -> R.string.header_cobro_descontado
-                    descontado < 0.0 -> R.string.header_cobro_de_mas
-                    else -> R.string.header_cobro_coincide
-                }
-            )
+            val etiqueta = context.getString(etiquetaDescontado(descontado))
             NumberAnimators.animateCurrency(valor, abs(descontado), prefix = if (descontado < 0.0) "+" else "-")
             binding.tvCobroHeaderLabel.text =
                 cobro?.motivo?.let { context.getString(R.string.socio_dia_semana, etiqueta, it) } ?: etiqueta
             binding.containerCobroHeader.contentDescription = context.getString(
-                R.string.header_cobro_a11y, etiqueta, abs(descontado).toFormattedEuros(), resumen.netoCalculado.toFormattedEuros()
+                R.string.header_cobro_a11y, etiqueta, abs(descontado).toCurrencyString(), resumen.netoCalculado.toCurrencyString()
             )
         } else {
             // Oculta: la próxima vez que salga, el importe crece desde 0 en lugar de desde el de otra semana.
@@ -102,6 +98,4 @@ class CabeceraResumen(private val binding: ActivityMainBinding) {
             valor.setTag(R.id.tag_numeric_value, 0.0)
         }
     }
-
-    private fun decimalesDe(importe: Double) = if (importe % 1.0 == 0.0) 0 else 2
 }

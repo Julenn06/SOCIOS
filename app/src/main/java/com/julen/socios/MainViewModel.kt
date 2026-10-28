@@ -34,8 +34,9 @@ import com.julen.socios.util.CalculoComisiones
 import com.julen.socios.util.DateUtils
 import com.julen.socios.util.UiText
 import com.julen.socios.util.motivoDeError
+import com.julen.socios.util.nombreVisible
+import com.julen.socios.util.toCurrencyString
 import com.julen.socios.util.toEurosCompacto
-import com.julen.socios.util.toFormattedEuros
 import com.julen.socios.util.toPorcentajeString
 import java.time.Clock
 import kotlinx.coroutines.CancellationException
@@ -263,20 +264,20 @@ class MainViewModel(
             esNuevo -> {
                 socioRepository.addSocio(socio)
                 preferencias.ultimaCuota = socio.colaboracion
-                avisar(R.string.msg_socio_saved, TipoAviso.EXITO, UiText.Res(R.string.socio_dia_semana, listOf(nombreDe(socio), socio.dia.nombreCompleto)))
+                avisar(R.string.msg_socio_saved, TipoAviso.EXITO, UiText.Res(R.string.socio_dia_semana, listOf(socio.nombreVisible(), socio.dia.nombreCompleto)))
             }
 
             semanaOriginal != null && semanaOriginal != socio.semanaKey -> {
                 socioRepository.updateSocio(socio)
                 avisar(
                     R.string.msg_socio_movido, TipoAviso.EXITO,
-                    UiText.Res(R.string.msg_socio_movido_detalle, listOf(nombreDe(socio), DateUtils.rangoCorto(socio.semanaKey)))
+                    UiText.Res(R.string.msg_socio_movido_detalle, listOf(socio.nombreVisible(), DateUtils.rangoCorto(socio.semanaKey)))
                 )
             }
 
             else -> {
                 socioRepository.updateSocio(socio)
-                avisar(R.string.msg_socio_updated, TipoAviso.EXITO, nombreDe(socio))
+                avisar(R.string.msg_socio_updated, TipoAviso.EXITO, socio.nombreVisible())
             }
         }
     }
@@ -292,7 +293,7 @@ class MainViewModel(
     /** Vuelve a guardar un socio recién borrado, con el mismo id y fecha de alta. */
     fun restaurarSocio(socio: Socio) = lanzar {
         socioRepository.addSocio(socio)
-        avisar(R.string.msg_socio_restaurado, TipoAviso.EXITO, nombreDe(socio))
+        avisar(R.string.msg_socio_restaurado, TipoAviso.EXITO, socio.nombreVisible())
     }
 
     fun guardarBono(bono: BonoRegaloInfo) = lanzar {
@@ -310,7 +311,7 @@ class MainViewModel(
     fun guardarCobro(semanaKey: String, netoCobrado: Double, nota: String) = lanzar {
         val importe = CalculoComisiones.redondearCentimos(netoCobrado)
         cobroRepository.guardar(CobroInfo(semanaKey, importe, nota.trim()))
-        avisar(R.string.msg_cobro_guardado, TipoAviso.EXITO, UiText.Res(R.string.msg_cobro_guardado_detalle, listOf(importe.toFormattedEuros())))
+        avisar(R.string.msg_cobro_guardado, TipoAviso.EXITO, UiText.Res(R.string.msg_cobro_guardado_detalle, listOf(importe.toCurrencyString())))
     }
 
     /** La semana vuelve a usar el neto calculado. */
@@ -441,11 +442,6 @@ class MainViewModel(
 
     private fun avisar(@StringRes titulo: Int, tipo: TipoAviso, detalle: UiText? = null) =
         enviar(MainEvent.Mensaje(UiText.Res(titulo), tipo, detalle))
-
-    /** El nombre del socio, o "Socio 20 €" si no tiene. */
-    private fun nombreDe(socio: Socio): UiText =
-        socio.nombreSocio.takeIf { it.isNotBlank() }?.let(UiText::Texto)
-            ?: UiText.Res(R.string.socio_default_name, listOf(socio.colaboracion.toEurosCompacto()))
 
     /** "12 socios, 2 bonus y 3 semanas con lo cobrado", sin lo que no venía en la copia. */
     private fun resumenImportado(datos: DatosBackup): UiText = UiText.Lista(

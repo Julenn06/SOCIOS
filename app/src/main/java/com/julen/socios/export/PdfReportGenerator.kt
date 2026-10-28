@@ -14,8 +14,10 @@ import com.julen.socios.model.DatosBackup
 import com.julen.socios.model.Socio
 import com.julen.socios.util.CalculoComisiones
 import com.julen.socios.util.DateUtils
+import com.julen.socios.util.descontadoConSigno
+import com.julen.socios.util.nombreVisible
+import com.julen.socios.util.toCurrencyString
 import com.julen.socios.util.toEurosCompacto
-import com.julen.socios.util.toFormattedEuros
 import com.julen.socios.util.toPorcentajeString
 import java.io.OutputStream
 import java.time.Clock
@@ -43,8 +45,11 @@ class PdfReportGenerator(private val context: Context) {
     }
 
     private fun dibujar(pdfDocument: PdfDocument, datos: DatosBackup, alcance: AlcanceExport, clock: Clock) {
+        fun nuevaPagina(numero: Int) =
+            pdfDocument.startPage(PdfDocument.PageInfo.Builder(PAGE_WIDTH.toInt(), PAGE_HEIGHT.toInt(), numero).create())
+
         var pageNum = 1
-        var page = pdfDocument.startPage(PdfDocument.PageInfo.Builder(PAGE_WIDTH.toInt(), PAGE_HEIGHT.toInt(), pageNum).create())
+        var page = nuevaPagina(pageNum)
         var canvas: Canvas = page.canvas
 
         val paint = TextPaint().apply { isAntiAlias = true }
@@ -123,7 +128,7 @@ class PdfReportGenerator(private val context: Context) {
                 pdfDocument.finishPage(page)
 
                 pageNum++
-                page = pdfDocument.startPage(PdfDocument.PageInfo.Builder(PAGE_WIDTH.toInt(), PAGE_HEIGHT.toInt(), pageNum).create())
+                page = nuevaPagina(pageNum)
                 canvas = page.canvas
                 y = dibujarCabeceraTabla(canvas, 40f, paint)
             }
@@ -137,10 +142,7 @@ class PdfReportGenerator(private val context: Context) {
             paint.isFakeBoldText = false
             paint.color = "#1E293B".toColorInt()
 
-            val nombre = socio.nombreSocio.ifBlank {
-                context.getString(R.string.socio_default_name, socio.colaboracion.toEurosCompacto())
-            }
-            canvas.drawCelda(nombre, COL_NOMBRE, baseline, paint)
+            canvas.drawCelda(socio.nombreVisible().resolver(context), COL_NOMBRE, baseline, paint)
 
             paint.isFakeBoldText = true
             canvas.drawCelda(socio.colaboracion.toEurosCompacto(), COL_CUOTA, baseline, paint)
@@ -196,9 +198,9 @@ class PdfReportGenerator(private val context: Context) {
             val bonusLabel = if (r.esBonoRegaloAplicado) R.string.pdf_kpi_bonus_manual else R.string.pdf_kpi_bonus_semanal
             val detalle = context.getString(
                 R.string.pdf_detalle_semana,
-                r.totalBruto.toFormattedEuros(),
+                r.totalBruto.toCurrencyString(),
                 r.porcentajeIrpf.toPorcentajeString(),
-                r.retencionIrpf.toFormattedEuros()
+                r.retencionIrpf.toCurrencyString()
             )
             val motivo = bono?.motivo?.let { context.getString(R.string.pdf_detalle_motivo, it) }.orEmpty()
             return Resumen(
@@ -216,8 +218,8 @@ class PdfReportGenerator(private val context: Context) {
             detalle = textoDescontado(g.totalDescontadoAcumulado) + context.resources.getQuantityString(
                 R.plurals.pdf_detalle_varias_semanas,
                 g.semanasHistoricas.size,
-                g.totalBrutoAcumulado.toFormattedEuros(),
-                g.totalIrpfRetenidoAcumulado.toFormattedEuros(),
+                g.totalBrutoAcumulado.toCurrencyString(),
+                g.totalIrpfRetenidoAcumulado.toCurrencyString(),
                 g.semanasHistoricas.size
             )
         )
@@ -227,17 +229,14 @@ class PdfReportGenerator(private val context: Context) {
      * "Descontado: -15,31 €  •  " cuando lo cobrado no coincide con lo calculado (con "+" si se cobró de más);
      * vacío si coincide o no se apuntó. El neto de las tarjetas ya es el cobrado.
      */
-    private fun textoDescontado(descontado: Double): String = when {
-        descontado > 0.0 -> context.getString(R.string.pdf_detalle_descontado, "-" + descontado.toFormattedEuros())
-        descontado < 0.0 -> context.getString(R.string.pdf_detalle_descontado, "+" + (-descontado).toFormattedEuros())
-        else -> ""
-    }
+    private fun textoDescontado(descontado: Double): String =
+        if (descontado != 0.0) context.getString(R.string.pdf_detalle_descontado, descontado.descontadoConSigno()) else ""
 
     private fun kpis(hechos: Int, registrados: Int, base: Double, bonusLabel: Int, bonus: Double, neto: Double) = listOf(
         Kpi(context.getString(R.string.pdf_kpi_socios_hechos), "$hechos / $registrados", "#1565C0"),
-        Kpi(context.getString(R.string.pdf_kpi_base), base.toFormattedEuros(), "#2E7D32"),
-        Kpi(context.getString(bonusLabel), bonus.toFormattedEuros(), "#F57F17"),
-        Kpi(context.getString(R.string.pdf_kpi_neto), neto.toFormattedEuros(), "#0D47A1")
+        Kpi(context.getString(R.string.pdf_kpi_base), base.toCurrencyString(), "#2E7D32"),
+        Kpi(context.getString(bonusLabel), bonus.toCurrencyString(), "#F57F17"),
+        Kpi(context.getString(R.string.pdf_kpi_neto), neto.toCurrencyString(), "#0D47A1")
     )
 
     private fun dibujarCabeceraTabla(canvas: Canvas, y: Float, paint: TextPaint): Float {

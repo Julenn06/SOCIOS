@@ -85,19 +85,8 @@ class ComprobadorActualizaciones(
 class GitHubReleases : FuenteVersiones {
 
     override suspend fun ultimaPublicada(): VersionPublicada = withContext(Dispatchers.IO) {
-        val conexion = URL(URL_API).openConnection() as HttpURLConnection
-        try {
-            conexion.connectTimeout = TIMEOUT_MS
-            conexion.readTimeout = TIMEOUT_MS
-            conexion.setRequestProperty("Accept", "application/vnd.github+json")
-            // GitHub rechaza las peticiones sin User-Agent.
-            conexion.setRequestProperty("User-Agent", "socios-android")
-            if (conexion.responseCode != HttpURLConnection.HTTP_OK) {
-                throw IOException("GitHub respondió ${conexion.responseCode}")
-            }
+        conectarGitHub(URL_API, TIMEOUT_MS, accept = "application/vnd.github+json") { conexion ->
             leerRelease(conexion.inputStream.bufferedReader().use { it.readText() })
-        } finally {
-            conexion.disconnect()
         }
     }
 
@@ -152,6 +141,27 @@ class GitHubReleases : FuenteVersiones {
         val size: Long = 0,
         val digest: String? = null
     )
+}
+
+/**
+ * Abre [url] y pasa la respuesta a [leer], que debe consumirla antes de volver: después se cierra la conexión.
+ * @throws IOException si no se puede conectar o GitHub no responde 200.
+ */
+internal inline fun <T> conectarGitHub(url: String, timeoutMs: Int, accept: String? = null, leer: (HttpURLConnection) -> T): T {
+    val conexion = URL(url).openConnection() as HttpURLConnection
+    try {
+        conexion.connectTimeout = timeoutMs
+        conexion.readTimeout = timeoutMs
+        accept?.let { conexion.setRequestProperty("Accept", it) }
+        // GitHub rechaza las peticiones sin User-Agent.
+        conexion.setRequestProperty("User-Agent", "socios-android")
+        if (conexion.responseCode != HttpURLConnection.HTTP_OK) {
+            throw IOException("GitHub respondió ${conexion.responseCode}")
+        }
+        return leer(conexion)
+    } finally {
+        conexion.disconnect()
+    }
 }
 
 class RegistroEnPreferencias(context: Context) : RegistroComprobaciones {

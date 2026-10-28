@@ -14,13 +14,14 @@ import com.julen.socios.databinding.BottomSheetIrpfBreakdownBinding
 import com.julen.socios.databinding.DialogIrpfBinding
 import com.julen.socios.util.CalculoComisiones
 import com.julen.socios.util.DateUtils
+import com.julen.socios.util.descontadoConSigno
+import com.julen.socios.util.etiquetaDescontado
 import com.julen.socios.util.parseImporte
+import com.julen.socios.util.rangoSemanaConAnio
+import com.julen.socios.util.setTextoAccesible
 import com.julen.socios.util.toCurrencyString
-import com.julen.socios.util.toFormattedEuros
 import com.julen.socios.util.toImporteInput
 import com.julen.socios.util.toPorcentajeString
-import com.julen.socios.util.setTextoAccesible
-import kotlin.math.abs
 import kotlinx.coroutines.launch
 
 /** Desglose de la semana visible. Observa el ViewModel, así se actualiza solo y sobrevive a recreaciones. */
@@ -95,10 +96,9 @@ class IrpfBreakdownBottomSheetDialog :
 
     private fun render(state: MainUiState) {
         val resumen = state.resumenSemana ?: return
-        binding.tvBreakdownRangoSemana.text =
-            getString(R.string.rango_semana_anio, DateUtils.rangoCorto(state.semanaKey), state.semanaKey.take(4))
+        binding.tvBreakdownRangoSemana.text = requireContext().rangoSemanaConAnio(state.semanaKey)
 
-        val netoFormatted = resumen.totalNeto.toFormattedEuros()
+        val netoFormatted = resumen.totalNeto.toCurrencyString()
         binding.tvBreakdownNetoBig.text = netoFormatted
         binding.tvBreakdownNetoSmall.text = netoFormatted
         // "Neto cobrado" si se ha apuntado lo que llegó de verdad; si no, "Neto a cobrar".
@@ -112,11 +112,11 @@ class IrpfBreakdownBottomSheetDialog :
             resumen.totalSociosRegistrados
         )
 
-        binding.tvBreakdownSumaCuotas.text = resumen.sumaColaboracionesBase.toFormattedEuros()
+        binding.tvBreakdownSumaCuotas.text = resumen.sumaColaboracionesBase.toCurrencyString()
         binding.tvBreakdownBaseX2.text = resumen.gananciasBaseX2.toCurrencyString(prefix = "+")
         binding.tvBreakdownBonusValue.text = resumen.bonusSemanal.toCurrencyString(prefix = "+")
         val etiquetaBonus = if (resumen.esBonoRegaloAplicado) {
-            getString(R.string.irpf_fila_bonus_manual, resumen.bonusAutomatico.toFormattedEuros())
+            getString(R.string.irpf_fila_bonus_manual, resumen.bonusAutomatico.toCurrencyString())
         } else {
             resources.getQuantityString(
                 R.plurals.irpf_fila_bonus_auto, resumen.totalSociosHechos, resumen.totalSociosHechos
@@ -129,7 +129,7 @@ class IrpfBreakdownBottomSheetDialog :
 
         renderCobro(resumen, state.cobroSemana?.motivo)
 
-        binding.tvBreakdownBruto.text = resumen.totalBruto.toFormattedEuros()
+        binding.tvBreakdownBruto.text = resumen.totalBruto.toCurrencyString()
         binding.tvBreakdownIrpfLabel.text =
             getString(R.string.irpf_retencion_label, resumen.porcentajeIrpf.toPorcentajeString())
         binding.tvBreakdownIrpf.text = resumen.retencionIrpf.toCurrencyString(prefix = "-")
@@ -146,31 +146,19 @@ class IrpfBreakdownBottomSheetDialog :
         }
         val descontado = resumen.descontado
         val color = ContextCompat.getColor(requireContext(), if (descontado > 0.0) R.color.red_text else R.color.green_text_soft)
-        binding.tvBreakdownNetoCalculado.text = resumen.netoCalculado.toFormattedEuros()
-        binding.tvBreakdownDescontadoLabel.setText(
-            when {
-                descontado > 0.0 -> R.string.header_cobro_descontado
-                descontado < 0.0 -> R.string.header_cobro_de_mas
-                else -> R.string.header_cobro_coincide
-            }
-        )
-        binding.tvBreakdownDescontado.text =
-            abs(descontado).toCurrencyString(prefix = if (descontado > 0.0) "-" else if (descontado < 0.0) "+" else "")
+        binding.tvBreakdownNetoCalculado.text = resumen.netoCalculado.toCurrencyString()
+        binding.tvBreakdownDescontadoLabel.setText(etiquetaDescontado(descontado))
+        binding.tvBreakdownDescontado.text = descontado.descontadoConSigno()
         binding.tvBreakdownDescontado.setTextColor(color)
         binding.puntoBreakdownDescontado.backgroundTintList = ColorStateList.valueOf(color)
         binding.tvBreakdownCobroNota.isVisible = motivo != null
         binding.tvBreakdownCobroNota.text = motivo?.let { getString(R.string.irpf_bonus_motivo, it) }
         binding.btnCobroBreakdown.tvFormato.setText(R.string.cobro_accion_cambiar)
-        binding.btnCobroBreakdown.tvFormatoDetalle.text = getString(R.string.cobro_accion_cambiar_detalle, cobrado.toFormattedEuros())
+        binding.btnCobroBreakdown.tvFormatoDetalle.text = getString(R.string.cobro_accion_cambiar_detalle, cobrado.toCurrencyString())
     }
 
     /** Encima del desglose, que se actualiza solo al guardarlo. */
-    private fun mostrarCobro() {
-        val state = viewModel.uiState.value
-        parentFragmentManager.mostrarSiNoEsta(CobroBottomSheetDialog.TAG) {
-            CobroBottomSheetDialog.newInstance(state.semanaKey, state.cobroSemana)
-        }
-    }
+    private fun mostrarCobro() = CobroBottomSheetDialog.mostrar(parentFragmentManager, viewModel.uiState.value)
 
     private fun mostrarDialogoIrpf() {
         val state = viewModel.uiState.value

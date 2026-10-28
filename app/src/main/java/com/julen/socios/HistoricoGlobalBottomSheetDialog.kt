@@ -16,13 +16,13 @@ import com.julen.socios.util.CalculoComisiones
 import com.julen.socios.util.CalculoComisiones.Periodo
 import com.julen.socios.util.DateUtils
 import com.julen.socios.util.HapticUtils
+import com.julen.socios.util.descontadoConSigno
+import com.julen.socios.util.rangoSemanaConAnio
 import com.julen.socios.util.toCurrencyString
 import com.julen.socios.util.toEurosCompacto
-import com.julen.socios.util.toFormattedEuros
 import java.time.Month
 import java.time.format.TextStyle
 import java.util.Locale
-import kotlin.math.abs
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.launch
@@ -61,7 +61,7 @@ class HistoricoGlobalBottomSheetDialog :
         binding.graficoNeto.alSeleccionar = { columna ->
             ViewCompat.setStateDescription(
                 binding.graficoNeto,
-                getString(R.string.grafico_seleccion, columna.etiquetaLarga, columna.neto.toFormattedEuros())
+                getString(R.string.grafico_seleccion, columna.etiquetaLarga, columna.neto.toCurrencyString())
             )
         }
 
@@ -96,12 +96,11 @@ class HistoricoGlobalBottomSheetDialog :
             resumenGlobal.totalNetoAcumulado.toCurrencyString(prefix = "+")
         binding.tvGlobalBonusTotal.text =
             resumenGlobal.totalBonusAcumulado.toCurrencyString(prefix = "+")
-        binding.tvGlobalDescontadoTotal.text =
-            importeConSigno(resumenGlobal.totalDescontadoAcumulado)
+        binding.tvGlobalDescontadoTotal.text = resumenGlobal.totalDescontadoAcumulado.descontadoConSigno()
     }
 
     private fun renderComparativa(c: CalculoComisiones.Comparativa) {
-        binding.tvComparativaNeto.text = getString(R.string.comparativa_neto_semana, c.neto.toFormattedEuros())
+        binding.tvComparativaNeto.text = getString(R.string.comparativa_neto_semana, c.neto.toCurrencyString())
         mostrarDiferencia(binding.tvComparativaAnterior, c.diferenciaSemanaAnterior)
         binding.tvComparativaMediaLabel.text =
             resources.getQuantityString(R.plurals.comparativa_vs_media, c.semanasEnMedia, c.semanasEnMedia)
@@ -111,10 +110,10 @@ class HistoricoGlobalBottomSheetDialog :
         binding.tvMejorSemanaRango.text = when {
             mejor == null -> getString(R.string.comparativa_sin_datos)
             c.esLaMejor -> getString(R.string.comparativa_es_esta)
-            else -> getString(R.string.rango_semana_anio, DateUtils.rangoCorto(mejor.semanaKey), mejor.semanaKey.take(4))
+            else -> requireContext().rangoSemanaConAnio(mejor.semanaKey)
         }
         binding.tvMejorSemanaNeto.isVisible = mejor != null
-        binding.tvMejorSemanaNeto.text = mejor?.resumenSemana?.totalNeto?.toFormattedEuros()
+        binding.tvMejorSemanaNeto.text = mejor?.resumenSemana?.totalNeto?.toCurrencyString()
         val abrible = mejor?.takeIf { !c.esLaMejor }
         binding.ivMejorSemanaFlecha.isVisible = abrible != null
         binding.filaMejorSemana.isClickable = abrible != null
@@ -137,12 +136,12 @@ class HistoricoGlobalBottomSheetDialog :
             }
 
             diferencia >= 0.0 -> {
-                vista.text = getString(R.string.comparativa_sube, diferencia.toFormattedEuros())
+                vista.text = getString(R.string.comparativa_sube, diferencia.toCurrencyString())
                 vista.setTextColor(ContextCompat.getColor(contexto, R.color.green_text_soft))
             }
 
             else -> {
-                vista.text = getString(R.string.comparativa_baja, (-diferencia).toFormattedEuros())
+                vista.text = getString(R.string.comparativa_baja, (-diferencia).toCurrencyString())
                 vista.setTextColor(ContextCompat.getColor(contexto, R.color.red_text))
             }
         }
@@ -173,7 +172,7 @@ class HistoricoGlobalBottomSheetDialog :
         val columnas = if (periodo == null) {
             CalculoComisiones.ultimasSemanas(semanas, semanaActual).map { barra ->
                 GraficoNetoView.Columna(
-                    etiqueta = getString(R.string.historico_etiqueta_semana, barra.clave.substringAfter("-W").toIntOrNull() ?: 0),
+                    etiqueta = etiquetaSemana(barra.clave),
                     etiquetaLarga = DateUtils.rangoCorto(barra.clave),
                     neto = barra.neto
                 )
@@ -183,8 +182,8 @@ class HistoricoGlobalBottomSheetDialog :
                 val anio = barra.clave.take(4)
                 val mes = barra.clave.substringAfter('-', "").toIntOrNull()?.let(Month::of)
                 GraficoNetoView.Columna(
-                    etiqueta = mes?.getDisplayName(TextStyle.SHORT, LOCALE_ES)?.removeSuffix(".") ?: anio,
-                    etiquetaLarga = mes?.let { "${nombreMes(it)} $anio" } ?: anio,
+                    etiqueta = mes?.let(::mesCorto) ?: anio,
+                    etiquetaLarga = mes?.let { nombreMes(it, anio) } ?: anio,
                     neto = barra.neto
                 )
             }
@@ -204,21 +203,29 @@ class HistoricoGlobalBottomSheetDialog :
                 columnas.size,
                 columnas.first().etiquetaLarga,
                 columnas.last().etiquetaLarga,
-                mejor.neto.toFormattedEuros(),
+                mejor.neto.toCurrencyString(),
                 mejor.etiquetaLarga
             )
         }
     }
 
-    private fun nombreMes(mes: Month) =
-        mes.getDisplayName(TextStyle.FULL_STANDALONE, LOCALE_ES).replaceFirstChar { it.titlecase(LOCALE_ES) }
+    /** "Octubre 2026". */
+    private fun nombreMes(mes: Month, anio: String) =
+        "${mes.getDisplayName(TextStyle.FULL_STANDALONE, LOCALE_ES).replaceFirstChar { it.titlecase(LOCALE_ES) }} $anio"
+
+    /** "oct". */
+    private fun mesCorto(mes: Month) = mes.getDisplayName(TextStyle.SHORT, LOCALE_ES).removeSuffix(".")
+
+    /** "S42". */
+    private fun etiquetaSemana(semanaKey: String) =
+        getString(R.string.historico_etiqueta_semana, semanaKey.substringAfter("-W").toIntOrNull() ?: 0)
 
     private fun filaSemana(item: CalculoComisiones.SemanaHistoricaItem): FilaHistorico {
         val r = item.resumenSemana
         return FilaHistorico(
             id = item.semanaKey,
-            etiqueta = getString(R.string.historico_etiqueta_semana, item.semanaKey.substringAfter("-W").toIntOrNull() ?: 0),
-            titulo = getString(R.string.rango_semana_anio, DateUtils.rangoCorto(item.semanaKey), item.semanaKey.take(4)),
+            etiqueta = etiquetaSemana(item.semanaKey),
+            titulo = requireContext().rangoSemanaConAnio(item.semanaKey),
             detalle = conDescontado(
                 resources.getQuantityString(
                     if (r.esBonoRegaloAplicado) R.plurals.historico_semana_resumen_manual else R.plurals.historico_semana_resumen,
@@ -235,17 +242,16 @@ class HistoricoGlobalBottomSheetDialog :
     }
 
     private fun filaPeriodo(p: CalculoComisiones.ResumenPeriodo): FilaHistorico {
-        val titulo = p.mes?.let { mes -> "${nombreMes(Month.of(mes))} ${p.anio}" } ?: p.anio.toString()
-        val etiqueta = p.mes?.let { mes ->
-            Month.of(mes).getDisplayName(TextStyle.SHORT, LOCALE_ES).removeSuffix(".").uppercase(LOCALE_ES)
-        } ?: getString(R.string.historico_etiqueta_anio)
+        val titulo = p.mes?.let { mes -> nombreMes(Month.of(mes), p.anio.toString()) } ?: p.anio.toString()
+        val etiqueta = p.mes?.let { mes -> mesCorto(Month.of(mes)).uppercase(LOCALE_ES) }
+            ?: getString(R.string.historico_etiqueta_anio)
         return FilaHistorico(
             id = "${p.anio}-${p.mes ?: 0}",
             etiqueta = etiqueta,
             titulo = titulo,
             detalle = conDescontado(
                 resources.getQuantityString(
-                    R.plurals.historico_periodo_resumen, p.sociosHechos, p.sociosHechos, p.bruto.toFormattedEuros()
+                    R.plurals.historico_periodo_resumen, p.sociosHechos, p.sociosHechos, p.bruto.toCurrencyString()
                 ),
                 p.descontado
             ),
@@ -257,16 +263,10 @@ class HistoricoGlobalBottomSheetDialog :
     /** Añade "· -15,31 € desc." al resumen de una fila en la que se cobró menos (o más) de lo calculado. */
     private fun conDescontado(detalle: String, descontado: Double): String =
         if (descontado != 0.0) {
-            getString(R.string.historico_detalle_descontado, detalle, importeConSigno(descontado, compacto = true))
+            getString(R.string.historico_detalle_descontado, detalle, descontado.descontadoConSigno(compacto = true))
         } else {
             detalle
         }
-
-    /** Lo descontado con su signo: "-15,31 €" si se cobró menos de lo calculado, "+5 €" si más. */
-    private fun importeConSigno(descontado: Double, compacto: Boolean = false): String {
-        val signo = if (descontado < 0.0) "+" else if (descontado > 0.0) "-" else ""
-        return if (compacto) abs(descontado).toEurosCompacto(prefix = signo) else abs(descontado).toCurrencyString(prefix = signo)
-    }
 
     companion object {
         const val TAG = "HistoricoGlobalDialog"

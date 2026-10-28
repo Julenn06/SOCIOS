@@ -5,8 +5,6 @@ import java.io.File
 import java.io.IOException
 import java.io.InputStream
 import java.io.OutputStream
-import java.net.HttpURLConnection
-import java.net.URL
 import java.security.MessageDigest
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.currentCoroutineContext
@@ -52,20 +50,11 @@ class DescargadorGitHub(context: Context) : DescargadorActualizaciones {
                 val destino = File(directorio, "socios-$version.apk")
                 val parcial = File(directorio, "${destino.name}.parcial")
                 try {
-                    val conexion = URL(apk.url).openConnection() as HttpURLConnection
-                    try {
-                        conexion.connectTimeout = TIMEOUT_MS
-                        conexion.readTimeout = TIMEOUT_MS
-                        conexion.setRequestProperty("User-Agent", "socios-android")
-                        // GitHub redirige a su almacenamiento de archivos; HttpURLConnection lo sigue solo.
-                        if (conexion.responseCode != HttpURLConnection.HTTP_OK) {
-                            throw IOException("GitHub respondió ${conexion.responseCode}")
-                        }
+                    // GitHub redirige a su almacenamiento de archivos; HttpURLConnection lo sigue solo.
+                    conectarGitHub(apk.url, TIMEOUT_MS) { conexion ->
                         conexion.inputStream.use { entrada ->
                             parcial.outputStream().use { salida -> copiarVerificando(entrada, salida, apk, alProgresar) }
                         }
-                    } finally {
-                        conexion.disconnect()
                     }
                     if (!parcial.renameTo(destino)) throw IOException("No se ha podido guardar la descarga")
                     destino

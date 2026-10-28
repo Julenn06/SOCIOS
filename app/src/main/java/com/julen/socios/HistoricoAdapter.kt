@@ -7,8 +7,8 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.julen.socios.databinding.ItemSemanaHistoricaBinding
-import com.julen.socios.util.toCurrencyString
 import com.julen.socios.util.setTextoAccesible
+import com.julen.socios.util.toCurrencyString
 
 /**
  * Una fila del histórico: una semana, un mes o un año, con una [etiqueta] corta para su placa ("S42", "OCT",

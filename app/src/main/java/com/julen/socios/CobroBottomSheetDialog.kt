@@ -5,10 +5,9 @@ import android.os.Bundle
 import android.view.View
 import android.view.WindowManager
 import androidx.core.content.ContextCompat
-import androidx.core.view.WindowCompat
-import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.isVisible
 import androidx.core.widget.doOnTextChanged
+import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
@@ -17,14 +16,14 @@ import com.julen.socios.databinding.BottomSheetCobroBinding
 import com.julen.socios.model.CobroInfo
 import com.julen.socios.util.AnimationExtensions
 import com.julen.socios.util.CalculoComisiones
-import com.julen.socios.util.DateUtils
 import com.julen.socios.util.HapticUtils
 import com.julen.socios.util.Movimiento
+import com.julen.socios.util.descontadoConSigno
+import com.julen.socios.util.etiquetaDescontado
 import com.julen.socios.util.parseImporte
+import com.julen.socios.util.rangoSemanaConAnio
 import com.julen.socios.util.toCurrencyString
-import com.julen.socios.util.toFormattedEuros
 import com.julen.socios.util.toImporteInput
-import kotlin.math.abs
 import kotlinx.coroutines.launch
 
 /**
@@ -49,8 +48,7 @@ class CobroBottomSheetDialog : PanelInferior<BottomSheetCobroBinding>(BottomShee
         val args = requireArguments()
         val tieneCobro = args.containsKey(ARG_NETO)
 
-        binding.tvSubtituloCobro.text =
-            getString(R.string.rango_semana_anio, DateUtils.rangoCorto(semanaKey), semanaKey.take(4))
+        binding.tvSubtituloCobro.text = requireContext().rangoSemanaConAnio(semanaKey)
 
         // El teclado no sale al abrir: solo al tocar el campo.
         if (savedInstanceState == null) {
@@ -103,26 +101,23 @@ class CobroBottomSheetDialog : PanelInferior<BottomSheetCobroBinding>(BottomShee
         val calculado = state.resumenSemana?.netoCalculado ?: return
         val cobrado = netoEscrito()
 
-        b.tilNetoCobrado.helperText = getString(R.string.cobro_calculado_ayuda, calculado.toFormattedEuros())
-        b.tvPreviewCalculado.text = calculado.toFormattedEuros()
-        b.tvPreviewCobrado.text = cobrado?.toFormattedEuros() ?: "–"
+        b.tilNetoCobrado.helperText = getString(R.string.cobro_calculado_ayuda, calculado.toCurrencyString())
+        b.tvPreviewCalculado.text = calculado.toCurrencyString()
+        b.tvPreviewCobrado.text = cobrado?.toCurrencyString() ?: "–"
 
         val descontado = cobrado?.let { CalculoComisiones.redondearCentimos(calculado - it) }
-        val (etiqueta, fondo, color) = when {
-            descontado == null || descontado == 0.0 ->
-                Triple(R.string.header_cobro_coincide, R.color.green_container, R.color.green_text)
-            descontado > 0.0 -> Triple(R.string.header_cobro_descontado, R.color.red_container, R.color.red_text)
-            else -> Triple(R.string.header_cobro_de_mas, R.color.green_container, R.color.green_text)
+        val (fondo, color) = if ((descontado ?: 0.0) > 0.0) {
+            R.color.red_container to R.color.red_text
+        } else {
+            R.color.green_container to R.color.green_text
         }
         val contexto = requireContext()
         b.placaPreviewDiferencia.isVisible = descontado != null
         b.placaPreviewDiferencia.backgroundTintList = ContextCompat.getColorStateList(contexto, fondo)
-        b.tvPreviewDiferenciaLabel.setText(etiqueta)
+        b.tvPreviewDiferenciaLabel.setText(etiquetaDescontado(descontado ?: 0.0))
         b.tvPreviewDiferenciaLabel.setTextColor(ContextCompat.getColor(contexto, color))
         b.tvPreviewDiferencia.setTextColor(ContextCompat.getColor(contexto, color))
-        b.tvPreviewDiferencia.text = descontado?.let {
-            abs(it).toCurrencyString(prefix = if (it > 0.0) "-" else if (it < 0.0) "+" else "")
-        }
+        b.tvPreviewDiferencia.text = descontado?.descontadoConSigno()
     }
 
     /** Apagado: vuelve al neto calculado (si había algo apuntado). Encendido: guarda lo escrito. */
@@ -142,12 +137,6 @@ class CobroBottomSheetDialog : PanelInferior<BottomSheetCobroBinding>(BottomShee
         dismiss()
     }
 
-    private fun ocultarTeclado() {
-        val ventana = dialog?.window ?: return
-        WindowCompat.getInsetsController(ventana, binding.root).hide(WindowInsetsCompat.Type.ime())
-        ventana.currentFocus?.clearFocus()
-    }
-
     companion object {
         const val TAG = "CobroDialog"
 
@@ -155,7 +144,11 @@ class CobroBottomSheetDialog : PanelInferior<BottomSheetCobroBinding>(BottomShee
         private const val ARG_NETO = "netoCobrado"
         private const val ARG_NOTA = "nota"
 
-        fun newInstance(semanaKey: String, actual: CobroInfo?) = CobroBottomSheetDialog().apply {
+        /** Lo abre para la semana visible, salvo que ya esté abierto. */
+        fun mostrar(fragmentManager: FragmentManager, state: MainUiState) =
+            fragmentManager.mostrarSiNoEsta(TAG) { newInstance(state.semanaKey, state.cobroSemana) }
+
+        private fun newInstance(semanaKey: String, actual: CobroInfo?) = CobroBottomSheetDialog().apply {
             arguments = Bundle().apply {
                 putString(ARG_SEMANA, semanaKey)
                 actual?.let {

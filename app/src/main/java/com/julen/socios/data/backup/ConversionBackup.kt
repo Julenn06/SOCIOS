@@ -60,26 +60,21 @@ object ConversionBackup {
         var descartados = 0
         val clavesFiables = (dto.version ?: 0) >= VERSION_CLAVES_ISO
 
+        // Los registros válidos; los nulos o incompletos se descartan y se cuentan.
+        fun <D : Any, T : Any> List<D?>?.validos(convertir: (D) -> T?): List<T> =
+            orEmpty().mapNotNull { registro -> registro?.let(convertir) ?: run { descartados++; null } }
+
         // Cada socio con la fecha con la que decidir si su clave de semana es del cálculo antiguo. Sin ella
         // (archivo nuevo, o fila sin fecha que tomaría la de hoy) solo se corrigen las claves imposibles.
-        val leidos = dto.socios.orEmpty().mapNotNull { socioDto ->
-            socioDto?.let { leido -> aSocio(leido, ahora)?.let { it to leido.timestamp.takeUnless { clavesFiables } } }
-                ?: run { descartados++; null }
+        val leidos = dto.socios.validos { leido ->
+            aSocio(leido, ahora)?.let { it to leido.timestamp.takeUnless { clavesFiables } }
         }
         val socios = leidos.map { it.first }
-        val bonos = dto.bonosRegalo.orEmpty().mapNotNull { bonoDto ->
-            bonoDto?.let(::aBono) ?: run { descartados++; null }
-        }
-        val vigencias = dto.irpfVigencias.orEmpty().mapNotNull { vigenciaDto ->
-            vigenciaDto?.let(::aVigencia) ?: run { descartados++; null }
-        }
+        val bonos = dto.bonosRegalo.validos(::aBono)
+        val vigencias = dto.irpfVigencias.validos(::aVigencia)
         // Los cobros (v4) y las devoluciones (v3) llegaron con las claves ya bien calculadas: no hace falta repararlas.
-        val cobros = dto.cobros.orEmpty().mapNotNull { cobroDto ->
-            cobroDto?.let(::aCobro) ?: run { descartados++; null }
-        }
-        val devoluciones = dto.devoluciones.orEmpty().mapNotNull { devolucionDto ->
-            devolucionDto?.let(::aDevolucion) ?: run { descartados++; null }
-        }
+        val cobros = dto.cobros.validos(::aCobro)
+        val devoluciones = dto.devoluciones.validos(::aDevolucion)
 
         val reparacion = ReparacionSemanaKeys.calcular(
             socios = leidos.map { (socio, creadoEl) -> ReparacionSemanaKeys.SocioRef(socio.id, socio.semanaKey, creadoEl) },

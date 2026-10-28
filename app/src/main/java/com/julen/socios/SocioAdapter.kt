@@ -9,7 +9,6 @@ import android.view.ViewGroup
 import android.widget.TextView
 import androidx.appcompat.widget.PopupMenu
 import androidx.core.content.ContextCompat
-import androidx.core.graphics.ColorUtils
 import androidx.core.view.ViewCompat
 import androidx.core.view.accessibility.AccessibilityNodeInfoCompat.AccessibilityActionCompat
 import androidx.core.view.isVisible
@@ -23,8 +22,9 @@ import com.julen.socios.model.Socio
 import com.julen.socios.util.CalculoComisiones
 import com.julen.socios.util.DateUtils
 import com.julen.socios.util.HapticUtils
-import com.julen.socios.util.toEurosCompacto
+import com.julen.socios.util.nombreVisible
 import com.julen.socios.util.setTextoAccesible
+import com.julen.socios.util.toEurosCompacto
 
 /** Una fila de la lista de socios: la cabecera de un día o un socio. */
 sealed interface FilaSocio {
@@ -216,9 +216,7 @@ class SocioAdapter(
                 socio.dia.nombreCompleto
             }
 
-            binding.tvNombreSocio.text = socio.nombreSocio.ifBlank {
-                context.getString(R.string.socio_default_name, socio.colaboracion.toEurosCompacto())
-            }
+            binding.tvNombreSocio.text = socio.nombreVisible().resolver(context)
 
             binding.tvNotas.isVisible = socio.notas.isNotBlank()
             binding.tvNotas.text = socio.notas
@@ -255,28 +253,8 @@ class SocioAdapter(
         }
 
         private fun pintarPlaca(hecho: Boolean, animar: Boolean) {
-            val context = binding.root.context
-            val destino = if (hecho) {
-                intArrayOf(ContextCompat.getColor(context, R.color.badge_gradient_start), ContextCompat.getColor(context, R.color.badge_gradient_end))
-            } else {
-                intArrayOf(ContextCompat.getColor(context, R.color.pendiente_gradient_start), ContextCompat.getColor(context, R.color.pendiente_gradient_end))
-            }
             fondoAnimator?.cancel()
-            val origen = fondoPlaca.colors
-            if (!animar || origen == null) {
-                fondoPlaca.colors = destino
-                return
-            }
-            fondoAnimator = ValueAnimator.ofFloat(0f, 1f).apply {
-                duration = 300L
-                addUpdateListener { animacion ->
-                    val f = animacion.animatedValue as Float
-                    fondoPlaca.colors = intArrayOf(
-                        ColorUtils.blendARGB(origen[0], destino[0], f), ColorUtils.blendARGB(origen[1], destino[1], f)
-                    )
-                }
-                start()
-            }
+            fondoAnimator = fondoPlaca.fundirA(coloresDegradadoSocio(binding.root.context, hecho), animar) { duration = 300L }
         }
 
         private fun animateTextColor(textView: TextView, targetColor: Int) {

@@ -2,24 +2,16 @@ package com.julen.socios
 
 import android.os.Bundle
 import android.view.View
-import android.widget.GridLayout
-import androidx.core.view.WindowCompat
-import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.isVisible
 import androidx.core.widget.doOnTextChanged
 import androidx.fragment.app.activityViewModels
-import com.google.android.material.button.MaterialButton
 import com.julen.socios.databinding.BottomSheetBonoRegaloBinding
 import com.julen.socios.model.BonoRegaloInfo
 import com.julen.socios.model.ImportesPredefinidos
 import com.julen.socios.util.AnimationExtensions
-import com.julen.socios.util.CalculoComisiones
-import com.julen.socios.util.DateUtils
 import com.julen.socios.util.HapticUtils
 import com.julen.socios.util.Movimiento
-import com.julen.socios.util.parseImporte
-import com.julen.socios.util.toEurosCompacto
-import com.julen.socios.util.toImporteInput
+import com.julen.socios.util.rangoSemanaConAnio
 
 /** Ajuste manual del bonus de una semana: sustituye al automático o se suma a él. */
 class BonoRegaloBottomSheetDialog : PanelInferior<BottomSheetBonoRegaloBinding>(BottomSheetBonoRegaloBinding::inflate) {
@@ -29,8 +21,7 @@ class BonoRegaloBottomSheetDialog : PanelInferior<BottomSheetBonoRegaloBinding>(
     private val semanaKey: String by lazy { requireNotNull(requireArguments().getString(ARG_SEMANA)) }
 
     /** Los importes predefinidos y, al final, "Otro". */
-    private var opcionesMonto: List<MaterialButton> = emptyList()
-    private val opcionOtro get() = opcionesMonto.last()
+    private lateinit var montos: OpcionesImporte
 
     private var montoFijo = true
 
@@ -38,9 +29,10 @@ class BonoRegaloBottomSheetDialog : PanelInferior<BottomSheetBonoRegaloBinding>(
         super.onViewCreated(view, savedInstanceState)
         val args = requireArguments()
 
-        binding.tvSubtituloBonoRegalo.text =
-            getString(R.string.rango_semana_anio, DateUtils.rangoCorto(semanaKey), semanaKey.take(4))
-        crearOpcionesMonto()
+        binding.tvSubtituloBonoRegalo.text = requireContext().rangoSemanaConAnio(semanaKey)
+        montos = crearOpcionesImporte(
+            binding.gridMontos, ImportesPredefinidos.BONUS, binding.tilCustomMonto, binding.contenidoBono
+        )
 
         val tieneBono = args.getBoolean(ARG_ACTIVO)
         binding.btnEliminarBono.isVisible = tieneBono
@@ -49,12 +41,11 @@ class BonoRegaloBottomSheetDialog : PanelInferior<BottomSheetBonoRegaloBinding>(
             binding.switchActivarBono.isChecked = tieneBono
             montoFijo = args.getBoolean(ARG_MONTO_FIJO, true)
             // También un bonus de 0 €, que es válido: va a "Otro" con su importe.
-            if (tieneBono) elegirMonto(args.getDouble(ARG_MONTO))
+            if (tieneBono) montos.elegir(args.getDouble(ARG_MONTO))
             binding.etNotaBono.setText(args.getString(ARG_MOTIVO).orEmpty())
         } else {
             montoFijo = savedInstanceState.getBoolean(STATE_MONTO_FIJO, true)
-            // Los importes se crean en código con ids nuevos: su selección se restaura a mano.
-            opcionesMonto.getOrNull(savedInstanceState.getInt(STATE_MONTO_INDEX, -1))?.let(::marcarMonto)
+            montos.restaurar(savedInstanceState.getInt(STATE_MONTO_INDEX, -1))
         }
 
         binding.cardActivarBono.setOnClickListener {
@@ -87,68 +78,14 @@ class BonoRegaloBottomSheetDialog : PanelInferior<BottomSheetBonoRegaloBinding>(
     override fun onViewStateRestored(savedInstanceState: Bundle?) {
         super.onViewStateRestored(savedInstanceState)
         binding.containerBonoConfig.isVisible = binding.switchActivarBono.isChecked
-        binding.tilCustomMonto.isVisible = opcionOtro.isChecked
+        montos.ajustarCampo()
         mostrarModo()
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
-        bindingSiExiste?.let { outState.putInt(STATE_MONTO_INDEX, opcionesMonto.indexOfFirst { it.isChecked }) }
+        bindingSiExiste?.let { outState.putInt(STATE_MONTO_INDEX, montos.indiceMarcado) }
         outState.putBoolean(STATE_MONTO_FIJO, montoFijo)
-    }
-
-    private fun crearOpcionesMonto() {
-        val margen = (4 * resources.displayMetrics.density).toInt()
-        val textos = ImportesPredefinidos.BONUS.map { it.toEurosCompacto() } + getString(R.string.chip_otro)
-        opcionesMonto = textos.mapIndexed { index, texto ->
-            (layoutInflater.inflate(R.layout.item_opcion_cuota, binding.gridMontos, false) as MaterialButton).apply {
-                id = View.generateViewId()
-                text = texto
-                tag = ImportesPredefinidos.BONUS.getOrNull(index)
-                layoutParams = GridLayout.LayoutParams(
-                    GridLayout.spec(GridLayout.UNDEFINED), GridLayout.spec(GridLayout.UNDEFINED, 1f)
-                ).apply {
-                    width = 0
-                    setMargins(margen, margen, margen, margen)
-                }
-                setOnClickListener { opcion ->
-                    HapticUtils.performClick(opcion)
-                    marcarMonto(this)
-                    Movimiento.animarCambios(binding.contenidoBono)
-                    if (this == opcionOtro) {
-                        binding.tilCustomMonto.isVisible = true
-                        mostrarTeclado(binding.etCustomMonto)
-                    } else {
-                        if (binding.etCustomMonto.hasFocus()) ocultarTeclado()
-                        binding.tilCustomMonto.isVisible = false
-                    }
-                }
-                AnimationExtensions.setupPressScaleAnimation(this)
-                binding.gridMontos.addView(this)
-            }
-        }
-    }
-
-    /** Marca un solo importe; volver a pulsar el elegido lo deja marcado. */
-    private fun marcarMonto(elegido: MaterialButton) {
-        opcionesMonto.forEach { it.isChecked = it == elegido }
-    }
-
-    /** Marca el importe exacto; cualquier otro va a "Otro". */
-    private fun elegirMonto(monto: Double) {
-        val opcion = opcionesMonto.firstOrNull { it.tag == monto }
-        if (opcion != null) {
-            marcarMonto(opcion)
-        } else {
-            marcarMonto(opcionOtro)
-            binding.etCustomMonto.setText(monto.toImporteInput())
-        }
-    }
-
-    /** El importe en euros; el escrito a mano, redondeado a céntimos. */
-    private fun montoElegido(): Double? {
-        if (opcionOtro.isChecked) return parseImporte(binding.etCustomMonto.text)?.let(CalculoComisiones::redondearCentimos)
-        return opcionesMonto.firstOrNull { it.isChecked }?.tag as? Double
     }
 
     private fun elegirModo(fijo: Boolean) {
@@ -163,18 +100,6 @@ class BonoRegaloBottomSheetDialog : PanelInferior<BottomSheetBonoRegaloBinding>(
         binding.cardModoSumar.isChecked = !montoFijo
     }
 
-    private fun mostrarTeclado(campo: View) {
-        campo.requestFocus()
-        val ventana = dialog?.window ?: return
-        WindowCompat.getInsetsController(ventana, campo).show(WindowInsetsCompat.Type.ime())
-    }
-
-    private fun ocultarTeclado() {
-        val ventana = dialog?.window ?: return
-        WindowCompat.getInsetsController(ventana, binding.root).hide(WindowInsetsCompat.Type.ime())
-        ventana.currentFocus?.clearFocus()
-    }
-
     private fun saveBono() {
         if (!binding.switchActivarBono.isChecked) {
             viewModel.eliminarBono(semanaKey)
@@ -182,9 +107,9 @@ class BonoRegaloBottomSheetDialog : PanelInferior<BottomSheetBonoRegaloBinding>(
             return
         }
 
-        val monto = montoElegido()
+        val monto = montos.elegido()
         if (monto == null || monto < 0) {
-            if (opcionOtro.isChecked) {
+            if (montos.otro.isChecked) {
                 binding.tilCustomMonto.error = getString(R.string.msg_bono_monto_invalido)
             } else {
                 Avisos.mostrar(binding.root, getString(R.string.msg_bono_monto_invalido), TipoAviso.ERROR)

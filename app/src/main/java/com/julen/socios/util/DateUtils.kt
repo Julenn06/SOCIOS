@@ -40,15 +40,19 @@ object DateUtils {
         fecha.get(IsoFields.WEEK_OF_WEEK_BASED_YEAR)
     )
 
+    /** Año y número de semana de una clave con forma "AAAA-Wss", exista o no esa semana; null si no tiene esa forma. */
+    internal fun partesDeSemanaKey(semanaKey: String): Pair<Int, Int>? {
+        val match = PATRON_SEMANA_KEY.matchEntire(semanaKey) ?: return null
+        return match.groupValues[1].toInt() to match.groupValues[2].toInt()
+    }
+
     /** Lunes de la semana representada por [semanaKey], o null si la clave no es una semana ISO válida. */
     fun lunesDeSemanaKey(semanaKey: String): LocalDate? {
-        val match = PATRON_SEMANA_KEY.matchEntire(semanaKey) ?: return null
-        val anio = match.groupValues[1].toInt()
-        val semana = match.groupValues[2].toLong()
+        val (anio, semana) = partesDeSemanaKey(semanaKey) ?: return null
         // El 4 de enero siempre pertenece a la semana 1 de su año ISO.
         val referencia = LocalDate.of(anio, 1, 4)
-        if (!referencia.range(IsoFields.WEEK_OF_WEEK_BASED_YEAR).isValidValue(semana)) return null
-        return referencia.with(IsoFields.WEEK_OF_WEEK_BASED_YEAR, semana).with(DayOfWeek.MONDAY)
+        if (!referencia.range(IsoFields.WEEK_OF_WEEK_BASED_YEAR).isValidValue(semana.toLong())) return null
+        return referencia.with(IsoFields.WEEK_OF_WEEK_BASED_YEAR, semana.toLong()).with(DayOfWeek.MONDAY)
     }
 
     fun esSemanaKeyValida(semanaKey: String): Boolean = lunesDeSemanaKey(semanaKey) != null

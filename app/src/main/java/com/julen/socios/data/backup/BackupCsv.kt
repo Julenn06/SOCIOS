@@ -27,7 +27,8 @@ object BackupCsv {
     private const val CABECERA_IRPF = "DesdeSemanaKey,Porcentaje"
     private const val CABECERA_COBROS = "SemanaKey,NetoCobrado,Nota"
 
-    private enum class Seccion { SOCIOS, BONOS, IRPF, COBROS, DEVOLUCIONES }
+    /** Cada sección, con los campos que necesita una fila para no descartarse. */
+    private enum class Seccion(val camposMinimos: Int) { SOCIOS(5), BONOS(4), IRPF(2), COBROS(2), DEVOLUCIONES(2) }
 
     fun escribir(datos: DatosBackup, outputStream: OutputStream) {
         val out = outputStream.bufferedWriter(Charsets.UTF_8)
@@ -105,51 +106,34 @@ object BackupCsv {
                 continue
             }
 
+            if (campos.size < seccion.camposMinimos) {
+                descartados++
+                continue
+            }
             when (seccion) {
-                Seccion.SOCIOS -> if (campos.size >= 5) {
-                    socios += SocioDto(
-                        id = campos[0].trim(),
-                        colaboracion = parseImporte(campos[1]),
-                        hecho = parseBooleano(campos[2]),
-                        diaSemanaId = campos[3].trim().toIntOrNull(),
-                        semanaKey = campos[4].trim(),
-                        nombreSocio = campos.getOrNull(5),
-                        notas = campos.getOrNull(6),
-                        timestamp = campos.getOrNull(7)?.trim()?.toLongOrNull()
-                    )
-                } else {
-                    descartados++
-                }
+                Seccion.SOCIOS -> socios += SocioDto(
+                    id = campos[0].trim(),
+                    colaboracion = parseImporte(campos[1]),
+                    hecho = parseBooleano(campos[2]),
+                    diaSemanaId = campos[3].trim().toIntOrNull(),
+                    semanaKey = campos[4].trim(),
+                    nombreSocio = campos.getOrNull(5),
+                    notas = campos.getOrNull(6),
+                    timestamp = campos.getOrNull(7)?.trim()?.toLongOrNull()
+                )
 
-                Seccion.BONOS -> if (campos.size >= 4) {
-                    bonos += BonoRegaloDto(
-                        semanaKey = campos[0].trim(),
-                        activo = parseBooleano(campos[1]),
-                        esMontoFijo = parseBooleano(campos[2]),
-                        monto = parseImporte(campos[3]),
-                        nota = campos.getOrNull(4)
-                    )
-                } else {
-                    descartados++
-                }
+                Seccion.BONOS -> bonos += BonoRegaloDto(
+                    semanaKey = campos[0].trim(),
+                    activo = parseBooleano(campos[1]),
+                    esMontoFijo = parseBooleano(campos[2]),
+                    monto = parseImporte(campos[3]),
+                    nota = campos.getOrNull(4)
+                )
 
-                Seccion.IRPF -> if (campos.size >= 2) {
-                    vigencias += IrpfVigenciaDto(campos[0].trim(), parseImporte(campos[1]))
-                } else {
-                    descartados++
-                }
-
-                Seccion.COBROS -> if (campos.size >= 2) {
-                    cobros += CobroDto(campos[0].trim(), parseImporte(campos[1]), campos.getOrNull(2))
-                } else {
-                    descartados++
-                }
-
-                Seccion.DEVOLUCIONES -> if (campos.size >= 2) {
+                Seccion.IRPF -> vigencias += IrpfVigenciaDto(campos[0].trim(), parseImporte(campos[1]))
+                Seccion.COBROS -> cobros += CobroDto(campos[0].trim(), parseImporte(campos[1]), campos.getOrNull(2))
+                Seccion.DEVOLUCIONES ->
                     devoluciones += DevolucionDto(campos[0].trim(), parseImporte(campos[1]), campos.getOrNull(2))
-                } else {
-                    descartados++
-                }
             }
         }
 

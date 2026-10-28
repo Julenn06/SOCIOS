@@ -6,13 +6,9 @@ import android.graphics.drawable.LayerDrawable
 import android.os.Bundle
 import android.view.View
 import android.view.ViewGroup
-import android.widget.GridLayout
 import android.widget.LinearLayout
 import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat
-import androidx.core.graphics.ColorUtils
-import androidx.core.view.WindowCompat
-import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
 import androidx.core.widget.doOnTextChanged
@@ -28,10 +24,10 @@ import com.julen.socios.util.DateUtils
 import com.julen.socios.util.HapticUtils
 import com.julen.socios.util.Movimiento
 import com.julen.socios.util.NumberAnimators
-import com.julen.socios.util.parseImporte
+import com.julen.socios.util.rangoSemanaConAnio
+import com.julen.socios.util.semanaRelativa
 import com.julen.socios.util.setTextoAccesible
 import com.julen.socios.util.toEurosCompacto
-import com.julen.socios.util.toImporteInput
 
 /**
  * Alta o edición de un socio. Recibe sus datos por argumentos (no por constructor) para que el sistema
@@ -52,8 +48,7 @@ class AddSocioBottomSheetDialog :
     private val defaultDia: DiaSemana by lazy { DiaSemana.fromId(requireArguments().getInt(ARG_DIA)) }
 
     /** Las cuotas predefinidas y, al final, "Otro". */
-    private var opcionesCuota: List<MaterialButton> = emptyList()
-    private val opcionOtro get() = opcionesCuota.last()
+    private lateinit var cuotas: OpcionesImporte
 
     private val botonesDia: Map<DiaSemana, MaterialButton> by lazy {
         DiaSemana.entries.zip(
@@ -78,7 +73,10 @@ class AddSocioBottomSheetDialog :
         semanaKey = savedInstanceState?.getString(STATE_SEMANA) ?: requireNotNull(requireArguments().getString(ARG_SEMANA))
         anadidos = savedInstanceState?.getInt(STATE_ANADIDOS) ?: 0
         mostrarSemana()
-        crearOpcionesCuota()
+        cuotas = crearOpcionesImporte(
+            binding.gridCuotas, ImportesPredefinidos.CUOTAS, binding.tilCustomAmount, binding.contenidoAddSocio,
+            alElegir = ::actualizarVistaPrevia
+        )
         configurarDias()
 
         val socio = socioToEdit
@@ -116,18 +114,17 @@ class AddSocioBottomSheetDialog :
                 binding.etNombreSocio.setText(socio.nombreSocio)
                 binding.etNotas.setText(socio.notas)
                 detallesAbiertos = socio.nombreSocio.isNotBlank() || socio.notas.isNotBlank()
-                elegirCuota(socio.colaboracion)
+                cuotas.elegir(socio.colaboracion)
                 botonesDia[socio.dia]?.isChecked = true
             } else {
                 // La cuota del último socio añadido: casi siempre se repite.
-                elegirCuota(viewModel.cuotaPorDefecto)
+                cuotas.elegir(viewModel.cuotaPorDefecto)
                 botonesDia[defaultDia]?.isChecked = true
             }
         } else {
             esHecho = savedInstanceState.getBoolean(STATE_HECHO, true)
             detallesAbiertos = savedInstanceState.getBoolean(STATE_DETALLES)
-            // Las cuotas se crean en código con ids nuevos: su selección se restaura a mano.
-            opcionesCuota.getOrNull(savedInstanceState.getInt(STATE_CUOTA_INDEX, -1))?.let(::marcarCuota)
+            cuotas.restaurar(savedInstanceState.getInt(STATE_CUOTA_INDEX, -1))
         }
 
         binding.cardEstadoHecho.setOnClickListener { elegirEstado(hecho = true) }
@@ -170,7 +167,7 @@ class AddSocioBottomSheetDialog :
 
     override fun onViewStateRestored(savedInstanceState: Bundle?) {
         super.onViewStateRestored(savedInstanceState)
-        binding.tilCustomAmount.isVisible = opcionOtro.isChecked
+        cuotas.ajustarCampo()
         mostrarEstado(animar = false)
         mostrarDetalles()
         actualizarVistaPrevia()
@@ -178,7 +175,7 @@ class AddSocioBottomSheetDialog :
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
-        bindingSiExiste?.let { outState.putInt(STATE_CUOTA_INDEX, opcionesCuota.indexOfFirst { it.isChecked }) }
+        bindingSiExiste?.let { outState.putInt(STATE_CUOTA_INDEX, cuotas.indiceMarcado) }
         outState.putBoolean(STATE_HECHO, esHecho)
         outState.putBoolean(STATE_DETALLES, detallesAbiertos)
         outState.putString(STATE_SEMANA, semanaKey)
@@ -206,72 +203,12 @@ class AddSocioBottomSheetDialog :
         } else {
             getString(R.string.add_subtitulo_semana, rango)
         }
-        binding.tvFormSemana.text = getString(R.string.rango_semana_anio, rango, semanaKey.take(4))
+        binding.tvFormSemana.text = requireContext().rangoSemanaConAnio(semanaKey)
         val distancia = DateUtils.semanasEntre(DateUtils.getSemanaKey(), semanaKey) ?: 0
-        binding.tvFormSemanaRelativa.text = when {
-            distancia == 0 -> getString(R.string.add_semana_actual)
-            distancia < 0 -> resources.getQuantityString(R.plurals.semana_pasada, -distancia, -distancia)
-            else -> resources.getQuantityString(R.plurals.semana_futura, distancia, distancia)
-        }
+        binding.tvFormSemanaRelativa.text = requireContext().semanaRelativa(distancia, R.string.add_semana_actual)
         binding.contenedorFormSemana.contentDescription = getString(
             R.string.socio_dia_semana, DateUtils.getRangoSemanaTextoFromKey(semanaKey), binding.tvFormSemanaRelativa.text
         )
-    }
-
-    private fun crearOpcionesCuota() {
-        val margen = (4 * resources.displayMetrics.density).toInt()
-        val textos = ImportesPredefinidos.CUOTAS.map { it.toEurosCompacto() } + getString(R.string.chip_otro)
-        opcionesCuota = textos.mapIndexed { index, texto ->
-            (layoutInflater.inflate(R.layout.item_opcion_cuota, binding.gridCuotas, false) as MaterialButton).apply {
-                id = View.generateViewId()
-                text = texto
-                tag = ImportesPredefinidos.CUOTAS.getOrNull(index)
-                layoutParams = GridLayout.LayoutParams(
-                    GridLayout.spec(GridLayout.UNDEFINED), GridLayout.spec(GridLayout.UNDEFINED, 1f)
-                ).apply {
-                    width = 0
-                    setMargins(margen, margen, margen, margen)
-                }
-                setOnClickListener { opcion ->
-                    HapticUtils.performClick(opcion)
-                    marcarCuota(this)
-                    Movimiento.animarCambios(binding.contenidoAddSocio)
-                    if (this == opcionOtro) {
-                        binding.tilCustomAmount.isVisible = true
-                        mostrarTeclado(binding.etCustomAmount)
-                    } else {
-                        // Si se pulsó "Otro" sin querer, el teclado de la cantidad se va con su campo.
-                        if (binding.etCustomAmount.hasFocus()) ocultarTeclado()
-                        binding.tilCustomAmount.isVisible = false
-                    }
-                    actualizarVistaPrevia()
-                }
-                AnimationExtensions.setupPressScaleAnimation(this)
-                binding.gridCuotas.addView(this)
-            }
-        }
-    }
-
-    /** Marca una sola cuota; volver a pulsar la elegida la deja marcada. */
-    private fun marcarCuota(elegida: MaterialButton) {
-        opcionesCuota.forEach { it.isChecked = it == elegida }
-    }
-
-    /** Marca el importe exacto; cualquier otro (p. ej. 10,50 €) va a "Otro". */
-    private fun elegirCuota(importe: Double) {
-        val opcion = opcionesCuota.firstOrNull { it.tag == importe }
-        if (opcion != null) {
-            marcarCuota(opcion)
-        } else {
-            marcarCuota(opcionOtro)
-            binding.etCustomAmount.setText(importe.toImporteInput())
-        }
-    }
-
-    /** La cuota en euros; la escrita a mano, redondeada a céntimos (10,555 → 10,56). */
-    private fun cuotaElegida(): Double? {
-        if (opcionOtro.isChecked) return parseImporte(binding.etCustomAmount.text)?.let(CalculoComisiones::redondearCentimos)
-        return opcionesCuota.firstOrNull { it.isChecked }?.tag as? Double
     }
 
     private fun configurarDias() {
@@ -301,32 +238,15 @@ class AddSocioBottomSheetDialog :
     /** Verde si el socio suma, ámbar si está pendiente, con un fundido entre los dos. */
     private fun pintarFondoHero(animar: Boolean) {
         val contexto = requireContext()
-        val destino = if (esHecho) {
-            intArrayOf(ContextCompat.getColor(contexto, R.color.badge_gradient_start), ContextCompat.getColor(contexto, R.color.badge_gradient_end))
-        } else {
-            intArrayOf(ContextCompat.getColor(contexto, R.color.pendiente_gradient_start), ContextCompat.getColor(contexto, R.color.pendiente_gradient_end))
-        }
         animacionFondo?.cancel()
-        val origen = fondoHero.colors
-        if (!animar || origen == null) {
-            fondoHero.colors = destino
-            return
-        }
-        animacionFondo = ValueAnimator.ofFloat(0f, 1f).apply {
+        animacionFondo = fondoHero.fundirA(coloresDegradadoSocio(contexto, esHecho), animar) {
             duration = Movimiento.LARGA_MS
             interpolator = Movimiento.curva(contexto)
-            addUpdateListener { animacion ->
-                val f = animacion.animatedValue as Float
-                fondoHero.colors = intArrayOf(
-                    ColorUtils.blendARGB(origen[0], destino[0], f), ColorUtils.blendARGB(origen[1], destino[1], f)
-                )
-            }
-            start()
         }
     }
 
     private fun actualizarVistaPrevia() {
-        val cuota = cuotaElegida() ?: 0.0
+        val cuota = cuotas.elegido() ?: 0.0
         NumberAnimators.animateCurrency(binding.tvPreviewBaseX2, CalculoComisiones.calcularBaseX2(cuota), prefix = "+")
         binding.tvPreviewDetalle.text = if (esHecho) {
             getString(R.string.preview_detalle, cuota.toEurosCompacto())
@@ -373,24 +293,11 @@ class AddSocioBottomSheetDialog :
         }
     }
 
-    private fun mostrarTeclado(campo: View) {
-        campo.requestFocus()
-        val ventana = dialog?.window ?: return
-        WindowCompat.getInsetsController(ventana, campo).show(WindowInsetsCompat.Type.ime())
-    }
-
-    /** Cierra el teclado y quita el foco del campo en el que se estaba escribiendo. */
-    private fun ocultarTeclado() {
-        val ventana = dialog?.window ?: return
-        WindowCompat.getInsetsController(ventana, binding.root).hide(WindowInsetsCompat.Type.ime())
-        ventana.currentFocus?.clearFocus()
-    }
-
     /** [otro]: tras guardar, deja el formulario listo para el siguiente en lugar de cerrarlo. */
     private fun saveSocio(otro: Boolean) {
-        val cuota = cuotaElegida()
+        val cuota = cuotas.elegido()
         if (cuota == null || cuota <= 0) {
-            marcarCuota(opcionOtro)
+            cuotas.marcar(cuotas.otro)
             binding.tilCustomAmount.isVisible = true
             binding.tilCustomAmount.error = getString(R.string.msg_cuota_invalida)
             mostrarTeclado(binding.etCustomAmount)
