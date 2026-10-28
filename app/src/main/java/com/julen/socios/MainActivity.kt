@@ -84,12 +84,10 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private val importJsonLauncher = registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
-        viewModel.onArchivoImportSeleccionado(uri, ImportFormat.JSON)
-    }
-
-    private val importCsvLauncher = registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
-        viewModel.onArchivoImportSeleccionado(uri, ImportFormat.CSV)
+    private val abrirArchivoLaunchers = ImportFormat.entries.associateWith { formato ->
+        registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
+            viewModel.onArchivoImportSeleccionado(uri, formato)
+        }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -131,11 +129,10 @@ class MainActivity : AppCompatActivity() {
         }
 
         // Micro-animaciones táctiles
-        AnimationExtensions.setupPressScaleAnimation(binding.fabAddSocio)
-        AnimationExtensions.setupPressScaleAnimation(binding.containerBonusHeader)
-        AnimationExtensions.setupPressScaleAnimation(binding.btnVerDesglose)
-        AnimationExtensions.setupPressScaleAnimation(binding.containerCobroHeader)
-        AnimationExtensions.setupPressScaleAnimation(binding.cardAvisoPendientes)
+        listOf(
+            binding.fabAddSocio, binding.containerBonusHeader, binding.btnVerDesglose, binding.containerCobroHeader,
+            binding.cardAvisoPendientes
+        ).forEach(AnimationExtensions::setupPressScaleAnimation)
 
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
@@ -282,10 +279,7 @@ class MainActivity : AppCompatActivity() {
 
             // Cualquier tipo: muchos gestores de archivos marcan los .json y .csv como "octet-stream" y,
             // filtrando por tipo, saldrían en gris. Si no es una copia válida, la importación lo dice.
-            is MainEvent.SeleccionarArchivoImport -> when (evento.formato) {
-                ImportFormat.JSON -> importJsonLauncher.launch("*/*")
-                ImportFormat.CSV -> importCsvLauncher.launch("*/*")
-            }
+            is MainEvent.SeleccionarArchivoImport -> abrirArchivoLaunchers.getValue(evento.formato).launch("*/*")
 
             is MainEvent.SocioEliminado -> aviso(
                 getString(R.string.msg_socio_deleted),

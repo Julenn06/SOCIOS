@@ -2,6 +2,8 @@ package com.julen.socios
 
 import android.os.Bundle
 import android.view.View
+import androidx.annotation.DrawableRes
+import androidx.annotation.StringRes
 import androidx.fragment.app.activityViewModels
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.julen.socios.databinding.BottomSheetExportImportBinding
@@ -18,7 +20,11 @@ import com.julen.socios.util.Movimiento
 class ExportImportBottomSheetDialog :
     PanelInferior<BottomSheetExportImportBinding>(BottomSheetExportImportBinding::inflate) {
 
-    private enum class Alcance { SEMANA, ELEGIR, TODO }
+    private enum class Alcance(@param:DrawableRes val icono: Int, @param:StringRes val nombre: Int) {
+        SEMANA(R.drawable.ic_today, R.string.export_alcance_semana),
+        ELEGIR(R.drawable.ic_date_range, R.string.export_alcance_elegir),
+        TODO(R.drawable.ic_history, R.string.export_alcance_historico)
+    }
 
     private val viewModel: MainViewModel by activityViewModels { MainViewModel.Factory }
 
@@ -48,19 +54,19 @@ class ExportImportBottomSheetDialog :
         configurarAlcances()
 
         binding.formatoPdf.configurar(
-            R.drawable.ic_pdf, R.color.red_container, R.color.red_text, R.string.export_pdf, R.string.export_pdf_detalle
+            R.drawable.ic_pdf, Tono.ROJO, R.string.export_pdf, R.string.export_pdf_detalle
         ) { exportar(ExportFormat.PDF) }
         binding.formatoCsv.configurar(
-            R.drawable.ic_table, R.color.green_container, R.color.green_text_soft, R.string.export_csv, R.string.export_csv_detalle
+            R.drawable.ic_table, Tono.VERDE, R.string.export_csv, R.string.export_csv_detalle
         ) { exportar(ExportFormat.CSV) }
         binding.formatoJson.configurar(
-            R.drawable.ic_data_object, R.color.blue_container, R.color.blue_text_soft, R.string.export_json, R.string.export_json_detalle
+            R.drawable.ic_data_object, Tono.AZUL, R.string.export_json, R.string.export_json_detalle
         ) { exportar(ExportFormat.JSON) }
         binding.importarJson.configurar(
-            R.drawable.ic_data_object, R.color.blue_container, R.color.blue_text_soft, R.string.import_json, R.string.import_json_detalle
+            R.drawable.ic_data_object, Tono.AZUL, R.string.import_json, R.string.import_json_detalle
         ) { importar(ImportFormat.JSON) }
         binding.importarCsv.configurar(
-            R.drawable.ic_table, R.color.green_container, R.color.green_text_soft, R.string.import_csv, R.string.import_csv_detalle
+            R.drawable.ic_table, Tono.VERDE, R.string.import_csv, R.string.import_csv_detalle
         ) { importar(ImportFormat.CSV) }
 
         mientrasSeVea {
@@ -120,15 +126,9 @@ class ExportImportBottomSheetDialog :
     }
 
     private fun configurarAlcances() {
-        val nombres = mapOf(
-            Alcance.SEMANA to (R.drawable.ic_today to R.string.export_alcance_semana),
-            Alcance.ELEGIR to (R.drawable.ic_date_range to R.string.export_alcance_elegir),
-            Alcance.TODO to (R.drawable.ic_history to R.string.export_alcance_historico)
-        )
         for ((opcion, tarjeta) in tarjetasAlcance) {
-            val (icono, nombre) = nombres.getValue(opcion)
-            tarjeta.ivAlcance.setImageResource(icono)
-            tarjeta.tvAlcance.setText(nombre)
+            tarjeta.ivAlcance.setImageResource(opcion.icono)
+            tarjeta.tvAlcance.setText(opcion.nombre)
             tarjeta.root.setOnClickListener {
                 HapticUtils.performClick(it)
                 elegirAlcance(opcion)

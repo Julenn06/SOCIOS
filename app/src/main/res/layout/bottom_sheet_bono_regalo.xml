@@ -19,56 +19,31 @@
 
         <!-- Handle drag bar -->
         <View
-            android:layout_width="40dp"
-            android:layout_height="4dp"
-            android:layout_gravity="center_horizontal"
-            android:layout_marginBottom="16dp"
-            android:background="@color/handle" />
+            style="@style/Socios.AsaPanel" />
 
         <!-- Encabezado -->
         <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:gravity="center_vertical"
-            android:orientation="horizontal">
+            style="@style/Socios.Fila">
 
             <FrameLayout
-                android:layout_width="52dp"
-                android:layout_height="52dp"
-                android:background="@drawable/bg_icono_ambar"
-                android:elevation="3dp">
+                style="@style/Socios.PlacaPanel"
+                android:background="@drawable/bg_icono_ambar">
 
                 <ImageView
-                    android:layout_width="26dp"
-                    android:layout_height="26dp"
-                    android:layout_gravity="center"
-                    android:importantForAccessibility="no"
-                    android:src="@drawable/ic_gift"
-                    app:tint="@android:color/white" />
+                    style="@style/Socios.IconoPanel"
+                    android:src="@drawable/ic_gift" />
             </FrameLayout>
 
             <LinearLayout
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_marginHorizontal="14dp"
-                android:layout_weight="1"
-                android:orientation="vertical">
+                style="@style/Socios.ColumnaTextos">
 
                 <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/bono_titulo"
-                    android:textColor="@color/text_main"
-                    android:textSize="20sp"
-                    android:fontFamily="@font/geist_semibold" />
+                    style="@style/Socios.TituloPanel"
+                    android:text="@string/bono_titulo" />
 
                 <TextView
                     android:id="@+id/tvSubtituloBonoRegalo"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="2dp"
-                    android:textColor="@color/text_sub"
-                    android:textSize="13sp"
+                    style="@style/Socios.SubtituloPanel"
                     tools:text="12–16 oct 2026" />
             </LinearLayout>
 
@@ -86,10 +61,7 @@
             android:layout_marginTop="20dp">
 
             <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:gravity="center_vertical"
-                android:orientation="horizontal"
+                style="@style/Socios.Fila"
                 android:padding="14dp">
 
                 <FrameLayout
@@ -108,11 +80,7 @@
                 </FrameLayout>
 
                 <LinearLayout
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_marginHorizontal="14dp"
-                    android:layout_weight="1"
-                    android:orientation="vertical">
+                    style="@style/Socios.ColumnaTextos">
 
                     <TextView
                         style="@style/Socios.TituloFila"

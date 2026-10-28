@@ -2,11 +2,8 @@
 <!-- Cabecera de un día en la lista de socios: el día y cuántos están hechos y cuánto suman. -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
+    style="@style/Socios.Fila"
     android:focusable="true"
-    android:gravity="center_vertical"
-    android:orientation="horizontal"
     android:paddingStart="4dp"
     android:paddingTop="14dp"
     android:paddingEnd="4dp"

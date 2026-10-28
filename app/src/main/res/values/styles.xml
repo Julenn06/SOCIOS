@@ -2,6 +2,62 @@
 <!-- Piezas comunes de los paneles: panel "Más", exportar/importar y formulario del socio. -->
 <resources>
 
+    <!-- Fila horizontal con los elementos centrados en vertical: cabeceras, filas de tarjetas y del desglose. -->
+    <style name="Socios.Fila" parent="">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:gravity">center_vertical</item>
+        <item name="android:orientation">horizontal</item>
+    </style>
+
+    <!-- Título y descripción junto a una placa o un icono: ocupan el ancho que queda en la fila. -->
+    <style name="Socios.ColumnaTextos" parent="">
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_weight">1</item>
+        <item name="android:layout_marginHorizontal">14dp</item>
+        <item name="android:orientation">vertical</item>
+    </style>
+
+    <!-- Cabecera de los paneles: asa para arrastrar, placa de color con su icono, título y subtítulo. -->
+    <style name="Socios.AsaPanel" parent="">
+        <item name="android:layout_width">40dp</item>
+        <item name="android:layout_height">4dp</item>
+        <item name="android:layout_gravity">center_horizontal</item>
+        <item name="android:layout_marginBottom">16dp</item>
+        <item name="android:background">@color/handle</item>
+    </style>
+
+    <style name="Socios.PlacaPanel" parent="">
+        <item name="android:layout_width">52dp</item>
+        <item name="android:layout_height">52dp</item>
+        <item name="android:elevation">3dp</item>
+    </style>
+
+    <style name="Socios.IconoPanel" parent="">
+        <item name="android:layout_width">26dp</item>
+        <item name="android:layout_height">26dp</item>
+        <item name="android:layout_gravity">center</item>
+        <item name="android:importantForAccessibility">no</item>
+        <item name="tint">@android:color/white</item>
+    </style>
+
+    <style name="Socios.TituloPanel" parent="">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:textColor">@color/text_main</item>
+        <item name="android:textSize">20sp</item>
+        <item name="android:fontFamily">@font/geist_semibold</item>
+    </style>
+
+    <style name="Socios.SubtituloPanel" parent="">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginTop">2dp</item>
+        <item name="android:textColor">@color/text_sub</item>
+        <item name="android:textSize">13sp</item>
+    </style>
+
     <!-- Título pequeño de sección ("Formato", "Apariencia"…), en tipo frase y en semibold. -->
     <style name="Socios.Seccion" parent="">
         <item name="android:layout_width">match_parent</item>
@@ -147,14 +203,7 @@
         <item name="iconTint">@color/text_sub</item>
     </style>
 
-    <!-- Filas del desglose: punto de color, concepto e importe. -->
-    <style name="Socios.FilaCalculo" parent="">
-        <item name="android:layout_width">match_parent</item>
-        <item name="android:layout_height">wrap_content</item>
-        <item name="android:gravity">center_vertical</item>
-        <item name="android:orientation">horizontal</item>
-    </style>
-
+    <!-- Filas del desglose: punto de color, concepto e importe (cada fila, con Socios.Fila). -->
     <style name="Socios.PuntoCalculo" parent="">
         <item name="android:layout_width">8dp</item>
         <item name="android:layout_height">8dp</item>

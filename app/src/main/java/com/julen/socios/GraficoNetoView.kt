@@ -118,6 +118,12 @@ class GraficoNetoView @JvmOverloads constructor(
 
     private val anchoHueco: Float get() = (width - paddingLeft - paddingRight).toFloat() / max(1, columnas.size)
 
+    /** Centro horizontal de la columna [indice]. */
+    private fun centroDe(indice: Int) = paddingLeft + anchoHueco * (indice + 0.5f)
+
+    /** Alto de la barra de [neto], hacia arriba o hacia abajo de la línea base. */
+    private fun altoDe(neto: Double, altoUtil: Float, rango: Double) = (altoUtil * (abs(neto) / rango)).toFloat()
+
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
         if (columnas.isEmpty()) return
@@ -144,8 +150,8 @@ class GraficoNetoView @JvmOverloads constructor(
         val anclaje = if (destacada in columnas.indices) destacada else columnas.lastIndex
 
         columnas.forEachIndexed { i, columna ->
-            val centro = paddingLeft + hueco * (i + 0.5f)
-            val alto = (altoUtil * (abs(columna.neto) / rango) * progreso).toFloat()
+            val centro = centroDe(i)
+            val alto = altoDe(columna.neto, altoUtil, rango) * progreso
             pintaBarra.color = when {
                 columna.neto < 0 -> colorNegativo
                 i == destacada || i == seleccionada -> colorBarra
@@ -184,13 +190,13 @@ class GraficoNetoView @JvmOverloads constructor(
     private fun rotulo(indice: Int, base: Float, altoUtil: Float, rango: Double, abajo: Float): Rotulo? {
         val columna = columnas.getOrNull(indice) ?: return null
         if (indice == seleccionada || columna.neto == 0.0) return null
-        val alto = (altoUtil * (abs(columna.neto) / rango)).toFloat()
+        val alto = altoDe(columna.neto, altoUtil, rango)
         val linea = (if (columna.neto >= 0) base - alto - 6 * densidad else base + alto + altoRotulo - 4 * densidad)
             .coerceAtMost(abajo)
         val texto = columna.neto.toEurosCompacto()
         // En las barras de los extremos el rótulo se mete hacia dentro en lugar de salirse del gráfico.
         val mitad = pintaRotulo.measureText(texto) / 2
-        val centro = (paddingLeft + anchoHueco * (indice + 0.5f)).coerceIn(paddingLeft + mitad, width - paddingRight - mitad)
+        val centro = centroDe(indice).coerceIn(paddingLeft + mitad, width - paddingRight - mitad)
         return Rotulo(texto, RectF(centro - mitad, linea + pintaRotulo.ascent(), centro + mitad, linea + pintaRotulo.descent()), linea)
     }
 
@@ -214,9 +220,9 @@ class GraficoNetoView @JvmOverloads constructor(
         val texto = context.getString(R.string.grafico_seleccion, columna.etiquetaLarga, columna.neto.toEurosCompacto())
         val ancho = pintaAvisoTexto.measureText(texto) + 20 * densidad
         val alto = 24 * densidad
-        val centro = paddingLeft + anchoHueco * (indice + 0.5f)
+        val centro = centroDe(indice)
         val izquierda = (centro - ancho / 2).coerceIn(paddingLeft.toFloat(), (width - paddingRight) - ancho)
-        val cima = if (columna.neto >= 0) base - (altoUtil * (columna.neto / rango)).toFloat() else base
+        val cima = if (columna.neto >= 0) base - altoDe(columna.neto, altoUtil, rango) else base
         val y = (cima - alto - 8 * densidad).coerceAtLeast(paddingTop.toFloat())
         rect.set(izquierda, y, izquierda + ancho, y + alto)
         canvas.drawRoundRect(rect, alto / 2, alto / 2, pintaAvisoFondo)

@@ -72,7 +72,7 @@ class ProgresoBonusView @JvmOverloads constructor(
         val siguiente = CalculoComisiones.obtenerSiguienteMetaBonus(socios).first
         fin = max(TRAMO_FIJO_MAX, siguiente)
         inicio = if (fin <= TRAMO_FIJO_MAX) 0 else fin - VENTANA
-        hitos = umbrales().filter { it in (inicio + 1)..fin }
+        hitos = CalculoComisiones.tramosBonus().takeWhile { it <= fin }.filter { it > inicio }.toList()
 
         animacion?.cancel()
         if (!animar) {
@@ -85,10 +85,6 @@ class ProgresoBonusView @JvmOverloads constructor(
             invalidate()
         }
     }
-
-    /** Socios con los que empieza cada tramo: 5, 7, 10 y luego cada 3 (13, 16…). */
-    private fun umbrales(): List<Int> =
-        listOf(5, 7) + generateSequence(10) { it + 3 }.takeWhile { it <= fin }.toList()
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
         val altoImporte = pintaImporte.descent() - pintaImporte.ascent()

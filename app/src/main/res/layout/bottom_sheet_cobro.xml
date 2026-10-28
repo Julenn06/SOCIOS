@@ -20,56 +20,31 @@
 
         <!-- Handle drag bar -->
         <View
-            android:layout_width="40dp"
-            android:layout_height="4dp"
-            android:layout_gravity="center_horizontal"
-            android:layout_marginBottom="16dp"
-            android:background="@color/handle" />
+            style="@style/Socios.AsaPanel" />
 
         <!-- Encabezado -->
         <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:gravity="center_vertical"
-            android:orientation="horizontal">
+            style="@style/Socios.Fila">
 
             <FrameLayout
-                android:layout_width="52dp"
-                android:layout_height="52dp"
-                android:background="@drawable/bg_icono_verde"
-                android:elevation="3dp">
+                style="@style/Socios.PlacaPanel"
+                android:background="@drawable/bg_icono_verde">
 
                 <ImageView
-                    android:layout_width="26dp"
-                    android:layout_height="26dp"
-                    android:layout_gravity="center"
-                    android:importantForAccessibility="no"
-                    android:src="@drawable/ic_cobro"
-                    app:tint="@android:color/white" />
+                    style="@style/Socios.IconoPanel"
+                    android:src="@drawable/ic_cobro" />
             </FrameLayout>
 
             <LinearLayout
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_marginHorizontal="14dp"
-                android:layout_weight="1"
-                android:orientation="vertical">
+                style="@style/Socios.ColumnaTextos">
 
                 <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/cobro_titulo"
-                    android:textColor="@color/text_main"
-                    android:textSize="20sp"
-                    android:fontFamily="@font/geist_semibold" />
+                    style="@style/Socios.TituloPanel"
+                    android:text="@string/cobro_titulo" />
 
                 <TextView
                     android:id="@+id/tvSubtituloCobro"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="2dp"
-                    android:textColor="@color/text_sub"
-                    android:textSize="13sp"
+                    style="@style/Socios.SubtituloPanel"
                     tools:text="19–23 oct 2026" />
             </LinearLayout>
 
@@ -87,10 +62,7 @@
             android:layout_marginTop="20dp">
 
             <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:gravity="center_vertical"
-                android:orientation="horizontal"
+                style="@style/Socios.Fila"
                 android:padding="14dp">
 
                 <FrameLayout
@@ -109,11 +81,7 @@
                 </FrameLayout>
 
                 <LinearLayout
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_marginHorizontal="14dp"
-                    android:layout_weight="1"
-                    android:orientation="vertical">
+                    style="@style/Socios.ColumnaTextos">
 
                     <TextView
                         style="@style/Socios.TituloFila"
@@ -189,7 +157,7 @@
                     android:orientation="vertical"
                     android:padding="16dp">
 
-                    <LinearLayout style="@style/Socios.FilaCalculo">
+                    <LinearLayout style="@style/Socios.Fila">
 
                         <View
                             style="@style/Socios.PuntoCalculo"
@@ -206,7 +174,7 @@
                     </LinearLayout>
 
                     <LinearLayout
-                        style="@style/Socios.FilaCalculo"
+                        style="@style/Socios.Fila"
                         android:layout_marginTop="12dp">
 
                         <View
@@ -226,13 +194,10 @@
                     <!-- La diferencia: rojo si te han descontado, verde si coincide o has cobrado de más -->
                     <LinearLayout
                         android:id="@+id/placaPreviewDiferencia"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
+                        style="@style/Socios.Fila"
                         android:layout_marginTop="16dp"
                         android:background="@drawable/bg_icono_tile"
                         android:backgroundTint="@color/red_container"
-                        android:gravity="center_vertical"
-                        android:orientation="horizontal"
                         android:padding="14dp">
 
                         <TextView

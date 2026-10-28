@@ -14,6 +14,9 @@ updates:
       # con AGP, a mano. Ver gradle/libs.versions.toml.
       - dependency-name: "org.jetbrains.kotlinx:kotlinx-serialization-json"
         versions: [">= 1.12.0"]
+      # El plugin de serialización va en la versión de Kotlin de AGP: subirlo cambia el Kotlin de todo el
+      # proyecto. Se sube a mano junto con AGP.
+      - dependency-name: "org.jetbrains.kotlin.plugin.serialization"
 
   - package-ecosystem: "github-actions"
     directory: "/"

@@ -18,11 +18,7 @@
 
         <!-- Handle drag bar -->
         <View
-            android:layout_width="40dp"
-            android:layout_height="4dp"
-            android:layout_gravity="center_horizontal"
-            android:layout_marginBottom="16dp"
-            android:background="@color/handle" />
+            style="@style/Socios.AsaPanel" />
 
         <!-- Cabecera: app, versión y estado de las actualizaciones -->
         <com.google.android.material.card.MaterialCardView
@@ -40,10 +36,7 @@
                 android:padding="20dp">
 
                 <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:gravity="center_vertical"
-                    android:orientation="horizontal">
+                    style="@style/Socios.Fila">
 
                     <ImageView
                         android:layout_width="64dp"
@@ -92,11 +85,8 @@
 
                 <!-- Estado de las actualizaciones; el texto se lee entero al cambiar -->
                 <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:accessibilityLiveRegion="polite"
-                    android:gravity="center_vertical"
-                    android:orientation="horizontal">
+                    style="@style/Socios.Fila"
+                    android:accessibilityLiveRegion="polite">
 
                     <FrameLayout
                         android:layout_width="40dp"
@@ -188,10 +178,7 @@
             android:layout_height="wrap_content">
 
             <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:gravity="center_vertical"
-                android:orientation="horizontal"
+                style="@style/Socios.Fila"
                 android:padding="14dp">
 
                 <FrameLayout
@@ -210,11 +197,7 @@
                 </FrameLayout>
 
                 <LinearLayout
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_marginHorizontal="14dp"
-                    android:layout_weight="1"
-                    android:orientation="vertical">
+                    style="@style/Socios.ColumnaTextos">
 
                     <TextView
                         style="@style/Socios.TituloFila"

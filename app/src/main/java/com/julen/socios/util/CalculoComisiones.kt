@@ -40,30 +40,19 @@ object CalculoComisiones {
         }
     }
 
+    /** Socios con los que empieza cada tramo del bonus, de los escalones de [calcularBonusSemanal]: 5, 7, 10, 13, 16… */
+    fun tramosBonus(): Sequence<Int> = sequenceOf(5, 7) + generateSequence(10) { it + 3 }
+
     /**
      * Retorna el número de socios objetivo para el siguiente escalón de bonus y el importe de ese bonus.
      */
     fun obtenerSiguienteMetaBonus(numSociosHechos: Int): Pair<Int, Double> {
-        return when {
-            numSociosHechos < 5 -> Pair(5, 50.0)
-            numSociosHechos < 7 -> Pair(7, 100.0)
-            numSociosHechos < 10 -> Pair(10, 140.0)
-            else -> {
-                val tramosCompletos = (numSociosHechos - 10) / 3
-                val siguienteMeta = 10 + (tramosCompletos + 1) * 3
-                val siguienteBonus = 140.0 + ((tramosCompletos + 1) * 50.0)
-                Pair(siguienteMeta, siguienteBonus)
-            }
-        }
+        val meta = tramosBonus().first { it > numSociosHechos }
+        return meta to calcularBonusSemanal(meta)
     }
 
     /** Socios del tramo anterior a la meta [meta] (0 antes del primero): 7 → 5, 10 → 7, 13 → 10… */
-    fun tramoAnterior(meta: Int): Int = when {
-        meta <= 5 -> 0
-        meta <= 7 -> 5
-        meta <= 10 -> 7
-        else -> meta - 3
-    }
+    fun tramoAnterior(meta: Int): Int = tramosBonus().takeWhile { it < meta }.lastOrNull() ?: 0
 
     /** Porcentaje de IRPF vigente en [semanaKey]: el de la vigencia más reciente que empiece en o antes de esa semana. */
     fun irpfParaSemana(semanaKey: String, vigencias: List<IrpfVigencia>): Double =

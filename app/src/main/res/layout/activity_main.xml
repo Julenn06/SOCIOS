@@ -26,10 +26,7 @@
 
         <!-- Selector de semana: botón "Hoy" a la izquierda en semanas futuras y a la derecha en pasadas -->
         <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:gravity="center_vertical"
-            android:orientation="horizontal"
+            style="@style/Socios.Fila"
             android:paddingHorizontal="16dp"
             android:paddingBottom="10dp">
 
@@ -50,10 +47,7 @@
                 app:cardCornerRadius="20dp">
 
                 <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:gravity="center_vertical"
-                    android:orientation="horizontal"
+                    style="@style/Socios.Fila"
                     android:padding="6dp">
 
                     <com.google.android.material.button.MaterialButton
@@ -149,10 +143,7 @@
                     android:paddingBottom="18dp">
 
                     <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:gravity="center_vertical"
-                        android:orientation="horizontal">
+                        style="@style/Socios.Fila">
 
                         <!-- El neto: con un doble toque se ajusta a lo cobrado de verdad -->
                         <LinearLayout
@@ -333,17 +324,14 @@
                     <!-- Solo con el neto ajustado a lo cobrado: cuánto se ha descontado de lo calculado -->
                     <LinearLayout
                         android:id="@+id/containerCobroHeader"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
+                        style="@style/Socios.Fila"
                         android:visibility="gone"
                         tools:visibility="visible"
                         android:layout_marginTop="8dp"
                         android:background="@drawable/bg_caja_translucida"
                         android:clickable="true"
                         android:focusable="true"
-                        android:gravity="center_vertical"
                         android:minHeight="44dp"
-                        android:orientation="horizontal"
                         android:paddingHorizontal="12dp"
                         android:paddingVertical="8dp">
 
@@ -403,10 +391,7 @@
                 tools:visibility="visible">
 
                 <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:gravity="center_vertical"
-                    android:orientation="horizontal"
+                    style="@style/Socios.Fila"
                     android:paddingStart="14dp"
                     android:paddingEnd="2dp">
 
@@ -456,10 +441,7 @@
                     android:padding="16dp">
 
                     <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:gravity="center_vertical"
-                        android:orientation="horizontal">
+                        style="@style/Socios.Fila">
 
                         <FrameLayout
                             android:layout_width="44dp"
@@ -582,11 +564,8 @@
 
             <!-- Encabezado de la lista -->
             <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="22dp"
-                android:gravity="center_vertical"
-                android:orientation="horizontal">
+                style="@style/Socios.Fila"
+                android:layout_marginTop="22dp">
 
                 <TextView
                     android:id="@+id/tvListaTitulo"
@@ -614,8 +593,7 @@
             <!-- Estado vacío: una tarjeta compacta (para que no quede bajo el botón flotante) que abre el formulario -->
             <LinearLayout
                 android:id="@+id/containerEmptyState"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                style="@style/Socios.Fila"
                 android:layout_marginTop="12dp"
                 android:visibility="gone"
                 tools:visibility="visible"
@@ -623,8 +601,6 @@
                 android:clickable="true"
                 android:focusable="true"
                 android:foreground="@drawable/ripple_vacio"
-                android:gravity="center_vertical"
-                android:orientation="horizontal"
                 android:padding="16dp"
                 android:stateListAnimator="@animator/pulsar">
 
@@ -644,11 +620,7 @@
                 </FrameLayout>
 
                 <LinearLayout
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_marginHorizontal="14dp"
-                    android:layout_weight="1"
-                    android:orientation="vertical">
+                    style="@style/Socios.ColumnaTextos">
 
                     <TextView
                         style="@style/Socios.TituloFila"

@@ -111,7 +111,7 @@ class MainViewModel(
     // La navegación también la usa: sin nadie observando conserva el último valor, y al volver la app a
     // primer plano se actualiza antes de que el usuario pueda tocar nada.
     val semanaActual: StateFlow<String> =
-        relojSemana.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), DateUtils.getSemanaKey(0, clock))
+        relojSemana.mientrasSeObserve(DateUtils.getSemanaKey(0, clock))
 
     private data class SemanaVisible(val semanaKey: String, val offset: Int)
 
@@ -161,10 +161,8 @@ class MainViewModel(
                 datos.socios, datos.bono, datos.porcentajeIrpf, datos.cobro
             )
         )
-    }.stateIn(
-        scope = viewModelScope,
-        started = SharingStarted.WhileSubscribed(5000),
-        initialValue = semanaVisibleDe(semanaElegida.value, semanaActual.value).let {
+    }.mientrasSeObserve(
+        semanaVisibleDe(semanaElegida.value, semanaActual.value).let {
             MainUiState(weekOffset = it.offset, semanaKey = it.semanaKey)
         }
     )
@@ -177,11 +175,11 @@ class MainViewModel(
     ) { socios, bonos, vigencias, cobros ->
         CalculoComisiones.calcularResumenHistoricoGlobal(socios, bonos, vigencias, cobros)
     }.flowOn(calculoDispatcher)
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
+        .mientrasSeObserve(null)
 
     /** Cambios de porcentaje de IRPF, del más antiguo al más reciente. */
     val irpfVigencias: StateFlow<List<IrpfVigencia>> = irpfRepository.getVigenciasFlow()
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+        .mientrasSeObserve(emptyList())
 
     /** Semanas con socios, con un bono manual o con lo cobrado apuntado, de la más reciente a la más antigua. */
     val semanasDisponibles: StateFlow<List<String>> = combine(
@@ -190,16 +188,16 @@ class MainViewModel(
         cobroRepository.getSemanaKeysFlow()
     ) { deSocios, deBonos, deCobros ->
         (deSocios + deBonos + deCobros).distinct().sortedDescending()
-    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+    }.mientrasSeObserve(emptyList())
 
     /** Todos los socios, del más reciente al más antiguo, para buscar en el histórico. */
     val todosLosSocios: StateFlow<List<Socio>> = socioRepository.getAllSociosFlow()
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+        .mientrasSeObserve(emptyList())
 
     /** Socios que siguen pendientes en semanas anteriores a la actual, de la más reciente a la más antigua. */
     val pendientesAnteriores: StateFlow<List<Socio>> = semanaActual
         .flatMapLatest { socioRepository.getPendientesAnterioresFlow(it) }
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+        .mientrasSeObserve(emptyList())
 
     /**
      * Los pendientes anteriores mientras haya alguno que el usuario no haya descartado; vacío si ya cerró el
@@ -208,7 +206,7 @@ class MainViewModel(
     val avisoPendientes: StateFlow<List<Socio>> =
         combine(pendientesAnteriores, preferencias.pendientesOcultos) { pendientes, ocultos ->
             pendientes.takeIf { lista -> lista.any { it.id !in ocultos } }.orEmpty()
-        }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+        }.mientrasSeObserve(emptyList())
 
     /** Cuota con la que empieza el formulario de un socio nuevo: la del último que se añadió. */
     val cuotaPorDefecto: Double
@@ -409,6 +407,10 @@ class MainViewModel(
     }
 
     // --- Utilidades ---
+
+    /** Lo comparte entre quienes lo observan y lo mantiene 5 s más sin nadie: lo que tarda la pantalla en recrearse al girarla. */
+    private fun <T> Flow<T>.mientrasSeObserve(inicial: T): StateFlow<T> =
+        stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), inicial)
 
     private fun semanaVisibleDe(elegida: String?, actual: String): SemanaVisible {
         val semanaKey = elegida ?: actual

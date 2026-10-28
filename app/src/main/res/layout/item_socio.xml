@@ -73,11 +73,8 @@
 
             <!-- Día y estado: "Jueves · Suma 40 €" o "Martes · Pendiente" -->
             <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="3dp"
-                android:gravity="center_vertical"
-                android:orientation="horizontal">
+                style="@style/Socios.Fila"
+                android:layout_marginTop="3dp">
 
                 <TextView
                     android:id="@+id/tvDiaBadge"

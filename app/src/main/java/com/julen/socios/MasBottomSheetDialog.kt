@@ -47,13 +47,12 @@ class MasBottomSheetDialog : PanelInferior<BottomSheetMasBinding>(BottomSheetMas
     }
 
     private fun configurarTemas() {
-        val iconos = mapOf(Tema.SISTEMA to R.drawable.ic_contrast, Tema.CLARO to R.drawable.ic_light_mode, Tema.OSCURO to R.drawable.ic_dark_mode)
         val actual = preferenciasTema.tema
         val lado = (16 * resources.displayMetrics.density).toInt()
         val color = ContextCompat.getColorStateList(requireContext(), R.color.text_main)
         for ((tema, opcion) in opcionesTema) {
             opcion.muestraTema.tema = tema
-            val icono = ContextCompat.getDrawable(requireContext(), iconos.getValue(tema))?.mutate()
+            val icono = ContextCompat.getDrawable(requireContext(), tema.icono)?.mutate()
             icono?.setBounds(0, 0, lado, lado)
             opcion.tvTema.setCompoundDrawablesRelative(icono, null, null, null)
             TextViewCompat.setCompoundDrawableTintList(opcion.tvTema, color)

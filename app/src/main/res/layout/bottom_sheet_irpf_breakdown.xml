@@ -18,56 +18,31 @@
 
         <!-- Handle drag bar -->
         <View
-            android:layout_width="40dp"
-            android:layout_height="4dp"
-            android:layout_gravity="center_horizontal"
-            android:layout_marginBottom="16dp"
-            android:background="@color/handle" />
+            style="@style/Socios.AsaPanel" />
 
         <!-- Encabezado -->
         <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:gravity="center_vertical"
-            android:orientation="horizontal">
+            style="@style/Socios.Fila">
 
             <FrameLayout
-                android:layout_width="52dp"
-                android:layout_height="52dp"
-                android:background="@drawable/bg_icono_verde"
-                android:elevation="3dp">
+                style="@style/Socios.PlacaPanel"
+                android:background="@drawable/bg_icono_verde">
 
                 <ImageView
-                    android:layout_width="26dp"
-                    android:layout_height="26dp"
-                    android:layout_gravity="center"
-                    android:importantForAccessibility="no"
-                    android:src="@drawable/ic_receipt"
-                    app:tint="@android:color/white" />
+                    style="@style/Socios.IconoPanel"
+                    android:src="@drawable/ic_receipt" />
             </FrameLayout>
 
             <LinearLayout
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_marginHorizontal="14dp"
-                android:layout_weight="1"
-                android:orientation="vertical">
+                style="@style/Socios.ColumnaTextos">
 
                 <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/irpf_titulo"
-                    android:textColor="@color/text_main"
-                    android:textSize="20sp"
-                    android:fontFamily="@font/geist_semibold" />
+                    style="@style/Socios.TituloPanel"
+                    android:text="@string/irpf_titulo" />
 
                 <TextView
                     android:id="@+id/tvBreakdownRangoSemana"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="2dp"
-                    android:textColor="@color/text_sub"
-                    android:textSize="13sp"
+                    style="@style/Socios.SubtituloPanel"
                     tools:text="12–16 oct 2026" />
             </LinearLayout>
 
@@ -142,7 +117,7 @@
                 android:orientation="vertical"
                 android:padding="16dp">
 
-                <LinearLayout style="@style/Socios.FilaCalculo">
+                <LinearLayout style="@style/Socios.Fila">
 
                     <View
                         style="@style/Socios.PuntoCalculo"
@@ -159,7 +134,7 @@
                 </LinearLayout>
 
                 <LinearLayout
-                    style="@style/Socios.FilaCalculo"
+                    style="@style/Socios.Fila"
                     android:layout_marginTop="12dp">
 
                     <View
@@ -178,7 +153,7 @@
                 </LinearLayout>
 
                 <LinearLayout
-                    style="@style/Socios.FilaCalculo"
+                    style="@style/Socios.Fila"
                     android:layout_marginTop="12dp">
 
                     <View
@@ -218,7 +193,7 @@
                     android:layout_marginVertical="14dp"
                     android:background="@color/divider" />
 
-                <LinearLayout style="@style/Socios.FilaCalculo">
+                <LinearLayout style="@style/Socios.Fila">
 
                     <TextView
                         style="@style/Socios.EtiquetaCalculo"
@@ -234,7 +209,7 @@
                 </LinearLayout>
 
                 <LinearLayout
-                    style="@style/Socios.FilaCalculo"
+                    style="@style/Socios.Fila"
                     android:layout_marginTop="12dp">
 
                     <View
@@ -269,7 +244,7 @@
                         android:layout_marginVertical="14dp"
                         android:background="@color/divider" />
 
-                    <LinearLayout style="@style/Socios.FilaCalculo">
+                    <LinearLayout style="@style/Socios.Fila">
 
                         <TextView
                             style="@style/Socios.EtiquetaCalculo"
@@ -285,7 +260,7 @@
                     </LinearLayout>
 
                     <LinearLayout
-                        style="@style/Socios.FilaCalculo"
+                        style="@style/Socios.Fila"
                         android:layout_marginTop="12dp">
 
                         <View
@@ -321,13 +296,10 @@
 
                 <!-- Neto final, resaltado: el cobrado si está apuntado; si no, el que toca cobrar -->
                 <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
+                    style="@style/Socios.Fila"
                     android:layout_marginTop="16dp"
                     android:background="@drawable/bg_icono_tile"
                     android:backgroundTint="@color/green_container"
-                    android:gravity="center_vertical"
-                    android:orientation="horizontal"
                     android:padding="14dp">
 
                     <TextView

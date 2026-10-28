@@ -44,6 +44,7 @@ class CalculoComisionesTest {
         assertEquals(10 to 140.0, CalculoComisiones.obtenerSiguienteMetaBonus(8))
         assertEquals(13 to 190.0, CalculoComisiones.obtenerSiguienteMetaBonus(10))
         assertEquals(16 to 240.0, CalculoComisiones.obtenerSiguienteMetaBonus(13))
+        assertEquals(listOf(7, 10, 13, 16), listOf(6, 9, 12, 14).map { CalculoComisiones.obtenerSiguienteMetaBonus(it).first })
     }
 
     @Test

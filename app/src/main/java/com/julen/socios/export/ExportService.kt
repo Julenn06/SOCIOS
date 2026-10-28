@@ -2,12 +2,12 @@ package com.julen.socios.export
 
 import android.content.Context
 import android.net.Uri
-import androidx.core.content.FileProvider
 import com.julen.socios.data.backup.BackupCsv
 import com.julen.socios.data.backup.BackupJson
 import com.julen.socios.model.DatosBackup
 import com.julen.socios.model.ResultadoLectura
 import com.julen.socios.util.ErrorParaUsuario
+import com.julen.socios.util.uriCompartida
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.File
@@ -60,7 +60,7 @@ class ExportadorArchivos(
             borrarArchivosAntiguos(directorio)
             val archivo = File(directorio, nombreArchivo(request))
             archivo.outputStream().use { escribir(request, datos, it) }
-            FileProvider.getUriForFile(appContext, "${appContext.packageName}.fileprovider", archivo)
+            appContext.uriCompartida(archivo)
         }
 
     override suspend fun leerImportacion(uri: Uri, formato: ImportFormat): ResultadoLectura =

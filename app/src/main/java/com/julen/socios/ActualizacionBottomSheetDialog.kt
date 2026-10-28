@@ -6,7 +6,7 @@ import android.content.Intent
 import android.os.Bundle
 import android.text.format.Formatter
 import android.view.View
-import androidx.core.content.FileProvider
+import androidx.annotation.StringRes
 import androidx.core.view.isVisible
 import androidx.fragment.app.FragmentActivity
 import androidx.fragment.app.activityViewModels
@@ -14,6 +14,7 @@ import com.julen.socios.ActualizacionesViewModel.Descarga
 import com.julen.socios.actualizaciones.VersionPublicada
 import com.julen.socios.databinding.BottomSheetActualizacionBinding
 import com.julen.socios.util.abrirEnlace
+import com.julen.socios.util.uriCompartida
 
 /**
  * Descarga de una versión nueva con su animación. Al terminar abre el instalador de Android, que pide
@@ -53,9 +54,7 @@ class ActualizacionBottomSheetDialog :
     override fun onResume() {
         super.onResume()
         // Puede que acabe de dar el permiso desde el instalador.
-        if (binding.tvAvisoPermiso.isVisible) {
-            binding.tvAvisoPermiso.isVisible = !requireContext().packageManager.canRequestPackageInstalls()
-        }
+        if (binding.tvAvisoPermiso.isVisible) binding.tvAvisoPermiso.isVisible = faltaPermisoInstalar()
     }
 
     override fun onCancel(dialog: DialogInterface) {
@@ -108,7 +107,7 @@ class ActualizacionBottomSheetDialog :
             getString(R.string.descarga_versiones_a11y, viewModel.versionInstalada, version)
         binding.tvDetalleDescarga.text = null
         // Si Android aún no deja instalar desde socios, avisa de que lo pedirá.
-        binding.tvAvisoPermiso.isVisible = !requireContext().packageManager.canRequestPackageInstalls()
+        binding.tvAvisoPermiso.isVisible = faltaPermisoInstalar()
         binding.btnPrincipalDescarga.isVisible = false
         binding.btnGitHubDescarga.isVisible = false
         binding.btnSecundarioDescarga.setText(R.string.action_cancel)
@@ -129,20 +128,14 @@ class ActualizacionBottomSheetDialog :
         b.tvDetalleDescarga.setText(
             if (instaladorAbierto) R.string.descarga_confirmar_instalacion else R.string.descarga_abriendo_instalador
         )
-        b.btnPrincipalDescarga.setText(R.string.action_instalar)
-        b.btnPrincipalDescarga.setOnClickListener { abrirInstalador(soloLaPrimeraVez = false) }
-        b.btnPrincipalDescarga.isVisible = true
-        b.btnSecundarioDescarga.setText(R.string.action_close)
-        b.btnSecundarioDescarga.setOnClickListener { dismiss() }
+        mostrarBotonesFinales(R.string.action_instalar) { abrirInstalador(soloLaPrimeraVez = false) }
     }
 
     private fun mostrarFallo(fallida: Descarga.Fallida) {
         binding.tvTituloDescarga.setText(R.string.descarga_titulo_fallida)
         binding.tvDetalleDescarga.text = fallida.motivo.resolver(requireContext())
         binding.tvAvisoPermiso.isVisible = false
-        binding.btnPrincipalDescarga.setText(R.string.action_reintentar)
-        binding.btnPrincipalDescarga.setOnClickListener { viewModel.descargar(fallida.publicada) }
-        binding.btnPrincipalDescarga.isVisible = true
+        mostrarBotonesFinales(R.string.action_reintentar) { viewModel.descargar(fallida.publicada) }
         binding.btnGitHubDescarga.setOnClickListener {
             if (requireContext().abrirEnlace(fallida.publicada.url)) {
                 dismiss()
@@ -151,9 +144,19 @@ class ActualizacionBottomSheetDialog :
             }
         }
         binding.btnGitHubDescarga.isVisible = true
+    }
+
+    /** Terminada la descarga, bien o mal: el botón principal hace [accion] y el secundario cierra el panel. */
+    private fun mostrarBotonesFinales(@StringRes principal: Int, accion: () -> Unit) {
+        binding.btnPrincipalDescarga.setText(principal)
+        binding.btnPrincipalDescarga.setOnClickListener { accion() }
+        binding.btnPrincipalDescarga.isVisible = true
         binding.btnSecundarioDescarga.setText(R.string.action_close)
         binding.btnSecundarioDescarga.setOnClickListener { dismiss() }
     }
+
+    /** Android aún no deja instalar desde socios: lo pedirá al abrir el instalador. */
+    private fun faltaPermisoInstalar() = !requireContext().packageManager.canRequestPackageInstalls()
 
     private fun abrirInstalador(soloLaPrimeraVez: Boolean) {
         val b = bindingSiExiste ?: return
@@ -164,10 +167,8 @@ class ActualizacionBottomSheetDialog :
             viewModel.descargar(completada.publicada)
             return
         }
-        val contexto = requireContext()
-        val uri = FileProvider.getUriForFile(contexto, "${contexto.packageName}.fileprovider", completada.apk)
         val intent = Intent(Intent.ACTION_VIEW)
-            .setDataAndType(uri, MIME_APK)
+            .setDataAndType(requireContext().uriCompartida(completada.apk), MIME_APK)
             .addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
         try {
             startActivity(intent)

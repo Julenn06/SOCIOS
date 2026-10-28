@@ -27,17 +27,10 @@
 
             <!-- Handle drag bar -->
             <View
-                android:layout_width="40dp"
-                android:layout_height="4dp"
-                android:layout_gravity="center_horizontal"
-                android:layout_marginBottom="16dp"
-                android:background="@color/handle" />
+                style="@style/Socios.AsaPanel" />
 
             <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:gravity="center_vertical"
-                android:orientation="horizontal">
+                style="@style/Socios.Fila">
 
                 <LinearLayout
                     android:layout_width="0dp"
@@ -81,10 +74,7 @@
                 <!-- El fondo (degradado y círculos de adorno) se pone desde código -->
                 <LinearLayout
                     android:id="@+id/fondoHero"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:gravity="center_vertical"
-                    android:orientation="horizontal"
+                    style="@style/Socios.Fila"
                     android:padding="20dp">
 
                     <LinearLayout
@@ -189,10 +179,7 @@
                 app:cardCornerRadius="18dp">
 
                 <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:gravity="center_vertical"
-                    android:orientation="horizontal"
+                    style="@style/Socios.Fila"
                     android:padding="5dp">
 
                     <com.google.android.material.button.MaterialButton
@@ -405,11 +392,8 @@
 
                     <LinearLayout
                         android:id="@+id/filaDetalles"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
+                        style="@style/Socios.Fila"
                         android:background="?attr/selectableItemBackground"
-                        android:gravity="center_vertical"
-                        android:orientation="horizontal"
                         android:padding="14dp">
 
                         <FrameLayout
@@ -428,11 +412,7 @@
                         </FrameLayout>
 
                         <LinearLayout
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_marginHorizontal="14dp"
-                            android:layout_weight="1"
-                            android:orientation="vertical">
+                            style="@style/Socios.ColumnaTextos">
 
                             <TextView
                                 style="@style/Socios.TituloFila"

@@ -21,7 +21,6 @@ import android.view.View
 import android.view.animation.DecelerateInterpolator
 import android.view.animation.OvershootInterpolator
 import androidx.core.content.ContextCompat
-import androidx.core.content.res.ResourcesCompat
 import androidx.core.graphics.ColorUtils
 import androidx.core.graphics.withScale
 import androidx.core.graphics.withTranslation
@@ -106,14 +105,10 @@ class AnimacionDescargaView @JvmOverloads constructor(
     }
     private val pintaRelleno = Paint(Paint.ANTI_ALIAS_FLAG)
     private val pintaHalo = Paint(Paint.ANTI_ALIAS_FLAG)
-    private val pintaNumero = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        typeface = ResourcesCompat.getFont(context, R.font.geist_semibold)
-        fontFeatureSettings = "tnum"
+    private val pintaNumero = pinturaCifra(context, centrada = false).apply {
         color = ContextCompat.getColor(context, R.color.text_main)
     }
-    private val pintaSimbolo = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        typeface = ResourcesCompat.getFont(context, R.font.geist_semibold)
-        fontFeatureSettings = "tnum"
+    private val pintaSimbolo = pinturaCifra(context, centrada = false).apply {
         color = ContextCompat.getColor(context, R.color.text_sub)
     }
     private val colorCheck = ContextCompat.getColor(context, R.color.on_primary)
@@ -147,8 +142,7 @@ class AnimacionDescargaView @JvmOverloads constructor(
             fase = Fase.DESCARGANDO
             mostrado = 0f
             completarAlLlegar = false
-            temblor?.cancel()
-            translationX = 0f
+            pararTemblor()
         }
         objetivo = fraccion
         if (inmediato) mostrado = fraccion
@@ -161,8 +155,7 @@ class AnimacionDescargaView @JvmOverloads constructor(
      */
     fun completar(animar: Boolean) {
         if (fase == Fase.COMPLETANDO || fase == Fase.COMPLETADA) return
-        temblor?.cancel()
-        translationX = 0f
+        pararTemblor()
         objetivo = 1f
         escala = leerEscala()
         if (!animar || escala == 0f) {
@@ -479,6 +472,11 @@ class AnimacionDescargaView @JvmOverloads constructor(
             pintaRelleno.color = colorError
             drawCircle(cx, cy + radio * 0.30f, grosor * 0.5f, pintaRelleno)
         }
+    }
+
+    private fun pararTemblor() {
+        temblor?.cancel()
+        translationX = 0f
     }
 
     private fun radioRelleno() = radio - grosor * 0.95f

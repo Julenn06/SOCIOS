@@ -11,7 +11,6 @@ import android.view.ViewConfiguration
 import android.view.ViewGroup
 import android.view.accessibility.AccessibilityManager
 import android.view.animation.LinearInterpolator
-import androidx.annotation.ColorRes
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import androidx.core.content.ContextCompat
@@ -38,19 +37,15 @@ import kotlin.math.sign
  */
 object Avisos {
 
-    private class Estilo(
-        @param:DrawableRes val icono: Int,
-        @param:ColorRes val fondo: Int,
-        @param:ColorRes val color: Int
-    )
+    private class Estilo(@param:DrawableRes val icono: Int, val tono: Tono)
 
     private fun estilo(tipo: TipoAviso) = when (tipo) {
-        TipoAviso.EXITO -> Estilo(R.drawable.ic_check_circle, R.color.green_container, R.color.green_text_soft)
-        TipoAviso.INFO -> Estilo(R.drawable.ic_info, R.color.blue_container, R.color.blue_text_soft)
-        TipoAviso.PENDIENTE -> Estilo(R.drawable.ic_schedule, R.color.orange_container, R.color.orange_pending)
-        TipoAviso.BORRADO -> Estilo(R.drawable.ic_delete, R.color.red_container, R.color.red_text)
-        TipoAviso.ERROR -> Estilo(R.drawable.ic_error, R.color.red_container, R.color.red_text)
-        TipoAviso.NOVEDAD -> Estilo(R.drawable.ic_system_update, R.color.blue_container, R.color.blue_text_soft)
+        TipoAviso.EXITO -> Estilo(R.drawable.ic_check_circle, Tono.VERDE)
+        TipoAviso.INFO -> Estilo(R.drawable.ic_info, Tono.AZUL)
+        TipoAviso.PENDIENTE -> Estilo(R.drawable.ic_schedule, Tono.PENDIENTE)
+        TipoAviso.BORRADO -> Estilo(R.drawable.ic_delete, Tono.ROJO)
+        TipoAviso.ERROR -> Estilo(R.drawable.ic_error, Tono.ROJO)
+        TipoAviso.NOVEDAD -> Estilo(R.drawable.ic_system_update, Tono.AZUL)
     }
 
     /** El aviso que se está viendo, para sustituirlo en el sitio. Débil: no debe retener la pantalla. */
@@ -180,10 +175,10 @@ object Avisos {
     private fun pintar(aviso: ItemAvisoBinding, titulo: CharSequence, detalle: CharSequence?, tipo: TipoAviso) {
         val contexto = aviso.root.context
         val estilo = estilo(tipo)
-        val color = ContextCompat.getColor(contexto, estilo.color)
+        val color = ContextCompat.getColor(contexto, estilo.tono.color)
         aviso.franjaAviso.setBackgroundColor(color)
         aviso.barraTiempoAviso.setBackgroundColor(color)
-        pintarPlaca(aviso.placaAviso, aviso.ivAviso, estilo.icono, estilo.fondo, estilo.color)
+        pintarPlaca(aviso.placaAviso, aviso.ivAviso, estilo.icono, estilo.tono)
         aviso.tvAviso.text = titulo
         // Los motivos de los errores pueden venir en minúscula (pensados para ir detrás de otra frase).
         val detalleVisible = detalle?.toString()?.replaceFirstChar { it.uppercaseChar() }

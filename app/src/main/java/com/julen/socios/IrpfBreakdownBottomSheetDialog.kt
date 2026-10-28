@@ -32,13 +32,13 @@ class IrpfBreakdownBottomSheetDialog :
 
         binding.btnCerrarBreakdown.setOnClickListener { dismiss() }
         binding.btnCambiarIrpf.configurar(
-            R.drawable.ic_edit, R.color.blue_container, R.color.blue_text_soft, R.string.irpf_cambiar, R.string.irpf_cambiar_detalle
+            R.drawable.ic_edit, Tono.AZUL, R.string.irpf_cambiar, R.string.irpf_cambiar_detalle
         ) { mostrarDialogoIrpf() }
         binding.btnCobroBreakdown.configurar(
-            R.drawable.ic_cobro, R.color.green_container, R.color.green_text_soft, R.string.cobro_accion, R.string.cobro_accion_detalle
+            R.drawable.ic_cobro, Tono.VERDE, R.string.cobro_accion, R.string.cobro_accion_detalle
         ) { mostrarCobro() }
         binding.btnVerCambiosIrpf.configurar(
-            R.drawable.ic_history, R.color.orange_container, R.color.orange_text, R.string.irpf_ver_cambios, R.string.irpf_ver_cambios_detalle
+            R.drawable.ic_history, Tono.NARANJA, R.string.irpf_ver_cambios, R.string.irpf_ver_cambios_detalle
         ) { mostrarCambiosIrpf() }
 
         mientrasSeVea {
