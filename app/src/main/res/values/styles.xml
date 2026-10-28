@@ -242,4 +242,89 @@
         <item name="android:textColor">@color/text_sub</item>
         <item name="android:textSize">13sp</item>
     </style>
+
+    <!-- Pastilla con un dato corto sobre la cabecera verde ("28 semanas"). -->
+    <style name="Socios.PastillaCabecera" parent="">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:background">@drawable/bg_pastilla</item>
+        <item name="android:paddingHorizontal">10dp</item>
+        <item name="android:paddingVertical">3dp</item>
+        <item name="android:textColor">@android:color/white</item>
+        <item name="android:textSize">12sp</item>
+        <item name="android:fontFamily">@font/geist_semibold</item>
+    </style>
+
+    <!-- Caja translúcida con una cifra en la cabecera verde: tres en fila, del mismo ancho. -->
+    <style name="Socios.CajaCabecera" parent="">
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_weight">1</item>
+        <item name="android:background">@drawable/bg_caja_translucida</item>
+        <item name="android:orientation">vertical</item>
+        <item name="android:padding">12dp</item>
+    </style>
+
+    <style name="Socios.EtiquetaCajaCabecera" parent="">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:ellipsize">end</item>
+        <item name="android:maxLines">1</item>
+        <item name="android:textSize">11.5sp</item>
+    </style>
+
+    <!-- La cifra encoge lo justo para caber entera: "+10.044,14 €" no debe cortarse. -->
+    <style name="Socios.ImporteCajaCabecera" parent="">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginTop">2dp</item>
+        <item name="android:autoSizeMaxTextSize">16sp</item>
+        <item name="android:autoSizeMinTextSize">10sp</item>
+        <item name="android:autoSizeTextType">uniform</item>
+        <item name="android:fontFeatureSettings">tnum</item>
+        <item name="android:maxLines">1</item>
+        <item name="android:textColor">@android:color/white</item>
+        <item name="android:textSize">16sp</item>
+        <item name="android:fontFamily">@font/geist_semibold</item>
+    </style>
+
+    <!--
+        Barra que muestra una parte de un total (0 a 1000), de una pieza: la de Material 3 deja un hueco y un
+        punto al final. El grosor (alto) y los colores (progressTint y progressBackgroundTint) van en cada una.
+    -->
+    <style name="Socios.BarraProporcion" parent="@android:style/Widget.ProgressBar.Horizontal">
+        <item name="android:importantForAccessibility">no</item>
+        <item name="android:indeterminate">false</item>
+        <item name="android:max">1000</item>
+        <item name="android:progressDrawable">@drawable/barra_proporcion</item>
+    </style>
+
+    <!-- Caja de color con una diferencia (frente a la semana anterior o a la media); el color lo pone el código. -->
+    <style name="Socios.CajaComparativa" parent="">
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_height">match_parent</item>
+        <item name="android:layout_weight">1</item>
+        <item name="android:background">@drawable/bg_icono_tile</item>
+        <item name="android:backgroundTint">@color/surface_card</item>
+        <item name="android:orientation">vertical</item>
+        <item name="android:padding">12dp</item>
+    </style>
+
+    <style name="Socios.EtiquetaComparativa" parent="">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:textColor">@color/text_sub</item>
+        <item name="android:textSize">12sp</item>
+    </style>
+
+    <style name="Socios.ImporteComparativa" parent="">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginTop">4dp</item>
+        <item name="android:fontFeatureSettings">tnum</item>
+        <item name="android:maxLines">1</item>
+        <item name="android:textColor">@color/text_main</item>
+        <item name="android:textSize">17sp</item>
+        <item name="android:fontFamily">@font/geist_semibold</item>
+    </style>
 </resources>

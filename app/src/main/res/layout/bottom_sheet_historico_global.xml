@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Histórico: lo acumulado en todas las semanas y el desglose por semanas, meses o años. -->
+<!-- Histórico: lo cobrado en todas las semanas, cómo va esta semana y el desglose por semanas, meses o años. -->
 <androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
@@ -51,7 +51,7 @@
                 style="@style/Socios.BotonCerrar" />
         </LinearLayout>
 
-        <!-- Totales: el IRPF retenido destacado, y el neto y el bonus -->
+        <!-- Totales: lo cobrado, destacado; cuánto del bruto se queda, y la base, el bonus y el IRPF -->
         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -70,33 +70,87 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                                        android:text="@string/historico_irpf_label"
-                    android:textColor="@color/header_label_irpf"
+                    android:text="@string/historico_cobrado_label"
+                    android:textColor="@color/header_label_neto"
                     android:textSize="13sp"
                     android:fontFamily="@font/geist_medium" />
 
                 <TextView
-                    android:id="@+id/tvGlobalIrpfTotal"
-                    android:layout_width="wrap_content"
+                    android:id="@+id/tvGlobalNetoTotal"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="2dp"
+                    android:autoSizeMaxTextSize="44sp"
+                    android:autoSizeMinTextSize="24sp"
+                    android:autoSizeTextType="uniform"
+                    android:fontFeatureSettings="tnum"
+                    android:letterSpacing="-0.02"
+                    android:maxLines="1"
                     android:textColor="@android:color/white"
-                    android:textSize="40sp"
+                    android:textSize="44sp"
                     android:fontFamily="@font/geist_semibold"
-                    tools:text="-204,69 €" />
+                    tools:text="8.060,93 €" />
 
-                <TextView
-                    android:id="@+id/tvGlobalSemanasCount"
+                <com.google.android.material.chip.ChipGroup
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="6dp"
-                    android:background="@drawable/bg_pastilla"
-                    android:paddingHorizontal="10dp"
-                    android:paddingVertical="3dp"
-                    android:textColor="@android:color/white"
-                    android:textSize="12sp"
-                    android:fontFamily="@font/geist_semibold"
-                    tools:text="En 3 semanas registradas" />
+                    app:chipSpacingHorizontal="6dp"
+                    app:chipSpacingVertical="6dp">
+
+                    <TextView
+                        android:id="@+id/tvGlobalSemanasCount"
+                        style="@style/Socios.PastillaCabecera"
+                        tools:text="28 semanas" />
+
+                    <TextView
+                        android:id="@+id/tvGlobalMediaSemana"
+                        style="@style/Socios.PastillaCabecera"
+                        tools:text="Media 287,89 € / semana" />
+                </com.google.android.material.chip.ChipGroup>
+
+                <!-- De todo lo ganado en bruto, qué parte llega a cobrarse -->
+                <LinearLayout
+                    android:id="@+id/contenedorParteBruto"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="18dp"
+                    android:orientation="vertical">
+
+                    <LinearLayout
+                        style="@style/Socios.Fila">
+
+                        <TextView
+                            android:id="@+id/tvGlobalParteBruto"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:textColor="@android:color/white"
+                            android:textSize="12.5sp"
+                            android:fontFamily="@font/geist_medium"
+                            tools:text="Te queda el 80 % del bruto" />
+
+                        <TextView
+                            android:id="@+id/tvGlobalBrutoTotal"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="8dp"
+                            android:fontFeatureSettings="tnum"
+                            android:textColor="@color/header_label_base"
+                            android:textSize="12.5sp"
+                            tools:text="Bruto 10.044,14 €" />
+                    </LinearLayout>
+
+                    <ProgressBar
+                        android:id="@+id/progresoParteBruto"
+                        style="@style/Socios.BarraProporcion"
+                        android:layout_width="match_parent"
+                        android:layout_height="8dp"
+                        android:layout_marginTop="8dp"
+                        android:progressBackgroundTint="@color/header_divider"
+                        android:progressTint="@android:color/white"
+                        tools:progress="800" />
+                </LinearLayout>
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -106,87 +160,49 @@
                     android:orientation="horizontal">
 
                     <LinearLayout
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_marginEnd="8dp"
-                        android:layout_weight="1"
-                        android:background="@drawable/bg_caja_translucida"
-                        android:orientation="vertical"
-                        android:padding="12dp">
+                        style="@style/Socios.CajaCabecera"
+                        android:layout_marginEnd="8dp">
 
                         <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="@string/historico_neto_label"
-                            android:textColor="@color/header_label_base"
-                            android:textSize="11.5sp" />
+                            style="@style/Socios.EtiquetaCajaCabecera"
+                            android:text="@string/label_base_x2"
+                            android:textColor="@color/header_label_base" />
 
                         <TextView
-                            android:id="@+id/tvGlobalNetoTotal"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="2dp"
-                            android:maxLines="1"
-                            android:textColor="@android:color/white"
-                            android:textSize="15sp"
-                            android:fontFamily="@font/geist_semibold"
-                            tools:text="+748,31 €" />
+                            android:id="@+id/tvGlobalBaseTotal"
+                            style="@style/Socios.ImporteCajaCabecera"
+                            tools:text="+7.534 €" />
                     </LinearLayout>
 
                     <LinearLayout
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:background="@drawable/bg_caja_translucida"
-                        android:orientation="vertical"
-                        android:padding="12dp">
+                        style="@style/Socios.CajaCabecera">
 
                         <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
+                            style="@style/Socios.EtiquetaCajaCabecera"
                             android:text="@string/historico_bonus_label"
-                            android:textColor="@color/header_label_bonus"
-                            android:textSize="11.5sp" />
+                            android:textColor="@color/header_label_bonus" />
 
                         <TextView
                             android:id="@+id/tvGlobalBonusTotal"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="2dp"
-                            android:maxLines="1"
+                            style="@style/Socios.ImporteCajaCabecera"
                             android:textColor="@color/header_bonus"
-                            android:textSize="15sp"
-                            android:fontFamily="@font/geist_semibold"
-                            tools:text="+280,00 €" />
+                            tools:text="+2.510 €" />
                     </LinearLayout>
 
                     <LinearLayout
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="8dp"
-                        android:layout_weight="1"
-                        android:background="@drawable/bg_caja_translucida"
-                        android:orientation="vertical"
-                        android:padding="12dp">
+                        style="@style/Socios.CajaCabecera"
+                        android:layout_marginStart="8dp">
 
                         <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:maxLines="1"
-                            android:text="@string/historico_descontado_label"
-                            android:textColor="@color/header_label_cobro"
-                            android:textSize="11.5sp" />
+                            style="@style/Socios.EtiquetaCajaCabecera"
+                            android:text="@string/historico_irpf_label"
+                            android:textColor="@color/header_label_irpf" />
 
                         <TextView
-                            android:id="@+id/tvGlobalDescontadoTotal"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="2dp"
-                            android:maxLines="1"
-                            android:textColor="@color/header_cobro"
-                            android:textSize="15sp"
-                            android:fontFamily="@font/geist_semibold"
-                            tools:text="-64,00 €" />
+                            android:id="@+id/tvGlobalIrpfTotal"
+                            style="@style/Socios.ImporteCajaCabecera"
+                            android:textColor="@color/header_irpf"
+                            tools:text="-1.983,21 €" />
                     </LinearLayout>
                 </LinearLayout>
             </LinearLayout>
@@ -211,82 +227,120 @@
                 android:paddingTop="16dp"
                 android:paddingBottom="8dp">
 
-                <TextView
-                    android:id="@+id/tvComparativaNeto"
-                    style="@style/Socios.TituloFila"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    tools:text="Neto de esta semana: 298,38 €" />
-
                 <LinearLayout
-                    style="@style/Socios.Fila"
-                    android:layout_marginTop="12dp">
+                    style="@style/Socios.Fila">
 
-                    <TextView
-                        style="@style/Socios.EtiquetaCalculo"
-                        android:layout_marginStart="0dp"
-                        android:text="@string/comparativa_vs_anterior"
-                        android:textColor="@color/text_sub" />
+                    <FrameLayout
+                        android:layout_width="44dp"
+                        android:layout_height="44dp"
+                        android:background="@drawable/bg_icono_tile"
+                        android:backgroundTint="@color/green_container">
 
-                    <TextView
-                        android:id="@+id/tvComparativaAnterior"
-                        style="@style/Socios.ImporteCalculo"
-                        tools:text="↓ 125,63 €" />
+                        <ImageView
+                            android:layout_width="22dp"
+                            android:layout_height="22dp"
+                            android:layout_gravity="center"
+                            android:importantForAccessibility="no"
+                            android:src="@drawable/ic_today"
+                            app:tint="@color/green_text" />
+                    </FrameLayout>
+
+                    <LinearLayout
+                        style="@style/Socios.ColumnaTextos">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/comparativa_neto_label"
+                            android:textColor="@color/text_sub"
+                            android:textSize="13sp" />
+
+                        <TextView
+                            android:id="@+id/tvComparativaNeto"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:fontFeatureSettings="tnum"
+                            android:textColor="@color/text_main"
+                            android:textSize="26sp"
+                            android:fontFamily="@font/geist_semibold"
+                            tools:text="59,94 €" />
+                    </LinearLayout>
                 </LinearLayout>
 
                 <LinearLayout
-                    style="@style/Socios.Fila"
-                    android:layout_marginTop="10dp">
-
-                    <TextView
-                        android:id="@+id/tvComparativaMediaLabel"
-                        style="@style/Socios.EtiquetaCalculo"
-                        android:layout_marginStart="0dp"
-                        android:textColor="@color/text_sub"
-                        tools:text="Frente a tu media (5 semanas)" />
-
-                    <TextView
-                        android:id="@+id/tvComparativaMedia"
-                        style="@style/Socios.ImporteCalculo"
-                        tools:text="↑ 11,78 €" />
-                </LinearLayout>
-
-                <View
                     android:layout_width="match_parent"
-                    android:layout_height="1dp"
-                    android:layout_marginTop="12dp"
-                    android:background="@color/divider" />
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="14dp"
+                    android:baselineAligned="false"
+                    android:orientation="horizontal">
+
+                    <LinearLayout
+                        android:id="@+id/cajaComparativaAnterior"
+                        style="@style/Socios.CajaComparativa"
+                        android:layout_marginEnd="10dp">
+
+                        <TextView
+                            style="@style/Socios.EtiquetaComparativa"
+                            android:text="@string/comparativa_vs_anterior" />
+
+                        <TextView
+                            android:id="@+id/tvComparativaAnterior"
+                            style="@style/Socios.ImporteComparativa"
+                            tools:text="↓ 17,82 €" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:id="@+id/cajaComparativaMedia"
+                        style="@style/Socios.CajaComparativa">
+
+                        <TextView
+                            android:id="@+id/tvComparativaMediaLabel"
+                            style="@style/Socios.EtiquetaComparativa"
+                            tools:text="Frente a tu media (27 semanas)" />
+
+                        <TextView
+                            android:id="@+id/tvComparativaMedia"
+                            style="@style/Socios.ImporteComparativa"
+                            tools:text="↓ 236,39 €" />
+                    </LinearLayout>
+                </LinearLayout>
 
                 <!-- La mejor semana: al tocarla se abre -->
                 <LinearLayout
                     android:id="@+id/filaMejorSemana"
                     style="@style/Socios.Fila"
                     android:layout_marginHorizontal="-8dp"
+                    android:layout_marginTop="8dp"
                     android:background="?attr/selectableItemBackground"
-                    android:minHeight="48dp"
+                    android:minHeight="56dp"
                     android:paddingHorizontal="8dp"
-                    android:paddingVertical="6dp">
+                    android:paddingVertical="8dp">
 
-                    <ImageView
-                        android:layout_width="18dp"
-                        android:layout_height="18dp"
-                        android:importantForAccessibility="no"
-                        android:src="@drawable/ic_trophy"
-                        app:tint="@color/amber_text" />
+                    <FrameLayout
+                        android:layout_width="40dp"
+                        android:layout_height="40dp"
+                        android:background="@drawable/bg_icono_tile"
+                        android:backgroundTint="@color/amber_container">
+
+                        <ImageView
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
+                            android:layout_gravity="center"
+                            android:importantForAccessibility="no"
+                            android:src="@drawable/ic_trophy"
+                            app:tint="@color/amber_text" />
+                    </FrameLayout>
 
                     <LinearLayout
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="10dp"
-                        android:layout_weight="1"
-                        android:orientation="vertical">
+                        style="@style/Socios.ColumnaTextos">
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="@string/comparativa_mejor"
                             android:textColor="@color/text_main"
-                            android:textSize="14sp" />
+                            android:textSize="14sp"
+                            android:fontFamily="@font/geist_medium" />
 
                         <TextView
                             android:id="@+id/tvMejorSemanaRango"
@@ -294,13 +348,15 @@
                             android:layout_height="wrap_content"
                             android:textColor="@color/text_sub"
                             android:textSize="12.5sp"
-                            tools:text="5–9 oct 2026" />
+                            tools:text="20–24 abr 2026" />
                     </LinearLayout>
 
                     <TextView
                         android:id="@+id/tvMejorSemanaNeto"
                         style="@style/Socios.ImporteCalculo"
-                        tools:text="424,01 €" />
+                        android:textColor="@color/amber_text"
+                        android:textSize="16sp"
+                        tools:text="565,34 €" />
 
                     <ImageView
                         android:id="@+id/ivMejorSemanaFlecha"

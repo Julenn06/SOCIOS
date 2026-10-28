@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Una fila del histórico: placa con la semana, el mes o el año; resumen; neto e IRPF. -->
+<!--
+    Una fila del histórico: placa con la semana, el mes o el año; resumen; neto e IRPF, y una barra con lo que
+    supone su neto frente al mejor de la lista.
+-->
 <com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
@@ -14,6 +17,7 @@
         android:padding="14dp">
 
         <FrameLayout
+            android:id="@+id/placaSemanaItem"
             android:layout_width="48dp"
             android:layout_height="48dp"
             android:background="@drawable/bg_icono_tile"
@@ -35,44 +39,65 @@
         <LinearLayout
             style="@style/Socios.ColumnaTextos">
 
-            <TextView
-                android:id="@+id/tvSemanaItemTitulo"
-                style="@style/Socios.TituloFila"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                tools:text="12–16 oct 2026" />
+            <LinearLayout
+                style="@style/Socios.Fila"
+                android:baselineAligned="true">
+
+                <TextView
+                    android:id="@+id/tvSemanaItemTitulo"
+                    style="@style/Socios.TituloFila"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:ellipsize="end"
+                    android:maxLines="1"
+                    tools:text="12–16 oct 2026" />
+
+                <TextView
+                    android:id="@+id/tvSemanaItemNeto"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:fontFeatureSettings="tnum"
+                    android:maxLines="1"
+                    android:textColor="@color/green_text_soft"
+                    android:textSize="16sp"
+                    android:fontFamily="@font/geist_semibold"
+                    tools:text="+324,50 €" />
+            </LinearLayout>
 
             <TextView
                 android:id="@+id/tvSemanaItemSociosCount"
                 style="@style/Socios.DescripcionFila"
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                tools:text="8 socios hechos (+100 € bonus)" />
-        </LinearLayout>
+                tools:text="8 socios hechos · +100 € bonus" />
 
-        <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:gravity="end"
-            android:orientation="vertical">
+            <LinearLayout
+                style="@style/Socios.Fila"
+                android:layout_marginTop="8dp">
 
-            <TextView
-                android:id="@+id/tvSemanaItemNeto"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textColor="@color/green_text_soft"
-                android:textSize="16sp"
-                android:fontFamily="@font/geist_semibold"
-                tools:text="+324,50 €" />
+                <ProgressBar
+                    android:id="@+id/barraSemanaItem"
+                    style="@style/Socios.BarraProporcion"
+                    android:layout_width="0dp"
+                    android:layout_height="4dp"
+                    android:layout_weight="1"
+                    android:progressBackgroundTint="@color/divider"
+                    android:progressTint="@color/grafico_barra"
+                    tools:progress="600" />
 
-            <TextView
-                android:id="@+id/tvSemanaItemIrpf"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="2dp"
-                android:textColor="@color/red_text"
-                android:textSize="11.5sp"
-                tools:text="IRPF -88,70 €" />
+                <TextView
+                    android:id="@+id/tvSemanaItemIrpf"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="10dp"
+                    android:fontFeatureSettings="tnum"
+                    android:maxLines="1"
+                    android:textColor="@color/red_text"
+                    android:textSize="11.5sp"
+                    tools:text="IRPF -88,70 €" />
+            </LinearLayout>
         </LinearLayout>
 
         <!-- Solo en las semanas, que se pueden abrir -->

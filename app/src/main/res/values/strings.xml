@@ -291,10 +291,12 @@
     <!-- Histórico -->
     <string name="historico_titulo">Histórico</string>
     <string name="historico_subtitulo">Lo acumulado en todas tus semanas</string>
-    <string name="historico_irpf_label">IRPF retenido en total</string>
-    <string name="historico_neto_label">Neto cobrado</string>
+    <string name="historico_cobrado_label">Cobrado en total</string>
+    <string name="historico_media_semana">Media %s / semana</string>
+    <string name="historico_parte_bruto">Te queda el %s del bruto</string>
+    <string name="historico_bruto_total">Bruto %s</string>
+    <string name="historico_irpf_label">IRPF retenido</string>
     <string name="historico_bonus_label">Bonus</string>
-    <string name="historico_descontado_label">Descontado</string>
     <string name="historico_detalle_descontado">%1$s · %2$s desc.</string>
     <string name="historico_seccion_comparativa">Esta semana</string>
     <string name="comparativa_vs_anterior">Frente a la anterior</string>
@@ -308,7 +310,7 @@
     <string name="comparativa_sin_datos">Sin datos</string>
     <string name="comparativa_sube">↑ %s</string>
     <string name="comparativa_baja">↓ %s</string>
-    <string name="comparativa_neto_semana">Neto de esta semana: %s</string>
+    <string name="comparativa_neto_label">Neto de esta semana</string>
     <string name="historico_seccion_evolucion">Evolución del neto</string>
     <string name="grafico_ayuda">Toca una barra para ver su importe</string>
     <string name="grafico_a11y">Neto de los últimos %1$d periodos, de %2$s a %3$s. El más alto: %4$s en %5$s.</string>
@@ -327,19 +329,19 @@
         <item quantity="other">Bruto %2$s · %1$d socios hechos</item>
     </plurals>
     <plurals name="global_history_count">
-        <item quantity="one">En %d semana registrada</item>
-        <item quantity="many">En %d semanas registradas</item>
-        <item quantity="other">En %d semanas registradas</item>
+        <item quantity="one">%d semana</item>
+        <item quantity="many">%d semanas</item>
+        <item quantity="other">%d semanas</item>
     </plurals>
     <plurals name="historico_semana_resumen">
-        <item quantity="one">%1$d socio hecho (%2$s bonus)</item>
-        <item quantity="many">%1$d socios hechos (%2$s bonus)</item>
-        <item quantity="other">%1$d socios hechos (%2$s bonus)</item>
+        <item quantity="one">%1$d socio hecho · %2$s bonus</item>
+        <item quantity="many">%1$d socios hechos · %2$s bonus</item>
+        <item quantity="other">%1$d socios hechos · %2$s bonus</item>
     </plurals>
     <plurals name="historico_semana_resumen_manual">
-        <item quantity="one">%1$d socio hecho (%2$s bonus 🎁)</item>
-        <item quantity="many">%1$d socios hechos (%2$s bonus 🎁)</item>
-        <item quantity="other">%1$d socios hechos (%2$s bonus 🎁)</item>
+        <item quantity="one">%1$d socio hecho · %2$s bonus 🎁</item>
+        <item quantity="many">%1$d socios hechos · %2$s bonus 🎁</item>
+        <item quantity="other">%1$d socios hechos · %2$s bonus 🎁</item>
     </plurals>
 
     <!-- Exportar / Importar -->

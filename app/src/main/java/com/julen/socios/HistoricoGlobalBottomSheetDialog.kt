@@ -14,12 +14,15 @@ import com.julen.socios.util.CalculoComisiones.Periodo
 import com.julen.socios.util.DateUtils
 import com.julen.socios.util.HapticUtils
 import com.julen.socios.util.LOCALE_ES
+import com.julen.socios.util.NumberAnimators
 import com.julen.socios.util.descontadoConSigno
 import com.julen.socios.util.rangoSemanaConAnio
 import com.julen.socios.util.toCurrencyString
 import com.julen.socios.util.toEurosCompacto
+import com.julen.socios.util.toPorcentajeString
 import java.time.Month
 import java.time.format.TextStyle
+import kotlin.math.roundToInt
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.filterNotNull
 
@@ -79,26 +82,39 @@ class HistoricoGlobalBottomSheetDialog :
         mostrarFilas()
     }
 
-    private fun renderTotales(resumenGlobal: CalculoComisiones.ResumenHistoricoGlobal) {
-        val countSemanas = resumenGlobal.semanasHistoricas.size
-        binding.tvGlobalSemanasCount.text =
-            resources.getQuantityString(R.plurals.global_history_count, countSemanas, countSemanas)
+    /** Lo cobrado en grande (cuenta hasta su valor), su media, qué parte del bruto se queda y de dónde sale. */
+    private fun renderTotales(r: CalculoComisiones.ResumenHistoricoGlobal) {
+        val semanas = r.semanasHistoricas.size
+        binding.tvGlobalSemanasCount.text = resources.getQuantityString(R.plurals.global_history_count, semanas, semanas)
+        NumberAnimators.animateCurrency(binding.tvGlobalNetoTotal, r.totalNetoAcumulado)
+        binding.tvGlobalMediaSemana.isVisible = semanas > 0
+        if (semanas > 0) {
+            val media = CalculoComisiones.redondearCentimos(r.totalNetoAcumulado / semanas)
+            binding.tvGlobalMediaSemana.text = getString(R.string.historico_media_semana, media.toCurrencyString())
+        }
 
-        binding.tvGlobalIrpfTotal.text =
-            resumenGlobal.totalIrpfRetenidoAcumulado.toCurrencyString(prefix = "-")
-        binding.tvGlobalNetoTotal.text =
-            resumenGlobal.totalNetoAcumulado.toCurrencyString(prefix = "+")
-        binding.tvGlobalBonusTotal.text =
-            resumenGlobal.totalBonusAcumulado.toCurrencyString(prefix = "+")
-        binding.tvGlobalDescontadoTotal.text = resumenGlobal.totalDescontadoAcumulado.descontadoConSigno()
+        val parte = r.totalNetoAcumulado.takeIf { r.totalBrutoAcumulado > 0.0 }
+            ?.let { (it / r.totalBrutoAcumulado).coerceIn(0.0, 1.0) }
+        binding.contenedorParteBruto.isVisible = parte != null
+        if (parte != null) {
+            binding.tvGlobalParteBruto.text =
+                getString(R.string.historico_parte_bruto, (parte * 100).roundToInt().toDouble().toPorcentajeString())
+            binding.tvGlobalBrutoTotal.text =
+                getString(R.string.historico_bruto_total, r.totalBrutoAcumulado.toEurosCompacto())
+            binding.progresoParteBruto.setProgress((parte * binding.progresoParteBruto.max).roundToInt(), true)
+        }
+
+        binding.tvGlobalBaseTotal.text = r.totalBaseX2Acumulado.toEurosCompacto(prefix = "+")
+        binding.tvGlobalBonusTotal.text = r.totalBonusAcumulado.toEurosCompacto(prefix = "+")
+        binding.tvGlobalIrpfTotal.text = r.totalIrpfRetenidoAcumulado.toEurosCompacto(prefix = "-")
     }
 
     private fun renderComparativa(c: CalculoComisiones.Comparativa) {
-        binding.tvComparativaNeto.text = getString(R.string.comparativa_neto_semana, c.neto.toCurrencyString())
-        mostrarDiferencia(binding.tvComparativaAnterior, c.diferenciaSemanaAnterior)
+        binding.tvComparativaNeto.text = c.neto.toCurrencyString()
+        mostrarDiferencia(binding.cajaComparativaAnterior, binding.tvComparativaAnterior, c.diferenciaSemanaAnterior)
         binding.tvComparativaMediaLabel.text =
             resources.getQuantityString(R.plurals.comparativa_vs_media, c.semanasEnMedia, c.semanasEnMedia)
-        mostrarDiferencia(binding.tvComparativaMedia, c.diferenciaMedia)
+        mostrarDiferencia(binding.cajaComparativaMedia, binding.tvComparativaMedia, c.diferenciaMedia)
 
         val mejor = c.mejorSemana
         binding.tvMejorSemanaRango.text = when {
@@ -120,25 +136,24 @@ class HistoricoGlobalBottomSheetDialog :
         )
     }
 
-    /** "↑ 32,10 €" en verde si se gana más, "↓ 12,00 €" en rojo si menos; "Sin datos" si no hay con qué comparar. */
-    private fun mostrarDiferencia(vista: TextView, diferencia: Double?) {
-        val contexto = requireContext()
-        when {
-            diferencia == null -> {
-                vista.text = getString(R.string.comparativa_sin_datos)
-                vista.setTextColor(ContextCompat.getColor(contexto, R.color.text_sub))
-            }
-
-            diferencia >= 0.0 -> {
-                vista.text = getString(R.string.comparativa_sube, diferencia.toCurrencyString())
-                vista.setTextColor(ContextCompat.getColor(contexto, R.color.green_text_soft))
-            }
-
-            else -> {
-                vista.text = getString(R.string.comparativa_baja, (-diferencia).toCurrencyString())
-                vista.setTextColor(ContextCompat.getColor(contexto, R.color.red_text))
-            }
+    /**
+     * "↑ 32,10 €" sobre verde si se gana más, "↓ 12,00 €" sobre rojo si menos; "Sin datos" sobre neutro si no hay
+     * con qué comparar.
+     */
+    private fun mostrarDiferencia(caja: View, vista: TextView, diferencia: Double?) {
+        val (texto, colorTexto, colorFondo) = when {
+            diferencia == null -> Triple(getString(R.string.comparativa_sin_datos), R.color.text_sub, R.color.surface_card)
+            diferencia >= 0.0 -> Triple(
+                getString(R.string.comparativa_sube, diferencia.toCurrencyString()), R.color.green_text_soft, R.color.green_container
+            )
+            else -> Triple(
+                getString(R.string.comparativa_baja, (-diferencia).toCurrencyString()), R.color.red_text, R.color.red_container
+            )
         }
+        val contexto = requireContext()
+        vista.text = texto
+        vista.setTextColor(ContextCompat.getColor(contexto, colorTexto))
+        caja.backgroundTintList = ContextCompat.getColorStateList(contexto, colorFondo)
     }
 
     private fun mostrarFilas() {
@@ -152,7 +167,16 @@ class HistoricoGlobalBottomSheetDialog :
         }
         binding.tvNotaAgrupacion.isVisible = periodo != null
         val periodos = periodo?.let { CalculoComisiones.agruparPorPeriodo(semanas, it) }
-        adapter.submitList(periodos?.map(::filaPeriodo) ?: semanas.map(::filaSemana))
+        val filas = if (periodo != null && periodos != null) {
+            // El mes o el año de la semana actual, el mismo que el gráfico destaca.
+            val actual = CalculoComisiones.ultimosPeriodos(periodos, periodo, semanaActual, cantidad = 1).firstOrNull()?.clave
+            periodos.map { filaPeriodo(it, destacada = it.clave == actual) }
+        } else {
+            semanas.map(::filaSemana)
+        }
+        // Cada fila con su barra: lo que supone su neto frente al mejor de la lista.
+        val mejor = filas.maxOfOrNull { it.neto }?.takeIf { it > 0.0 }
+        adapter.submitList(filas.map { fila -> fila.copy(proporcion = mejor?.let { (fila.neto / it).coerceIn(0.0, 1.0) } ?: 0.0) })
         mostrarGrafico(semanas, periodo, periodos.orEmpty())
     }
 
@@ -231,11 +255,12 @@ class HistoricoGlobalBottomSheetDialog :
             ),
             neto = r.totalNeto,
             irpf = r.retencionIrpf,
-            semanaKey = item.semanaKey
+            semanaKey = item.semanaKey,
+            destacada = item.semanaKey == semanaActual
         )
     }
 
-    private fun filaPeriodo(p: CalculoComisiones.ResumenPeriodo): FilaHistorico {
+    private fun filaPeriodo(p: CalculoComisiones.ResumenPeriodo, destacada: Boolean): FilaHistorico {
         val titulo = p.mes?.let { mes -> nombreMes(Month.of(mes), p.anio.toString()) } ?: p.anio.toString()
         val etiqueta = p.mes?.let { mes -> mesCorto(Month.of(mes)).uppercase(LOCALE_ES) }
             ?: getString(R.string.historico_etiqueta_anio)
@@ -250,7 +275,8 @@ class HistoricoGlobalBottomSheetDialog :
                 p.descontado
             ),
             neto = p.neto,
-            irpf = p.irpf
+            irpf = p.irpf,
+            destacada = destacada
         )
     }
 

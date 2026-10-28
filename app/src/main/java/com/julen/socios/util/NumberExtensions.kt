@@ -8,12 +8,17 @@ import kotlin.math.abs
 val LOCALE_ES: Locale = Locale.forLanguageTag("es-ES")
 
 /**
- * Formats a Double as a currency string (e.g., "12,50 €", "+12,50 €", "-12,50 €").
+ * Espacio que no se parte entre una cifra y su símbolo: así "50 €" o "21 %" nunca dejan el símbolo solo en
+ * la línea siguiente.
+ */
+const val ESPACIO_CIFRA = ' '
+
+/**
+ * Formats a Double as a currency string with thousands separators (e.g., "12,50 €", "+1.250,00 €", "-12,50 €").
  */
 fun Double.toCurrencyString(decimals: Int = 2, prefix: String = ""): String {
-    val formatStr = "%.${decimals}f"
-    val formatted = String.format(LOCALE_ES, formatStr, this)
-    return "$prefix$formatted €"
+    val formatted = String.format(LOCALE_ES, "%,.${decimals}f", this)
+    return "$prefix$formatted$ESPACIO_CIFRA€"
 }
 
 /**
@@ -40,7 +45,7 @@ fun Double.descontadoConSigno(compacto: Boolean = false): String {
  * Formats a percentage with Spanish decimals, without trailing zeros (e.g., "21,48 %", "15 %").
  */
 fun Double.toPorcentajeString(): String =
-    BigDecimal.valueOf(this).stripTrailingZeros().toPlainString().replace('.', ',') + " %"
+    BigDecimal.valueOf(this).stripTrailingZeros().toPlainString().replace('.', ',') + "$ESPACIO_CIFRA%"
 
 /**
  * Text to pre-fill an amount input: "10" or "10.5". The dot is always accepted by numeric keyboards.

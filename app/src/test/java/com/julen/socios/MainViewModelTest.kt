@@ -358,7 +358,7 @@ class MainViewModelTest {
             MainEvent.Mensaje(
                 UiText.Res(R.string.msg_cobro_guardado),
                 TipoAviso.EXITO,
-                UiText.Res(R.string.msg_cobro_guardado_detalle, listOf("408,70 €"))
+                UiText.Res(R.string.msg_cobro_guardado_detalle, listOf("408,70 €"))
             ),
             eventos.last()
         )
@@ -441,7 +441,7 @@ class MainViewModelTest {
                 TipoAviso.EXITO,
                 UiText.Res(
                     R.string.msg_socio_movido_detalle,
-                    listOf(UiText.Res(R.string.socio_default_name, listOf("20 €")), DateUtils.rangoCorto(semanaSiguiente))
+                    listOf(UiText.Res(R.string.socio_default_name, listOf("20 €")), DateUtils.rangoCorto(semanaSiguiente))
                 )
             ),
             eventos.last()
