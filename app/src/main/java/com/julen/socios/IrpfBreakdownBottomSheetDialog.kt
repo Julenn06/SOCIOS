@@ -1,22 +1,29 @@
 package com.julen.socios
 
-import android.content.res.ColorStateList
 import android.os.Bundle
 import android.view.View
+import android.widget.LinearLayout
+import androidx.annotation.StringRes
 import androidx.core.content.ContextCompat
+import androidx.core.content.res.ResourcesCompat
 import androidx.core.view.isVisible
+import androidx.core.view.updateLayoutParams
 import androidx.fragment.app.activityViewModels
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.julen.socios.databinding.BottomSheetIrpfBreakdownBinding
 import com.julen.socios.databinding.DialogIrpfBinding
+import com.julen.socios.databinding.ItemFilaDesgloseBinding
 import com.julen.socios.util.CalculoComisiones
 import com.julen.socios.util.DateUtils
+import com.julen.socios.util.Movimiento
+import com.julen.socios.util.NumberAnimators
 import com.julen.socios.util.descontadoConSigno
 import com.julen.socios.util.etiquetaDescontado
 import com.julen.socios.util.parseImporte
 import com.julen.socios.util.rangoSemanaConAnio
 import com.julen.socios.util.setTextoAccesible
 import com.julen.socios.util.toCurrencyString
+import com.julen.socios.util.toEurosCompacto
 import com.julen.socios.util.toImporteInput
 import com.julen.socios.util.toPorcentajeString
 import kotlinx.coroutines.launch
@@ -31,6 +38,8 @@ class IrpfBreakdownBottomSheetDialog :
         super.onViewCreated(view, savedInstanceState)
 
         binding.btnCerrarBreakdown.setOnClickListener { dismiss() }
+        // Los extremos redondos de la pista recortan también las partes de la barra del reparto.
+        binding.barraReparto.clipToOutline = true
         binding.btnCambiarIrpf.configurar(
             R.drawable.ic_edit, Tono.AZUL, R.string.irpf_cambiar, R.string.irpf_cambiar_detalle
         ) { mostrarDialogoIrpf() }
@@ -90,66 +99,130 @@ class IrpfBreakdownBottomSheetDialog :
     }
 
     private fun render(state: MainUiState) {
-        val resumen = state.resumenSemana ?: return
+        val r = state.resumenSemana ?: return
         binding.tvBreakdownRangoSemana.text = requireContext().rangoSemanaConAnio(state.semanaKey)
 
-        val netoFormatted = resumen.totalNeto.toCurrencyString()
-        binding.tvBreakdownNetoBig.text = netoFormatted
-        binding.tvBreakdownNetoSmall.text = netoFormatted
         // "Neto cobrado" si se ha apuntado lo que llegó de verdad; si no, "Neto a cobrar".
-        binding.tvBreakdownNetoBigLabel.setText(if (resumen.tieneCobroReal) R.string.irpf_neto_cobrado else R.string.irpf_neto_final)
-        binding.tvBreakdownNetoLabel.setText(if (resumen.tieneCobroReal) R.string.irpf_neto_cobrado else R.string.irpf_total_neto)
-
+        binding.tvBreakdownNetoBigLabel.setText(if (r.tieneCobroReal) R.string.irpf_neto_cobrado else R.string.irpf_neto_final)
+        binding.tvBreakdownNetoLabel.setText(if (r.tieneCobroReal) R.string.irpf_neto_cobrado else R.string.irpf_total_neto)
+        NumberAnimators.animateCurrency(binding.tvBreakdownNetoBig, r.totalNeto)
+        binding.tvBreakdownNetoSmall.text = r.totalNeto.toCurrencyString()
         binding.tvBreakdownSociosCount.text = resources.getQuantityString(
-            R.plurals.irpf_breakdown_count,
-            resumen.totalSociosHechos,
-            resumen.totalSociosHechos,
-            resumen.totalSociosRegistrados
+            R.plurals.irpf_breakdown_count, r.totalSociosHechos, r.totalSociosHechos, r.totalSociosRegistrados
         )
+        binding.tvBreakdownIrpfPastilla.text = getString(R.string.label_irpf_header, r.porcentajeIrpf.toPorcentajeString())
+        renderReparto(r)
 
-        binding.tvBreakdownSumaCuotas.text = resumen.sumaColaboracionesBase.toCurrencyString()
-        binding.tvBreakdownBaseX2.text = resumen.gananciasBaseX2.toCurrencyString(prefix = "+")
-        binding.tvBreakdownBonusValue.text = resumen.bonusSemanal.toCurrencyString(prefix = "+")
-        val etiquetaBonus = if (resumen.esBonoRegaloAplicado) {
-            getString(R.string.irpf_fila_bonus_manual, resumen.bonusAutomatico.toCurrencyString())
-        } else {
-            resources.getQuantityString(
-                R.plurals.irpf_fila_bonus_auto, resumen.totalSociosHechos, resumen.totalSociosHechos
-            )
-        }
-        binding.tvBreakdownBonusLabel.setTextoAccesible(etiquetaBonus)
-        val motivo = state.bonoInfoSemana?.motivo?.takeIf { resumen.esBonoRegaloAplicado }
-        binding.tvBreakdownBonusNota.isVisible = motivo != null
-        binding.tvBreakdownBonusNota.text = motivo?.let { getString(R.string.irpf_bonus_motivo, it) }
+        binding.pasoSuma.mostrar(
+            R.string.irpf_signo_suma, Tono.NEUTRO, getString(R.string.irpf_fila_suma), r.sumaColaboracionesBase.toCurrencyString(),
+            detalle = resources.getQuantityString(R.plurals.irpf_suma_detalle, r.totalSociosHechos, r.totalSociosHechos)
+        )
+        binding.pasoBase.mostrar(
+            R.string.irpf_signo_doble, Tono.AZUL, getString(R.string.irpf_fila_base), r.gananciasBaseX2.toCurrencyString(prefix = "+")
+        )
+        binding.pasoBonus.mostrar(
+            R.string.irpf_signo_mas, Tono.NARANJA, etiquetaBonus(r), r.bonusSemanal.toCurrencyString(prefix = "+"),
+            detalle = detalleBonus(r, state.bonoInfoSemana?.motivo)
+        )
+        binding.pasoBruto.mostrar(
+            R.string.irpf_signo_igual, Tono.NEUTRO, getString(R.string.irpf_total_bruto), r.totalBruto.toCurrencyString(),
+            destacado = true
+        )
+        binding.pasoIrpf.mostrar(
+            R.string.irpf_signo_menos, Tono.ROJO,
+            getString(R.string.irpf_retencion_label, r.porcentajeIrpf.toPorcentajeString()),
+            r.retencionIrpf.toCurrencyString(prefix = "-")
+        )
+        renderCobro(r, state.cobroSemana?.motivo)
+    }
 
-        renderCobro(resumen, state.cobroSemana?.motivo)
+    private fun etiquetaBonus(r: CalculoComisiones.ResumenCalculo): String = if (r.esBonoRegaloAplicado) {
+        getString(R.string.irpf_fila_bonus_manual, r.bonusAutomatico.toCurrencyString())
+    } else {
+        resources.getQuantityString(R.plurals.irpf_fila_bonus_auto, r.totalSociosHechos, r.totalSociosHechos)
+    }
 
-        binding.tvBreakdownBruto.text = resumen.totalBruto.toCurrencyString()
-        binding.tvBreakdownIrpfLabel.text =
-            getString(R.string.irpf_retencion_label, resumen.porcentajeIrpf.toPorcentajeString())
-        binding.tvBreakdownIrpf.text = resumen.retencionIrpf.toCurrencyString(prefix = "-")
+    /** El motivo del bonus ajustado a mano, si se escribió; con el automático, cuánto falta para el siguiente tramo. */
+    private fun detalleBonus(r: CalculoComisiones.ResumenCalculo, motivo: String?): String? = if (r.esBonoRegaloAplicado) {
+        motivo?.let { getString(R.string.irpf_bonus_motivo, it) }
+    } else {
+        resources.getQuantityString(
+            R.plurals.bonus_next_goal, r.sociosFaltantesParaSiguienteMeta,
+            r.sociosFaltantesParaSiguienteMeta, r.siguienteMetaBonus.toEurosCompacto(prefix = "+")
+        )
+    }
+
+    /** La barra del bruto: lo que te llevas (el neto, o lo cobrado), el IRPF y, si te han descontado algo, eso. */
+    private fun renderReparto(r: CalculoComisiones.ResumenCalculo) {
+        val neto = r.totalNeto.coerceAtLeast(0.0)
+        val descontado = r.descontado.coerceAtLeast(0.0)
+        val total = neto + r.retencionIrpf + descontado
+        binding.contenedorReparto.isVisible = total > 0.0
+        if (total <= 0.0) return
+        Movimiento.animarCambios(binding.barraReparto)
+        repartir(binding.segmentoNeto, neto)
+        repartir(binding.segmentoIrpf, r.retencionIrpf)
+        repartir(binding.segmentoDescontado, descontado)
+        binding.tvLeyendaNeto.text = getString(R.string.irpf_leyenda_neto, r.totalNeto.toCurrencyString())
+        binding.tvLeyendaIrpf.text = getString(R.string.irpf_amount_format, r.retencionIrpf.toCurrencyString())
+        binding.tvLeyendaDescontado.isVisible = descontado > 0.0
+        binding.tvLeyendaDescontado.text = getString(R.string.irpf_leyenda_descontado, descontado.toCurrencyString())
+    }
+
+    /** Cada parte de la barra ocupa lo que pesa su [importe]; sin importe, no se ve. */
+    private fun repartir(segmento: View, importe: Double) {
+        segmento.isVisible = importe > 0.0
+        segmento.updateLayoutParams<LinearLayout.LayoutParams> { weight = importe.toFloat() }
     }
 
     /** Con lo cobrado apuntado: el neto calculado y la diferencia, en rojo si es un descuento y en verde si sobra. */
-    private fun renderCobro(resumen: CalculoComisiones.ResumenCalculo, motivo: String?) {
-        binding.contenedorBreakdownCobro.isVisible = resumen.tieneCobroReal
-        val cobrado = resumen.netoCobrado
+    private fun renderCobro(r: CalculoComisiones.ResumenCalculo, motivo: String?) {
+        binding.contenedorBreakdownCobro.isVisible = r.tieneCobroReal
+        val cobrado = r.netoCobrado
         if (cobrado == null) {
             binding.btnCobroBreakdown.tvFormato.setText(R.string.cobro_accion)
             binding.btnCobroBreakdown.tvFormatoDetalle.setText(R.string.cobro_accion_detalle)
             return
         }
-        val descontado = resumen.descontado
-        val color = ContextCompat.getColor(requireContext(), if (descontado > 0.0) R.color.red_text else R.color.green_text_soft)
-        binding.tvBreakdownNetoCalculado.text = resumen.netoCalculado.toCurrencyString()
-        binding.tvBreakdownDescontadoLabel.setText(etiquetaDescontado(descontado))
-        binding.tvBreakdownDescontado.text = descontado.descontadoConSigno()
-        binding.tvBreakdownDescontado.setTextColor(color)
-        binding.puntoBreakdownDescontado.backgroundTintList = ColorStateList.valueOf(color)
-        binding.tvBreakdownCobroNota.isVisible = motivo != null
-        binding.tvBreakdownCobroNota.text = motivo?.let { getString(R.string.irpf_bonus_motivo, it) }
+        val descontado = r.descontado
+        binding.pasoNetoCalculado.mostrar(
+            R.string.irpf_signo_igual, Tono.NEUTRO, getString(R.string.irpf_neto_calculado), r.netoCalculado.toCurrencyString(),
+            destacado = true
+        )
+        binding.pasoDescontado.mostrar(
+            when {
+                descontado > 0.0 -> R.string.irpf_signo_menos
+                descontado < 0.0 -> R.string.irpf_signo_mas
+                else -> R.string.irpf_signo_igual
+            },
+            if (descontado > 0.0) Tono.ROJO else Tono.VERDE,
+            getString(etiquetaDescontado(descontado)),
+            descontado.descontadoConSigno(),
+            detalle = motivo?.let { getString(R.string.irpf_bonus_motivo, it) }
+        )
         binding.btnCobroBreakdown.tvFormato.setText(R.string.cobro_accion_cambiar)
         binding.btnCobroBreakdown.tvFormatoDetalle.text = getString(R.string.cobro_accion_cambiar_detalle, cobrado.toCurrencyString())
+    }
+
+    /** Un paso de la cuenta: su operación en la placa, qué es, un detalle si lo hay y el importe, en su [tono]. */
+    private fun ItemFilaDesgloseBinding.mostrar(
+        @StringRes signo: Int,
+        tono: Tono,
+        titulo: String,
+        importe: String,
+        detalle: String? = null,
+        destacado: Boolean = false
+    ) {
+        val contexto = root.context
+        placaPaso.backgroundTintList = ContextCompat.getColorStateList(contexto, tono.fondo)
+        tvSignoPaso.setText(signo)
+        tvSignoPaso.setTextColor(ContextCompat.getColor(contexto, tono.color))
+        tvTituloPaso.setTextoAccesible(titulo)
+        tvTituloPaso.typeface = ResourcesCompat.getFont(contexto, if (destacado) R.font.geist_semibold else R.font.geist_medium)
+        tvDetallePaso.isVisible = detalle != null
+        tvDetallePaso.text = detalle
+        tvImportePaso.text = importe
+        tvImportePaso.setTextColor(ContextCompat.getColor(contexto, tono.color))
     }
 
     /** Encima del desglose, que se actualiza solo al guardarlo. */

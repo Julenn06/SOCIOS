@@ -252,7 +252,20 @@
     <string name="irpf_titulo">Desglose de la semana</string>
     <string name="irpf_neto_final">Neto a cobrar</string>
     <string name="irpf_seccion_calculo">Cómo se calcula</string>
-    <string name="irpf_seccion_porcentaje">Porcentaje de IRPF</string>
+    <string name="irpf_seccion_ajustes">Ajustes de la semana</string>
+    <string name="irpf_leyenda_neto">Para ti %s</string>
+    <string name="irpf_leyenda_descontado">Descontado %s</string>
+    <plurals name="irpf_suma_detalle">
+        <item quantity="one">De %d socio hecho</item>
+        <item quantity="many">De %d socios hechos</item>
+        <item quantity="other">De %d socios hechos</item>
+    </plurals>
+    <!-- La operación de cada paso de la cuenta, en su placa -->
+    <string name="irpf_signo_suma" translatable="false">Σ</string>
+    <string name="irpf_signo_doble" translatable="false">×2</string>
+    <string name="irpf_signo_mas" translatable="false">+</string>
+    <string name="irpf_signo_menos" translatable="false">−</string>
+    <string name="irpf_signo_igual" translatable="false">=</string>
     <plurals name="irpf_breakdown_count">
         <item quantity="one">%1$d socio hecho de %2$d registrados</item>
         <item quantity="many">%1$d socios hechos de %2$d registrados</item>
@@ -270,7 +283,6 @@
     <string name="irpf_total_bruto">Total bruto</string>
     <string name="irpf_neto_calculado">Neto calculado</string>
     <string name="irpf_neto_cobrado">Neto cobrado</string>
-    <string name="irpf_seccion_cobro">Lo cobrado</string>
     <string name="irpf_retencion_label">Retención IRPF (%s)</string>
     <string name="irpf_total_neto">Neto a cobrar</string>
     <string name="irpf_cambiar">Cambiar el porcentaje</string>
@@ -298,7 +310,8 @@
     <string name="historico_detalle_descontado">%1$s · %2$s desc.</string>
     <string name="comparativa_mejor">Tu mejor semana</string>
     <string name="historico_seccion_evolucion">Evolución del neto</string>
-    <string name="grafico_ayuda">Desliza para ver todo · toca una barra para ver su importe</string>
+    <string name="grafico_ayuda">Toca una barra para ver su importe</string>
+    <string name="grafico_ayuda_desplazar">Desliza para ver todo · toca una barra para ver su importe</string>
     <string name="grafico_media">Media %s</string>
     <string name="grafico_a11y">Neto de %1$d periodos, de %2$s a %3$s. El más alto: %4$s en %5$s.</string>
     <string name="grafico_a11y_vacio">Todavía no hay neto registrado en estos periodos</string>

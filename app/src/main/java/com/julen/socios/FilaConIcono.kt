@@ -35,7 +35,10 @@ enum class Tono(@param:ColorRes val fondo: Int, @param:ColorRes val color: Int) 
     ROJO(R.color.red_container, R.color.red_text),
     NARANJA(R.color.orange_container, R.color.orange_text),
     PENDIENTE(R.color.orange_container, R.color.orange_pending),
-    AMBAR(R.color.amber_container, R.color.amber_text)
+    AMBAR(R.color.amber_container, R.color.amber_text),
+
+    /** Sin color propio: los pasos de una cuenta que solo suman lo anterior (la suma de cuotas, el bruto). */
+    NEUTRO(R.color.surface_card, R.color.text_main)
 }
 
 /** Placa de color con su [icono], como la de las filas, los avisos y el resumen de importación. */

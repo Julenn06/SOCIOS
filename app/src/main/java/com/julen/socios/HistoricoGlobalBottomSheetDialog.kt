@@ -169,6 +169,9 @@ class HistoricoGlobalBottomSheetDialog :
         binding.graficoNeto.mostrar(columnas, destacada = columnas.lastIndex, animar = animar)
         graficoDibujado = true
         periodoDelGrafico = periodo
+        binding.tvGraficoAyuda.setText(
+            if (binding.graficoNeto.sePuedeDesplazar) R.string.grafico_ayuda_desplazar else R.string.grafico_ayuda
+        )
         val media = binding.graficoNeto.media
         binding.tvGraficoMedia.isVisible = media != null
         binding.tvGraficoMedia.text = media?.let { getString(R.string.grafico_media, it.toEurosCompacto()) }

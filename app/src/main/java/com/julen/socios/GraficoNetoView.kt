@@ -158,6 +158,7 @@ class GraficoNetoView @JvmOverloads constructor(
     fun mostrar(nuevas: List<Columna>, destacada: Int, animar: Boolean) {
         val mismas = nuevas.map { it.etiquetaLarga } == columnas.map { it.etiquetaLarga }
         columnas = nuevas
+        anchoEtiqueta = (nuevas.maxOfOrNull { pintaEtiqueta.measureText(it.etiqueta) } ?: 0f) + 6 * densidad
         this.destacada = destacada
         media = nuevas.filter { it.neto != 0.0 }.takeIf { it.size >= 2 }
             ?.let { conDatos -> CalculoComisiones.redondearCentimos(conDatos.sumOf { it.neto } / conDatos.size) }
@@ -235,16 +236,34 @@ class GraficoNetoView @JvmOverloads constructor(
 
     private val anchoArea: Float get() = areaDerecha - areaIzquierda
 
-    /** Ancho de cada columna: reparten el sitio si caben todas; si no, cada una tiene el mínimo y se desplazan. */
+    /**
+     * Ancho de cada columna: el que tendrían [COLUMNAS_MIN] repartiéndose el sitio, sin bajar del mínimo. Así
+     * unos pocos años van igual de juntos que las semanas o los meses; si no caben todas, se desplazan.
+     */
     private val hueco: Float
-        get() = if (columnas.isEmpty()) 0f else max(huecoMin, anchoArea / columnas.size)
+        get() = if (columnas.isEmpty()) 0f else maxOf(huecoMin, anchoEtiqueta, anchoArea / max(columnas.size, COLUMNAS_MIN))
+
+    /** La etiqueta más ancha del eje y un margen: ninguna columna es más estrecha, así salen todas ("2025"). */
+    private var anchoEtiqueta = 0f
 
     private val maxDesplazamiento: Float get() = max(0f, columnas.size * hueco - anchoArea)
 
-    private val sePuedeDesplazar: Boolean get() = maxDesplazamiento > 0.5f
+    /**
+     * Si no caben todas las columnas. Antes de la primera medida (sin ancho aún) se supone que sí, en cuanto hay
+     * más de las que se reparten el ancho.
+     */
+    val sePuedeDesplazar: Boolean
+        get() = if (anchoArea > 0f) maxDesplazamiento > 0.5f else columnas.size > COLUMNAS_MIN
 
-    /** Centro horizontal de la columna [indice], ya desplazado. */
-    private fun centroDe(indice: Int) = areaIzquierda + hueco * (indice + 0.5f) - desplazamiento
+    /**
+     * Dónde empieza la primera columna, ya desplazado. Si sobra sitio, las columnas se pegan a la derecha, con la
+     * más reciente en el borde, como cuando se ven todas al final.
+     */
+    private val origen: Float
+        get() = areaIzquierda + max(0f, anchoArea - columnas.size * hueco) - desplazamiento
+
+    /** Centro horizontal de la columna [indice]. */
+    private fun centroDe(indice: Int) = origen + hueco * (indice + 0.5f)
 
     /** Alto de la barra de [neto], hacia arriba o hacia abajo de la línea base. */
     private fun altoDe(neto: Double, altoUtil: Float, rango: Double) = (altoUtil * (abs(neto) / rango)).toFloat()
@@ -317,7 +336,6 @@ class GraficoNetoView @JvmOverloads constructor(
     private fun dibujarColumnas(canvas: Canvas, e: Escala, base: Float, altoUtil: Float, abajo: Float) {
         val anchoBarra = min(anchoMaxBarra, hueco - separacionMin * 2)
         // Etiquetas del eje: todas si caben; si no, una de cada pocas contando desde la destacada, que siempre va.
-        val anchoEtiqueta = columnas.maxOf { pintaEtiqueta.measureText(it.etiqueta) } + 6 * densidad
         val paso = max(1, ceil(anchoEtiqueta / hueco).toInt())
         val anclaje = if (destacada in columnas.indices) destacada else columnas.lastIndex
 
@@ -347,8 +365,8 @@ class GraficoNetoView @JvmOverloads constructor(
     /** Índices de las columnas que se ven (con una de margen a cada lado). */
     private fun visibles(): IntRange {
         if (hueco <= 0f) return IntRange.EMPTY
-        val primera = floor(desplazamiento / hueco).toInt() - 1
-        val ultima = ceil((desplazamiento + anchoArea) / hueco).toInt()
+        val primera = floor((areaIzquierda - origen) / hueco).toInt() - 1
+        val ultima = ceil((areaDerecha - origen) / hueco).toInt()
         return primera.coerceAtLeast(0)..ultima.coerceAtMost(columnas.lastIndex)
     }
 
@@ -395,20 +413,20 @@ class GraficoNetoView @JvmOverloads constructor(
         val lineaTexto = paddingTop - pintaMarca.ascent()
         val marcas = columnas.indices.filter { columnas[it].separador != null }
         for (i in marcas) {
-            val x = areaIzquierda + hueco * i - desplazamiento
+            val x = origen + hueco * i
             if (i > 0 && x > areaIzquierda) raya(canvas, x, paddingTop + altoMarca, x, base, pintaGuia)
         }
         val margen = 4 * densidad
-        val fija = marcas.lastOrNull { areaIzquierda + hueco * it - desplazamiento <= areaIzquierda + margen }
+        val fija = marcas.lastOrNull { origen + hueco * it <= areaIzquierda + margen }
         for (i in marcas) {
             val texto = columnas[i].separador ?: continue
             val ancho = pintaMarca.measureText(texto)
             val x = if (i == fija) {
                 // Pegada a la izquierda, salvo que la siguiente marca ya esté llegando: entonces la empuja.
-                val siguiente = marcas.firstOrNull { it > i }?.let { areaIzquierda + hueco * it - desplazamiento }
-                min(areaIzquierda + margen, (siguiente ?: Float.MAX_VALUE) - ancho - margen * 3)
+                val siguiente = marcas.firstOrNull { it > i }?.let { origen + hueco * it }
+                min(max(origen, areaIzquierda) + margen, (siguiente ?: Float.MAX_VALUE) - ancho - margen * 3)
             } else {
-                areaIzquierda + hueco * i - desplazamiento + margen
+                origen + hueco * i + margen
             }
             if (i != fija && x < areaIzquierda + margen) continue
             rect.set(x - margen, paddingTop.toFloat(), x + ancho + margen, paddingTop + altoMarca)
@@ -543,12 +561,18 @@ class GraficoNetoView @JvmOverloads constructor(
     /** Toda la franja vertical de una columna es su zona táctil, no solo la barra. */
     private fun seleccionar(x: Float) {
         if (x < areaIzquierda || x > areaDerecha || hueco <= 0f) return
-        val indice = ((x - areaIzquierda + desplazamiento) / hueco).toInt().coerceIn(0, columnas.lastIndex)
+        // Tocar el hueco que queda a la izquierda de las columnas (con pocas) no elige ninguna.
+        val indice = floor((x - origen) / hueco).toInt().takeIf { it in columnas.indices } ?: return
         if (indice == seleccionada) return
         seleccionada = indice
         HapticUtils.performClick(this)
         alSeleccionar?.invoke(columnas[indice])
         invalidate()
+    }
+
+    private companion object {
+        /** Con menos columnas que estas, no se ensanchan para llenar el gráfico. */
+        const val COLUMNAS_MIN = 12
     }
 
     // --- Accesibilidad: con TalkBack, el gráfico se desplaza con los gestos de desplazar de siempre ---
