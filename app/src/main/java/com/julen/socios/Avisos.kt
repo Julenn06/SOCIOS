@@ -22,6 +22,7 @@ import com.google.android.material.snackbar.Snackbar
 import com.julen.socios.databinding.ItemAvisoBinding
 import com.julen.socios.util.HapticUtils
 import com.julen.socios.util.Movimiento
+import com.julen.socios.util.ponerDebajoConLetraGrande
 import java.lang.ref.WeakReference
 import kotlin.math.abs
 import kotlin.math.min
@@ -139,6 +140,7 @@ object Avisos {
         capa.getChildAt(0).visibility = View.GONE
 
         val aviso = ItemAvisoBinding.inflate(LayoutInflater.from(vista.context), capa, false)
+        ponerDebajoConLetraGrande(aviso.btnAccionAviso, aviso.columnaAviso)
         capa.addView(aviso.root)
         val visible = Visible(snackbar, aviso, vista)
         aviso.btnCerrarAviso.setOnClickListener { visible.cerrar() }

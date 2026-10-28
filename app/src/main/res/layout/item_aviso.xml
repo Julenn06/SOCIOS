@@ -50,7 +50,9 @@
                     tools:tint="@color/green_text_soft" />
             </FrameLayout>
 
+            <!-- Con la letra grande, el botón de la acción pasa aquí debajo (ver Avisos) -->
             <LinearLayout
+                android:id="@+id/columnaAviso"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="12dp"

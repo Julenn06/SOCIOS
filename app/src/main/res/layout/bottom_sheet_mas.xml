@@ -115,7 +115,9 @@
                             app:trackThickness="2.5dp" />
                     </FrameLayout>
 
+                    <!-- Con la letra grande, el botón de al lado pasa aquí debajo (ver MasBottomSheetDialog) -->
                     <LinearLayout
+                        android:id="@+id/columnaEstadoVersion"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_marginHorizontal="12dp"

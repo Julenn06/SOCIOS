@@ -18,7 +18,7 @@
             android:layout_height="112dp"
             android:importantForAccessibility="no" />
 
-        <!-- El icono se pone desde código, más pequeño que su tamaño original -->
+        <!-- El icono se pone desde código, más pequeño que su tamaño original; con la letra grande, sin él -->
         <TextView
             android:id="@+id/tvTema"
             android:layout_width="wrap_content"

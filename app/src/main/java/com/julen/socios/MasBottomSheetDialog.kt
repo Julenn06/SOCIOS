@@ -15,6 +15,7 @@ import com.julen.socios.databinding.ItemTemaBinding
 import com.julen.socios.util.AnimationExtensions
 import com.julen.socios.util.DateUtils
 import com.julen.socios.util.HapticUtils
+import com.julen.socios.util.ponerDebajoConLetraGrande
 
 /**
  * Panel "Más", en lugar del menú ⋮: versión de la app y búsqueda de actualizaciones, acceso a copias y
@@ -40,6 +41,7 @@ class MasBottomSheetDialog : PanelInferior<BottomSheetMasBinding>(BottomSheetMas
         }
         listOf(binding.cardExportarImportar, binding.btnEstadoVersion)
             .forEach(AnimationExtensions::setupPressScaleAnimation)
+        ponerDebajoConLetraGrande(binding.btnEstadoVersion, binding.columnaEstadoVersion)
 
         configurarTemas()
 
@@ -49,10 +51,12 @@ class MasBottomSheetDialog : PanelInferior<BottomSheetMasBinding>(BottomSheetMas
     private fun configurarTemas() {
         val actual = preferenciasTema.tema
         val lado = (16 * resources.displayMetrics.density).toInt()
+        // Con la letra grande el icono y el nombre no caben juntos ("Sistema" se cortaba): va solo el nombre.
+        val conIcono = resources.configuration.fontScale < ESCALA_LETRA_TEMA_SIN_ICONO
         val color = ContextCompat.getColorStateList(requireContext(), R.color.text_main)
         for ((tema, opcion) in opcionesTema) {
             opcion.muestraTema.tema = tema
-            val icono = ContextCompat.getDrawable(requireContext(), tema.icono)?.mutate()
+            val icono = ContextCompat.getDrawable(requireContext(), tema.icono)?.mutate()?.takeIf { conIcono }
             icono?.setBounds(0, 0, lado, lado)
             opcion.tvTema.setCompoundDrawablesRelative(icono, null, null, null)
             TextViewCompat.setCompoundDrawableTintList(opcion.tvTema, color)
@@ -153,5 +157,6 @@ class MasBottomSheetDialog : PanelInferior<BottomSheetMasBinding>(BottomSheetMas
     companion object {
         const val TAG = "MasBottomSheet"
         private const val RETRASO_TEMA_MS = 250L
+        private const val ESCALA_LETRA_TEMA_SIN_ICONO = 1.3f
     }
 }

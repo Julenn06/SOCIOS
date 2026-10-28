@@ -229,9 +229,14 @@
                         <LinearLayout
                             style="@style/Socios.CajaCabecera">
 
+                            <!-- "IRPF 21,48 %" es la etiqueta más larga: con la letra grande encoge en vez de cortarse -->
                             <TextView
                                 android:id="@+id/tvIrpfHeaderLabel"
                                 style="@style/Socios.EtiquetaCajaCabecera"
+                                android:layout_width="match_parent"
+                                android:autoSizeMaxTextSize="11.5sp"
+                                android:autoSizeMinTextSize="8sp"
+                                android:autoSizeTextType="uniform"
                                 android:textColor="@color/header_label_irpf"
                                 tools:text="IRPF 21,48 %" />
 
