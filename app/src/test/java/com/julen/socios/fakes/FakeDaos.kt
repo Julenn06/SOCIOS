@@ -88,14 +88,8 @@ class FakeIrpfVigenciaDao : IrpfVigenciaDao {
     override suspend fun getAll() = vigencias.value.values.sortedBy { it.desdeSemanaKey }
     override fun getAllFlow(): Flow<List<IrpfVigenciaEntity>> = vigencias.map { m -> m.values.sortedBy { it.desdeSemanaKey } }
 
-    override suspend fun upsert(vigencia: IrpfVigenciaEntity) {
-        vigencias.value = vigencias.value + (vigencia.desdeSemanaKey to vigencia)
-    }
-
-    override suspend fun upsertAll(vigencias: List<IrpfVigenciaEntity>) = vigencias.forEach { upsert(it) }
-
-    override suspend fun delete(desdeSemanaKey: String) {
-        vigencias.value = vigencias.value - desdeSemanaKey
+    override suspend fun upsertAll(vigencias: List<IrpfVigenciaEntity>) {
+        this.vigencias.value = this.vigencias.value + vigencias.associateBy { it.desdeSemanaKey }
     }
 }
 

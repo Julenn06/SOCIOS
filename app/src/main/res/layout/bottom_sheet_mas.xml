@@ -141,7 +141,7 @@
                             tools:text="Última comprobación: hoy a las 16:05" />
                     </LinearLayout>
 
-                    <!-- Siempre visible. Pastilla translúcida con icono, como "Desglose" en la cabecera; con
+                    <!-- Siempre visible. Pastilla translúcida con icono; con
                          una versión nueva pasa a blanca para destacar (colores e icono desde código). -->
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/btnEstadoVersion"

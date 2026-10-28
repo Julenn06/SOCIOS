@@ -102,7 +102,8 @@ object ConversionBackup {
                 // Si una semana trae las dos cosas, manda lo cobrado.
                 cobros = (cobrosDeDevoluciones + cobros).associateBy { it.semanaKey }.values.toList()
             ),
-            descartados = descartados
+            descartados = descartados,
+            fechaCopia = dto.timestamp
         )
     }
 

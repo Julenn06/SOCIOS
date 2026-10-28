@@ -69,7 +69,7 @@ class HistoricoAdapter(
             binding.tvSemanaItemNeto.text = fila.neto.toCurrencyString(prefix = if (fila.neto > 0.0) "+" else "")
             binding.barraSemanaItem.progress = (fila.proporcion * binding.barraSemanaItem.max).roundToInt()
             binding.tvSemanaItemIrpf.text = contexto.getString(
-                R.string.irpf_amount_format, fila.irpf.toCurrencyString(prefix = "-")
+                R.string.label_irpf_header, fila.irpf.toCurrencyString(prefix = "-")
             )
             binding.root.isClickable = fila.semanaKey != null
             binding.ivSemanaItemFlecha.isVisible = fila.semanaKey != null

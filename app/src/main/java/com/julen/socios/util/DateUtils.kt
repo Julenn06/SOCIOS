@@ -21,6 +21,7 @@ object DateUtils {
     private val FORMATO_DIA: DateTimeFormatter = DateTimeFormatter.ofPattern("d 'de' MMM", LOCALE_ES)
     private val FORMATO_DIA_CORTO: DateTimeFormatter = DateTimeFormatter.ofPattern("d MMM", LOCALE_ES)
     private val FORMATO_HORA: DateTimeFormatter = DateTimeFormatter.ofPattern("H:mm", LOCALE_ES)
+    private val FORMATO_MES_ANIO: DateTimeFormatter = DateTimeFormatter.ofPattern("MMM yyyy", LOCALE_ES)
     private val PATRON_SEMANA_KEY = Regex("""(\d{4})-W(\d{2})""")
 
     /** Lunes de la semana actual desplazada [weekOffset] semanas. */
@@ -93,6 +94,15 @@ object DateUtils {
         } else {
             "${diaCorto(lunes)} – ${diaCorto(viernes)}"
         }
+    }
+
+    /**
+     * Mes y año de la semana [semanaKey], ej. "oct 2026": el de su jueves, como al agrupar el histórico por meses.
+     * La propia clave si no es válida.
+     */
+    fun mesConAnio(semanaKey: String): String {
+        val jueves = lunesDeSemanaKey(semanaKey)?.plusDays(3) ?: return semanaKey
+        return FORMATO_MES_ANIO.format(jueves).replace(".", "")
     }
 
     /** Cuándo fue [millis], dicho con naturalidad: "hoy a las 16:05", "ayer a las 9:30" o "el 3 oct". */

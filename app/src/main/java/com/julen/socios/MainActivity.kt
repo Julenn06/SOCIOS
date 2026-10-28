@@ -73,7 +73,6 @@ class MainActivity : AppCompatActivity() {
     private var vistaAnterior: Pair<String, DiaSemana?>? = null
 
     private var dialogoDestinoExport: AlertDialog? = null
-    private var dialogoConfirmarImport: AlertDialog? = null
     private var dialogoEliminar: AlertDialog? = null
 
     // --- EXPORT & IMPORT LAUNCHERS ---
@@ -130,7 +129,7 @@ class MainActivity : AppCompatActivity() {
 
         // Micro-animaciones táctiles
         listOf(
-            binding.fabAddSocio, binding.containerBonusHeader, binding.btnVerDesglose, binding.containerCobroHeader,
+            binding.fabAddSocio, binding.containerBonusHeader, binding.containerCobroHeader,
             binding.cardAvisoPendientes
         ).forEach(AnimationExtensions::setupPressScaleAnimation)
 
@@ -139,7 +138,7 @@ class MainActivity : AppCompatActivity() {
                 launch { viewModel.uiState.collect(::renderUiState) }
                 launch { viewModel.events.collect(::manejarEvento) }
                 launch { viewModel.exportPendienteDeDestino.collect(::mostrarDialogoDestinoExport) }
-                launch { viewModel.importPendiente.collect(::mostrarDialogoConfirmarImport) }
+                launch { viewModel.importPendiente.collect(::mostrarRevisionImport) }
                 launch { viewModel.avisoPendientes.collect(::mostrarAvisoPendientes) }
                 launch { actualizaciones.nuevaVersion.collect(::avisarNuevaVersion) }
             }
@@ -158,7 +157,6 @@ class MainActivity : AppCompatActivity() {
         // El de eliminar no se restaura: tras girar la pantalla basta con volver a pulsar la papelera.
         dialogoEliminar?.dismiss()
         dialogoDestinoExport?.cerrarSinAvisar()
-        dialogoConfirmarImport?.cerrarSinAvisar()
         super.onDestroy()
     }
 
@@ -292,7 +290,7 @@ class MainActivity : AppCompatActivity() {
 
     /**
      * Aviso con el diseño de la app, encima del botón de "Nuevo socio" para no taparlo. Si hay un panel
-     * abierto (por ejemplo, el desglose al cambiar el IRPF), va dentro de él: el panel es otra ventana y
+     * abierto (por ejemplo, el de un socio nuevo con "Guardar y otro"), va dentro de él: el panel es otra ventana y
      * en la pantalla principal quedaría tapado.
      */
     private fun aviso(
@@ -354,18 +352,9 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun mostrarDialogoConfirmarImport(preview: ImportPreview?) {
-        if (preview == null) {
-            dialogoConfirmarImport?.cerrarSinAvisar()
-            dialogoConfirmarImport = null
-            return
-        }
-        if (dialogoConfirmarImport?.isShowing == true) return
-
-        dialogoConfirmarImport = confirmarImportacion(this, preview, alConfirmar = viewModel::confirmarImport) {
-            dialogoConfirmarImport = null
-            viewModel.cancelarImport()
-        }
+    /** La revisión de lo leído antes de importarlo; el panel se cierra solo cuando deja de haber importación pendiente. */
+    private fun mostrarRevisionImport(preview: ImportPreview?) {
+        if (preview != null) supportFragmentManager.mostrarSiNoEsta(ImportarBottomSheetDialog.TAG, ::ImportarBottomSheetDialog)
     }
 
     // --- Gestos ---
@@ -431,7 +420,6 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun setupHeaderClickListeners() {
-        binding.btnVerDesglose.setOnClickListener { mostrarDesgloseIrpf() }
         binding.containerBonusHeader.setOnClickListener { mostrarDialogoBonoRegalo() }
         setupDobleToqueNeto()
         binding.containerCobroHeader.setOnClickListener {
@@ -467,11 +455,6 @@ class MainActivity : AppCompatActivity() {
                 AddSocioBottomSheetDialog.nuevo(state.semanaKey, state.diaFiltro ?: DateUtils.getDiaSemanaActual())
             }
         }
-    }
-
-    private fun mostrarDesgloseIrpf() {
-        if (viewModel.uiState.value.resumenSemana == null) return
-        supportFragmentManager.mostrarSiNoEsta(IrpfBreakdownBottomSheetDialog.TAG, ::IrpfBreakdownBottomSheetDialog)
     }
 
     private fun mostrarHistoricoGlobal() =

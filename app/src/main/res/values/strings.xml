@@ -89,7 +89,6 @@
 
     <!-- Financial Headers -->
     <string name="header_neto_semanal">Neto de la semana</string>
-    <string name="action_ver_irpf">Desglose</string>
     <string name="label_base_x2">Base ×2</string>
     <string name="label_bonus_auto">Bonus</string>
     <string name="label_bonus_manual">Bonus manual</string>
@@ -243,62 +242,6 @@
     <string name="cobro_preview_calculado">Neto calculado</string>
     <string name="cobro_preview_cobrado">Has cobrado</string>
     <string name="msg_cobro_invalido">Escribe lo que has cobrado, por ejemplo 284,69</string>
-    <string name="cobro_accion">Ajustar a lo cobrado</string>
-    <string name="cobro_accion_detalle">También con un doble toque en el neto de la cabecera</string>
-    <string name="cobro_accion_cambiar">Cambiar lo cobrado</string>
-    <string name="cobro_accion_cambiar_detalle">%s cobrados esta semana</string>
-
-    <!-- Desglose IRPF -->
-    <string name="irpf_titulo">Desglose de la semana</string>
-    <string name="irpf_neto_final">Neto a cobrar</string>
-    <string name="irpf_seccion_calculo">Cómo se calcula</string>
-    <string name="irpf_seccion_ajustes">Ajustes de la semana</string>
-    <string name="irpf_leyenda_neto">Para ti %s</string>
-    <string name="irpf_leyenda_descontado">Descontado %s</string>
-    <plurals name="irpf_suma_detalle">
-        <item quantity="one">De %d socio hecho</item>
-        <item quantity="many">De %d socios hechos</item>
-        <item quantity="other">De %d socios hechos</item>
-    </plurals>
-    <!-- La operación de cada paso de la cuenta, en su placa -->
-    <string name="irpf_signo_suma" translatable="false">Σ</string>
-    <string name="irpf_signo_doble" translatable="false">×2</string>
-    <string name="irpf_signo_mas" translatable="false">+</string>
-    <string name="irpf_signo_menos" translatable="false">−</string>
-    <string name="irpf_signo_igual" translatable="false">=</string>
-    <plurals name="irpf_breakdown_count">
-        <item quantity="one">%1$d socio hecho de %2$d registrados</item>
-        <item quantity="many">%1$d socios hechos de %2$d registrados</item>
-        <item quantity="other">%1$d socios hechos de %2$d registrados</item>
-    </plurals>
-    <string name="irpf_fila_suma">Suma de cuotas</string>
-    <string name="irpf_fila_base">Base (cuotas × 2)</string>
-    <plurals name="irpf_fila_bonus_auto">
-        <item quantity="one">Bonus por %1$d socio hecho</item>
-        <item quantity="many">Bonus por %1$d socios hechos</item>
-        <item quantity="other">Bonus por %1$d socios hechos</item>
-    </plurals>
-    <string name="irpf_fila_bonus_manual">Bonus ajustado a mano (automático: %s)</string>
-    <string name="irpf_bonus_motivo">«%s»</string>
-    <string name="irpf_total_bruto">Total bruto</string>
-    <string name="irpf_neto_calculado">Neto calculado</string>
-    <string name="irpf_neto_cobrado">Neto cobrado</string>
-    <string name="irpf_retencion_label">Retención IRPF (%s)</string>
-    <string name="irpf_total_neto">Neto a cobrar</string>
-    <string name="irpf_cambiar">Cambiar el porcentaje</string>
-    <string name="irpf_cambiar_detalle">Se aplica desde esta semana en adelante</string>
-    <string name="irpf_dialogo_titulo">Porcentaje de IRPF</string>
-    <string name="irpf_dialogo_ayuda">Se aplicará desde la semana %s en adelante. Las semanas anteriores conservan su porcentaje.</string>
-    <string name="irpf_hint">Porcentaje de IRPF</string>
-    <string name="msg_irpf_invalido">Introduce un porcentaje entre 0 y 100</string>
-    <string name="irpf_ver_cambios">Cambios de porcentaje</string>
-    <string name="irpf_ver_cambios_detalle">Consulta o deshaz los cambios anteriores</string>
-    <string name="irpf_cambios_titulo">Cambios de IRPF (toca uno para eliminarlo)</string>
-    <string name="irpf_cambio_item">Desde la semana %1$s (%2$s): %3$s</string>
-    <string name="irpf_sin_cambios">Todavía no has cambiado el IRPF: todas las semanas usan el %s por defecto.</string>
-    <string name="irpf_eliminar_cambio_titulo">¿Eliminar este cambio de IRPF?</string>
-    <string name="irpf_eliminar_cambio_msg">Desde la semana %1$s se volverá a aplicar el porcentaje anterior (%2$s).</string>
-    <string name="irpf_amount_format">IRPF %s</string>
 
     <!-- Histórico -->
     <string name="historico_titulo">Histórico</string>
@@ -388,32 +331,34 @@
         <item quantity="many">%d semanas seleccionadas</item>
         <item quantity="other">%d semanas seleccionadas</item>
     </plurals>
-    <string name="import_confirmar_titulo">Importar datos</string>
-    <plurals name="import_linea_nuevos">
-        <item quantity="one">%d socio nuevo</item>
-        <item quantity="many">%d socios nuevos</item>
-        <item quantity="other">%d socios nuevos</item>
+    <string name="import_titulo">Revisa la importación</string>
+    <string name="import_archivo_sin_nombre">Copia de seguridad</string>
+    <string name="import_vas_a_importar">Vas a importar</string>
+    <plurals name="import_total_socios">
+        <item quantity="one">%s socio</item>
+        <item quantity="many">%s socios</item>
+        <item quantity="other">%s socios</item>
     </plurals>
-    <plurals name="import_linea_sobrescritos">
-        <item quantity="one">%d socio que ya existe y se sobrescribirá</item>
-        <item quantity="many">%d socios que ya existen y se sobrescribirán</item>
-        <item quantity="other">%d socios que ya existen y se sobrescribirán</item>
+    <plurals name="import_total_registros">
+        <item quantity="one">%s registro</item>
+        <item quantity="many">%s registros</item>
+        <item quantity="other">%s registros</item>
     </plurals>
-    <plurals name="import_linea_bonus">
-        <item quantity="one">%d bonus manual</item>
-        <item quantity="many">%d bonus manuales</item>
-        <item quantity="other">%d bonus manuales</item>
-    </plurals>
-    <plurals name="import_linea_irpf">
-        <item quantity="one">%d cambio de IRPF</item>
-        <item quantity="many">%d cambios de IRPF</item>
-        <item quantity="other">%d cambios de IRPF</item>
-    </plurals>
-    <plurals name="import_linea_cobros">
-        <item quantity="one">%d semana con lo cobrado apuntado</item>
-        <item quantity="many">%d semanas con lo cobrado apuntado</item>
-        <item quantity="other">%d semanas con lo cobrado apuntado</item>
-    </plurals>
+    <string name="import_rango">%1$s – %2$s</string>
+    <string name="import_copia_hecha">Copia hecha %s</string>
+    <string name="import_seccion_cambios">Qué cambia en la app</string>
+    <string name="import_fila_nuevos">Socios nuevos</string>
+    <string name="import_fila_nuevos_detalle">Se añaden a su semana</string>
+    <string name="import_fila_sustituidos">Socios que ya tienes</string>
+    <string name="import_fila_sustituidos_detalle">Se actualizan con los datos del archivo</string>
+    <string name="import_fila_bonus">Bonus ajustados a mano</string>
+    <string name="import_fila_bonus_detalle">Sustituyen al de su semana</string>
+    <string name="import_fila_irpf">Cambios de IRPF</string>
+    <string name="import_fila_irpf_detalle">Se aplican desde su semana en adelante</string>
+    <string name="import_fila_cobros">Semanas con lo cobrado</string>
+    <string name="import_fila_cobros_detalle">Sustituyen a lo apuntado en la app</string>
+    <string name="import_descartados_detalle">Les faltan datos o tienen valores imposibles, así que no se importan.</string>
+    <string name="import_nota_intactos">Lo que ya tienes en la app y no viene en el archivo se queda como está.</string>
     <plurals name="import_descartados">
         <item quantity="one">%d registro no válido se ignorará</item>
         <item quantity="many">%d registros no válidos se ignorarán</item>
@@ -469,9 +414,6 @@
     <string name="msg_cobro_guardado_detalle">%s como neto de la semana</string>
     <string name="msg_cobro_eliminado">Cobro quitado</string>
     <string name="msg_cobro_eliminado_detalle">La semana vuelve al neto calculado</string>
-    <string name="msg_irpf_actualizado">IRPF actualizado</string>
-    <string name="msg_irpf_actualizado_detalle">%1$s desde la semana del %2$s</string>
-    <string name="msg_irpf_cambio_eliminado">Cambio de IRPF eliminado</string>
     <string name="msg_file_saved">Archivo guardado</string>
     <string name="msg_file_saved_detalle">%s en la carpeta que elegiste</string>
     <string name="msg_export_vacio">Nada que exportar</string>

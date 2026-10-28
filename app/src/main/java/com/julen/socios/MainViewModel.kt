@@ -37,7 +37,6 @@ import com.julen.socios.util.motivoDeError
 import com.julen.socios.util.nombreVisible
 import com.julen.socios.util.toCurrencyString
 import com.julen.socios.util.toEurosCompacto
-import com.julen.socios.util.toPorcentajeString
 import java.time.Clock
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineDispatcher
@@ -184,9 +183,6 @@ class MainViewModel(
     }.flowOn(calculoDispatcher)
         .mientrasSeObserve(null)
 
-    /** Cambios de porcentaje de IRPF, del más antiguo al más reciente. */
-    val irpfVigencias: StateFlow<List<IrpfVigencia>> = vigencias.mientrasSeObserve(emptyList())
-
     /** Semanas con socios, con un bono manual o con lo cobrado apuntado, de la más reciente a la más antigua. */
     val semanasDisponibles: StateFlow<List<String>> = combine(
         socioRepository.getSemanaKeysFlow(),
@@ -253,7 +249,7 @@ class MainViewModel(
         savedStateHandle[KEY_DIA_FILTRO] = dia?.id
     }
 
-    // --- Socios, bonus e IRPF ---
+    // --- Socios, bonus y lo cobrado ---
 
     fun setSocioHecho(socioId: String, hecho: Boolean) = lanzar {
         if (socioRepository.setHecho(socioId, hecho)) {
@@ -321,19 +317,6 @@ class MainViewModel(
     fun eliminarCobro(semanaKey: String) = lanzar {
         cobroRepository.eliminar(semanaKey)
         avisar(R.string.msg_cobro_eliminado, TipoAviso.INFO, UiText.Res(R.string.msg_cobro_eliminado_detalle))
-    }
-
-    fun guardarIrpf(desdeSemanaKey: String, porcentaje: Double) = lanzar {
-        irpfRepository.guardarVigencia(desdeSemanaKey, porcentaje)
-        avisar(
-            R.string.msg_irpf_actualizado, TipoAviso.EXITO,
-            UiText.Res(R.string.msg_irpf_actualizado_detalle, listOf(porcentaje.toPorcentajeString(), DateUtils.rangoCorto(desdeSemanaKey)))
-        )
-    }
-
-    fun eliminarIrpf(desdeSemanaKey: String) = lanzar {
-        irpfRepository.eliminarVigencia(desdeSemanaKey)
-        avisar(R.string.msg_irpf_cambio_eliminado, TipoAviso.INFO)
     }
 
     // --- Exportación ---

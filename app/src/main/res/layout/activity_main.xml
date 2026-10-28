@@ -142,66 +142,40 @@
                     android:paddingTop="20dp"
                     android:paddingBottom="18dp">
 
+                    <!-- El neto: con un doble toque se ajusta a lo cobrado de verdad -->
                     <LinearLayout
-                        style="@style/Socios.Fila">
+                        android:id="@+id/containerNetoHeader"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="-6dp"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:orientation="vertical"
+                        android:padding="6dp">
 
-                        <!-- El neto: con un doble toque se ajusta a lo cobrado de verdad -->
-                        <LinearLayout
-                            android:id="@+id/containerNetoHeader"
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_marginStart="-6dp"
-                            android:layout_marginEnd="8dp"
-                            android:layout_weight="1"
-                            android:clickable="true"
-                            android:focusable="true"
-                            android:orientation="vertical"
-                            android:padding="6dp">
-
-                            <TextView
-                                android:id="@+id/tvNetoHeaderLabel"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="@string/header_neto_semanal"
-                                android:textColor="@color/header_label_neto"
-                                android:textSize="13sp"
-                                android:fontFamily="@font/geist_medium" />
-
-                            <!-- Con la letra grande del sistema la cifra se encoge en vez de partirse por la coma -->
-                            <TextView
-                                android:id="@+id/tvNetoHeader"
-                                style="@style/Socios.CifraGrande"
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:layout_marginTop="8dp"
-                                android:autoSizeMaxTextSize="44sp"
-                                android:autoSizeMinTextSize="20sp"
-                                android:autoSizeTextType="uniform"
-                                android:maxLines="1"
-                                android:textColor="@android:color/white"
-                                android:textSize="44sp"
-                                tools:text="424,01 €" />
-                        </LinearLayout>
-
-                        <com.google.android.material.button.MaterialButton
-                            android:id="@+id/btnVerDesglose"
-                            style="@style/Widget.Material3.Button"
+                        <TextView
+                            android:id="@+id/tvNetoHeaderLabel"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_gravity="top"
-                            android:minHeight="40dp"
-                            android:paddingHorizontal="14dp"
-                            android:text="@string/action_ver_irpf"
-                            android:textColor="@android:color/white"
+                            android:text="@string/header_neto_semanal"
+                            android:textColor="@color/header_label_neto"
                             android:textSize="13sp"
-                            android:fontFamily="@font/geist_semibold"
-                            app:backgroundTint="#1FFFFFFF"
-                            app:cornerRadius="999dp"
-                            app:strokeColor="@color/header_filo"
-                            app:strokeWidth="1dp"
-                            app:icon="@drawable/ic_receipt"
-                            app:iconSize="18dp"
-                            app:iconTint="@android:color/white" />
+                            android:fontFamily="@font/geist_medium" />
+
+                        <!-- Con la letra grande del sistema la cifra se encoge en vez de partirse por la coma -->
+                        <TextView
+                            android:id="@+id/tvNetoHeader"
+                            style="@style/Socios.CifraGrande"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="8dp"
+                            android:autoSizeMaxTextSize="44sp"
+                            android:autoSizeMinTextSize="20sp"
+                            android:autoSizeTextType="uniform"
+                            android:maxLines="1"
+                            android:textColor="@android:color/white"
+                            android:textSize="44sp"
+                            tools:text="424,01 €" />
                     </LinearLayout>
 
                     <!-- Base, bonus (se puede ajustar) e IRPF. Las cajas que se tocan no llevan el resalte

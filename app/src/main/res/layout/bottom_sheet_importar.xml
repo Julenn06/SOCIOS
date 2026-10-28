@@ -1,0 +1,257 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Revisión de una importación antes de guardarla: el archivo, cuánto trae, qué cambia en la app y qué se
+    ignora. Las líneas de lo que cambia se añaden desde código.
+-->
+<androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:forceDarkAllowed="false"
+    tools:targetApi="q">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingHorizontal="20dp"
+        android:paddingTop="12dp"
+        android:paddingBottom="24dp">
+
+        <!-- Handle drag bar -->
+        <View
+            style="@style/Socios.AsaPanel" />
+
+        <!-- Encabezado: qué archivo se va a importar -->
+        <LinearLayout
+            style="@style/Socios.Fila">
+
+            <FrameLayout
+                style="@style/Socios.PlacaPanel"
+                android:background="@drawable/bg_icono_degradado">
+
+                <ImageView
+                    style="@style/Socios.IconoPanel"
+                    android:importantForAccessibility="no"
+                    android:src="@drawable/ic_import" />
+            </FrameLayout>
+
+            <LinearLayout
+                style="@style/Socios.ColumnaTextos">
+
+                <TextView
+                    style="@style/Socios.TituloPanel"
+                    android:text="@string/import_titulo" />
+
+                <TextView
+                    android:id="@+id/tvArchivoImport"
+                    style="@style/Socios.SubtituloPanel"
+                    android:ellipsize="middle"
+                    android:maxLines="1"
+                    tools:text="copia_socios_historico_20261028.json" />
+            </LinearLayout>
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnCerrarImport"
+                style="@style/Socios.BotonCerrar" />
+        </LinearLayout>
+
+        <!-- Cuánto trae el archivo -->
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            app:cardCornerRadius="24dp"
+            app:cardElevation="6dp"
+            app:strokeWidth="0dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/bg_hero"
+                android:orientation="vertical"
+                android:padding="20dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/import_vas_a_importar"
+                    android:textColor="@color/header_label_neto"
+                    android:textSize="13sp"
+                    android:fontFamily="@font/geist_medium" />
+
+                <TextView
+                    android:id="@+id/tvTotalImport"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:autoSizeMaxTextSize="40sp"
+                    android:autoSizeMinTextSize="22sp"
+                    android:autoSizeTextType="uniform"
+                    android:fontFeatureSettings="tnum"
+                    android:letterSpacing="-0.02"
+                    android:maxLines="1"
+                    android:textColor="@android:color/white"
+                    android:textSize="40sp"
+                    android:fontFamily="@font/geist_semibold"
+                    tools:text="194 socios" />
+
+                <com.google.android.material.chip.ChipGroup
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="6dp"
+                    app:chipSpacingHorizontal="6dp"
+                    app:chipSpacingVertical="6dp">
+
+                    <TextView
+                        android:id="@+id/tvSemanasImport"
+                        style="@style/Socios.PastillaCabecera"
+                        tools:text="70 semanas" />
+
+                    <TextView
+                        android:id="@+id/tvRangoImport"
+                        style="@style/Socios.PastillaCabecera"
+                        tools:text="ene 2025 – oct 2026" />
+                </com.google.android.material.chip.ChipGroup>
+
+                <!-- Solo las copias JSON guardan cuándo se hicieron -->
+                <TextView
+                    android:id="@+id/tvFechaCopiaImport"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="14dp"
+                    android:drawablePadding="6dp"
+                    android:gravity="center_vertical"
+                    android:textColor="@color/header_label_base"
+                    android:textSize="12.5sp"
+                    android:visibility="gone"
+                    app:drawableStartCompat="@drawable/ic_schedule"
+                    app:drawableTint="@color/header_label_base"
+                    tools:text="Copia hecha hoy a las 22:12"
+                    tools:visibility="visible" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- Qué cambia en la app -->
+        <TextView
+            style="@style/Socios.Seccion"
+            android:text="@string/import_seccion_cambios" />
+
+        <com.google.android.material.card.MaterialCardView
+            style="@style/Socios.TarjetaFila"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:stateListAnimator="@null">
+
+            <LinearLayout
+                android:id="@+id/filasImport"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:paddingHorizontal="14dp"
+                android:paddingVertical="4dp" />
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- Lo que no se puede importar -->
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/tarjetaDescartadosImport"
+            style="@style/Socios.TarjetaFila"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:stateListAnimator="@null"
+            android:visibility="gone"
+            app:cardBackgroundColor="@color/amber_container"
+            app:strokeColor="@color/amber_stroke"
+            tools:visibility="visible">
+
+            <LinearLayout
+                style="@style/Socios.Fila"
+                android:padding="14dp">
+
+                <ImageView
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:importantForAccessibility="no"
+                    android:src="@drawable/ic_error"
+                    app:tint="@color/amber_text" />
+
+                <LinearLayout
+                    style="@style/Socios.ColumnaTextos"
+                    android:layout_marginStart="12dp"
+                    android:layout_marginEnd="0dp">
+
+                    <TextView
+                        android:id="@+id/tvDescartadosImport"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textColor="@color/amber_text"
+                        android:textSize="14.5sp"
+                        android:fontFamily="@font/geist_semibold"
+                        tools:text="2 registros no válidos se ignorarán" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="1dp"
+                        android:text="@string/import_descartados_detalle"
+                        android:textColor="@color/text_sub"
+                        android:textSize="12.5sp" />
+                </LinearLayout>
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:drawablePadding="10dp"
+            android:paddingHorizontal="4dp"
+            android:text="@string/import_nota_intactos"
+            android:textColor="@color/text_sub"
+            android:textSize="12.5sp"
+            app:drawableStartCompat="@drawable/ic_info"
+            app:drawableTint="@color/text_sub" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:orientation="horizontal">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnCancelarImport"
+                style="@style/Widget.Material3.Button.TonalButton"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_marginEnd="12dp"
+                android:layout_weight="1"
+                android:insetTop="0dp"
+                android:insetBottom="0dp"
+                android:minHeight="56dp"
+                android:text="@string/action_cancel"
+                android:textColor="@color/on_primary_container"
+                android:textSize="15sp"
+                android:fontFamily="@font/geist_semibold"
+                app:backgroundTint="@color/primary_container"
+                app:cornerRadius="16dp" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnConfirmarImport"
+                style="@style/Widget.Material3.Button"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1.6"
+                android:insetTop="0dp"
+                android:insetBottom="0dp"
+                android:minHeight="56dp"
+                android:text="@string/action_importar"
+                android:textSize="15sp"
+                android:fontFamily="@font/geist_semibold"
+                app:cornerRadius="16dp"
+                app:icon="@drawable/ic_import"
+                app:iconGravity="textStart" />
+        </LinearLayout>
+    </LinearLayout>
+</androidx.core.widget.NestedScrollView>

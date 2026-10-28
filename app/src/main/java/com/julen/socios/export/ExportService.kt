@@ -2,6 +2,7 @@ package com.julen.socios.export
 
 import android.content.Context
 import android.net.Uri
+import android.provider.OpenableColumns
 import com.julen.socios.data.backup.BackupCsv
 import com.julen.socios.data.backup.BackupJson
 import com.julen.socios.model.DatosBackup
@@ -67,12 +68,19 @@ class ExportadorArchivos(
         withContext(Dispatchers.IO) {
             val input = appContext.contentResolver.openInputStream(uri)
                 ?: throw ErrorParaUsuario("no se ha podido abrir el archivo seleccionado")
-            input.use {
+            val lectura = input.use {
                 when (formato) {
                     ImportFormat.JSON -> BackupJson.leer(it)
                     ImportFormat.CSV -> BackupCsv.leer(it)
                 }
             }
+            lectura.copy(nombreArchivo = nombreDe(uri))
+        }
+
+    /** El nombre con el que el sistema muestra el archivo ("copia_socios.json"), o null si no lo da. */
+    private fun nombreDe(uri: Uri): String? =
+        appContext.contentResolver.query(uri, arrayOf(OpenableColumns.DISPLAY_NAME), null, null, null)?.use { cursor ->
+            cursor.takeIf { it.moveToFirst() }?.getString(0)?.takeIf { it.isNotBlank() }
         }
 
     private fun escribir(request: ExportRequest, datos: DatosBackup, outputStream: OutputStream) {

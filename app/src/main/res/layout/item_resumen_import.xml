@@ -1,34 +1,72 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Una línea del resumen de importación: icono en su placa y el texto. -->
+<!-- Una línea de lo que cambia al importar: icono en su placa, qué es y qué pasará, y cuántos son. -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    style="@style/Socios.Fila"
-    android:paddingVertical="6dp">
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
 
-    <FrameLayout
-        android:id="@+id/placaResumen"
-        android:layout_width="40dp"
-        android:layout_height="40dp"
-        android:background="@drawable/bg_icono_tile"
-        tools:backgroundTint="@color/green_container">
+    <!-- Entre una línea y la siguiente; la primera no lo lleva -->
+    <View
+        android:id="@+id/separadorResumen"
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_marginStart="52dp"
+        android:background="@color/divider" />
 
-        <ImageView
-            android:id="@+id/ivResumen"
-            android:layout_width="22dp"
-            android:layout_height="22dp"
-            android:layout_gravity="center"
-            android:importantForAccessibility="no"
-            tools:src="@drawable/ic_person"
-            tools:tint="@color/green_text_soft" />
-    </FrameLayout>
+    <LinearLayout
+        style="@style/Socios.Fila"
+        android:paddingVertical="10dp">
 
-    <TextView
-        android:id="@+id/tvResumen"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="14dp"
-        android:layout_weight="1"
-        android:textColor="@color/text_main"
-        android:textSize="15sp"
-        tools:text="12 socios nuevos" />
+        <FrameLayout
+            android:id="@+id/placaResumen"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:background="@drawable/bg_icono_tile"
+            tools:backgroundTint="@color/green_container">
+
+            <ImageView
+                android:id="@+id/ivResumen"
+                android:layout_width="22dp"
+                android:layout_height="22dp"
+                android:layout_gravity="center"
+                android:importantForAccessibility="no"
+                tools:src="@drawable/ic_person"
+                tools:tint="@color/green_text_soft" />
+        </FrameLayout>
+
+        <LinearLayout
+            style="@style/Socios.ColumnaTextos"
+            android:layout_marginStart="12dp">
+
+            <TextView
+                android:id="@+id/tvResumen"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/text_main"
+                android:textSize="14.5sp"
+                android:fontFamily="@font/geist_medium"
+                tools:text="Socios nuevos" />
+
+            <TextView
+                android:id="@+id/tvResumenDetalle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="1dp"
+                android:textColor="@color/text_sub"
+                android:textSize="12.5sp"
+                tools:text="Se añaden a su semana" />
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/tvResumenCantidad"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:fontFeatureSettings="tnum"
+            android:maxLines="1"
+            android:textColor="@color/text_main"
+            android:textSize="18sp"
+            android:fontFamily="@font/geist_semibold"
+            tools:text="14" />
+    </LinearLayout>
 </LinearLayout>

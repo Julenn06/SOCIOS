@@ -15,11 +15,5 @@ interface IrpfVigenciaDao {
     fun getAllFlow(): Flow<List<IrpfVigenciaEntity>>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun upsert(vigencia: IrpfVigenciaEntity)
-
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun upsertAll(vigencias: List<IrpfVigenciaEntity>)
-
-    @Query("DELETE FROM irpf_vigencias WHERE desdeSemanaKey = :desdeSemanaKey")
-    suspend fun delete(desdeSemanaKey: String)
 }

@@ -102,4 +102,12 @@ class DateUtilsTest {
         assertEquals(DiaSemana.VIERNES, DateUtils.getDiaSemanaActual(clockEn("2026-10-17")))
         assertEquals(DiaSemana.LUNES, DateUtils.getDiaSemanaActual(clockEn("2026-10-18")))
     }
+
+    @Test
+    fun mesConAnioEsElDelJuevesDeLaSemana() {
+        // La 2026-W01 va del 29 de diciembre al 2 de enero: su jueves es el 1 de enero.
+        assertEquals("ene 2026", DateUtils.mesConAnio("2026-W01"))
+        assertEquals("sept 2026", DateUtils.mesConAnio("2026-W39"))
+        assertEquals("no-es-clave", DateUtils.mesConAnio("no-es-clave"))
+    }
 }

@@ -49,14 +49,22 @@ class BackupRepository(
 
     suspend fun previsualizar(lectura: ResultadoLectura): ImportPreview {
         val existentes = socioDao.getAllIds().toSet()
-        val sobrescritos = lectura.datos.socios.count { it.id in existentes }
+        val datos = lectura.datos
+        val sobrescritos = datos.socios.count { it.id in existentes }
+        val semanas = (datos.socios.map { it.semanaKey } + datos.bonosRegalo.map { it.semanaKey } + datos.cobros.map { it.semanaKey })
+            .toSortedSet()
         return ImportPreview(
-            sociosNuevos = lectura.datos.socios.size - sobrescritos,
+            sociosNuevos = datos.socios.size - sobrescritos,
             sociosSobrescritos = sobrescritos,
-            bonos = lectura.datos.bonosRegalo.size,
-            irpfVigencias = lectura.datos.irpfVigencias.size,
-            cobros = lectura.datos.cobros.size,
-            descartados = lectura.descartados
+            bonos = datos.bonosRegalo.size,
+            irpfVigencias = datos.irpfVigencias.size,
+            cobros = datos.cobros.size,
+            descartados = lectura.descartados,
+            semanas = semanas.size,
+            primeraSemana = semanas.firstOrNull(),
+            ultimaSemana = semanas.lastOrNull(),
+            nombreArchivo = lectura.nombreArchivo,
+            fechaCopia = lectura.fechaCopia
         )
     }
 

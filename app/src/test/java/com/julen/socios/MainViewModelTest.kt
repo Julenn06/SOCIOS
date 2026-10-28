@@ -7,6 +7,7 @@ import com.julen.socios.data.CobroRepository
 import com.julen.socios.data.IrpfRepository
 import com.julen.socios.data.SocioRepository
 import com.julen.socios.data.local.BonoRegaloEntity
+import com.julen.socios.data.local.IrpfVigenciaEntity
 import com.julen.socios.data.local.SocioEntity
 import com.julen.socios.export.AlcanceExport
 import com.julen.socios.export.ExportFormat
@@ -232,35 +233,15 @@ class MainViewModelTest {
     }
 
     @Test
-    fun elIrpfSoloCambiaDesdeLaSemanaIndicada() = runTest(dispatcher) {
+    fun elIrpfDeUnaCopiaSoloCambiaDesdeSuSemana() = runTest(dispatcher) {
         socioDao.socios.value = listOf(entidad("a", semanaActual), entidad("b", semanaSiguiente))
+        irpfDao.upsertAll(listOf(IrpfVigenciaEntity(semanaSiguiente, 15.0)))
         val viewModel = crearViewModel()
         observar(viewModel)
-
-        viewModel.guardarIrpf(semanaSiguiente, 15.0)
 
         assertEquals(CalculoComisiones.IRPF_POR_DEFECTO, viewModel.uiState.value.resumenSemana!!.porcentajeIrpf, 0.0)
         viewModel.cambiarSemana(1)
         assertEquals(15.0, viewModel.uiState.value.resumenSemana!!.porcentajeIrpf, 0.0)
-    }
-
-    @Test
-    fun alEliminarUnCambioDeIrpfSeVuelveAlPorcentajeAnterior() = runTest(dispatcher) {
-        socioDao.socios.value = listOf(entidad("a", semanaActual))
-        val viewModel = crearViewModel()
-        backgroundScope.launch(dispatcher) { viewModel.irpfVigencias.collect {} }
-        observar(viewModel)
-        val semanaAnterior = DateUtils.getSemanaKey(-1, clock)
-
-        viewModel.guardarIrpf(semanaAnterior, 15.0)
-        viewModel.guardarIrpf(semanaActual, 19.0)
-        assertEquals(19.0, viewModel.uiState.value.resumenSemana!!.porcentajeIrpf, 0.0)
-        assertEquals(listOf(semanaAnterior, semanaActual), viewModel.irpfVigencias.value.map { it.desdeSemanaKey })
-
-        viewModel.eliminarIrpf(semanaActual)
-
-        assertEquals(15.0, viewModel.uiState.value.resumenSemana!!.porcentajeIrpf, 0.0)
-        assertEquals(listOf(semanaAnterior), viewModel.irpfVigencias.value.map { it.desdeSemanaKey })
     }
 
     @Test
@@ -291,7 +272,13 @@ class MainViewModelTest {
 
         viewModel.prepararImportacion(lectura, ImportFormat.JSON)
 
-        assertEquals(ImportPreview(1, 1, 0, 0, 0, 2), viewModel.importPendiente.value)
+        assertEquals(
+            ImportPreview(
+                sociosNuevos = 1, sociosSobrescritos = 1, bonos = 0, irpfVigencias = 0, cobros = 0, descartados = 2,
+                semanas = 1, primeraSemana = semanaActual, ultimaSemana = semanaActual
+            ),
+            viewModel.importPendiente.value
+        )
         assertEquals(1, socioDao.socios.value.size)
 
         viewModel.confirmarImport()
