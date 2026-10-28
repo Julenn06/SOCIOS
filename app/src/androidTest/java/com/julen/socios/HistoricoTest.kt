@@ -4,7 +4,10 @@ import android.view.accessibility.AccessibilityNodeInfo
 import androidx.test.core.app.ActivityScenario
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.espresso.Espresso.onView
+import androidx.test.espresso.Espresso.openActionBarOverflowOrOptionsMenu
+import androidx.test.espresso.NoMatchingViewException
 import androidx.test.espresso.action.ViewActions.click
+import androidx.test.espresso.action.ViewActions.scrollTo
 import androidx.test.espresso.assertion.ViewAssertions.doesNotExist
 import androidx.test.espresso.assertion.ViewAssertions.matches
 import androidx.test.espresso.matcher.RootMatchers.isDialog
@@ -57,7 +60,15 @@ class HistoricoTest {
         apuntados += socio
     }
 
-    private fun abrirHistorico() = onView(withId(R.id.action_ver_historico)).perform(click())
+    /** Abre el histórico desde su icono o, si en una pantalla estrecha no cabe en la barra, desde el menú ⋮. */
+    private fun abrirHistorico() {
+        try {
+            onView(withId(R.id.action_ver_historico)).perform(click())
+        } catch (e: NoMatchingViewException) {
+            openActionBarOverflowOrOptionsMenu(app)
+            onView(withText(R.string.menu_historico)).perform(click())
+        }
+    }
 
     @Test
     fun elGraficoSeDesplazaYEmpiezaEnLoMasReciente() {
@@ -84,7 +95,7 @@ class HistoricoTest {
         ActivityScenario.launch(MainActivity::class.java).use {
             abrirHistorico()
 
-            reintentar { onView(withId(R.id.filaMejorSemana)).inRoot(isDialog()).perform(click()) }
+            reintentar { onView(withId(R.id.filaMejorSemana)).inRoot(isDialog()).perform(scrollTo(), click()) }
 
             // El panel se cierra (con su animación) y la pantalla principal pasa a esa semana.
             reintentar { onView(withId(R.id.filaMejorSemana)).check(doesNotExist()) }
@@ -100,7 +111,7 @@ class HistoricoTest {
 
             onView(withText(R.string.historico_cobrado_label)).inRoot(isDialog()).check(matches(isDisplayed()))
             onView(withId(R.id.tvGlobalNetoTotal)).inRoot(isDialog()).check(matches(isDisplayed()))
-            reintentar { onView(withId(R.id.tarjetaMejorSemana)).inRoot(isDialog()).check(matches(isDisplayed())) }
+            reintentar { onView(withId(R.id.tarjetaMejorSemana)).inRoot(isDialog()).perform(scrollTo()).check(matches(isDisplayed())) }
         }
     }
 
