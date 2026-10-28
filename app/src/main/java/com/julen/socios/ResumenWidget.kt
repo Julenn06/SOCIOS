@@ -92,7 +92,7 @@ object ResumenWidget {
 
             context.packageManager.getLaunchIntentForPackage(context.packageName)?.let { abrir ->
                 setOnClickPendingIntent(
-                    R.id.widgetRaiz,
+                    android.R.id.background,
                     PendingIntent.getActivity(context, PETICION_ABRIR, abrir, PendingIntent.FLAG_IMMUTABLE)
                 )
             }

@@ -215,6 +215,7 @@
             app:drawableTint="@color/text_sub" />
 
         <LinearLayout
+            android:id="@+id/barraBotonesImport"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="20dp"

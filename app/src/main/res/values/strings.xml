@@ -366,31 +366,30 @@
     </plurals>
 
     <!-- PDF -->
-    <string name="pdf_titulo">GESTIÓN DE SOCIOS - REPORTE</string>
-    <string name="pdf_subtitulo">Periodo: %1$s  •  Generado: %2$s</string>
-    <string name="pdf_kpi_socios_hechos">Socios Hechos</string>
-    <string name="pdf_kpi_base">Base (Cuotas x2)</string>
-    <string name="pdf_kpi_bonus_semanal">Bonus Semanal</string>
-    <string name="pdf_kpi_bonus_manual">Bonus (Manual)</string>
-    <string name="pdf_kpi_bonus_total">Bonus Total</string>
-    <string name="pdf_kpi_neto">Ganancia Neta</string>
-    <string name="pdf_detalle_semana">"Bruto: %1$s  •  IRPF (%2$s): -%3$s"</string>
-    <string name="pdf_detalle_motivo">"  •  Bonus manual: «%s»"</string>
-    <string name="pdf_detalle_descontado">"Descontado: %s  •  "</string>
-    <plurals name="pdf_detalle_varias_semanas">
-        <item quantity="one">Bruto: %1$s  •  IRPF retenido: -%2$s  •  %3$d semana</item>
-        <item quantity="many">Bruto: %1$s  •  IRPF retenido: -%2$s  •  %3$d semanas</item>
-        <item quantity="other">Bruto: %1$s  •  IRPF retenido: -%2$s  •  %3$d semanas</item>
-    </plurals>
-    <string name="pdf_col_nombre">Nombre / Socio</string>
+    <string name="pdf_titulo">Informe de socios</string>
+    <string name="pdf_generado">Generado el %s</string>
+    <string name="pdf_kpi_neto">Neto</string>
+    <string name="pdf_kpi_bruto">Bruto</string>
+    <string name="pdf_kpi_base">Base ×2</string>
+    <string name="pdf_kpi_bonus">Bonus</string>
+    <string name="pdf_kpi_bonus_manual">Bonus (con ajustes)</string>
+    <string name="pdf_pastilla_socios">%1$d de %2$d socios hechos</string>
+    <string name="pdf_pastilla_descontado">Descontado %s</string>
+    <string name="pdf_detalle_motivo">Bonus ajustado a mano: «%s»</string>
+    <string name="pdf_por_semanas">Por semanas</string>
+    <string name="pdf_por_meses">Por meses</string>
+    <string name="pdf_seccion_detalle">Socios por semana</string>
+    <string name="pdf_semana_resumen">%1$d de %2$d hechos  ·  Neto %3$s</string>
+    <string name="pdf_semana_continuacion">%s (continuación)</string>
+    <string name="pdf_sin_socios">Sin socios: solo el bonus o lo cobrado</string>
+    <string name="pdf_col_nombre">Socio</string>
     <string name="pdf_col_cuota">Cuota</string>
     <string name="pdf_col_dia">Día</string>
     <string name="pdf_col_estado">Estado</string>
-    <string name="pdf_col_semana">Semana</string>
     <string name="pdf_col_notas">Notas</string>
-    <string name="pdf_estado_hecho">✓ Hecho</string>
-    <string name="pdf_estado_pendiente">⏳ Pendiente</string>
-    <string name="pdf_pie">Gestión de Socios • Documento Oficial</string>
+    <string name="pdf_estado_hecho">Hecho</string>
+    <string name="pdf_estado_pendiente">Pendiente</string>
+    <string name="pdf_pie">Generado con Gestión de Socios</string>
     <string name="pdf_pagina">Página %d</string>
 
     <!-- Avisos: un título que dice qué ha pasado y, debajo, un detalle con a qué o por qué -->

@@ -1,10 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Widget: semana, neto, socios hechos con lo que falta para el siguiente bonus y botón para añadir uno.
      Solo vistas que admite RemoteViews; las fuentes son las del sistema porque el launcher no carga las de la app.
-     Por lo mismo, el icono se tiñe con android:tint: app:tint es de AppCompat y el launcher no lo entiende. -->
+     Por lo mismo, el icono se tiñe con android:tint: app:tint es de AppCompat y el launcher no lo entiende.
+     El fondo lleva el id android:id/background: desde Android 12 el lanzador lo usa para recortar las esquinas
+     y para la animación al abrir la app desde el widget. -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/widgetRaiz"
+    android:id="@android:id/background"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@drawable/bg_widget"

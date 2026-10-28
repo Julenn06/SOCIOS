@@ -9,8 +9,9 @@ import java.io.Writer
 
 /**
  * CSV con cuatro secciones (# SOCIOS, # BONOS_REGALO, # IRPF, # COBROS), precedidas de la versión del
- * formato (# VERSION 4). También lee la sección # DEVOLUCIONES de las hojas v3. Los campos con comas, comillas, saltos de línea o espacios en los extremos van entre
- * comillas, y el lector respeta esas comillas aunque el campo ocupe varias líneas.
+ * formato (# VERSION 4). Las filas de la sección # DEVOLUCIONES de las hojas v3 no se importan: cuentan como
+ * descartadas. Los campos con comas, comillas, saltos de línea o espacios en los extremos van entre comillas, y
+ * el lector respeta esas comillas aunque el campo ocupe varias líneas.
  */
 object BackupCsv {
 
@@ -20,15 +21,15 @@ object BackupCsv {
     private const val SECCION_COBROS = "# COBROS"
     private const val SECCION_DEVOLUCIONES = "# DEVOLUCIONES"
     private const val PREFIJO_VERSION = "# VERSION "
-    private val PATRON_VERSION = Regex("""#\s*VERSION\s+(\d+)""", RegexOption.IGNORE_CASE)
+    private val PATRON_VERSION = Regex("""#\s*VERSION\s+\d+""", RegexOption.IGNORE_CASE)
 
     private const val CABECERA_SOCIOS = "ID,Colaboracion,Hecho,DiaSemanaId,SemanaKey,NombreSocio,Notas,Timestamp"
     private const val CABECERA_BONOS = "SemanaKey,Activo,EsMontoFijo,Monto,Nota"
     private const val CABECERA_IRPF = "DesdeSemanaKey,Porcentaje"
     private const val CABECERA_COBROS = "SemanaKey,NetoCobrado,Nota"
 
-    /** Cada sección, con los campos que necesita una fila para no descartarse. */
-    private enum class Seccion(val camposMinimos: Int) { SOCIOS(5), BONOS(4), IRPF(2), COBROS(2), DEVOLUCIONES(2) }
+    /** Cada sección, con los campos que necesita una fila para no descartarse. Las de IGNORADA se descartan todas. */
+    private enum class Seccion(val camposMinimos: Int) { SOCIOS(5), BONOS(4), IRPF(2), COBROS(2), IGNORADA(Int.MAX_VALUE) }
 
     fun escribir(datos: DatosBackup, outputStream: OutputStream) {
         val out = outputStream.bufferedWriter(Charsets.UTF_8)
@@ -75,9 +76,7 @@ object BackupCsv {
         val bonos = mutableListOf<BonoRegaloDto>()
         val vigencias = mutableListOf<IrpfVigenciaDto>()
         val cobros = mutableListOf<CobroDto>()
-        val devoluciones = mutableListOf<DevolucionDto>()
         var descartados = 0
-        var version: Int? = null
         var seccion = Seccion.SOCIOS
 
         for (campos in parsearRegistros(texto)) {
@@ -85,16 +84,13 @@ object BackupCsv {
 
             val primero = campos.first().trim()
             if (campos.size == 1 && primero.startsWith("#")) {
-                val numeroVersion = PATRON_VERSION.matchEntire(primero)?.groupValues?.get(1)?.toIntOrNull()
-                if (numeroVersion != null) {
-                    version = numeroVersion
-                    continue
-                }
+                // La línea de la versión no cambia de sección: se lee igual cualquier versión.
+                if (PATRON_VERSION.matches(primero)) continue
                 seccion = when {
                     primero.equals(SECCION_BONOS, ignoreCase = true) -> Seccion.BONOS
                     primero.equals(SECCION_IRPF, ignoreCase = true) -> Seccion.IRPF
                     primero.equals(SECCION_COBROS, ignoreCase = true) -> Seccion.COBROS
-                    primero.equals(SECCION_DEVOLUCIONES, ignoreCase = true) -> Seccion.DEVOLUCIONES
+                    primero.equals(SECCION_DEVOLUCIONES, ignoreCase = true) -> Seccion.IGNORADA
                     else -> Seccion.SOCIOS
                 }
                 continue
@@ -132,15 +128,13 @@ object BackupCsv {
 
                 Seccion.IRPF -> vigencias += IrpfVigenciaDto(campos[0].trim(), parseImporte(campos[1]))
                 Seccion.COBROS -> cobros += CobroDto(campos[0].trim(), parseImporte(campos[1]), campos.getOrNull(2))
-                Seccion.DEVOLUCIONES ->
-                    devoluciones += DevolucionDto(campos[0].trim(), parseImporte(campos[1]), campos.getOrNull(2))
+                Seccion.IGNORADA -> Unit // Ya descartada arriba: ninguna fila llega a tantos campos.
             }
         }
 
         val resultado = ConversionBackup.desdeDto(
             BackupDto(
-                version = version, socios = socios, bonosRegalo = bonos, irpfVigencias = vigencias, cobros = cobros,
-                devoluciones = devoluciones
+                socios = socios, bonosRegalo = bonos, irpfVigencias = vigencias, cobros = cobros
             )
         )
         return resultado.copy(descartados = resultado.descartados + descartados)

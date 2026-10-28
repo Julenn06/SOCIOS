@@ -58,14 +58,15 @@ class BackupJsonTest {
     }
 
     @Test
-    fun lasDevolucionesDeUnaCopiaV3SePasanALoCobrado() {
+    fun lasDevolucionesDeUnaCopiaV3NoSeImportanPeroSeCuentan() {
         val socios = (1..10).joinToString(",") { """{"id":"s$it","colaboracion":20.0,"diaSemanaId":1,"semanaKey":"2026-W10"}""" }
         val resultado = leer(
             """{"version":3,"socios":[$socios],"devoluciones":[{"semanaKey":"2026-W10","monto":40.0,"nota":"1.ª cuota"}]}"""
         )
 
-        // Con las cuentas de la 1.9.0: 540 - 40 = 500 de bruto, 107,40 de IRPF y 392,60 de neto.
-        assertEquals(listOf(CobroInfo("2026-W10", 392.60, "1.ª cuota")), resultado.datos.cobros)
+        assertEquals(10, resultado.datos.socios.size)
+        assertTrue(resultado.datos.cobros.isEmpty())
+        assertEquals(1, resultado.descartados)
     }
 
     @Test

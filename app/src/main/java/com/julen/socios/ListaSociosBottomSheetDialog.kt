@@ -15,6 +15,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.map
 
 /**
  * Socios de varias semanas a la vez: los pendientes de semanas anteriores o los que coinciden con una
@@ -72,8 +73,10 @@ class ListaSociosBottomSheetDialog :
         }
 
         val socios: Flow<List<Socio>> = if (buscando) {
-            // Fuera del hilo principal: con años de socios, normalizar todos en cada tecla frenaba el teclado.
-            combine(viewModel.todosLosSocios, textoBusqueda) { todos, texto -> BusquedaSocios.filtrar(todos, texto) }
+            // Fuera del hilo principal, y con el texto de cada socio preparado una sola vez cuando cambian los
+            // socios: prepararlos todos en cada tecla frenaba el teclado con años de historial.
+            val indice = viewModel.todosLosSocios.map(BusquedaSocios::indexar).flowOn(Dispatchers.Default)
+            combine(indice, textoBusqueda) { socios, texto -> BusquedaSocios.filtrar(socios, texto) }
                 .flowOn(Dispatchers.Default)
         } else {
             viewModel.pendientesAnteriores

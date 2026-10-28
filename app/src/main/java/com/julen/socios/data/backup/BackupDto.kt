@@ -1,6 +1,7 @@
 package com.julen.socios.data.backup
 
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.JsonArray
 
 /*
  * Formato de las copias de seguridad, separado del modelo de dominio para que renombrar un campo del
@@ -17,8 +18,8 @@ data class BackupDto(
     val bonosRegalo: List<BonoRegaloDto?>? = null,
     val irpfVigencias: List<IrpfVigenciaDto?>? = null,
     val cobros: List<CobroDto?>? = null,
-    /** Solo en copias v3, que guardaban lo descontado en lugar de lo cobrado. Se convierte al leerlas. */
-    val devoluciones: List<DevolucionDto?>? = null
+    /** Solo en copias v3, que guardaban lo descontado en lugar de lo cobrado: no se importa, solo se cuenta. */
+    val devoluciones: JsonArray? = null
 )
 
 @Serializable
@@ -52,12 +53,5 @@ data class IrpfVigenciaDto(
 data class CobroDto(
     val semanaKey: String? = null,
     val netoCobrado: Double? = null,
-    val nota: String? = null
-)
-
-@Serializable
-data class DevolucionDto(
-    val semanaKey: String? = null,
-    val monto: Double? = null,
     val nota: String? = null
 )

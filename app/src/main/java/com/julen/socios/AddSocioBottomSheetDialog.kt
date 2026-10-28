@@ -5,12 +5,9 @@ import android.graphics.drawable.GradientDrawable
 import android.graphics.drawable.LayerDrawable
 import android.os.Bundle
 import android.view.View
-import android.view.ViewGroup
-import android.widget.LinearLayout
 import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
-import androidx.core.view.updateLayoutParams
 import androidx.core.widget.doOnTextChanged
 import androidx.fragment.app.activityViewModels
 import com.google.android.material.button.MaterialButton
@@ -86,27 +83,7 @@ class AddSocioBottomSheetDialog :
         // y deslizar hacia abajo.
         binding.btnGuardarYOtro.isVisible = socio == null
         binding.btnEliminarSocio.isVisible = socio != null
-        // Los botones de Material van en una línea y cortan "Guardar y otro" (o, con la letra grande,
-        // "Guardar cambios"): mejor partirlo en dos.
-        val botones = listOf(binding.btnGuardarYOtro, binding.btnEliminarSocio, binding.btnGuardarSocio)
-        botones.forEach {
-            it.isSingleLine = false
-            it.maxLines = 2
-        }
-        // Con la letra muy grande ni en dos líneas caben uno al lado del otro: se apilan a lo ancho.
-        if (resources.configuration.fontScale >= ESCALA_LETRA_BOTONES_APILADOS) {
-            binding.barraBotones.orientation = LinearLayout.VERTICAL
-            val separacion = (8 * resources.displayMetrics.density).toInt()
-            botones.forEach { boton ->
-                boton.updateLayoutParams<LinearLayout.LayoutParams> {
-                    width = ViewGroup.LayoutParams.MATCH_PARENT
-                    height = ViewGroup.LayoutParams.WRAP_CONTENT
-                    weight = 0f
-                    marginEnd = 0
-                    bottomMargin = if (boton == binding.btnGuardarSocio) 0 else separacion
-                }
-            }
-        }
+        prepararBotonesInferiores(binding.barraBotones, binding.btnGuardarYOtro, binding.btnEliminarSocio, binding.btnGuardarSocio)
 
         if (savedInstanceState == null) {
             if (socio != null) {
@@ -349,9 +326,6 @@ class AddSocioBottomSheetDialog :
         private const val STATE_DETALLES = "detallesAbiertos"
         private const val STATE_SEMANA = "semana"
         private const val STATE_ANADIDOS = "anadidos"
-
-        /** A partir de esta letra del sistema los botones de abajo no caben uno al lado del otro. */
-        private const val ESCALA_LETRA_BOTONES_APILADOS = 1.6f
 
         fun nuevo(semanaKey: String, dia: DiaSemana) = AddSocioBottomSheetDialog().apply {
             arguments = Bundle().apply {

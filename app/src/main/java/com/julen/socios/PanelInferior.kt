@@ -7,9 +7,11 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.CompoundButton
 import android.widget.GridLayout
+import android.widget.LinearLayout
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.isVisible
+import androidx.core.view.updateLayoutParams
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.Lifecycle
@@ -96,6 +98,30 @@ abstract class PanelInferior<B : ViewBinding>(
         }
     }
 
+    /**
+     * Prepara los botones de abajo del panel, en [barra] y de izquierda a derecha: el de Material va en una línea
+     * y corta "Guardar y otro" (o, con la letra grande, "Guardar cambios"), así que pueden partirse en dos. Con la
+     * letra del sistema muy grande ni así caben uno al lado del otro: se apilan a lo ancho, con el último abajo.
+     */
+    protected fun prepararBotonesInferiores(barra: LinearLayout, vararg botones: MaterialButton) {
+        botones.forEach {
+            it.isSingleLine = false
+            it.maxLines = 2
+        }
+        if (resources.configuration.fontScale < ESCALA_LETRA_BOTONES_APILADOS) return
+        barra.orientation = LinearLayout.VERTICAL
+        val separacion = (8 * resources.displayMetrics.density).toInt()
+        botones.forEach { boton ->
+            boton.updateLayoutParams<LinearLayout.LayoutParams> {
+                width = ViewGroup.LayoutParams.MATCH_PARENT
+                height = ViewGroup.LayoutParams.WRAP_CONTENT
+                weight = 0f
+                marginEnd = 0
+                bottomMargin = if (boton == botones.last()) 0 else separacion
+            }
+        }
+    }
+
     protected fun mostrarTeclado(campo: View) {
         campo.requestFocus()
         val ventana = dialog?.window ?: return
@@ -158,6 +184,9 @@ abstract class PanelInferior<B : ViewBinding>(
         return opciones
     }
 }
+
+/** A partir de esta letra del sistema los botones de abajo de un panel no caben uno al lado del otro. */
+private const val ESCALA_LETRA_BOTONES_APILADOS = 1.6f
 
 /** Abre el panel o diálogo que crea [crear], salvo que ya haya uno abierto con [tag] (por ejemplo, tras un doble toque). */
 fun FragmentManager.mostrarSiNoEsta(tag: String, crear: () -> DialogFragment) {

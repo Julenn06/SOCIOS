@@ -24,16 +24,15 @@ import androidx.core.content.res.ResourcesCompat
 import androidx.core.graphics.ColorUtils
 import androidx.core.graphics.withClip
 import com.julen.socios.util.CalculoComisiones
+import com.julen.socios.util.EscalaGrafico
 import com.julen.socios.util.HapticUtils
 import com.julen.socios.util.Movimiento
 import com.julen.socios.util.toEurosCompacto
 import kotlin.math.abs
 import kotlin.math.ceil
 import kotlin.math.floor
-import kotlin.math.log10
 import kotlin.math.max
 import kotlin.math.min
-import kotlin.math.pow
 
 /**
  * Columnas del neto por semana, mes o año, de la más antigua a la más reciente. Si no caben todas, se desplazan
@@ -195,41 +194,11 @@ class GraficoNetoView @JvmOverloads constructor(
 
     // --- Geometría ---
 
-    /** La escala de importes: líneas de guía de [paso] en [paso] desde [suelo] hasta [techo]. */
-    private class Escala(val suelo: Double, val techo: Double, val paso: Double) {
-        val rango: Double get() = techo - suelo
-    }
-
-    private fun escala(): Escala {
-        val maximo = columnas.maxOfOrNull { it.neto }?.coerceAtLeast(0.0) ?: 0.0
-        val minimo = columnas.minOfOrNull { it.neto }?.coerceAtMost(0.0) ?: 0.0
-        val paso = pasoRedondo(max(maximo, -minimo) / 3)
-        val techo = (ceil(maximo / paso) * paso).coerceAtLeast(paso)
-        val suelo = floor(minimo / paso) * paso
-        return Escala(suelo, techo, paso)
-    }
-
-    /** Un paso de 1, 2, 2,5 o 5 por una potencia de 10 (5 €, 25 €, 100 €, 250 €…) que no baje de [aprox]. */
-    private fun pasoRedondo(aprox: Double): Double {
-        if (aprox <= 0.0) return 100.0
-        val potencia = 10.0.pow(floor(log10(aprox)))
-        val factor = aprox / potencia
-        return potencia * when {
-            factor <= 1.0 -> 1.0
-            factor <= 2.0 -> 2.0
-            factor <= 2.5 -> 2.5
-            factor <= 5.0 -> 5.0
-            else -> 10.0
-        }
-    }
-
-    /** Valores de las líneas de guía, de abajo arriba. */
-    private fun guias(e: Escala): List<Double> =
-        generateSequence(e.suelo) { it + e.paso }.takeWhile { it <= e.techo + e.paso / 1000 }.toList()
+    private fun escala(): EscalaGrafico = EscalaGrafico.para(columnas.map { it.neto })
 
     /** Ancho de la escala fija de la derecha: el de su rótulo más largo y un margen. */
-    private fun anchoEscala(e: Escala): Float =
-        guias(e).maxOf { pintaEscala.measureText(it.toEurosCompacto()) } + 8 * densidad
+    private fun anchoEscala(e: EscalaGrafico): Float =
+        e.guias.maxOf { pintaEscala.measureText(it.toEurosCompacto()) } + 8 * densidad
 
     private var areaIzquierda = 0f
     private var areaDerecha = 0f
@@ -320,11 +289,11 @@ class GraficoNetoView @JvmOverloads constructor(
     }
 
     /** Las líneas de guía (la del cero, continua) y sus importes en la columna fija de la derecha. */
-    private fun dibujarEscala(canvas: Canvas, e: Escala, yDe: (Double) -> Float) {
+    private fun dibujarEscala(canvas: Canvas, e: EscalaGrafico, yDe: (Double) -> Float) {
         val ajusteTexto = -(pintaEscala.descent() + pintaEscala.ascent()) / 2
-        for (valor in guias(e)) {
+        for (valor in e.guias) {
             val y = yDe(valor)
-            if (abs(valor) < e.paso / 1000) {
+            if (e.esCero(valor)) {
                 canvas.drawLine(areaIzquierda, y, areaDerecha, y, pintaEje)
             } else {
                 raya(canvas, areaIzquierda, y, areaDerecha, y, pintaGuia)
@@ -333,7 +302,7 @@ class GraficoNetoView @JvmOverloads constructor(
         }
     }
 
-    private fun dibujarColumnas(canvas: Canvas, e: Escala, base: Float, altoUtil: Float, abajo: Float) {
+    private fun dibujarColumnas(canvas: Canvas, e: EscalaGrafico, base: Float, altoUtil: Float, abajo: Float) {
         val anchoBarra = min(anchoMaxBarra, hueco - separacionMin * 2)
         // Etiquetas del eje: todas si caben; si no, una de cada pocas contando desde la destacada, que siempre va.
         val paso = max(1, ceil(anchoEtiqueta / hueco).toInt())
@@ -374,7 +343,7 @@ class GraficoNetoView @JvmOverloads constructor(
      * Rótulos directos solo en la destacada y en el máximo, cuando la animación ha terminado y no hay una columna
      * tocada encima. Si los dos se pisarían, se queda el de la destacada.
      */
-    private fun dibujarRotulos(canvas: Canvas, e: Escala, base: Float, altoUtil: Float, abajo: Float) {
+    private fun dibujarRotulos(canvas: Canvas, e: EscalaGrafico, base: Float, altoUtil: Float, abajo: Float) {
         if (progreso < 1f) return
         val indiceMaximo = columnas.indices.maxByOrNull { columnas[it].neto }?.takeIf { columnas[it].neto > 0.0 } ?: -1
         val rotuloDestacada = rotulo(destacada, base, altoUtil, e.rango, abajo)

@@ -44,6 +44,7 @@ class ImportarBottomSheetDialog : PanelInferior<BottomSheetImportarBinding>(Bott
             HapticUtils.performConfirm(it)
             viewModel.confirmarImport()
         }
+        prepararBotonesInferiores(binding.barraBotonesImport, binding.btnCancelarImport, binding.btnConfirmarImport)
         listOf(binding.btnCancelarImport, binding.btnConfirmarImport).forEach(AnimationExtensions::setupPressScaleAnimation)
 
         mientrasSeVea {

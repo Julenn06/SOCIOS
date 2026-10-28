@@ -58,11 +58,13 @@ class BackupCsvTest {
     }
 
     @Test
-    fun lasDevolucionesDeUnaHojaV3SePasanALoCobrado() {
+    fun lasDevolucionesDeUnaHojaV3NoSeImportanPeroSeCuentan() {
         val socios = (1..10).joinToString("\n") { "s$it,20,true,1,2026-W10,,,0" }
         val resultado = leer("# VERSION 3\n# SOCIOS\n$socios\n# DEVOLUCIONES\nSemanaKey,Monto,Nota\n2026-W10,40,1.ª cuota\n")
 
-        assertEquals(listOf(CobroInfo("2026-W10", 392.60, "1.ª cuota")), resultado.datos.cobros)
+        assertEquals(10, resultado.datos.socios.size)
+        assertTrue(resultado.datos.cobros.isEmpty())
+        assertEquals(1, resultado.descartados)
     }
 
     @Test
@@ -118,34 +120,22 @@ class BackupCsvTest {
         assertEquals(4, resultado.descartados)
     }
 
-    @Test
-    fun corrigeClavesDeSemanaDeCopiasAntiguas() {
-        val zona = ZoneId.systemDefault()
-        val ts = LocalDate.parse("2025-12-30").atTime(10, 0).atZone(zona).toInstant().toEpochMilli()
-        val csv = "# SOCIOS\nviejo,20,true,2,2025-W01,,,$ts\n"
 
-        assertEquals("2026-W01", leer(csv).datos.socios.single().semanaKey)
+    @Test
+    fun descartaLasClavesDeSemanaQueNoExisten() {
+        // 2027 solo tiene 52 semanas ISO.
+        val resultado = leer("# SOCIOS\nviejo,20,true,5,2027-W53\n# BONOS_REGALO\n2027-W53,true,true,50,\n")
+
+        assertTrue(resultado.datos.socios.isEmpty())
+        assertTrue(resultado.datos.bonosRegalo.isEmpty())
+        assertEquals(2, resultado.descartados)
     }
 
     @Test
-    fun corrigeClavesImposiblesEnLugarDeDescartarlas() {
-        val zona = ZoneId.systemDefault()
-        val ts = LocalDate.parse("2027-01-01").atTime(10, 0).atZone(zona).toInstant().toEpochMilli()
-        val csv = "# SOCIOS\nviejo,20,true,5,2027-W53,,,$ts\n# BONOS_REGALO\n2027-W53,true,true,50,\n"
-
-        val resultado = leer(csv)
-
-        assertEquals(0, resultado.descartados)
-        assertEquals("2026-W53", resultado.datos.socios.single().semanaKey)
-        assertEquals("2026-W53", resultado.datos.bonosRegalo.single().semanaKey)
-    }
-
-    @Test
-    fun noMueveLasSemanasDeArchivosDeLaVersionActual() {
-        val zona = ZoneId.systemDefault()
+    fun lasSemanasSeImportanTalCual() {
         // Socio de la semana 1 de 2025 (30 dic 2024 - 5 ene 2025) apuntado tarde, en diciembre de 2025.
-        val ts = LocalDate.parse("2025-12-30").atTime(10, 0).atZone(zona).toInstant().toEpochMilli()
-        val csv = "# VERSION 2\n# SOCIOS\ntarde,20,true,2,2025-W01,,,$ts\n"
+        val ts = LocalDate.parse("2025-12-30").atTime(10, 0).atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()
+        val csv = "# SOCIOS\ntarde,20,true,2,2025-W01,,,$ts\n"
 
         val resultado = leer(csv)
 
@@ -153,11 +143,6 @@ class BackupCsvTest {
         assertEquals("2025-W01", resultado.datos.socios.single().semanaKey)
     }
 
-    @Test
-    fun unaFilaSinFechaNoSeMueveDeSemana() {
-        // Sin fecha se tomaría la de hoy, que no dice nada de cuándo se apuntó el socio.
-        assertEquals("2025-W01", leer("# SOCIOS\nsin-fecha,20,true,2,2025-W01\n").datos.socios.single().semanaKey)
-    }
 
     @Test
     fun escribeBomYVersionParaExcelYParaLaImportacion() {

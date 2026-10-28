@@ -190,107 +190,55 @@
                         android:orientation="horizontal">
 
                         <LinearLayout
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:background="@drawable/bg_caja_translucida"
-                            android:orientation="vertical"
-                            android:padding="12dp">
+                            style="@style/Socios.CajaCabecera">
 
                             <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:ellipsize="end"
-                                android:maxLines="1"
+                                style="@style/Socios.EtiquetaCajaCabecera"
                                 android:text="@string/label_base_x2"
-                                android:textColor="@color/header_label_base"
-                                android:textSize="11.5sp" />
+                                android:textColor="@color/header_label_base" />
 
                             <TextView
                                 android:id="@+id/tvBaseHeader"
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:layout_marginTop="2dp"
-                                android:autoSizeMaxTextSize="16sp"
-                                android:autoSizeMinTextSize="10sp"
-                                android:autoSizeTextType="uniform"
-                                android:maxLines="1"
-                                android:textColor="@android:color/white"
-                                android:textSize="16sp"
-                                android:fontFamily="@font/geist_semibold"
+                                style="@style/Socios.ImporteCajaCabecera"
                                 tools:text="+400 €" />
                         </LinearLayout>
 
                         <LinearLayout
                             android:id="@+id/containerBonusHeader"
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
+                            style="@style/Socios.CajaCabecera"
                             android:layout_marginHorizontal="8dp"
-                            android:layout_weight="1"
-                            android:background="@drawable/bg_caja_translucida"
                             android:clickable="true"
-                            android:focusable="true"
-                            android:orientation="vertical"
-                            android:padding="12dp">
+                            android:focusable="true">
 
                             <TextView
                                 android:id="@+id/tvBonusHeaderLabel"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
+                                style="@style/Socios.EtiquetaCajaCabecera"
                                 android:drawablePadding="4dp"
-                                android:ellipsize="end"
-                                android:maxLines="1"
                                 android:textColor="@color/header_label_bonus"
-                                android:textSize="11.5sp"
                                 app:drawableEndCompat="@drawable/ic_edit_pequeno"
                                 app:drawableTint="@color/header_label_bonus"
                                 tools:text="Bonus" />
 
                             <TextView
                                 android:id="@+id/tvBonusHeader"
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:layout_marginTop="2dp"
-                                android:autoSizeMaxTextSize="16sp"
-                                android:autoSizeMinTextSize="10sp"
-                                android:autoSizeTextType="uniform"
-                                android:maxLines="1"
+                                style="@style/Socios.ImporteCajaCabecera"
                                 android:textColor="@color/header_bonus"
-                                android:textSize="16sp"
-                                android:fontFamily="@font/geist_semibold"
                                 tools:text="+140 €" />
                         </LinearLayout>
 
                         <LinearLayout
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:background="@drawable/bg_caja_translucida"
-                            android:orientation="vertical"
-                            android:padding="12dp">
+                            style="@style/Socios.CajaCabecera">
 
                             <TextView
                                 android:id="@+id/tvIrpfHeaderLabel"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:ellipsize="end"
-                                android:maxLines="1"
+                                style="@style/Socios.EtiquetaCajaCabecera"
                                 android:textColor="@color/header_label_irpf"
-                                android:textSize="11.5sp"
                                 tools:text="IRPF 21,48 %" />
 
                             <TextView
                                 android:id="@+id/tvIrpfHeader"
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:layout_marginTop="2dp"
-                                android:autoSizeMaxTextSize="16sp"
-                                android:autoSizeMinTextSize="10sp"
-                                android:autoSizeTextType="uniform"
-                                android:maxLines="1"
+                                style="@style/Socios.ImporteCajaCabecera"
                                 android:textColor="@color/header_irpf"
-                                android:textSize="16sp"
-                                android:fontFamily="@font/geist_semibold"
                                 tools:text="-115,99 €" />
                         </LinearLayout>
                     </LinearLayout>
