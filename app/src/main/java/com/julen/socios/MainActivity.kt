@@ -306,11 +306,10 @@ class MainActivity : AppCompatActivity() {
             (fragmento as? DialogFragment)?.dialog?.takeIf { it.isShowing }?.window
                 ?.decorView?.findViewById<View>(android.R.id.content)
         }
-        if (panel != null) {
-            Avisos.mostrar(panel, titulo, tipo, detalle, accion = accion, alPulsarAccion = alPulsarAccion)
-        } else {
-            Avisos.mostrar(binding.root, titulo, tipo, detalle, anclaje = binding.fabAddSocio, accion = accion, alPulsarAccion = alPulsarAccion)
-        }
+        Avisos.mostrar(
+            panel ?: binding.root, titulo, tipo, detalle,
+            anclaje = binding.fabAddSocio.takeIf { panel == null }, accion = accion, alPulsarAccion = alPulsarAccion
+        )
     }
 
     private fun avisarNuevaVersion(publicada: VersionPublicada) {

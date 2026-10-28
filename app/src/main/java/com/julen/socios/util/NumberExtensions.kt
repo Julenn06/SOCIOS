@@ -4,14 +4,15 @@ import java.math.BigDecimal
 import java.util.Locale
 import kotlin.math.abs
 
-private val spanishLocale = Locale.forLanguageTag("es-ES")
+/** Español de España: importes, fechas y nombres de los meses de toda la app. */
+val LOCALE_ES: Locale = Locale.forLanguageTag("es-ES")
 
 /**
  * Formats a Double as a currency string (e.g., "12,50 €", "+12,50 €", "-12,50 €").
  */
 fun Double.toCurrencyString(decimals: Int = 2, prefix: String = ""): String {
     val formatStr = "%.${decimals}f"
-    val formatted = String.format(spanishLocale, formatStr, this)
+    val formatted = String.format(LOCALE_ES, formatStr, this)
     return "$prefix$formatted €"
 }
 

@@ -309,21 +309,15 @@ class AddSocioBottomSheetDialog :
         val notas = binding.etNotas.text?.toString()?.trim().orEmpty()
 
         val original = socioToEdit
-        val socio = original?.copy(
+        // Al editar se conservan el id y la fecha de alta; uno nuevo los estrena.
+        val socio = Socio(
             colaboracion = cuota,
             hecho = esHecho,
             dia = dia,
             semanaKey = semanaKey,
             nombreSocio = nombre,
             notas = notas
-        ) ?: Socio(
-            colaboracion = cuota,
-            hecho = esHecho,
-            dia = dia,
-            semanaKey = semanaKey,
-            nombreSocio = nombre,
-            notas = notas
-        )
+        ).let { if (original != null) it.copy(id = original.id, timestamp = original.timestamp) else it }
 
         viewModel.guardarSocio(socio, esNuevo = original == null, semanaOriginal = original?.semanaKey)
         if (otro && original == null) prepararSiguiente() else dismiss()

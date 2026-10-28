@@ -30,6 +30,7 @@
 
                 <ImageView
                     style="@style/Socios.IconoPanel"
+                    android:importantForAccessibility="no"
                     android:src="@drawable/ic_receipt" />
             </FrameLayout>
 

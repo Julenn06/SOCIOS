@@ -18,7 +18,6 @@ import java.util.Locale
  */
 object DateUtils {
 
-    private val LOCALE_ES: Locale = Locale.forLanguageTag("es-ES")
     private val FORMATO_DIA: DateTimeFormatter = DateTimeFormatter.ofPattern("d 'de' MMM", LOCALE_ES)
     private val FORMATO_DIA_CORTO: DateTimeFormatter = DateTimeFormatter.ofPattern("d MMM", LOCALE_ES)
     private val FORMATO_HORA: DateTimeFormatter = DateTimeFormatter.ofPattern("H:mm", LOCALE_ES)

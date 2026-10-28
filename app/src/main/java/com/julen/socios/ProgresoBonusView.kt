@@ -38,6 +38,9 @@ class ProgresoBonusView @JvmOverloads constructor(
     private var fin = 10
     private var hitos = listOf(5, 7, 10)
 
+    /** El bonus de cada hito ("+50 €"): se calcula al cambiar los hitos, no en cada fotograma de la animación. */
+    private var importes = importesDe(hitos)
+
     /** Socios que dibuja la barra; persigue al valor real con una animación. */
     private var mostrado = 0f
     private var animacion: ValueAnimator? = null
@@ -67,12 +70,16 @@ class ProgresoBonusView @JvmOverloads constructor(
 
     private fun sp(valor: Float) = valor * densidad * escalaTexto
 
+    private fun importesDe(hitos: List<Int>) =
+        hitos.map { CalculoComisiones.calcularBonusSemanal(it).toEurosCompacto(prefix = "+") }
+
     /** Muestra [socios] hechos; con [animar], la barra avanza (o retrocede) hasta ellos. */
     fun mostrar(socios: Int, animar: Boolean) {
         val siguiente = CalculoComisiones.obtenerSiguienteMetaBonus(socios).first
         fin = max(TRAMO_FIJO_MAX, siguiente)
         inicio = if (fin <= TRAMO_FIJO_MAX) 0 else fin - VENTANA
         hitos = CalculoComisiones.tramosBonus().takeWhile { it <= fin }.filter { it > inicio }.toList()
+        importes = importesDe(hitos)
 
         animacion?.cancel()
         if (!animar) {
@@ -106,7 +113,6 @@ class ProgresoBonusView @JvmOverloads constructor(
 
     override fun onDraw(canvas: Canvas) {
         pintaImporte.textSize = tamanoImporte
-        val importes = hitos.map { CalculoComisiones.calcularBonusSemanal(it).toEurosCompacto(prefix = "+") }
         val izquierda = paddingLeft + radioHito
         // Margen para que el importe del último hito no se corte.
         val anchoUltimo = importes.lastOrNull()?.let(pintaImporte::measureText) ?: 0f

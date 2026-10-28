@@ -10,9 +10,11 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.julen.socios.databinding.BottomSheetListaSociosBinding
 import com.julen.socios.model.Socio
 import com.julen.socios.util.BusquedaSocios
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flowOn
 
 /**
  * Socios de varias semanas a la vez: los pendientes de semanas anteriores o los que coinciden con una
@@ -70,7 +72,9 @@ class ListaSociosBottomSheetDialog :
         }
 
         val socios: Flow<List<Socio>> = if (buscando) {
+            // Fuera del hilo principal: con años de socios, normalizar todos en cada tecla frenaba el teclado.
             combine(viewModel.todosLosSocios, textoBusqueda) { todos, texto -> BusquedaSocios.filtrar(todos, texto) }
+                .flowOn(Dispatchers.Default)
         } else {
             viewModel.pendientesAnteriores
         }

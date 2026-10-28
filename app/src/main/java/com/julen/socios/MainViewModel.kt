@@ -57,6 +57,7 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.receiveAsFlow
+import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
@@ -119,6 +120,12 @@ class MainViewModel(
         semanaVisibleDe(elegida, actual)
     }.distinctUntilChanged()
 
+    // Una sola consulta de cada tabla para todos los flujos que la usan: Room la vuelve a leer entera con cada
+    // cambio y cada suscriptor la leía por su cuenta (la de IRPF, además, otra vez en cada cambio de semana).
+    private val sociosDeTodasLasSemanas: Flow<List<Socio>> =
+        socioRepository.getAllSociosFlow().flowOn(calculoDispatcher).compartido()
+    private val vigencias: Flow<List<IrpfVigencia>> = irpfRepository.getVigenciasFlow().compartido()
+
     private val eventos = Channel<MainEvent>(Channel.BUFFERED)
 
     /** Eventos de un solo uso. A diferencia de un SharedFlow sin buffer, no se pierden si la UI está en segundo plano. */
@@ -139,7 +146,7 @@ class MainViewModel(
         combine(
             socioRepository.getSociosPorSemanaFlow(semanaKey),
             bonoRegaloRepository.getBonoRegaloFlow(semanaKey),
-            irpfRepository.getVigenciasFlow(),
+            vigencias,
             cobroRepository.getCobroFlow(semanaKey)
         ) { socios, bono, vigencias, cobro ->
             DatosSemana(offset, semanaKey, socios, bono, CalculoComisiones.irpfParaSemana(semanaKey, vigencias), cobro)
@@ -168,9 +175,9 @@ class MainViewModel(
     )
 
     val historicoGlobal: StateFlow<CalculoComisiones.ResumenHistoricoGlobal?> = combine(
-        socioRepository.getAllSociosFlow(),
+        sociosDeTodasLasSemanas,
         bonoRegaloRepository.getAllBonosRegaloFlow(),
-        irpfRepository.getVigenciasFlow(),
+        vigencias,
         cobroRepository.getAllFlow()
     ) { socios, bonos, vigencias, cobros ->
         CalculoComisiones.calcularResumenHistoricoGlobal(socios, bonos, vigencias, cobros)
@@ -178,8 +185,7 @@ class MainViewModel(
         .mientrasSeObserve(null)
 
     /** Cambios de porcentaje de IRPF, del más antiguo al más reciente. */
-    val irpfVigencias: StateFlow<List<IrpfVigencia>> = irpfRepository.getVigenciasFlow()
-        .mientrasSeObserve(emptyList())
+    val irpfVigencias: StateFlow<List<IrpfVigencia>> = vigencias.mientrasSeObserve(emptyList())
 
     /** Semanas con socios, con un bono manual o con lo cobrado apuntado, de la más reciente a la más antigua. */
     val semanasDisponibles: StateFlow<List<String>> = combine(
@@ -191,8 +197,7 @@ class MainViewModel(
     }.mientrasSeObserve(emptyList())
 
     /** Todos los socios, del más reciente al más antiguo, para buscar en el histórico. */
-    val todosLosSocios: StateFlow<List<Socio>> = socioRepository.getAllSociosFlow()
-        .mientrasSeObserve(emptyList())
+    val todosLosSocios: StateFlow<List<Socio>> = sociosDeTodasLasSemanas.mientrasSeObserve(emptyList())
 
     /** Socios que siguen pendientes en semanas anteriores a la actual, de la más reciente a la más antigua. */
     val pendientesAnteriores: StateFlow<List<Socio>> = semanaActual
@@ -411,6 +416,10 @@ class MainViewModel(
     /** Lo comparte entre quienes lo observan y lo mantiene 5 s más sin nadie: lo que tarda la pantalla en recrearse al girarla. */
     private fun <T> Flow<T>.mientrasSeObserve(inicial: T): StateFlow<T> =
         stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), inicial)
+
+    /** Como [mientrasSeObserve], pero sin valor inicial: quien se suscribe espera al primero de verdad (o al último). */
+    private fun <T> Flow<T>.compartido(): Flow<T> =
+        shareIn(viewModelScope, SharingStarted.WhileSubscribed(5000), replay = 1)
 
     private fun semanaVisibleDe(elegida: String?, actual: String): SemanaVisible {
         val semanaKey = elegida ?: actual

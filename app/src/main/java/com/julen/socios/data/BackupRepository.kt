@@ -33,7 +33,7 @@ class BackupRepository(
                 // Por tandas para no superar el límite de parámetros de SQLite en versiones antiguas.
                 val socios = keys.toList().chunked(500).flatMap { socioDao.getSociosPorSemanas(it) }
                     .sortedByDescending { it.timestamp }
-                    .map { it.toSocio() }.toList()
+                    .map { it.toSocio() }
                 DatosBackup(
                     socios,
                     bonos.filter { it.semanaKey in keys },

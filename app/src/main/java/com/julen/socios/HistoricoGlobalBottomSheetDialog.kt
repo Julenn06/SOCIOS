@@ -13,13 +13,13 @@ import com.julen.socios.util.CalculoComisiones
 import com.julen.socios.util.CalculoComisiones.Periodo
 import com.julen.socios.util.DateUtils
 import com.julen.socios.util.HapticUtils
+import com.julen.socios.util.LOCALE_ES
 import com.julen.socios.util.descontadoConSigno
 import com.julen.socios.util.rangoSemanaConAnio
 import com.julen.socios.util.toCurrencyString
 import com.julen.socios.util.toEurosCompacto
 import java.time.Month
 import java.time.format.TextStyle
-import java.util.Locale
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.filterNotNull
 
@@ -264,6 +264,5 @@ class HistoricoGlobalBottomSheetDialog :
 
     companion object {
         const val TAG = "HistoricoGlobalDialog"
-        private val LOCALE_ES: Locale = Locale.forLanguageTag("es-ES")
     }
 }

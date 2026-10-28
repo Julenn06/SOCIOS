@@ -167,7 +167,7 @@ object CalculoComisiones {
         val countHechos = hechos.size
 
         val sumaCuotas = redondearCentimos(hechos.sumOf { it.colaboracion })
-        val baseX2 = redondearCentimos(sumaCuotas * 2.0)
+        val baseX2 = redondearCentimos(calcularBaseX2(sumaCuotas))
         val bonusAuto = calcularBonusSemanal(countHechos)
 
         val bonoAplicado = bonoRegalo?.takeIf { it.activo }

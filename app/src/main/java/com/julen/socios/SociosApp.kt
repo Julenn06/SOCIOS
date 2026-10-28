@@ -19,10 +19,11 @@ import com.julen.socios.data.local.RoomTransactionRunner
 import com.julen.socios.export.ExportService
 import com.julen.socios.export.ExportadorArchivos
 import java.time.Clock
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
 
 /** Dependencias compartidas por toda la app, creadas una sola vez. */
@@ -49,6 +50,10 @@ class AppContainer(context: Context) {
     val descargadorActualizaciones = DescargadorGitHub(context)
     val preferenciasTema = PreferenciasTema(context)
     val preferenciasUsuario: PreferenciasUsuario = PreferenciasUsuarioCompartidas(context)
+
+    /** Avisa (al empezar y con cada cambio) de que han cambiado datos, sin leerlos: lo que haga falta se lee después. */
+    val cambiosEnDatos: Flow<Set<String>> =
+        database.invalidationTracker.createFlow("socios", "bonos_regalo", "irpf_vigencias", "cobros")
 }
 
 class SociosApp : Application() {
@@ -67,19 +72,22 @@ class SociosApp : Application() {
         mantenerWidgetAlDia()
     }
 
-    /** Cualquier cambio de socios, bonus, IRPF o lo cobrado se ve enseguida en el widget, no a la media hora. */
+    /**
+     * Cualquier cambio de socios, bonus, IRPF o lo cobrado se ve enseguida en el widget, no a la media hora.
+     * Solo se escucha que algo ha cambiado: el widget lee únicamente su semana, y nada si no hay ninguno puesto.
+     */
     private fun mantenerWidgetAlDia() {
         alcanceApp.launch {
-            combine(
-                container.socioRepository.getAllSociosFlow(),
-                container.bonoRegaloRepository.getAllBonosRegaloFlow(),
-                container.irpfRepository.getVigenciasFlow(),
-                container.cobroRepository.getAllFlow()
-            ) { _, _, _, _ -> }
-                .collect {
-                    // Un fallo al pintar el widget no debe cerrar la app.
-                    runCatching { ResumenWidget.actualizarTodos(this@SociosApp) }
+            container.cambiosEnDatos.collect {
+                // Un fallo al pintar el widget no debe cerrar la app.
+                try {
+                    ResumenWidget.actualizarTodos(this@SociosApp)
+                } catch (e: CancellationException) {
+                    throw e
+                } catch (e: Exception) {
+                    // Se queda como estaba hasta el próximo cambio o la próxima actualización del sistema.
                 }
+            }
         }
     }
 }
