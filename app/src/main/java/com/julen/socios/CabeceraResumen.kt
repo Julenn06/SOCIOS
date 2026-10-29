@@ -68,12 +68,6 @@ class CabeceraResumen(private val binding: ActivityMainBinding) {
             Movimiento.latido(binding.containerBonusHeader)
         }
         bonusAnterior = semanaKey to resumen.bonusSemanal
-
-        // Siempre hay un tramo más: después de 10 socios, uno cada 3.
-        val faltan = resumen.sociosFaltantesParaSiguienteMeta
-        binding.tvBonusSiguienteMeta.text = resources.getQuantityString(
-            R.plurals.bonus_next_goal, faltan, faltan, resumen.siguienteMetaBonus.toEurosCompacto(prefix = "+")
-        )
     }
 
     /**

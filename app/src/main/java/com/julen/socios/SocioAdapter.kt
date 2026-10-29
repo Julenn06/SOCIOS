@@ -2,12 +2,10 @@ package com.julen.socios
 
 import android.animation.ValueAnimator
 import android.graphics.drawable.GradientDrawable
-import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
-import androidx.appcompat.widget.PopupMenu
 import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.accessibility.AccessibilityNodeInfoCompat.AccessibilityActionCompat
@@ -59,14 +57,15 @@ sealed interface FilaSocio {
 }
 
 /**
- * Socios con su interruptor. Tocar uno lo edita y mantenerlo pulsado ofrece editar o eliminar. En la pantalla
- * principal van agrupados por día; en la búsqueda y en los pendientes ([mostrarSemana]) cada uno dice de qué
- * semana es y tocarlo abre esa semana en lugar de editarlo.
+ * Socios con su interruptor. Tocar uno lo edita y mantenerlo pulsado llama a [onAcciones] (el panel con editar y
+ * eliminar). En la pantalla principal van agrupados por día; en la búsqueda y en los pendientes ([mostrarSemana])
+ * cada uno dice de qué semana es y tocarlo abre esa semana en lugar de editarlo.
  */
 class SocioAdapter(
     private val onCambiarHecho: (Socio, Boolean) -> Unit,
     private val onEdit: (Socio) -> Unit,
     private val onDelete: (Socio) -> Unit,
+    private val onAcciones: (Socio) -> Unit,
     private val mostrarSemana: Boolean = false,
     private val onAbrir: ((Socio) -> Unit)? = null
 ) : ListAdapter<FilaSocio, RecyclerView.ViewHolder>(FilaDiffCallback()) {
@@ -75,8 +74,6 @@ class SocioAdapter(
         private const val PAYLOAD_HECHO_CHANGED = "PAYLOAD_HECHO_CHANGED"
         private const val TIPO_CABECERA = 0
         private const val TIPO_SOCIO = 1
-        private const val MENU_EDITAR = 1
-        private const val MENU_ELIMINAR = 2
     }
 
     override fun getItemViewType(position: Int) = when (getItem(position)) {
@@ -155,7 +152,7 @@ class SocioAdapter(
             }
 
             // Tocar la tarjeta la edita (o, en búsqueda y pendientes, abre su semana); mantenerla pulsada
-            // ofrece editar y eliminar. Así la fila solo lleva el interruptor y deja sitio al nombre.
+            // abre el panel con editar y eliminar. Así la fila solo lleva el interruptor y deja sitio al nombre.
             val alTocar = onAbrir ?: onEdit
             binding.root.setOnClickListener { view ->
                 HapticUtils.performClick(view)
@@ -163,11 +160,11 @@ class SocioAdapter(
             }
             binding.root.setOnLongClickListener { view ->
                 HapticUtils.performConfirm(view)
-                mostrarMenu(view)
+                socioActual()?.let(onAcciones)
                 true
             }
 
-            // Con TalkBack, las mismas acciones sin tener que abrir el menú.
+            // Con TalkBack, las mismas acciones sin tener que abrir el panel.
             val recursos = binding.root.resources
             ViewCompat.replaceAccessibilityAction(
                 binding.root, AccessibilityActionCompat.ACTION_CLICK,
@@ -180,22 +177,6 @@ class SocioAdapter(
             }
             ViewCompat.addAccessibilityAction(binding.root, recursos.getString(R.string.cd_eliminar_socio)) { _, _ ->
                 socioActual()?.let(onDelete); true
-            }
-        }
-
-        private fun mostrarMenu(ancla: View) {
-            val socio = socioActual() ?: return
-            PopupMenu(ancla.context, ancla, Gravity.END).apply {
-                menu.add(0, MENU_EDITAR, 0, R.string.socio_menu_editar)
-                menu.add(0, MENU_ELIMINAR, 1, R.string.action_delete)
-                setOnMenuItemClickListener { item ->
-                    when (item.itemId) {
-                        MENU_EDITAR -> onEdit(socio)
-                        MENU_ELIMINAR -> onDelete(socio)
-                    }
-                    true
-                }
-                show()
             }
         }
 

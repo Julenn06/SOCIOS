@@ -13,10 +13,13 @@ class ListaSemana(
     private val binding: ActivityMainBinding,
     alCambiarHecho: (Socio, Boolean) -> Unit,
     alEditar: (Socio) -> Unit,
-    alEliminar: (Socio) -> Unit
+    alEliminar: (Socio) -> Unit,
+    alMantenerPulsado: (Socio) -> Unit
 ) {
     private val resources = binding.root.resources
-    private val adapter = SocioAdapter(onCambiarHecho = alCambiarHecho, onEdit = alEditar, onDelete = alEliminar)
+    private val adapter = SocioAdapter(
+        onCambiarHecho = alCambiarHecho, onEdit = alEditar, onDelete = alEliminar, onAcciones = alMantenerPulsado
+    )
 
     /** La semana y el día que se pintaron la última vez, para animar solo lo que cambia. */
     private var vistaAnterior: Pair<String, DiaSemana?>? = null

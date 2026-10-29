@@ -103,8 +103,10 @@ class MainActivity : AppCompatActivity() {
             binding,
             alCambiarHecho = { socio, hecho -> viewModel.setSocioHecho(socio.id, hecho) },
             alEditar = ::openAddEditDialog,
-            alEliminar = ::confirmarEliminar
+            alEliminar = ::confirmarEliminar,
+            alMantenerPulsado = { AccionesSocioBottomSheetDialog.mostrar(supportFragmentManager, it) }
         )
+        AccionesSocioBottomSheetDialog.escuchar(supportFragmentManager, this, ::openAddEditDialog, ::confirmarEliminar)
         setupWeekNavigation()
         setupFab()
         setupHeaderClickListeners()

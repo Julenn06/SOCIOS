@@ -341,27 +341,5 @@ class AddSocioBottomSheetDialog :
                 putBundle(ARG_SOCIO, socio.toBundle())
             }
         }
-
-        private fun Socio.toBundle() = Bundle().apply {
-            putString("id", id)
-            putDouble("colaboracion", colaboracion)
-            putBoolean("hecho", hecho)
-            putInt("diaId", dia.id)
-            putString("semanaKey", semanaKey)
-            putString("nombreSocio", nombreSocio)
-            putString("notas", notas)
-            putLong("timestamp", timestamp)
-        }
-
-        private fun Bundle.toSocio() = Socio(
-            id = requireNotNull(getString("id")),
-            colaboracion = getDouble("colaboracion"),
-            hecho = getBoolean("hecho"),
-            dia = DiaSemana.fromId(getInt("diaId")),
-            semanaKey = requireNotNull(getString("semanaKey")),
-            nombreSocio = getString("nombreSocio").orEmpty(),
-            notas = getString("notas").orEmpty(),
-            timestamp = getLong("timestamp")
-        )
     }
 }

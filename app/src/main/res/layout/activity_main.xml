@@ -384,27 +384,14 @@
                                 app:tint="@android:color/white" />
                         </FrameLayout>
 
-                        <LinearLayout
+                        <TextView
+                            android:id="@+id/tvBonusTitle"
+                            style="@style/Socios.TituloFila"
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_marginHorizontal="12dp"
                             android:layout_weight="1"
-                            android:orientation="vertical">
-
-                            <TextView
-                                android:id="@+id/tvBonusTitle"
-                                style="@style/Socios.TituloFila"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                tools:text="Bonus de la semana: +100 €" />
-
-                            <TextView
-                                android:id="@+id/tvBonusSiguienteMeta"
-                                style="@style/Socios.DescripcionFila"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                tools:text="¡Haz 3 socios más para el bonus de +140 €!" />
-                        </LinearLayout>
+                            tools:text="Bonus de la semana: +100 €" />
 
                         <TextView
                             android:id="@+id/tvBonusProgressCount"

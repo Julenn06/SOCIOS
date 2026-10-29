@@ -39,11 +39,9 @@ class ListaSociosBottomSheetDialog :
         SocioAdapter(
             onCambiarHecho = { socio, hecho -> viewModel.setSocioHecho(socio.id, hecho) },
             onEdit = ::editar,
-            onDelete = { socio ->
-                if (dialogoEliminar?.isShowing != true) {
-                    dialogoEliminar = confirmarEliminarSocio(requireContext(), socio) { viewModel.eliminarSocio(socio) }
-                }
-            },
+            onDelete = ::eliminar,
+            // Dentro de este panel: así lo elegido llega aquí y no a la pantalla principal.
+            onAcciones = { AccionesSocioBottomSheetDialog.mostrar(childFragmentManager, it) },
             mostrarSemana = true,
             onAbrir = { socio ->
                 viewModel.irASemana(socio.semanaKey)
@@ -57,6 +55,7 @@ class ListaSociosBottomSheetDialog :
         binding.rvListaSocios.layoutManager = LinearLayoutManager(requireContext())
         binding.rvListaSocios.adapter = adapter
         binding.btnCerrarLista.setOnClickListener { dismiss() }
+        AccionesSocioBottomSheetDialog.escuchar(childFragmentManager, viewLifecycleOwner, ::editar, ::eliminar)
 
         val buscando = modo == Modo.BUSCAR
         binding.tilBuscar.isVisible = buscando
@@ -104,6 +103,11 @@ class ListaSociosBottomSheetDialog :
 
     private fun editar(socio: Socio) {
         parentFragmentManager.mostrarSiNoEsta(AddSocioBottomSheetDialog.TAG) { AddSocioBottomSheetDialog.editar(socio) }
+    }
+
+    private fun eliminar(socio: Socio) {
+        if (dialogoEliminar?.isShowing == true) return
+        dialogoEliminar = confirmarEliminarSocio(requireContext(), socio) { viewModel.eliminarSocio(socio) }
     }
 
     override fun onDestroyView() {

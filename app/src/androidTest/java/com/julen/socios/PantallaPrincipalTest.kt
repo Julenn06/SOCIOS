@@ -9,11 +9,11 @@ import androidx.test.espresso.UiController
 import androidx.test.espresso.ViewAction
 import androidx.test.espresso.action.ViewActions.click
 import androidx.test.espresso.action.ViewActions.longClick
+import androidx.test.espresso.action.ViewActions.scrollTo
 import androidx.test.espresso.action.ViewActions.swipeLeft
 import androidx.test.espresso.assertion.ViewAssertions.doesNotExist
 import androidx.test.espresso.assertion.ViewAssertions.matches
 import androidx.test.espresso.matcher.RootMatchers.isDialog
-import androidx.test.espresso.matcher.RootMatchers.isPlatformPopup
 import androidx.test.espresso.matcher.ViewMatchers.isAssignableFrom
 import androidx.test.espresso.matcher.ViewMatchers.isDescendantOfA
 import androidx.test.espresso.matcher.ViewMatchers.isDisplayed
@@ -90,12 +90,13 @@ class PantallaPrincipalTest {
     }
 
     @Test
-    fun mantenerPulsadoUnSocioOfreceEditarYEliminar() {
+    fun mantenerPulsadoUnSocioAbreSuPanelConEditarYEliminar() {
         ActivityScenario.launch(MainActivity::class.java).use {
             onView(withText(socio.nombreSocio)).perform(subirArriba(), longClick())
 
-            onView(withText(R.string.socio_menu_editar)).inRoot(isPlatformPopup()).check(matches(isDisplayed()))
-            onView(withText(R.string.action_delete)).inRoot(isPlatformPopup()).check(matches(isDisplayed()))
+            reintentar { onView(withText(socio.nombreSocio)).inRoot(isDialog()).check(matches(isDisplayed())) }
+            onView(withText(R.string.cd_editar_socio)).inRoot(isDialog()).check(matches(isDisplayed()))
+            onView(withText(R.string.cd_eliminar_socio)).inRoot(isDialog()).perform(scrollTo()).check(matches(isDisplayed()))
         }
     }
 

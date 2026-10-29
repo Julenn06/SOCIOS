@@ -105,11 +105,6 @@
     <string name="bonus_progress_format">%1$d / %2$d</string>
     <string name="bonus_titulo">Bonus de la semana: %s</string>
     <string name="bonus_progress_a11y">%1$d de %2$d socios para el siguiente tramo</string>
-    <plurals name="bonus_next_goal">
-        <item quantity="one">Haz %1$d socio más para llegar a %2$s</item>
-        <item quantity="many">Haz %1$d socios más para llegar a %2$s</item>
-        <item quantity="other">Haz %1$d socios más para llegar a %2$s</item>
-    </plurals>
 
     <!-- Filtros y lista -->
     <string name="filtro_dias_label">Filtrar por día</string>
@@ -454,7 +449,9 @@
     <string name="cd_semana_siguiente">Semana siguiente</string>
     <string name="cd_editar_socio">Editar socio</string>
     <string name="cd_eliminar_socio">Eliminar socio</string>
-    <string name="socio_menu_editar">Editar</string>
+    <string name="socio_acciones_seccion">Qué quieres hacer</string>
+    <string name="socio_acciones_editar_detalle">Cuota, semana, día, estado o notas</string>
+    <string name="socio_acciones_eliminar_detalle">Te pedirá confirmación y podrás deshacerlo</string>
     <string name="socio_accion_abrir_semana">Abrir su semana</string>
     <string name="menu_historico_a11y">Histórico acumulado</string>
 </resources>
