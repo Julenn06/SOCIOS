@@ -70,15 +70,19 @@ class ImportarTest {
 
     /**
      * Espera a que el panel esté abierto del todo: mientras sube con su animación, un toque puede caer donde ya no
-     * está el botón.
+     * está el botón. Su estado pasa a abierto al empezar a subir, así que después se espera a que acabe la animación
+     * de la ventana; sin esperarla, con las animaciones activadas fallaba uno de cada tres intentos.
      */
-    private fun esperarPanelAbierto(escenario: ActivityScenario<MainActivity>) = reintentar {
-        var abierto = false
-        escenario.onActivity { activity ->
-            val panel = activity.supportFragmentManager.findFragmentByTag(ImportarBottomSheetDialog.TAG) as? BottomSheetDialogFragment
-            abierto = (panel?.dialog as? BottomSheetDialog)?.behavior?.state == BottomSheetBehavior.STATE_EXPANDED
+    private fun esperarPanelAbierto(escenario: ActivityScenario<MainActivity>) {
+        var dialogo: BottomSheetDialog? = null
+        reintentar {
+            escenario.onActivity { activity ->
+                val panel = activity.supportFragmentManager.findFragmentByTag(ImportarBottomSheetDialog.TAG) as? BottomSheetDialogFragment
+                dialogo = (panel?.dialog as? BottomSheetDialog)?.takeIf { it.behavior.state == BottomSheetBehavior.STATE_EXPANDED }
+            }
+            assertTrue("El panel de importar no está abierto", dialogo != null)
         }
-        assertTrue("El panel de importar no está abierto", abierto)
+        Thread.sleep(dialogo?.let(::duracionEntrada) ?: 0)
     }
 
     private fun importados(): Int = runBlocking {
