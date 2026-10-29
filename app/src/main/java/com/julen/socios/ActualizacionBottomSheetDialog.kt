@@ -106,6 +106,8 @@ class ActualizacionBottomSheetDialog :
         binding.tvVersionesDescarga.contentDescription =
             getString(R.string.descarga_versiones_a11y, viewModel.versionInstalada, version)
         binding.tvDetalleDescarga.text = null
+        binding.tarjetaNovedades.isVisible = publicada.novedades.isNotEmpty()
+        binding.tvNovedades.text = publicada.novedades.joinToString("\n") { "•  $it" }
         // Si Android aún no deja instalar desde socios, avisa de que lo pedirá.
         binding.tvAvisoPermiso.isVisible = faltaPermisoInstalar()
         binding.btnPrincipalDescarga.isVisible = false

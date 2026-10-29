@@ -71,6 +71,7 @@
     <string name="descarga_titulo_completada">Versión %s descargada</string>
     <string name="descarga_titulo_fallida">No se ha podido descargar</string>
     <string name="descarga_versiones">%1$s → %2$s</string>
+    <string name="descarga_novedades">Novedades</string>
     <string name="descarga_versiones_a11y">De la versión %1$s a la %2$s</string>
     <string name="descarga_progreso">%1$s de %2$s</string>
     <string name="descarga_abriendo_instalador">Abriendo el instalador…</string>

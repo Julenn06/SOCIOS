@@ -74,6 +74,42 @@
             android:visibility="gone"
             tools:visibility="visible" />
 
+        <!-- Lo que trae la versión, sacado de la descripción de su release. -->
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/tarjetaNovedades"
+            style="@style/Socios.TarjetaFila"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:stateListAnimator="@null"
+            android:visibility="gone"
+            tools:visibility="visible">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="14dp">
+
+                <TextView
+                    style="@style/Socios.TituloFila"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:accessibilityHeading="true"
+                    android:text="@string/descarga_novedades"
+                    tools:targetApi="p" />
+
+                <TextView
+                    android:id="@+id/tvNovedades"
+                    style="@style/Socios.DescripcionFila"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="6dp"
+                    android:lineSpacingExtra="4dp"
+                    tools:text="•  Novedades de cada versión en el panel de actualizar\n•  El panel de importar se cierra siempre" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnPrincipalDescarga"
             style="@style/Widget.Material3.Button"

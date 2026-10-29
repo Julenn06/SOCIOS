@@ -6,6 +6,7 @@ import java.time.Instant
 import java.time.ZoneOffset
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
+import kotlinx.serialization.json.JsonPrimitive
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
@@ -102,6 +103,19 @@ class ComprobadorActualizacionesTest {
         )
         assertEquals("1.4.0", publicada.version.toString())
         assertEquals("https://github.com/Julenn06/SOCIOS/releases/tag/v1.4.0", publicada.url)
+    }
+
+    @Test
+    fun leeLasNovedadesDeLaDescripcionDeLaRelease() {
+        val body = "Novedades de la v1.9.21:\r\n\r\n- Novedades de cada versión\r\n* El **panel** de `importar`\r\n-   \r\n" +
+            "Texto suelto\n\nAPK firmado generado automáticamente."
+        val publicada = GitHubReleases.leerRelease(
+            """{"tag_name":"v1.9.21","body":${JsonPrimitive(body)}}"""
+        )
+
+        assertEquals(listOf("Novedades de cada versión", "El panel de importar"), publicada.novedades)
+        assertEquals(emptyList<String>(), GitHubReleases.leerRelease("""{"tag_name":"v1.4.0","body":null}""").novedades)
+        assertEquals(8, GitHubReleases.novedades((1..12).joinToString("\n") { "- $it" }).size)
     }
 
     @Test

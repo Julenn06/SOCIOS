@@ -14,8 +14,13 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 
-/** Última versión publicada, la página de su release y, si la release lo incluye, su APK. */
-data class VersionPublicada(val version: Version, val url: String, val apk: ApkPublicado? = null)
+/** Última versión publicada, la página de su release, su APK (si la release lo incluye) y lo que trae de nuevo. */
+data class VersionPublicada(
+    val version: Version,
+    val url: String,
+    val apk: ApkPublicado? = null,
+    val novedades: List<String> = emptyList()
+)
 
 /**
  * APK adjunto a una release, de [tamano] bytes (siempre más de 0). [sha256] (en hexadecimal) sirve para
@@ -95,6 +100,7 @@ class GitHubReleases : FuenteVersiones {
         private const val URL_RELEASES = "https://github.com/Julenn06/SOCIOS/releases/"
         private const val URL_DESCARGAS = URL_RELEASES + "download/"
         private const val TIMEOUT_MS = 10_000
+        private const val MAX_NOVEDADES = 8
 
         private val json = Json { ignoreUnknownKeys = true }
 
@@ -116,8 +122,21 @@ class GitHubReleases : FuenteVersiones {
                         it.url.startsWith(URL_DESCARGAS, ignoreCase = true) && it.size > 0
                 }
                 ?.let { ApkPublicado(it.url, it.size, sha256(it.digest)) }
-            return VersionPublicada(version, url, apk)
+            return VersionPublicada(version, url, apk, novedades(release.body))
         }
+
+        /**
+         * Las novedades de la descripción de la release: cada línea que empieza por "- " o "* " (como las escribe
+         * la CI), sin marcas de Markdown. Como mucho [MAX_NOVEDADES]; las releases antiguas no traen ninguna.
+         */
+        internal fun novedades(body: String?): List<String> =
+            body.orEmpty().lineSequence()
+                .map { it.trim() }
+                .filter { it.startsWith("- ") || it.startsWith("* ") }
+                .map { it.drop(2).replace("**", "").replace("`", "").trim() }
+                .filter { it.isNotEmpty() }
+                .take(MAX_NOVEDADES)
+                .toList()
 
         /** El hash de un "digest" de GitHub ("sha256:3f2a…"), o null si no hay o es de otro tipo. */
         private fun sha256(digest: String?): String? =
@@ -131,6 +150,7 @@ class GitHubReleases : FuenteVersiones {
     private data class ReleaseDto(
         @SerialName("tag_name") val tagName: String,
         @SerialName("html_url") val htmlUrl: String = "",
+        val body: String? = null,
         val assets: List<AssetDto> = emptyList()
     )
 
