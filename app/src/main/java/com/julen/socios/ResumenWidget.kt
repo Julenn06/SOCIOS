@@ -7,6 +7,7 @@ import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.widget.RemoteViews
+import androidx.annotation.VisibleForTesting
 import com.julen.socios.util.CalculoComisiones
 import com.julen.socios.util.DateUtils
 import com.julen.socios.util.toCurrencyString
@@ -60,7 +61,8 @@ object ResumenWidget {
         AppWidgetManager.getInstance(app).updateAppWidget(ids, vistas)
     }
 
-    private fun vistas(context: Context, semanaKey: String, r: CalculoComisiones.ResumenCalculo): RemoteViews {
+    @VisibleForTesting
+    internal fun vistas(context: Context, semanaKey: String, r: CalculoComisiones.ResumenCalculo): RemoteViews {
         val res = context.resources
         return RemoteViews(context.packageName, R.layout.widget_resumen).apply {
             setTextViewText(
