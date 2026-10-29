@@ -15,6 +15,13 @@ on:
       - 'v*'
   pull_request:
 
+# El push a main y el tag de su release llevan el mismo commit: basta con probarlo una vez. Al llegar el tag se
+# cancela lo que quede de la ejecución de main (la del tag hace lo mismo y además publica). Por eso se sube
+# primero main y después el tag: al revés, la de main esperaría a que acabe la del tag y repetiría el trabajo.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.sha }}
+  cancel-in-progress: ${{ startsWith(github.ref, 'refs/tags/') }}
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -168,6 +175,35 @@ jobs:
       contents: write
 
     steps:
+      # Con todo el historial y los tags, para saber qué commits trae esta versión.
+      - name: Checkout repository
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      # Las novedades: los commits feat/fix/perf desde la versión anterior, sin el prefijo. La app las enseña en
+      # el panel de actualizar (lee las líneas que empiezan por "- ").
+      - name: Write release notes
+        env:
+          TAG: ${{ github.ref_name }}
+        run: |
+          anterior=$(git describe --tags --abbrev=0 --match 'v*' "$TAG^" 2>/dev/null || true)
+          if [ -n "$anterior" ]; then rango="$anterior..$TAG"; else rango="-n 20 $TAG"; fi
+          # shellcheck disable=SC2086
+          git log --no-merges --format=%s $rango \
+            | grep -E '^(feat|fix|perf)(\([^)]*\))?!?: ' \
+            | sed -E 's/^[a-z]+(\([^)]*\))?!?: *//' \
+            | awk '{ print "- " toupper(substr($0, 1, 1)) substr($0, 2) }' > novedades.txt || true
+          [ -s novedades.txt ] || echo "- Mejoras internas y de estabilidad" > novedades.txt
+          {
+            echo "Novedades de la $TAG:"
+            echo
+            cat novedades.txt
+            echo
+            echo "APK firmado generado automáticamente para \`$TAG\`."
+          } > notas.md
+          cat notas.md
+
       - name: Download APK artifact
         uses: actions/download-artifact@v8
         with:
@@ -180,7 +216,7 @@ jobs:
         with:
           tag_name: ${{ github.ref_name }}
           name: Release ${{ github.ref_name }}
-          body: "APK firmado generado automáticamente para `${{ github.ref_name }}`."
+          body_path: notas.md
           files: apk/*.apk
           fail_on_unmatched_files: true
         env:
