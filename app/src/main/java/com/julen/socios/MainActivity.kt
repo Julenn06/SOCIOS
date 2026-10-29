@@ -38,14 +38,13 @@ import com.julen.socios.util.AnimationExtensions
 import com.julen.socios.util.DateUtils
 import com.julen.socios.util.HapticUtils
 import com.julen.socios.util.nombreVisible
-import com.julen.socios.util.rangoSemanaConAnio
-import com.julen.socios.util.semanaRelativa
 import kotlinx.coroutines.launch
 
 class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
     private lateinit var cabecera: CabeceraResumen
+    private lateinit var selectorSemana: SelectorSemana
     private lateinit var filtroDias: FiltroDias
     private lateinit var lista: ListaSemana
     private lateinit var deslizarEntreSemanas: DeslizarEntreSemanas
@@ -107,7 +106,7 @@ class MainActivity : AppCompatActivity() {
             alMantenerPulsado = { AccionesSocioBottomSheetDialog.mostrar(supportFragmentManager, it) }
         )
         AccionesSocioBottomSheetDialog.escuchar(supportFragmentManager, this, ::openAddEditDialog, ::confirmarEliminar)
-        setupWeekNavigation()
+        selectorSemana = SelectorSemana(binding, viewModel::cambiarSemana, viewModel::irASemanaActual)
         setupFab()
         setupHeaderClickListeners()
         deslizarEntreSemanas = DeslizarEntreSemanas(this, binding.root) { delta ->
@@ -155,14 +154,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun renderUiState(state: MainUiState) {
-        // Rango corto de la semana y cuánto queda de la actual
-        binding.tvRangoSemana.text = rangoSemanaConAnio(state.semanaKey)
-        binding.tvSemanaSubtitulo.text = semanaRelativa(state.weekOffset, R.string.subtitle_current_week)
-
-        // Botón Hoy dinámico
-        binding.btnHoyLeft.isVisible = state.weekOffset > 0
-        binding.btnHoyRight.isVisible = state.weekOffset < 0
-
+        selectorSemana.mostrar(state)
         state.resumenSemana?.let { cabecera.mostrar(state.semanaKey, it, state.cobroSemana) }
 
         filtroDias.mostrar(state)
@@ -302,15 +294,6 @@ class MainActivity : AppCompatActivity() {
                 binding.fabAddSocio.extend()
             }
         }
-    }
-
-    private fun setupWeekNavigation() {
-        binding.btnSemanaAnterior.setOnClickListener { viewModel.cambiarSemana(-1) }
-        binding.btnSemanaSiguiente.setOnClickListener { viewModel.cambiarSemana(1) }
-
-        val onHoyClick = View.OnClickListener { viewModel.irASemanaActual() }
-        binding.btnHoyLeft.setOnClickListener(onHoyClick)
-        binding.btnHoyRight.setOnClickListener(onHoyClick)
     }
 
     private fun setupHeaderClickListeners() {

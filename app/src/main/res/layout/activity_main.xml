@@ -26,6 +26,7 @@
 
         <!-- Selector de semana: botón "Hoy" a la izquierda en semanas futuras y a la derecha en pasadas -->
         <LinearLayout
+            android:id="@+id/filaSemana"
             style="@style/Socios.Fila"
             android:paddingHorizontal="16dp"
             android:paddingBottom="10dp">
@@ -61,7 +62,8 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:gravity="center"
-                        android:orientation="vertical">
+                        android:orientation="vertical"
+                        android:paddingVertical="2dp">
 
                         <!-- Con la letra grande del sistema se encoge en vez de partir la fecha en dos líneas -->
                         <TextView
@@ -78,14 +80,41 @@
                             android:fontFamily="@font/geist_semibold"
                             tools:text="12 de oct - 16 de oct (2026)" />
 
-                        <TextView
-                            android:id="@+id/tvSemanaSubtitulo"
+                        <!-- Un punto del color del momento (verde la actual, gris las pasadas, azul las futuras) -->
+                        <LinearLayout
+                            android:id="@+id/filaSubtituloSemana"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_marginTop="1dp"
-                            android:textColor="@color/text_sub"
-                            android:textSize="12sp"
-                            tools:text="Semana actual" />
+                            android:layout_marginTop="2dp"
+                            android:gravity="center_vertical"
+                            android:orientation="horizontal">
+
+                            <View
+                                android:id="@+id/puntoSemana"
+                                android:layout_width="6dp"
+                                android:layout_height="6dp"
+                                android:layout_marginEnd="6dp"
+                                android:background="@drawable/bg_circulo"
+                                android:backgroundTint="@color/primary" />
+
+                            <TextView
+                                android:id="@+id/tvSemanaSubtitulo"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:ellipsize="end"
+                                android:maxLines="1"
+                                android:fontFamily="@font/geist_medium"
+                                android:textColor="@color/text_sub"
+                                android:textSize="12sp"
+                                tools:text="Semana actual" />
+                        </LinearLayout>
+
+                        <!-- Ocupa lo que necesita, o el ancho que haya si no cabe -->
+                        <com.julen.socios.FranjaSemanaView
+                            android:id="@+id/franjaSemana"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="6dp" />
                     </LinearLayout>
 
                     <com.google.android.material.button.MaterialButton
