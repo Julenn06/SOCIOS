@@ -354,7 +354,7 @@
     <string name="import_fila_bonus">Bonus ajustados a mano</string>
     <string name="import_fila_bonus_detalle">Sustituyen al de su semana</string>
     <string name="import_fila_irpf">Cambios de IRPF</string>
-    <string name="import_fila_irpf_detalle">Se aplican desde su semana en adelante</string>
+    <string name="import_fila_irpf_detalle">No se importan: el IRPF es siempre del 21,48 %</string>
     <string name="import_fila_cobros">Semanas con lo cobrado</string>
     <string name="import_fila_cobros_detalle">Sustituyen a lo apuntado en la app</string>
     <string name="import_descartados_detalle">Les faltan datos o tienen valores imposibles, así que no se importan.</string>
@@ -429,11 +429,6 @@
         <item quantity="one">%d bonus</item>
         <item quantity="many">%d bonus</item>
         <item quantity="other">%d bonus</item>
-    </plurals>
-    <plurals name="msg_import_irpf">
-        <item quantity="one">%d cambio de IRPF</item>
-        <item quantity="many">%d cambios de IRPF</item>
-        <item quantity="other">%d cambios de IRPF</item>
     </plurals>
     <plurals name="msg_import_cobros">
         <item quantity="one">%d semana con lo cobrado</item>

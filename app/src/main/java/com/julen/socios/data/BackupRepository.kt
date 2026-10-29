@@ -4,8 +4,6 @@ import com.julen.socios.data.local.BonoRegaloDao
 import com.julen.socios.data.local.BonoRegaloEntity
 import com.julen.socios.data.local.CobroDao
 import com.julen.socios.data.local.CobroEntity
-import com.julen.socios.data.local.IrpfVigenciaDao
-import com.julen.socios.data.local.IrpfVigenciaEntity
 import com.julen.socios.data.local.SocioDao
 import com.julen.socios.data.local.SocioEntity
 import com.julen.socios.data.local.TransactionRunner
@@ -18,13 +16,11 @@ import com.julen.socios.model.ResultadoLectura
 class BackupRepository(
     private val socioDao: SocioDao,
     private val bonoDao: BonoRegaloDao,
-    private val irpfDao: IrpfVigenciaDao,
     private val cobroDao: CobroDao,
     private val transactionRunner: TransactionRunner
 ) {
 
     suspend fun cargarDatos(alcance: AlcanceExport): DatosBackup {
-        val vigencias = irpfDao.getAll().map { it.toIrpfVigencia() }
         val bonos = bonoDao.getAllBonosRegalo().map { it.toBonoRegaloInfo() }
         val cobros = cobroDao.getAll().map { it.toCobroInfo() }
         return when (alcance) {
@@ -37,13 +33,12 @@ class BackupRepository(
                 DatosBackup(
                     socios,
                     bonos.filter { it.semanaKey in keys },
-                    vigencias,
                     cobros.filter { it.semanaKey in keys }
                 )
             }
 
             AlcanceExport.Historico ->
-                DatosBackup(socioDao.getAllSocios().map { it.toSocio() }, bonos, vigencias, cobros)
+                DatosBackup(socioDao.getAllSocios().map { it.toSocio() }, bonos, cobros)
         }
     }
 
@@ -57,7 +52,7 @@ class BackupRepository(
             sociosNuevos = datos.socios.size - sobrescritos,
             sociosSobrescritos = sobrescritos,
             bonos = datos.bonosRegalo.size,
-            irpfVigencias = datos.irpfVigencias.size,
+            irpfIgnorados = lectura.irpfIgnorados,
             cobros = datos.cobros.size,
             descartados = lectura.descartados,
             semanas = semanas.size,
@@ -72,7 +67,6 @@ class BackupRepository(
     suspend fun importar(datos: DatosBackup) = transactionRunner.run {
         if (datos.socios.isNotEmpty()) socioDao.insertSocios(datos.socios.map(SocioEntity::fromSocio))
         if (datos.bonosRegalo.isNotEmpty()) bonoDao.saveBonosRegalo(datos.bonosRegalo.map(BonoRegaloEntity::fromBonoRegaloInfo))
-        if (datos.irpfVigencias.isNotEmpty()) irpfDao.upsertAll(datos.irpfVigencias.map(IrpfVigenciaEntity::fromIrpfVigencia))
         if (datos.cobros.isNotEmpty()) cobroDao.upsertAll(datos.cobros.map(CobroEntity::fromCobroInfo))
     }
 }

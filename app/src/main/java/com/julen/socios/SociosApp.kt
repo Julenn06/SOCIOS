@@ -12,7 +12,6 @@ import com.julen.socios.ajustes.PreferenciasUsuarioCompartidas
 import com.julen.socios.data.BackupRepository
 import com.julen.socios.data.BonoRegaloRepository
 import com.julen.socios.data.CobroRepository
-import com.julen.socios.data.IrpfRepository
 import com.julen.socios.data.SocioRepository
 import com.julen.socios.data.local.AppDatabase
 import com.julen.socios.data.local.RoomTransactionRunner
@@ -34,10 +33,9 @@ class AppContainer(context: Context) {
 
     val socioRepository = SocioRepository(database.socioDao())
     val bonoRegaloRepository = BonoRegaloRepository(database.bonoRegaloDao())
-    val irpfRepository = IrpfRepository(database.irpfVigenciaDao())
     val cobroRepository = CobroRepository(database.cobroDao())
     val backupRepository = BackupRepository(
-        database.socioDao(), database.bonoRegaloDao(), database.irpfVigenciaDao(), database.cobroDao(),
+        database.socioDao(), database.bonoRegaloDao(), database.cobroDao(),
         RoomTransactionRunner(database)
     )
     val exportService: ExportService = ExportadorArchivos(context, clock)
@@ -53,7 +51,7 @@ class AppContainer(context: Context) {
 
     /** Avisa (al empezar y con cada cambio) de que han cambiado datos, sin leerlos: lo que haga falta se lee después. */
     val cambiosEnDatos: Flow<Set<String>> =
-        database.invalidationTracker.createFlow("socios", "bonos_regalo", "irpf_vigencias", "cobros")
+        database.invalidationTracker.createFlow("socios", "bonos_regalo", "cobros")
 }
 
 class SociosApp : Application() {

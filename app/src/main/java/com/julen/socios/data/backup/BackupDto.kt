@@ -16,7 +16,8 @@ data class BackupDto(
     val timestamp: Long? = null,
     val socios: List<SocioDto?>? = null,
     val bonosRegalo: List<BonoRegaloDto?>? = null,
-    val irpfVigencias: List<IrpfVigenciaDto?>? = null,
+    /** Solo en copias v2–v4, con los cambios de IRPF: no se importan (el IRPF es siempre el mismo), solo se cuentan. */
+    val irpfVigencias: JsonArray? = null,
     val cobros: List<CobroDto?>? = null,
     /** Solo en copias v3, que guardaban lo descontado en lugar de lo cobrado: no se importa, solo se cuenta. */
     val devoluciones: JsonArray? = null
@@ -41,12 +42,6 @@ data class BonoRegaloDto(
     val esMontoFijo: Boolean? = null,
     val monto: Double? = null,
     val nota: String? = null
-)
-
-@Serializable
-data class IrpfVigenciaDto(
-    val desdeSemanaKey: String? = null,
-    val porcentaje: Double? = null
 )
 
 @Serializable

@@ -2,15 +2,14 @@ package com.julen.socios.util
 
 import com.julen.socios.model.BonoRegaloInfo
 import com.julen.socios.model.CobroInfo
-import com.julen.socios.model.IrpfVigencia
 import com.julen.socios.model.Socio
 import java.math.BigDecimal
 import java.math.RoundingMode
 import java.util.Locale
 
 object CalculoComisiones {
-    /** Retención aplicada a las semanas anteriores a cualquier vigencia configurada. */
-    const val IRPF_POR_DEFECTO = 21.48
+    /** Retención de IRPF: la misma en todas las semanas. */
+    const val IRPF = 21.48
 
     /**
      * Retorna la ganancia base (colaboración x2).
@@ -53,12 +52,6 @@ object CalculoComisiones {
 
     /** Socios del tramo anterior a la meta [meta] (0 antes del primero): 7 → 5, 10 → 7, 13 → 10… */
     fun tramoAnterior(meta: Int): Int = tramosBonus().takeWhile { it < meta }.lastOrNull() ?: 0
-
-    /** Porcentaje de IRPF vigente en [semanaKey]: el de la vigencia más reciente que empiece en o antes de esa semana. */
-    fun irpfParaSemana(semanaKey: String, vigencias: List<IrpfVigencia>): Double =
-        vigencias.filter { it.desdeSemanaKey <= semanaKey }
-            .maxByOrNull { it.desdeSemanaKey }
-            ?.porcentaje ?: IRPF_POR_DEFECTO
 
     /** Redondea un importe a céntimos (mitad hacia arriba), como en una nómina. */
     fun redondearCentimos(importe: Double): Double =
@@ -160,7 +153,7 @@ object CalculoComisiones {
     fun calcularResumenSemana(
         socios: List<Socio>,
         bonoRegalo: BonoRegaloInfo? = null,
-        porcentajeIrpf: Double = IRPF_POR_DEFECTO,
+        porcentajeIrpf: Double = IRPF,
         cobro: CobroInfo? = null
     ): ResumenCalculo {
         val hechos = socios.filter { it.hecho }
@@ -211,7 +204,6 @@ object CalculoComisiones {
     fun calcularResumenHistoricoGlobal(
         todosLosSocios: List<Socio>,
         bonosRegaloMap: Map<String, BonoRegaloInfo> = emptyMap(),
-        irpfVigencias: List<IrpfVigencia> = emptyList(),
         cobrosMap: Map<String, CobroInfo> = emptyMap()
     ): ResumenHistoricoGlobal {
         val sociosPorSemana = todosLosSocios.groupBy { it.semanaKey }
@@ -228,7 +220,6 @@ object CalculoComisiones {
                 resumenSemana = calcularResumenSemana(
                     socios = sociosPorSemana[semanaKey].orEmpty(),
                     bonoRegalo = bonosRegaloMap[semanaKey],
-                    porcentajeIrpf = irpfParaSemana(semanaKey, irpfVigencias),
                     cobro = cobrosMap[semanaKey]
                 )
             )

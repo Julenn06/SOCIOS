@@ -62,7 +62,7 @@ class ImportarBottomSheetDialog : PanelInferior<BottomSheetImportarBinding>(Bott
         binding.tvArchivoImport.text = p.nombreArchivo ?: getString(R.string.import_archivo_sin_nombre)
 
         // Lo que más importa es cuántos socios entran; una copia sin socios (solo bonus o lo cobrado) dice cuántos registros.
-        val registros = p.bonos + p.irpfVigencias + p.cobros
+        val registros = p.bonos + p.cobros
         binding.tvTotalImport.text = if (p.socios > 0 || registros == 0) {
             resources.getQuantityString(R.plurals.import_total_socios, p.socios, cantidad(p.socios))
         } else {
@@ -84,7 +84,7 @@ class ImportarBottomSheetDialog : PanelInferior<BottomSheetImportarBinding>(Bott
                     R.drawable.ic_edit, Tono.NARANJA
                 ),
                 Linea(R.string.import_fila_bonus, R.string.import_fila_bonus_detalle, p.bonos, R.drawable.ic_gift, Tono.AMBAR),
-                Linea(R.string.import_fila_irpf, R.string.import_fila_irpf_detalle, p.irpfVigencias, R.drawable.ic_receipt, Tono.AZUL),
+                Linea(R.string.import_fila_irpf, R.string.import_fila_irpf_detalle, p.irpfIgnorados, R.drawable.ic_receipt, Tono.AZUL),
                 Linea(R.string.import_fila_cobros, R.string.import_fila_cobros_detalle, p.cobros, R.drawable.ic_cobro, Tono.VERDE)
             ).filter { it.cantidad > 0 }
         )

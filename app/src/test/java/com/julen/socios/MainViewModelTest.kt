@@ -4,10 +4,8 @@ import androidx.lifecycle.SavedStateHandle
 import com.julen.socios.data.BackupRepository
 import com.julen.socios.data.BonoRegaloRepository
 import com.julen.socios.data.CobroRepository
-import com.julen.socios.data.IrpfRepository
 import com.julen.socios.data.SocioRepository
 import com.julen.socios.data.local.BonoRegaloEntity
-import com.julen.socios.data.local.IrpfVigenciaEntity
 import com.julen.socios.data.local.SocioEntity
 import com.julen.socios.export.AlcanceExport
 import com.julen.socios.export.ExportFormat
@@ -17,7 +15,6 @@ import com.julen.socios.fakes.FakeBonoRegaloDao
 import com.julen.socios.fakes.FakeCobroDao
 import com.julen.socios.fakes.FakePreferenciasUsuario
 import com.julen.socios.fakes.FakeExportService
-import com.julen.socios.fakes.FakeIrpfVigenciaDao
 import com.julen.socios.fakes.FakeSocioDao
 import com.julen.socios.fakes.FakeTransactionRunner
 import com.julen.socios.model.CobroInfo
@@ -62,7 +59,6 @@ class MainViewModelTest {
     private val dispatcher = UnconfinedTestDispatcher()
     private val socioDao = FakeSocioDao()
     private val bonoDao = FakeBonoRegaloDao()
-    private val irpfDao = FakeIrpfVigenciaDao()
     private val cobroDao = FakeCobroDao()
     private val preferencias = FakePreferenciasUsuario()
     private val exportService = FakeExportService()
@@ -83,9 +79,8 @@ class MainViewModelTest {
     ) = MainViewModel(
         socioRepository = SocioRepository(socioDao),
         bonoRegaloRepository = BonoRegaloRepository(bonoDao),
-        irpfRepository = IrpfRepository(irpfDao),
         cobroRepository = CobroRepository(cobroDao),
-        backupRepository = BackupRepository(socioDao, bonoDao, irpfDao, cobroDao, FakeTransactionRunner()),
+        backupRepository = BackupRepository(socioDao, bonoDao, cobroDao, FakeTransactionRunner()),
         exportService = exportService,
         preferencias = preferencias,
         savedStateHandle = handle,
@@ -233,15 +228,17 @@ class MainViewModelTest {
     }
 
     @Test
-    fun elIrpfDeUnaCopiaSoloCambiaDesdeSuSemana() = runTest(dispatcher) {
-        socioDao.socios.value = listOf(entidad("a", semanaActual), entidad("b", semanaSiguiente))
-        irpfDao.upsertAll(listOf(IrpfVigenciaEntity(semanaSiguiente, 15.0)))
+    fun losCambiosDeIrpfDeUnaCopiaAntiguaSeAvisanPeroElIrpfNoCambia() = runTest(dispatcher) {
         val viewModel = crearViewModel()
         observar(viewModel)
+        val socio = Socio(id = "a", colaboracion = 20.0, dia = DiaSemana.LUNES, semanaKey = semanaActual)
 
-        assertEquals(CalculoComisiones.IRPF_POR_DEFECTO, viewModel.uiState.value.resumenSemana!!.porcentajeIrpf, 0.0)
-        viewModel.cambiarSemana(1)
-        assertEquals(15.0, viewModel.uiState.value.resumenSemana!!.porcentajeIrpf, 0.0)
+        viewModel.prepararImportacion(ResultadoLectura(DatosBackup(socios = listOf(socio)), irpfIgnorados = 2), ImportFormat.JSON)
+        assertEquals(2, viewModel.importPendiente.value!!.irpfIgnorados)
+        viewModel.confirmarImport()
+
+        assertEquals(listOf("a"), viewModel.uiState.value.todosSociosSemana.map { it.id })
+        assertEquals(CalculoComisiones.IRPF, viewModel.uiState.value.resumenSemana!!.porcentajeIrpf, 0.0)
     }
 
     @Test
@@ -274,7 +271,7 @@ class MainViewModelTest {
 
         assertEquals(
             ImportPreview(
-                sociosNuevos = 1, sociosSobrescritos = 1, bonos = 0, irpfVigencias = 0, cobros = 0, descartados = 2,
+                sociosNuevos = 1, sociosSobrescritos = 1, bonos = 0, cobros = 0, descartados = 2,
                 semanas = 1, primeraSemana = semanaActual, ultimaSemana = semanaActual
             ),
             viewModel.importPendiente.value
@@ -287,7 +284,7 @@ class MainViewModelTest {
         assertEquals(setOf("existente", "nuevo"), socioDao.socios.value.map { it.id }.toSet())
         assertEquals(30.0, socioDao.socios.value.first { it.id == "existente" }.colaboracion, 0.0)
         assertEquals(
-            // Solo lo que venía en la copia: "2 socios", sin "0 bonus, 0 cambios de IRPF...".
+            // Solo lo que venía en la copia: "2 socios", sin "0 bonus, 0 semanas con lo cobrado".
             MainEvent.Mensaje(
                 UiText.Res(R.string.msg_import_hecho),
                 TipoAviso.EXITO,

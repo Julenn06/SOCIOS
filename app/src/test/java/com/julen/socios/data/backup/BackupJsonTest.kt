@@ -4,7 +4,6 @@ import com.julen.socios.model.BonoRegaloInfo
 import com.julen.socios.model.CobroInfo
 import com.julen.socios.model.DatosBackup
 import com.julen.socios.model.DiaSemana
-import com.julen.socios.model.IrpfVigencia
 import com.julen.socios.model.Socio
 import java.io.ByteArrayOutputStream
 import kotlinx.serialization.SerializationException
@@ -27,7 +26,6 @@ class BackupJsonTest {
                 )
             ),
             bonosRegalo = listOf(BonoRegaloInfo("2026-W10", activo = true, esMontoFijo = true, monto = 100.0)),
-            irpfVigencias = listOf(IrpfVigencia("2026-W01", 18.0)),
             cobros = listOf(CobroInfo("2026-W10", 284.69, "2.ª cuota de Ana"))
         )
         val out = ByteArrayOutputStream()
@@ -97,8 +95,8 @@ class BackupJsonTest {
 
         assertEquals(listOf("ok"), resultado.datos.socios.map { it.id })
         assertEquals(1, resultado.datos.bonosRegalo.size)
-        assertTrue(resultado.datos.irpfVigencias.isEmpty())
-        assertEquals(5, resultado.descartados)
+        assertEquals(4, resultado.descartados)
+        assertEquals(1, resultado.irpfIgnorados)
     }
 
     @Test
@@ -149,11 +147,11 @@ class BackupJsonTest {
             ),
             bonosRegalo = listOf(
                 BonoRegaloInfo("2026-W10", activo = true, esMontoFijo = false, monto = 25.0, nota = "Campaña")
-            ),
-            irpfVigencias = listOf(IrpfVigencia("2026-W01", 15.5))
+            )
         )
         assertEquals(esperado, resultado.datos)
         assertEquals(0, resultado.descartados)
+        assertEquals(1, resultado.irpfIgnorados)
     }
 
     @Test

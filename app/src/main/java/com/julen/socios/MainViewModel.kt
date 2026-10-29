@@ -14,7 +14,6 @@ import com.julen.socios.ajustes.PreferenciasUsuario
 import com.julen.socios.data.BackupRepository
 import com.julen.socios.data.BonoRegaloRepository
 import com.julen.socios.data.CobroRepository
-import com.julen.socios.data.IrpfRepository
 import com.julen.socios.data.SocioRepository
 import com.julen.socios.export.AlcanceExport
 import com.julen.socios.export.ExportFormat
@@ -27,7 +26,6 @@ import com.julen.socios.model.DatosBackup
 import com.julen.socios.model.DiaSemana
 import com.julen.socios.model.ImportesPredefinidos
 import com.julen.socios.model.ImportPreview
-import com.julen.socios.model.IrpfVigencia
 import com.julen.socios.model.ResultadoLectura
 import com.julen.socios.model.Socio
 import com.julen.socios.util.CalculoComisiones
@@ -90,7 +88,6 @@ sealed interface MainEvent {
 class MainViewModel(
     private val socioRepository: SocioRepository,
     private val bonoRegaloRepository: BonoRegaloRepository,
-    private val irpfRepository: IrpfRepository,
     private val cobroRepository: CobroRepository,
     private val backupRepository: BackupRepository,
     private val exportService: ExportService,
@@ -120,10 +117,9 @@ class MainViewModel(
     }.distinctUntilChanged()
 
     // Una sola consulta de cada tabla para todos los flujos que la usan: Room la vuelve a leer entera con cada
-    // cambio y cada suscriptor la leía por su cuenta (la de IRPF, además, otra vez en cada cambio de semana).
+    // cambio y cada suscriptor la leía por su cuenta.
     private val sociosDeTodasLasSemanas: Flow<List<Socio>> =
         socioRepository.getAllSociosFlow().flowOn(calculoDispatcher).compartido()
-    private val vigencias: Flow<List<IrpfVigencia>> = irpfRepository.getVigenciasFlow().compartido()
 
     private val eventos = Channel<MainEvent>(Channel.BUFFERED)
 
@@ -135,7 +131,6 @@ class MainViewModel(
         val semanaKey: String,
         val socios: List<Socio>,
         val bono: BonoRegaloInfo?,
-        val porcentajeIrpf: Double,
         val cobro: CobroInfo?
     )
 
@@ -145,10 +140,9 @@ class MainViewModel(
         combine(
             socioRepository.getSociosPorSemanaFlow(semanaKey),
             bonoRegaloRepository.getBonoRegaloFlow(semanaKey),
-            vigencias,
             cobroRepository.getCobroFlow(semanaKey)
-        ) { socios, bono, vigencias, cobro ->
-            DatosSemana(offset, semanaKey, socios, bono, CalculoComisiones.irpfParaSemana(semanaKey, vigencias), cobro)
+        ) { socios, bono, cobro ->
+            DatosSemana(offset, semanaKey, socios, bono, cobro)
         }
     }
 
@@ -164,7 +158,7 @@ class MainViewModel(
             bonoInfoSemana = datos.bono,
             cobroSemana = datos.cobro,
             resumenSemana = CalculoComisiones.calcularResumenSemana(
-                datos.socios, datos.bono, datos.porcentajeIrpf, datos.cobro
+                datos.socios, datos.bono, cobro = datos.cobro
             )
         )
     }.mientrasSeObserve(
@@ -176,10 +170,9 @@ class MainViewModel(
     val historicoGlobal: StateFlow<CalculoComisiones.ResumenHistoricoGlobal?> = combine(
         sociosDeTodasLasSemanas,
         bonoRegaloRepository.getAllBonosRegaloFlow(),
-        vigencias,
         cobroRepository.getAllFlow()
-    ) { socios, bonos, vigencias, cobros ->
-        CalculoComisiones.calcularResumenHistoricoGlobal(socios, bonos, vigencias, cobros)
+    ) { socios, bonos, cobros ->
+        CalculoComisiones.calcularResumenHistoricoGlobal(socios, bonos, cobrosMap = cobros)
     }.flowOn(calculoDispatcher)
         .mientrasSeObserve(null)
 
@@ -442,7 +435,6 @@ class MainViewModel(
         listOf(
             R.plurals.msg_import_socios to datos.socios.size,
             R.plurals.msg_import_bonus to datos.bonosRegalo.size,
-            R.plurals.msg_import_irpf to datos.irpfVigencias.size,
             R.plurals.msg_import_cobros to datos.cobros.size
         ).filter { (_, cantidad) -> cantidad > 0 }
             .map { (plural, cantidad) -> UiText.Plural(plural, cantidad, listOf(cantidad)) }
@@ -488,7 +480,6 @@ class MainViewModel(
                 MainViewModel(
                     socioRepository = container.socioRepository,
                     bonoRegaloRepository = container.bonoRegaloRepository,
-                    irpfRepository = container.irpfRepository,
                     cobroRepository = container.cobroRepository,
                     backupRepository = container.backupRepository,
                     exportService = container.exportService,

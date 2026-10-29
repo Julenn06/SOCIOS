@@ -54,7 +54,6 @@ object ResumenWidget {
         val resumen = CalculoComisiones.calcularResumenSemana(
             socios = container.socioRepository.getSociosPorSemanaFlow(semanaKey).first(),
             bonoRegalo = container.bonoRegaloRepository.getBonoRegaloFlow(semanaKey).first(),
-            porcentajeIrpf = CalculoComisiones.irpfParaSemana(semanaKey, container.irpfRepository.getVigenciasFlow().first()),
             cobro = container.cobroRepository.getCobroFlow(semanaKey).first()
         )
         val vistas = vistas(app, semanaKey, resumen)

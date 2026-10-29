@@ -75,7 +75,6 @@ class PdfReportGenerator(private val context: Context) {
         private val historico = CalculoComisiones.calcularResumenHistoricoGlobal(
             datos.socios,
             datos.bonosRegalo.filter { it.activo }.associateBy { it.semanaKey },
-            datos.irpfVigencias,
             datos.cobros.associateBy { it.semanaKey }
         )
         private val sociosPorSemana = datos.socios.groupBy { it.semanaKey }

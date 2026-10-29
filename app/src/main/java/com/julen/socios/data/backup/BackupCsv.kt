@@ -8,10 +8,11 @@ import java.io.OutputStream
 import java.io.Writer
 
 /**
- * CSV con cuatro secciones (# SOCIOS, # BONOS_REGALO, # IRPF, # COBROS), precedidas de la versión del
- * formato (# VERSION 4). Las filas de la sección # DEVOLUCIONES de las hojas v3 no se importan: cuentan como
- * descartadas. Los campos con comas, comillas, saltos de línea o espacios en los extremos van entre comillas, y
- * el lector respeta esas comillas aunque el campo ocupe varias líneas.
+ * CSV con tres secciones (# SOCIOS, # BONOS_REGALO, # COBROS), precedidas de la versión del formato
+ * (# VERSION 5). Las filas de la sección # DEVOLUCIONES de las hojas v3 no se importan: cuentan como
+ * descartadas. Las de # IRPF de las hojas v2–v4 tampoco: se cuentan aparte para decirlo en el resumen. Los
+ * campos con comas, comillas, saltos de línea o espacios en los extremos van entre comillas, y el lector respeta
+ * esas comillas aunque el campo ocupe varias líneas.
  */
 object BackupCsv {
 
@@ -25,7 +26,6 @@ object BackupCsv {
 
     private const val CABECERA_SOCIOS = "ID,Colaboracion,Hecho,DiaSemanaId,SemanaKey,NombreSocio,Notas,Timestamp"
     private const val CABECERA_BONOS = "SemanaKey,Activo,EsMontoFijo,Monto,Nota"
-    private const val CABECERA_IRPF = "DesdeSemanaKey,Porcentaje"
     private const val CABECERA_COBROS = "SemanaKey,NetoCobrado,Nota"
 
     /** Cada sección, con los campos que necesita una fila para no descartarse. Las de IGNORADA se descartan todas. */
@@ -52,13 +52,6 @@ object BackupCsv {
                 out.fila(bono.semanaKey, bono.activo, bono.esMontoFijo, bono.monto, bono.nota)
             }
         }
-        if (datos.irpfVigencias.isNotEmpty()) {
-            out.linea(SECCION_IRPF)
-            out.linea(CABECERA_IRPF)
-            for (vigencia in datos.irpfVigencias) {
-                out.fila(vigencia.desdeSemanaKey, vigencia.porcentaje)
-            }
-        }
         if (datos.cobros.isNotEmpty()) {
             out.linea(SECCION_COBROS)
             out.linea(CABECERA_COBROS)
@@ -74,9 +67,9 @@ object BackupCsv {
 
         val socios = mutableListOf<SocioDto>()
         val bonos = mutableListOf<BonoRegaloDto>()
-        val vigencias = mutableListOf<IrpfVigenciaDto>()
         val cobros = mutableListOf<CobroDto>()
         var descartados = 0
+        var irpfIgnorados = 0
         var seccion = Seccion.SOCIOS
 
         for (campos in parsearRegistros(texto)) {
@@ -126,18 +119,16 @@ object BackupCsv {
                     nota = campos.getOrNull(4)
                 )
 
-                Seccion.IRPF -> vigencias += IrpfVigenciaDto(campos[0].trim(), parseImporte(campos[1]))
+                Seccion.IRPF -> irpfIgnorados++
                 Seccion.COBROS -> cobros += CobroDto(campos[0].trim(), parseImporte(campos[1]), campos.getOrNull(2))
                 Seccion.IGNORADA -> Unit // Ya descartada arriba: ninguna fila llega a tantos campos.
             }
         }
 
         val resultado = ConversionBackup.desdeDto(
-            BackupDto(
-                socios = socios, bonosRegalo = bonos, irpfVigencias = vigencias, cobros = cobros
-            )
+            BackupDto(socios = socios, bonosRegalo = bonos, cobros = cobros)
         )
-        return resultado.copy(descartados = resultado.descartados + descartados)
+        return resultado.copy(descartados = resultado.descartados + descartados, irpfIgnorados = irpfIgnorados)
     }
 
     /**

@@ -5,7 +5,6 @@ import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 import com.julen.socios.model.BonoRegaloInfo
 import com.julen.socios.model.DiaSemana
-import com.julen.socios.model.IrpfVigencia
 import com.julen.socios.model.Socio
 import com.julen.socios.util.CalculoComisiones
 import com.julen.socios.util.DevolucionesAntiguas
@@ -65,9 +64,6 @@ object Migracion5a6 : Migration(5, 6) {
             "CREATE TABLE IF NOT EXISTS `cobros` (`semanaKey` TEXT NOT NULL, `netoCobrado` REAL NOT NULL, " +
                 "`nota` TEXT NOT NULL, PRIMARY KEY(`semanaKey`))"
         )
-        val vigencias = db.filas("SELECT desdeSemanaKey, porcentaje FROM irpf_vigencias") {
-            IrpfVigencia(it.getString(0), it.getDouble(1))
-        }
         val devoluciones = db.filas("SELECT semanaKey, monto, nota FROM devoluciones") {
             Triple(it.getString(0), it.getDouble(1), it.getString(2))
         }
@@ -75,7 +71,7 @@ object Migracion5a6 : Migration(5, 6) {
             val neto = DevolucionesAntiguas.netoCobrado(
                 socios = sociosDe(db, semanaKey),
                 bono = bonoDe(db, semanaKey),
-                porcentajeIrpf = CalculoComisiones.irpfParaSemana(semanaKey, vigencias),
+                porcentajeIrpf = irpfDe(db, semanaKey),
                 devolucion = monto
             )
             db.execSQL("INSERT OR REPLACE INTO cobros VALUES (?, ?, ?)", arrayOf(semanaKey, neto, nota))
@@ -94,11 +90,27 @@ object Migracion5a6 : Migration(5, 6) {
             )
         }
 
+    // El IRPF con el que la v5 calculaba esa semana: el del último cambio que empezase en ella o antes.
+    private fun irpfDe(db: SupportSQLiteDatabase, semanaKey: String): Double =
+        db.filas(
+            "SELECT porcentaje FROM irpf_vigencias WHERE desdeSemanaKey <= ? ORDER BY desdeSemanaKey DESC LIMIT 1", semanaKey
+        ) { it.getDouble(0) }.firstOrNull() ?: CalculoComisiones.IRPF
+
     // La semana es la clave primaria de los bonos: como mucho hay uno.
     private fun bonoDe(db: SupportSQLiteDatabase, semanaKey: String): BonoRegaloInfo? =
         db.filas("SELECT activo, esMontoFijo, monto FROM bonos_regalo WHERE semanaKey = ?", semanaKey) { c ->
             BonoRegaloInfo(semanaKey, activo = c.getInt(0) != 0, esMontoFijo = c.getInt(1) != 0, monto = c.getDouble(2))
         }.firstOrNull()
+}
+
+/**
+ * v6 → v7: el IRPF es siempre el mismo ([CalculoComisiones.IRPF]). Fuera la tabla de cambios de IRPF, que solo
+ * se llenaba al importar copias antiguas y podía dejar semanas con otro porcentaje.
+ */
+object Migracion6a7 : Migration(6, 7) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.execSQL("DROP TABLE IF EXISTS `irpf_vigencias`")
+    }
 }
 
 /** Cada fila que devuelve [sql] (con [argumentos] en lugar de sus ?), convertida con [leer]. */

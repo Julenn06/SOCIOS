@@ -5,7 +5,7 @@ bonus por tramos o ajustado a mano, retención de IRPF y neto, y lo cobrado de v
 comparativa y gráfico de evolución, búsqueda de socios, aviso de pendientes de semanas anteriores, widget
 para la pantalla de inicio y exportación a PDF, CSV y JSON (copia de seguridad que se puede volver a importar).
 
-Las cuentas de cada semana: `base + bonus = total bruto`, `total bruto − IRPF = neto calculado`. Si se apunta
+Las cuentas de cada semana: `base + bonus = total bruto`, `total bruto − IRPF (siempre 21,48 %) = neto calculado`. Si se apunta
 lo cobrado de verdad, ese pasa a ser el neto de la semana y la diferencia con el calculado es lo descontado
 (devoluciones de primera o segunda cuota u otros descuentos); si se cobra de más, sale en positivo.
 
@@ -13,7 +13,7 @@ lo cobrado de verdad, ese pasa a ser el neto de la semana y la diferencia con el
 
 | Paquete | Contenido |
 |---|---|
-| `model` | Modelo de dominio (`Socio`, `DiaSemana`, `BonoRegaloInfo`, `IrpfVigencia`, importes predefinidos). |
+| `model` | Modelo de dominio (`Socio`, `DiaSemana`, `BonoRegaloInfo`, `CobroInfo`, importes predefinidos). |
 | `data` | Repositorios, Room (`data/local`, con migraciones) y formato de copias de seguridad (`data/backup`). |
 | `export` | Generación del PDF y lectura/escritura de archivos (Storage Access Framework y FileProvider). |
 | `util` | Cálculos (`CalculoComisiones`), semanas ISO (`DateUtils`), formato de importes, textos de los avisos (`UiText`) y movimiento (`Movimiento`: la curva, las duraciones y los muelles de todas las animaciones). |

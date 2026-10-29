@@ -3,7 +3,6 @@ package com.julen.socios.util
 import com.julen.socios.model.BonoRegaloInfo
 import com.julen.socios.model.CobroInfo
 import com.julen.socios.model.DiaSemana
-import com.julen.socios.model.IrpfVigencia
 import com.julen.socios.model.Socio
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -62,7 +61,7 @@ class CalculoComisionesTest {
         // 540 × 21,48 % = 115,992 → 115,99 €
         assertEquals(115.99, resumen.retencionIrpf, 0.0)
         assertEquals(424.01, resumen.totalNeto, 0.0)
-        assertEquals(CalculoComisiones.IRPF_POR_DEFECTO, resumen.porcentajeIrpf, 0.0)
+        assertEquals(CalculoComisiones.IRPF, resumen.porcentajeIrpf, 0.0)
     }
 
     @Test
@@ -124,20 +123,12 @@ class CalculoComisionesTest {
     }
 
     @Test
-    fun cadaSemanaUsaElIrpfVigenteEnEsaSemana() {
-        val vigencias = listOf(IrpfVigencia("2026-W10", 15.0), IrpfVigencia("2026-W20", 19.0))
+    fun todasLasSemanasRetienenElMismoIrpf() {
+        val global = CalculoComisiones.calcularResumenHistoricoGlobal(socios(10, "2025-W09") + socios(10, "2026-W10"))
 
-        assertEquals(CalculoComisiones.IRPF_POR_DEFECTO, CalculoComisiones.irpfParaSemana("2026-W09", vigencias), 0.0)
-        assertEquals(15.0, CalculoComisiones.irpfParaSemana("2026-W10", vigencias), 0.0)
-        assertEquals(15.0, CalculoComisiones.irpfParaSemana("2026-W19", vigencias), 0.0)
-        assertEquals(19.0, CalculoComisiones.irpfParaSemana("2026-W20", vigencias), 0.0)
-        assertEquals(19.0, CalculoComisiones.irpfParaSemana("2027-W01", vigencias), 0.0)
-
-        val global = CalculoComisiones.calcularResumenHistoricoGlobal(
-            socios(10, "2026-W09") + socios(10, "2026-W10"), irpfVigencias = vigencias
-        )
-        // 540 × 21,48 % = 115,99 y 540 × 15 % = 81,00
-        assertEquals(196.99, global.totalIrpfRetenidoAcumulado, 0.0)
+        assertTrue(global.semanasHistoricas.all { it.resumenSemana.porcentajeIrpf == CalculoComisiones.IRPF })
+        // 540 × 21,48 % = 115,99 en cada semana
+        assertEquals(231.98, global.totalIrpfRetenidoAcumulado, 0.0)
     }
 
     @Test
@@ -214,9 +205,9 @@ class CalculoComisionesTest {
     @Test
     fun lasDevolucionesDeLaVersionAnteriorSePasanAlNetoQueDaban() {
         // En la 1.9.0, 40 € de devolución con 10 socios: 540 - 40 = 500 de bruto, 107,40 de IRPF, 392,60 de neto.
-        assertEquals(392.60, DevolucionesAntiguas.netoCobrado(socios(10, "2026-W42"), null, CalculoComisiones.IRPF_POR_DEFECTO, 40.0), 0.0)
+        assertEquals(392.60, DevolucionesAntiguas.netoCobrado(socios(10, "2026-W42"), null, CalculoComisiones.IRPF, 40.0), 0.0)
         // Si superaban lo ganado no se retenía nada.
-        assertEquals(-30.0, DevolucionesAntiguas.netoCobrado(socios(1, "2026-W42"), null, CalculoComisiones.IRPF_POR_DEFECTO, 70.0), 0.0)
+        assertEquals(-30.0, DevolucionesAntiguas.netoCobrado(socios(1, "2026-W42"), null, CalculoComisiones.IRPF, 70.0), 0.0)
     }
 
     @Test

@@ -4,7 +4,6 @@ import com.julen.socios.model.BonoRegaloInfo
 import com.julen.socios.model.CobroInfo
 import com.julen.socios.model.DatosBackup
 import com.julen.socios.model.DiaSemana
-import com.julen.socios.model.IrpfVigencia
 import com.julen.socios.model.Socio
 import java.io.ByteArrayOutputStream
 import java.time.LocalDate
@@ -42,7 +41,6 @@ class BackupCsvTest {
             bonosRegalo = listOf(
                 BonoRegaloInfo("2026-W10", activo = true, esMontoFijo = false, monto = 50.0, nota = "Extra, por ventas")
             ),
-            irpfVigencias = listOf(IrpfVigencia("2026-W01", 15.5)),
             cobros = listOf(CobroInfo("2026-W11", 284.69, "2.ª cuota de Ana, \"devuelta\""))
         )
 
@@ -55,6 +53,15 @@ class BackupCsvTest {
 
         assertEquals(listOf(CobroInfo("2026-W11", 284.69, "ok")), resultado.datos.cobros)
         assertEquals(3, resultado.descartados)
+    }
+
+    @Test
+    fun losCambiosDeIrpfDeUnaHojaAntiguaNoSeImportanPeroSeCuentan() {
+        val resultado = leer("# VERSION 4\n# SOCIOS\ns1,20,true,1,2026-W10,,,0\n# IRPF\nDesdeSemanaKey,Porcentaje\n2026-W01,15.5\n2026-W20,19\n")
+
+        assertEquals(1, resultado.datos.socios.size)
+        assertEquals(2, resultado.irpfIgnorados)
+        assertEquals(0, resultado.descartados)
     }
 
     @Test

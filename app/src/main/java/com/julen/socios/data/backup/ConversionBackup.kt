@@ -4,7 +4,6 @@ import com.julen.socios.model.BonoRegaloInfo
 import com.julen.socios.model.CobroInfo
 import com.julen.socios.model.DatosBackup
 import com.julen.socios.model.DiaSemana
-import com.julen.socios.model.IrpfVigencia
 import com.julen.socios.model.ResultadoLectura
 import com.julen.socios.model.Socio
 import com.julen.socios.util.DateUtils
@@ -16,11 +15,13 @@ object ConversionBackup {
     /**
      * v1: socios y bonos. v2: añade las vigencias de IRPF y calcula las claves de semana con el año ISO.
      * v3: añade las devoluciones (lo descontado). v4: las sustituye por lo cobrado de verdad cada semana.
+     * v5: sin las vigencias de IRPF, que es siempre el mismo.
      *
      * Las copias se leen tal cual: las claves de semana de la v1 no se corrigen y las devoluciones de la v3 no
-     * se convierten (cuentan como registros que no se importan, así el resumen avisa de ellas).
+     * se convierten (cuentan como registros que no se importan, así el resumen avisa de ellas). Los cambios de
+     * IRPF de las v2–v4 tampoco se importan: solo se cuentan para decirlo en el resumen.
      */
-    const val VERSION_ACTUAL = 4
+    const val VERSION_ACTUAL = 5
 
     fun aDto(datos: DatosBackup, timestamp: Long = System.currentTimeMillis()): BackupDto = BackupDto(
         version = VERSION_ACTUAL,
@@ -40,7 +41,6 @@ object ConversionBackup {
         bonosRegalo = datos.bonosRegalo.map { bono ->
             BonoRegaloDto(bono.semanaKey, bono.activo, bono.esMontoFijo, bono.monto, bono.nota)
         },
-        irpfVigencias = datos.irpfVigencias.map { IrpfVigenciaDto(it.desdeSemanaKey, it.porcentaje) },
         cobros = datos.cobros.map { CobroDto(it.semanaKey, it.netoCobrado, it.nota) }
     )
 
@@ -54,7 +54,6 @@ object ConversionBackup {
 
         val socios = dto.socios.validos { aSocio(it, ahora) }
         val bonos = dto.bonosRegalo.validos(::aBono)
-        val vigencias = dto.irpfVigencias.validos(::aVigencia)
         val cobros = dto.cobros.validos(::aCobro)
 
         // Si un archivo repite un registro prevalece el último, igual que al guardarlo en la BD.
@@ -62,10 +61,10 @@ object ConversionBackup {
             datos = DatosBackup(
                 socios = socios.associateBy { it.id }.values.toList(),
                 bonosRegalo = bonos.associateBy { it.semanaKey }.values.toList(),
-                irpfVigencias = vigencias.associateBy { it.desdeSemanaKey }.values.toList(),
                 cobros = cobros.associateBy { it.semanaKey }.values.toList()
             ),
             descartados = descartados,
+            irpfIgnorados = dto.irpfVigencias?.size ?: 0,
             fechaCopia = dto.timestamp
         )
     }
@@ -99,12 +98,6 @@ object ConversionBackup {
             monto = monto,
             nota = dto.nota.orEmpty()
         )
-    }
-
-    private fun aVigencia(dto: IrpfVigenciaDto): IrpfVigencia? {
-        val desde = claveValida(dto.desdeSemanaKey) ?: return null
-        val porcentaje = dto.porcentaje?.takeIf { it.isFinite() && it in 0.0..100.0 } ?: return null
-        return IrpfVigencia(desde, porcentaje)
     }
 
     private fun aCobro(dto: CobroDto): CobroInfo? {

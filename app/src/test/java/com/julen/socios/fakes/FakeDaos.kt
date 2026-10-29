@@ -6,8 +6,6 @@ import com.julen.socios.data.local.BonoRegaloDao
 import com.julen.socios.data.local.BonoRegaloEntity
 import com.julen.socios.data.local.CobroDao
 import com.julen.socios.data.local.CobroEntity
-import com.julen.socios.data.local.IrpfVigenciaDao
-import com.julen.socios.data.local.IrpfVigenciaEntity
 import com.julen.socios.data.local.SocioDao
 import com.julen.socios.data.local.SocioEntity
 import com.julen.socios.data.local.TransactionRunner
@@ -79,17 +77,6 @@ class FakeBonoRegaloDao : BonoRegaloDao {
 
     override suspend fun deleteBonoRegalo(semanaKey: String) {
         bonos.value = bonos.value - semanaKey
-    }
-}
-
-class FakeIrpfVigenciaDao : IrpfVigenciaDao {
-    val vigencias = MutableStateFlow<Map<String, IrpfVigenciaEntity>>(emptyMap())
-
-    override suspend fun getAll() = vigencias.value.values.sortedBy { it.desdeSemanaKey }
-    override fun getAllFlow(): Flow<List<IrpfVigenciaEntity>> = vigencias.map { m -> m.values.sortedBy { it.desdeSemanaKey } }
-
-    override suspend fun upsertAll(vigencias: List<IrpfVigenciaEntity>) {
-        this.vigencias.value = this.vigencias.value + vigencias.associateBy { it.desdeSemanaKey }
     }
 }
 

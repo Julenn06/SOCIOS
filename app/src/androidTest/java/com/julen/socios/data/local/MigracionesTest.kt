@@ -83,6 +83,8 @@ class MigracionesTest {
         helper.createDatabase(nombreDb, 5).apply {
             for (i in 1..10) execSQL("INSERT INTO socios VALUES ('s$i', 20.0, 1, 1, '2026-W42', '', '', 0)")
             execSQL("INSERT INTO devoluciones VALUES ('2026-W42', 40.0, '1.ª cuota de Ana')")
+            // Un cambio de IRPF posterior no afecta a la semana de la devolución.
+            execSQL("INSERT INTO irpf_vigencias VALUES ('2026-W43', 15.0)")
             close()
         }
 
@@ -102,6 +104,28 @@ class MigracionesTest {
     }
 
     @Test
+    fun migra6a7QuitandoLosCambiosDeIrpfSinTocarLoDemas() {
+        helper.createDatabase(nombreDb, 6).apply {
+            execSQL("INSERT INTO socios VALUES ('a', 20.0, 1, 1, '2026-W42', 'Ana', '', 0)")
+            execSQL("INSERT INTO cobros VALUES ('2026-W42', 284.69, '')")
+            execSQL("INSERT INTO irpf_vigencias VALUES ('2026-W01', 19.0)")
+            close()
+        }
+
+        val db = helper.runMigrationsAndValidate(nombreDb, 7, true, Migracion6a7)
+
+        db.query("SELECT COUNT(*) FROM sqlite_master WHERE name = 'irpf_vigencias'").use { cursor ->
+            cursor.moveToFirst()
+            assertEquals(0, cursor.getInt(0))
+        }
+        db.query("SELECT (SELECT nombreSocio FROM socios), (SELECT netoCobrado FROM cobros)").use { cursor ->
+            cursor.moveToFirst()
+            assertEquals("Ana", cursor.getString(0))
+            assertEquals(284.69, cursor.getDouble(1), 0.001)
+        }
+    }
+
+    @Test
     fun roomAbreLaBaseDeDatosMigrada() {
         helper.createDatabase(nombreDb, 3).apply {
             execSQL("INSERT INTO socios VALUES ('a', 20.0, 1, 1, '2026-W42', '', '', 0)")
@@ -110,7 +134,7 @@ class MigracionesTest {
 
         val context = InstrumentationRegistry.getInstrumentation().targetContext
         val room = Room.databaseBuilder(context, AppDatabase::class.java, nombreDb)
-            .addMigrations(Migracion3a4(zona), Migracion4a5, Migracion5a6)
+            .addMigrations(Migracion3a4(zona), Migracion4a5, Migracion5a6, Migracion6a7)
             .build()
         helper.closeWhenFinished(room)
 
