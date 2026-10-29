@@ -11,6 +11,7 @@ import com.julen.socios.util.CalculoComisiones
 import com.julen.socios.util.CalculoComisiones.Periodo
 import com.julen.socios.util.HapticUtils
 import com.julen.socios.util.LOCALE_ES
+import com.julen.socios.util.Movimiento
 import com.julen.socios.util.NumberAnimators
 import com.julen.socios.util.descontadoConSigno
 import com.julen.socios.util.rangoSemanaConAnio
@@ -34,12 +35,28 @@ class HistoricoGlobalBottomSheetDialog :
     private var resumenActual: CalculoComisiones.ResumenHistoricoGlobal? = null
     private var semanaActual: String = ""
 
+    /**
+     * Al abrir el panel, lo que va debajo de la cabecera espera oculto a que lleguen los datos y entonces entra bloque
+     * a bloque. Sin esto, el panel subía vacío y todo aparecía de golpe un momento después.
+     */
+    private var entradaPendiente = false
+
     /** Agrupación con la que se dibujó el gráfico, para animarlo solo al cambiarla. */
     private var periodoDelGrafico: Periodo? = null
     private var graficoDibujado = false
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        // Al recrearse (girar la pantalla) ya estaba a la vista: no vuelve a entrar.
+        entradaPendiente = savedInstanceState == null && Movimiento.activas()
+        if (entradaPendiente) {
+            val desplazamiento = DESPLAZAMIENTO_ENTRADA_DP * resources.displayMetrics.density
+            bloques().forEach {
+                it.alpha = 0f
+                it.translationY = desplazamiento
+            }
+        }
 
         binding.rvSemanasHistoricas.layoutManager = LinearLayoutManager(requireContext())
         binding.rvSemanasHistoricas.adapter = adapter
@@ -68,7 +85,32 @@ class HistoricoGlobalBottomSheetDialog :
                 renderTotales(resumen)
                 renderMejorSemana(CalculoComisiones.mejorSemana(resumen.semanasHistoricas))
                 mostrarFilas()
+                if (entradaPendiente) entrar()
             }
+        }
+    }
+
+    /** Lo que va debajo de la cabecera: el total, la mejor semana, el desglose, el gráfico y la lista. */
+    private fun bloques(): List<View> {
+        val contenido = binding.contenidoHistorico
+        val desde = contenido.indexOfChild(binding.encabezadoHistorico) + 1
+        return (desde until contenido.childCount).map(contenido::getChildAt)
+    }
+
+    /** Los bloques suben a su sitio mientras aparecen, uno tras otro de arriba abajo. */
+    private fun entrar() {
+        entradaPendiente = false
+        val curva = Movimiento.curva(requireContext())
+        var orden = 0
+        for (bloque in bloques()) {
+            val retraso = if (bloque.isVisible) RETRASO_ENTRADA_MS + ESCALON_ENTRADA_MS * orden++ else 0L
+            bloque.animate()
+                .alpha(1f)
+                .translationY(0f)
+                .setStartDelay(retraso)
+                .setDuration(Movimiento.LARGA_MS)
+                .setInterpolator(curva)
+                .start()
         }
     }
 
@@ -263,5 +305,10 @@ class HistoricoGlobalBottomSheetDialog :
 
     companion object {
         const val TAG = "HistoricoGlobalDialog"
+
+        /** La entrada de los bloques: cuánto suben, cuándo empieza el primero y cuánto espera cada siguiente. */
+        private const val DESPLAZAMIENTO_ENTRADA_DP = 28f
+        private const val RETRASO_ENTRADA_MS = 90L
+        private const val ESCALON_ENTRADA_MS = 70L
     }
 }

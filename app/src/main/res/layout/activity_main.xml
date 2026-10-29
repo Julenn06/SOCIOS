@@ -36,7 +36,6 @@
                 style="@style/Socios.BotonHoy"
                 android:layout_marginEnd="8dp"
                 android:visibility="gone"
-                app:icon="@drawable/ic_chevron_left"
                 tools:visibility="visible" />
 
             <com.google.android.material.card.MaterialCardView
@@ -129,9 +128,7 @@
                 android:id="@+id/btnHoyRight"
                 style="@style/Socios.BotonHoy"
                 android:layout_marginStart="8dp"
-                android:visibility="gone"
-                app:icon="@drawable/ic_chevron_right"
-                app:iconGravity="end" />
+                android:visibility="gone" />
         </LinearLayout>
     </com.google.android.material.appbar.AppBarLayout>
 

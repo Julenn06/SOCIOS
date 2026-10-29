@@ -9,6 +9,7 @@
     tools:targetApi="q">
 
     <LinearLayout
+        android:id="@+id/contenidoHistorico"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
@@ -20,8 +21,9 @@
         <View
             style="@style/Socios.AsaPanel" />
 
-        <!-- Encabezado -->
+        <!-- Encabezado. Lo que va debajo entra al abrir el panel, bloque a bloque -->
         <LinearLayout
+            android:id="@+id/encabezadoHistorico"
             style="@style/Socios.Fila">
 
             <FrameLayout

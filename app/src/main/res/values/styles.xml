@@ -172,21 +172,30 @@
         <item name="iconTint">@color/text_main</item>
     </style>
 
-    <!-- Botón para volver a la semana actual. -->
+    <!-- Botón para volver a la semana actual: de la altura y con las esquinas de la tarjeta del selector, en el verde
+         de "Semana actual", con el calendario encima de "Hoy". El lado en el que sale ya dice hacia dónde queda. -->
     <style name="Socios.BotonHoy" parent="Widget.Material3.Button.TonalButton">
         <item name="android:layout_width">wrap_content</item>
-        <item name="android:layout_height">48dp</item>
+        <item name="android:layout_height">match_parent</item>
+        <item name="android:minWidth">64dp</item>
         <item name="android:insetTop">0dp</item>
         <item name="android:insetBottom">0dp</item>
         <item name="android:paddingStart">12dp</item>
         <item name="android:paddingEnd">12dp</item>
+        <item name="android:paddingTop">8dp</item>
+        <item name="android:paddingBottom">8dp</item>
         <item name="android:text">@string/btn_hoy</item>
-        <item name="android:textColor">@color/blue_text</item>
+        <item name="android:textColor">@color/primary</item>
         <item name="android:textSize">13sp</item>
         <item name="android:fontFamily">@font/geist_semibold</item>
-        <item name="backgroundTint">@color/blue_container</item>
-        <item name="cornerRadius">16dp</item>
-        <item name="iconTint">@color/blue_text</item>
+        <item name="backgroundTint">@color/primary_container</item>
+        <item name="cornerRadius">20dp</item>
+        <item name="icon">@drawable/ic_today</item>
+        <item name="iconGravity">top</item>
+        <item name="iconPadding">4dp</item>
+        <item name="iconSize">22dp</item>
+        <item name="iconTint">@color/primary</item>
+        <item name="android:stateListAnimator">@animator/pulsar</item>
     </style>
 
     <!-- Botón flotante de "Nuevo socio", con las esquinas de las tarjetas. -->
