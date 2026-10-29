@@ -7,7 +7,6 @@ import android.transition.Transition
 import android.transition.TransitionManager
 import android.transition.TransitionSet
 import android.view.View
-import android.view.animation.AccelerateInterpolator
 import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import com.julen.socios.databinding.ActivityMainBinding
@@ -90,11 +89,11 @@ class SelectorSemana(
      */
     private fun transicionHoy(aparece: Boolean): Transition = TransitionSet()
         .setOrdering(TransitionSet.ORDERING_TOGETHER)
-        .addTransition(ChangeBounds().setDuration(Movimiento.MEDIA_MS))
+        .addTransition(ChangeBounds().setDuration(DURACION_TARJETA_MS))
         .addTransition(
             Fade(if (aparece) Fade.IN else Fade.OUT)
                 .setDuration(if (aparece) Movimiento.CORTA_MS else Movimiento.CORTA_MS / 2)
-                .setStartDelay(if (aparece) Movimiento.MEDIA_MS / 2 else 0)
+                .setStartDelay(if (aparece) RETRASO_HOY_MS else 0)
         )
         .setInterpolator(curva)
 
@@ -110,48 +109,41 @@ class SelectorSemana(
     }
 
     /**
-     * Saca el texto hacia el lado contrario a [direccion] (1: semana siguiente; -1: anterior), lo [cambia] y lo
-     * trae desde el otro lado. Con [direccion] 0 o sin animaciones, lo cambia sin más. Si se pulsa otra vez a
-     * medias, la animación anterior se corta y manda la última.
+     * [cambia] el texto al momento y lo trae deslizándose desde el lado de [direccion] (1: semana siguiente; -1:
+     * anterior), la fecha y después el estado. Sin esperar a que salga el anterior: así "Hoy" y la tarjeta empiezan a
+     * moverse en cuanto se pulsa. Con [direccion] 0 o sin animaciones, lo cambia sin más.
      */
     private fun deslizarTextos(direccion: Int, cambiar: () -> Unit) {
         val vistas = listOf(binding.tvRangoSemana, binding.filaSubtituloSemana)
         vistas.forEach { it.animate().cancel() }
+        cambiar()
         if (direccion == 0 || !Movimiento.activas()) {
             vistas.forEach {
                 it.translationX = 0f
                 it.alpha = 1f
             }
-            cambiar()
             return
         }
-        val hacia = desplazamiento * direccion
         vistas.forEachIndexed { i, vista ->
+            vista.translationX = desplazamiento * direccion
+            vista.alpha = 0f
             vista.animate()
-                .translationX(-hacia)
-                .alpha(0f)
-                .setDuration(SALIDA_MS)
-                .setStartDelay(0)
-                .setInterpolator(AccelerateInterpolator())
-                .withEndAction {
-                    if (i == 0) cambiar()
-                    vista.translationX = hacia
-                    vista.animate()
-                        .translationX(0f)
-                        .alpha(1f)
-                        .setDuration(ENTRADA_MS)
-                        .setStartDelay(i * ESCALONADO_MS)
-                        .setInterpolator(curva)
-                        .start()
-                }
+                .translationX(0f)
+                .alpha(1f)
+                .setDuration(ENTRADA_MS)
+                .setStartDelay(i * ESCALONADO_MS)
+                .setInterpolator(curva)
                 .start()
         }
     }
 
     private companion object {
         const val DESPLAZAMIENTO_DP = 18f
-        const val SALIDA_MS = 110L
         const val ENTRADA_MS = 260L
         const val ESCALONADO_MS = 40L
+
+        /** La tarjeta cambia de ancho en este tiempo; "Hoy" empieza a aparecer cuando ya ha dejado casi todo su hueco. */
+        const val DURACION_TARJETA_MS = 260L
+        const val RETRASO_HOY_MS = 70L
     }
 }
