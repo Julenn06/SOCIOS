@@ -17,7 +17,7 @@ import kotlin.math.abs
 
 /**
  * La cabecera verde (neto, base, bonus, IRPF y lo cobrado) y la tarjeta del bonus de la pantalla principal.
- * Recuerda el bonus de la última semana pintada para animar solo lo que cambia dentro de la misma semana.
+ * Recuerda el bonus de la última semana pintada: al subir de tramo dentro de la misma semana, la cabecera late.
  */
 class CabeceraResumen(private val binding: ActivityMainBinding) {
 
@@ -25,6 +25,10 @@ class CabeceraResumen(private val binding: ActivityMainBinding) {
     private val resources get() = context.resources
 
     private var bonusAnterior: Pair<String, Double>? = null
+
+    /** Socios hechos que enseña el contador "3 / 5" y la animación que lo lleva hasta los de la semana. */
+    private var sociosContados = 0
+    private var cuentaSocios: ValueAnimator? = null
 
     fun mostrar(semanaKey: String, resumen: CalculoComisiones.ResumenCalculo, cobro: CobroInfo?) {
         NumberAnimators.animateCurrency(binding.tvNetoHeader, resumen.totalNeto, prefix = "")
@@ -54,20 +58,44 @@ class CabeceraResumen(private val binding: ActivityMainBinding) {
 
         binding.tvBonusTitle.text =
             context.getString(R.string.bonus_titulo, resumen.bonusSemanal.toEurosCompacto(prefix = "+"))
-        binding.tvBonusProgressCount.text = context.getString(R.string.bonus_progress_format, hechos, metaSocios)
         binding.tvBonusProgressCount.contentDescription =
             context.getString(R.string.bonus_progress_a11y, hechos, metaSocios)
 
-        // La barra avanza dentro de la misma semana; al cambiar de semana se coloca sin animar.
+        // La barra y su contador avanzan (o retroceden) hasta los socios de la semana, también al cambiar de una a
+        // otra, a la vez que cuentan los importes. Solo la primera vez se colocan sin animar.
         val anterior = bonusAnterior
         val mismaSemana = anterior != null && anterior.first == semanaKey
-        binding.progressBonus.mostrar(hechos, animar = mismaSemana)
+        binding.progressBonus.mostrar(hechos, animar = anterior != null, cambioDeSemana = !mismaSemana)
+        contarSocios(hechos, animar = anterior != null)
         // Un latido al subir de tramo dentro de la misma semana, en el título y en la caja del bonus.
         if (anterior != null && mismaSemana && anterior.second < resumen.bonusSemanal) {
             Movimiento.latido(binding.tvBonusTitle)
             Movimiento.latido(binding.containerBonusHeader)
         }
         bonusAnterior = semanaKey to resumen.bonusSemanal
+    }
+
+    /**
+     * El contador "3 / 5" cuenta de uno en uno hasta [hechos] al ritmo de la barra; la meta cambia justo cuando la
+     * barra cruza cada tramo.
+     */
+    private fun contarSocios(hechos: Int, animar: Boolean) {
+        cuentaSocios?.cancel()
+        fun pintar(socios: Int) {
+            sociosContados = socios
+            val meta = CalculoComisiones.obtenerSiguienteMetaBonus(socios).first
+            binding.tvBonusProgressCount.text = context.getString(R.string.bonus_progress_format, socios, meta)
+        }
+        if (!animar || !Movimiento.activas() || sociosContados == hechos) {
+            pintar(hechos)
+            return
+        }
+        cuentaSocios = ValueAnimator.ofInt(sociosContados, hechos).apply {
+            duration = DURACION_CUENTA_MS
+            interpolator = Movimiento.curva(context)
+            addUpdateListener { pintar(it.animatedValue as Int) }
+            start()
+        }
     }
 
     /**
@@ -91,5 +119,10 @@ class CabeceraResumen(private val binding: ActivityMainBinding) {
             (valor.getTag(R.id.tag_numeric_animator) as? ValueAnimator)?.cancel()
             valor.setTag(R.id.tag_numeric_value, 0.0)
         }
+    }
+
+    private companion object {
+        /** Como la barra al cambiar de semana, sin el rebote. */
+        const val DURACION_CUENTA_MS = 650L
     }
 }

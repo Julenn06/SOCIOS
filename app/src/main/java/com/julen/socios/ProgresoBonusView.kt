@@ -15,6 +15,7 @@ import android.os.SystemClock
 import android.util.AttributeSet
 import android.view.View
 import android.view.animation.LinearInterpolator
+import android.view.animation.OvershootInterpolator
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.ColorUtils
 import androidx.core.graphics.withClip
@@ -64,8 +65,8 @@ class ProgresoBonusView @JvmOverloads constructor(
     private var efecto: Float? = null
     private var animacionEfecto: ValueAnimator? = null
 
-    /** Cuándo empezó el salto de cada hito alcanzado (según SystemClock.uptimeMillis). */
-    private val saltos = mutableMapOf<Int, Long>()
+    /** Cuándo empezó el salto de cada hito cruzado (según SystemClock.uptimeMillis) y si fue al alcanzarlo. */
+    private val saltos = mutableMapOf<Int, Pair<Long, Boolean>>()
 
     /** Lo primero que se muestra lleva el efecto; si llega antes de que la vista esté puesta, espera a estarlo. */
     private var primeraVez = true
@@ -120,8 +121,11 @@ class ProgresoBonusView @JvmOverloads constructor(
     private fun importesDe(hitos: List<Int>) =
         hitos.map { CalculoComisiones.calcularBonusSemanal(it).toEurosCompacto(prefix = "+") }
 
-    /** Muestra [socios] hechos; con [animar], la barra avanza (o retrocede) hasta ellos. */
-    fun mostrar(socios: Int, animar: Boolean) {
+    /**
+     * Muestra [socios] hechos. Con [animar], la barra avanza (o retrocede) hasta ellos; con [cambioDeSemana], más
+     * despacio y con un pequeño rebote al llegar, mientras los importes de la cabecera cuentan hasta los suyos.
+     */
+    fun mostrar(socios: Int, animar: Boolean, cambioDeSemana: Boolean = false) {
         val siguiente = CalculoComisiones.obtenerSiguienteMetaBonus(socios).first
         fin = max(TRAMO_FIJO_MAX, siguiente)
         inicio = if (fin <= TRAMO_FIJO_MAX) 0 else fin - VENTANA
@@ -129,29 +133,47 @@ class ProgresoBonusView @JvmOverloads constructor(
         importes = importesDe(hitos)
 
         animacion?.cancel()
+        val objetivo = socios.toFloat()
         if (!animar || !Movimiento.activas()) {
-            mostrado = socios.toFloat()
+            mostrado = objetivo
             saltos.clear()
             invalidate()
-            // Al abrir la pantalla, un brillo y un latido; al cambiar de semana, nada (solo cuentan los importes).
+            // Al abrir la pantalla, un brillo y un latido.
             if (primeraVez) empezarEfecto()
             primeraVez = false
             return
         }
         primeraVez = false
         val desde = mostrado
-        animacion = Movimiento.animarValor(context, desde, socios.toFloat(), DURACION_MS) { valor ->
-            // Los hitos que la barra cruza al subir dan un salto al alcanzarlos.
-            val ahora = SystemClock.uptimeMillis()
-            for (hito in hitos) if (hito.toFloat() in (mostrado + 0.001f)..valor) saltos[hito] = ahora
-            mostrado = valor
-            invalidate()
-        }.apply {
+        if (desde == objetivo) return
+        val sube = objetivo > desde
+        // El rebote no puede cruzar un hito: no se encendería y apagaría uno sin haberlo alcanzado de verdad.
+        val minimo = min(hitos.lastOrNull { it <= objetivo }?.toFloat() ?: inicio.toFloat(), desde)
+        val maximo = max(hitos.firstOrNull { it > objetivo }?.let { it - 0.05f } ?: fin.toFloat(), desde)
+        animacion = ValueAnimator.ofFloat(0f, 1f).apply {
+            duration = if (cambioDeSemana) DURACION_SEMANA_MS else DURACION_MS
+            interpolator = if (cambioDeSemana) OvershootInterpolator(REBOTE) else Movimiento.curva(context)
+            addUpdateListener {
+                val valor = (desde + (objetivo - desde) * (it.animatedValue as Float)).coerceIn(minimo, maximo)
+                // Los hitos que cruza dan un salto: hacia fuera al alcanzarlos y hacia dentro al dejarlos.
+                val ahora = SystemClock.uptimeMillis()
+                for (hito in hitos) {
+                    val h = hito.toFloat()
+                    if (sube && h > mostrado && h <= valor) saltos[hito] = ahora to true
+                    if (!sube && h <= mostrado && h > valor) saltos[hito] = ahora to false
+                }
+                mostrado = valor
+                invalidate()
+            }
             addListener(object : AnimatorListenerAdapter() {
                 override fun onAnimationEnd(animation: Animator) {
-                    if (animation === animacion && socios.toFloat() > desde) empezarEfecto()
+                    if (animation !== animacion) return
+                    mostrado = objetivo
+                    invalidate()
+                    if (sube) empezarEfecto()
                 }
             })
+            start()
         }
     }
 
@@ -231,60 +253,45 @@ class ProgresoBonusView @JvmOverloads constructor(
             dibujarBrillo(canvas, izquierda, hasta, centroY)
         }
 
-        val siguiente = hitos.firstOrNull { mostrado < it }
+        // Cuánto está alcanzado cada hito, de 0 a 1: se enciende poco a poco según la barra llega a él.
+        fun alcance(hito: Int) = ((mostrado - hito) / TRANSICION_HITO + 1f).coerceIn(0f, 1f)
+        val siguiente = hitos.firstOrNull { alcance(it) < 1f }
         val baseNumero = centroY - (pintaNumero.descent() + pintaNumero.ascent()) / 2
         val baseImporte = centroY + radioHito + SEPARACION_IMPORTE * densidad - pintaImporte.ascent()
         val ahora = SystemClock.uptimeMillis()
         var saltando = false
         for ((indice, hito) in hitos.withIndex()) {
             val cx = x(hito.toFloat())
-            val alcanzado = mostrado >= hito
+            val lleno = alcance(hito)
+            val esSiguiente = hito == siguiente
 
-            // El salto al alcanzarlo: crece un momento y vuelve a su tamaño.
-            val tiempoSalto = saltos[hito]?.let { (ahora - it).toFloat() / DURACION_SALTO_MS }
-            val escala = if (tiempoSalto != null && tiempoSalto < 1f) {
+            // El salto al cruzarlo: crece (al alcanzarlo) o se encoge (al dejarlo) un momento y vuelve a su tamaño.
+            val escala = saltos[hito]?.let { (inicioSalto, haciaFuera) ->
+                val t = (ahora - inicioSalto).toFloat() / DURACION_SALTO_MS
+                if (t >= 1f) return@let 1f
                 saltando = true
-                1f + 0.28f * sin(PI * tiempoSalto).toFloat()
-            } else {
-                1f
-            }
+                1f + (if (haciaFuera) 0.28f else -0.18f) * sin(PI * t).toFloat()
+            } ?: 1f
             val radio = radioHito * escala
 
-            when {
-                alcanzado -> {
-                    pintaHalo.color = ColorUtils.setAlphaComponent(colorPrincipal, 40)
-                    canvas.drawCircle(cx, centroY, radio + 4 * densidad, pintaHalo)
-                    pintaHito.color = colorPrincipal
-                    canvas.drawCircle(cx, centroY, radio, pintaHito)
-                }
-
-                hito == siguiente -> {
-                    dibujarLatido(canvas, cx, centroY)
-                    pintaHito.color = colorFondo
-                    canvas.drawCircle(cx, centroY, radio, pintaHito)
-                    pintaBorde.color = colorPrincipal
-                    canvas.drawCircle(cx, centroY, radio - pintaBorde.strokeWidth / 2, pintaBorde)
-                }
-
-                else -> {
-                    pintaHito.color = colorFondo
-                    canvas.drawCircle(cx, centroY, radio, pintaHito)
-                    pintaBorde.color = colorBorde
-                    canvas.drawCircle(cx, centroY, radio - pintaBorde.strokeWidth / 2, pintaBorde)
-                }
+            // Primero, el hito sin alcanzar (con el borde verde si es el siguiente) y, encima, el alcanzado.
+            if (esSiguiente) dibujarLatido(canvas, cx, centroY)
+            if (lleno < 1f) {
+                pintaHito.color = colorFondo
+                canvas.drawCircle(cx, centroY, radio, pintaHito)
+                pintaBorde.color = if (esSiguiente) colorPrincipal else colorBorde
+                canvas.drawCircle(cx, centroY, radio - pintaBorde.strokeWidth / 2, pintaBorde)
+            }
+            if (lleno > 0f) {
+                pintaHalo.color = ColorUtils.setAlphaComponent(colorPrincipal, (40 * lleno).toInt())
+                canvas.drawCircle(cx, centroY, radio + 4 * densidad, pintaHalo)
+                pintaHito.color = ColorUtils.setAlphaComponent(colorPrincipal, (255 * lleno).toInt())
+                canvas.drawCircle(cx, centroY, radio, pintaHito)
             }
 
-            pintaNumero.color = when {
-                alcanzado -> colorFondo
-                hito == siguiente -> colorPrincipal
-                else -> colorTextoSuave
-            }
+            pintaNumero.color = ColorUtils.blendARGB(if (esSiguiente) colorPrincipal else colorTextoSuave, colorFondo, lleno)
             canvas.drawText(hito.toString(), cx, baseNumero, pintaNumero)
-            pintaImporte.color = when {
-                alcanzado -> colorPrincipal
-                hito == siguiente -> colorTexto
-                else -> colorTextoSuave
-            }
+            pintaImporte.color = ColorUtils.blendARGB(if (esSiguiente) colorTexto else colorTextoSuave, colorPrincipal, lleno)
             canvas.drawText(importes[indice], cx, baseImporte, pintaImporte)
         }
 
@@ -321,6 +328,11 @@ class ProgresoBonusView @JvmOverloads constructor(
         const val TRAMO_FIJO_MAX = 10
         const val VENTANA = 9
         const val DURACION_MS = 650L
+        const val DURACION_SEMANA_MS = 750L
+        const val REBOTE = 1.4f
+
+        /** Lo que tarda un hito en encenderse según la barra se le acerca, en socios. */
+        const val TRANSICION_HITO = 0.35f
         const val DURACION_SALTO_MS = 380L
         const val DURACION_EFECTO_MS = 1800L
 
