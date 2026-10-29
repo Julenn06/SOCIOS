@@ -422,17 +422,29 @@
                             android:layout_weight="1"
                             tools:text="Bonus de la semana: +100 €" />
 
-                        <TextView
-                            android:id="@+id/tvBonusProgressCount"
+                        <!-- La pastilla se queda quieta y el número rueda dentro (recortado a su forma) al cambiar.
+                             Con ancho mínimo y cifras de igual ancho, "3 / 5" y "6 / 7" miden lo mismo. -->
+                        <FrameLayout
+                            android:id="@+id/pastillaBonus"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:background="@drawable/bg_pastilla_version"
+                            android:minWidth="52dp"
                             android:paddingHorizontal="10dp"
-                            android:paddingVertical="4dp"
-                            android:textColor="@color/on_primary_container"
-                            android:textSize="12sp"
-                            android:fontFamily="@font/geist_semibold"
-                            tools:text="7 / 10" />
+                            android:paddingVertical="4dp">
+
+                            <TextView
+                                android:id="@+id/tvBonusProgressCount"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_gravity="center"
+                                android:fontFamily="@font/geist_semibold"
+                                android:fontFeatureSettings="tnum"
+                                android:maxLines="1"
+                                android:textColor="@color/on_primary_container"
+                                android:textSize="12sp"
+                                tools:text="7 / 10" />
+                        </FrameLayout>
                     </LinearLayout>
 
                     <com.julen.socios.ProgresoBonusView
