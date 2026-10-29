@@ -3,7 +3,6 @@ package com.julen.socios
 import android.animation.ValueAnimator
 import android.content.Context
 import android.graphics.Canvas
-import android.graphics.DashPathEffect
 import android.graphics.LinearGradient
 import android.graphics.Matrix
 import android.graphics.Paint
@@ -12,15 +11,12 @@ import android.graphics.RectF
 import android.graphics.Shader
 import android.os.Bundle
 import android.util.AttributeSet
-import android.util.TypedValue
 import android.view.MotionEvent
 import android.view.VelocityTracker
 import android.view.View
 import android.view.ViewConfiguration
 import android.view.accessibility.AccessibilityNodeInfo
 import android.widget.OverScroller
-import androidx.core.content.ContextCompat
-import androidx.core.content.res.ResourcesCompat
 import androidx.core.graphics.ColorUtils
 import androidx.core.graphics.withClip
 import com.julen.socios.util.CalculoComisiones
@@ -94,70 +90,15 @@ class GraficoNetoView @JvmOverloads constructor(
     private var arrastrando = false
     private var recorriendo = false
 
-    private val colorBarra = ContextCompat.getColor(context, R.color.grafico_barra)
-    private val colorBarraSuave = ContextCompat.getColor(context, R.color.grafico_barra_suave)
-    private val colorNegativo = ContextCompat.getColor(context, R.color.red_text)
-    private val colorEje = ContextCompat.getColor(context, R.color.divider)
-    private val colorTexto = ContextCompat.getColor(context, R.color.text_main)
-    private val colorTextoSuave = ContextCompat.getColor(context, R.color.text_sub)
-    private val colorFondo = ContextCompat.getColor(context, R.color.surface_card)
-    private val colorMedia = ContextCompat.getColor(context, R.color.green_text_soft)
-
-    private val pintaBarra = Paint(Paint.ANTI_ALIAS_FLAG)
-    private val pintaEje = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        color = colorEje
-        strokeWidth = max(1f, densidad)
-    }
-    private val pintaGuia = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        color = colorEje
-        strokeWidth = max(1f, densidad)
-        style = Paint.Style.STROKE
-        pathEffect = DashPathEffect(floatArrayOf(3 * densidad, 4 * densidad), 0f)
-    }
-    private val pintaMedia = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        color = colorMedia
-        strokeWidth = 1.5f * densidad
-        style = Paint.Style.STROKE
-        pathEffect = DashPathEffect(floatArrayOf(6 * densidad, 4 * densidad), 0f)
-    }
-    private val pintaEtiqueta = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        textAlign = Paint.Align.CENTER
-        typeface = ResourcesCompat.getFont(context, R.font.geist_medium)
-        textSize = sp(10.5f)
-        color = colorTextoSuave
-    }
-    private val pintaEscala = pinturaCifra(context, sp(10f)).apply {
-        textAlign = Paint.Align.RIGHT
-        color = colorTextoSuave
-    }
-    private val pintaMarca = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        typeface = ResourcesCompat.getFont(context, R.font.geist_semibold)
-        textSize = sp(10.5f)
-        color = colorTextoSuave
-    }
-    private val pintaMarcaFondo = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = colorFondo }
-    private val pintaRotulo = pinturaCifra(context, sp(11f)).apply { color = colorTexto }
-
-    /** Contorno del color del fondo bajo los rótulos: así se leen aunque la línea de la media pase por detrás. */
-    private val pintaRotuloContorno = Paint(pintaRotulo).apply {
-        style = Paint.Style.STROKE
-        strokeWidth = 4 * densidad
-        strokeJoin = Paint.Join.ROUND
-        color = colorFondo
-    }
-    private val pintaAvisoFondo = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = colorTexto }
-    private val pintaAvisoTexto = pinturaCifra(context, sp(12f)).apply { color = colorFondo }
-    private val pintaDifuminado = Paint()
+    private val pinturas = PinturasGrafico(context)
     private val rect = RectF()
     private val path = Path()
-
-    private fun sp(valor: Float) = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, valor, resources.displayMetrics)
 
     /** Muestra [nuevas] columnas; con [animar], las barras crecen desde la línea base. */
     fun mostrar(nuevas: List<Columna>, destacada: Int, animar: Boolean) {
         val mismas = nuevas.map { it.etiquetaLarga } == columnas.map { it.etiquetaLarga }
         columnas = nuevas
-        anchoEtiqueta = (nuevas.maxOfOrNull { pintaEtiqueta.measureText(it.etiqueta) } ?: 0f) + 6 * densidad
+        anchoEtiqueta = (nuevas.maxOfOrNull { pinturas.etiqueta.measureText(it.etiqueta) } ?: 0f) + 6 * densidad
         this.destacada = destacada
         media = nuevas.filter { it.neto != 0.0 }.takeIf { it.size >= 2 }
             ?.let { conDatos -> CalculoComisiones.redondearCentimos(conDatos.sumOf { it.neto } / conDatos.size) }
@@ -198,7 +139,7 @@ class GraficoNetoView @JvmOverloads constructor(
 
     /** Ancho de la escala fija de la derecha: el de su rótulo más largo y un margen. */
     private fun anchoEscala(e: EscalaGrafico): Float =
-        e.guias.maxOf { pintaEscala.measureText(it.toEurosCompacto()) } + 8 * densidad
+        e.guias.maxOf { pinturas.escala.measureText(it.toEurosCompacto()) } + 8 * densidad
 
     private var areaIzquierda = 0f
     private var areaDerecha = 0f
@@ -272,7 +213,7 @@ class GraficoNetoView @JvmOverloads constructor(
 
         canvas.withClip(areaIzquierda, 0f, areaDerecha, height.toFloat()) {
             dibujarColumnas(this, e, base, altoUtil, abajo)
-            media?.let { raya(this, areaIzquierda, yDe(it), areaDerecha, yDe(it), pintaMedia) }
+            media?.let { raya(this, areaIzquierda, yDe(it), areaDerecha, yDe(it), pinturas.media) }
             dibujarRotulos(this, e, base, altoUtil, abajo)
             dibujarMarcas(this, base)
             dibujarDifuminados(this)
@@ -290,15 +231,15 @@ class GraficoNetoView @JvmOverloads constructor(
 
     /** Las líneas de guía (la del cero, continua) y sus importes en la columna fija de la derecha. */
     private fun dibujarEscala(canvas: Canvas, e: EscalaGrafico, yDe: (Double) -> Float) {
-        val ajusteTexto = -(pintaEscala.descent() + pintaEscala.ascent()) / 2
+        val ajusteTexto = -(pinturas.escala.descent() + pinturas.escala.ascent()) / 2
         for (valor in e.guias) {
             val y = yDe(valor)
             if (e.esCero(valor)) {
-                canvas.drawLine(areaIzquierda, y, areaDerecha, y, pintaEje)
+                canvas.drawLine(areaIzquierda, y, areaDerecha, y, pinturas.eje)
             } else {
-                raya(canvas, areaIzquierda, y, areaDerecha, y, pintaGuia)
+                raya(canvas, areaIzquierda, y, areaDerecha, y, pinturas.guia)
             }
-            canvas.drawText(valor.toEurosCompacto(), (width - paddingRight).toFloat(), y + ajusteTexto, pintaEscala)
+            canvas.drawText(valor.toEurosCompacto(), (width - paddingRight).toFloat(), y + ajusteTexto, pinturas.escala)
         }
     }
 
@@ -312,10 +253,10 @@ class GraficoNetoView @JvmOverloads constructor(
             val columna = columnas[i]
             val centro = centroDe(i)
             val alto = altoDe(columna.neto, altoUtil, e.rango) * progreso
-            pintaBarra.color = when {
-                columna.neto < 0 -> colorNegativo
-                i == destacada || i == seleccionada -> colorBarra
-                else -> colorBarraSuave
+            pinturas.barra.color = when {
+                columna.neto < 0 -> pinturas.colorNegativo
+                i == destacada || i == seleccionada -> pinturas.colorBarra
+                else -> pinturas.colorBarraSuave
             }
             if (alto > 0.5f) {
                 if (columna.neto >= 0) {
@@ -325,8 +266,8 @@ class GraficoNetoView @JvmOverloads constructor(
                 }
             }
             if ((anclaje - i) % paso == 0) {
-                pintaEtiqueta.color = if (i == destacada) colorTexto else colorTextoSuave
-                canvas.drawText(columna.etiqueta, centro, abajo + altoEje - 6 * densidad, pintaEtiqueta)
+                pinturas.etiqueta.color = if (i == destacada) pinturas.colorTexto else pinturas.colorTextoSuave
+                canvas.drawText(columna.etiqueta, centro, abajo + altoEje - 6 * densidad, pinturas.etiqueta)
             }
         }
     }
@@ -351,8 +292,8 @@ class GraficoNetoView @JvmOverloads constructor(
             indiceMaximo != destacada && rotuloDestacada?.let { RectF.intersects(it.caja, maximo.caja) } != true
         }
         for (r in listOfNotNull(rotuloDestacada, rotuloMaximo)) {
-            canvas.drawText(r.texto, r.caja.centerX(), r.linea, pintaRotuloContorno)
-            canvas.drawText(r.texto, r.caja.centerX(), r.linea, pintaRotulo)
+            canvas.drawText(r.texto, r.caja.centerX(), r.linea, pinturas.rotuloContorno)
+            canvas.drawText(r.texto, r.caja.centerX(), r.linea, pinturas.rotulo)
         }
     }
 
@@ -369,9 +310,9 @@ class GraficoNetoView @JvmOverloads constructor(
             .coerceAtMost(abajo)
         val texto = columna.neto.toEurosCompacto()
         // En las barras de los extremos el rótulo se mete hacia dentro en lugar de salirse del gráfico.
-        val mitad = pintaRotulo.measureText(texto) / 2
+        val mitad = pinturas.rotulo.measureText(texto) / 2
         val centro = centroDe(indice).coerceIn(areaIzquierda + mitad, areaDerecha - mitad)
-        return Rotulo(texto, RectF(centro - mitad, linea + pintaRotulo.ascent(), centro + mitad, linea + pintaRotulo.descent()), linea)
+        return Rotulo(texto, RectF(centro - mitad, linea + pinturas.rotulo.ascent(), centro + mitad, linea + pinturas.rotulo.descent()), linea)
     }
 
     /**
@@ -379,17 +320,17 @@ class GraficoNetoView @JvmOverloads constructor(
      * pegado a la izquierda al desplazar, hasta que el siguiente lo empuja.
      */
     private fun dibujarMarcas(canvas: Canvas, base: Float) {
-        val lineaTexto = paddingTop - pintaMarca.ascent()
+        val lineaTexto = paddingTop - pinturas.marca.ascent()
         val marcas = columnas.indices.filter { columnas[it].separador != null }
         for (i in marcas) {
             val x = origen + hueco * i
-            if (i > 0 && x > areaIzquierda) raya(canvas, x, paddingTop + altoMarca, x, base, pintaGuia)
+            if (i > 0 && x > areaIzquierda) raya(canvas, x, paddingTop + altoMarca, x, base, pinturas.guia)
         }
         val margen = 4 * densidad
         val fija = marcas.lastOrNull { origen + hueco * it <= areaIzquierda + margen }
         for (i in marcas) {
             val texto = columnas[i].separador ?: continue
-            val ancho = pintaMarca.measureText(texto)
+            val ancho = pinturas.marca.measureText(texto)
             val x = if (i == fija) {
                 // Pegada a la izquierda, salvo que la siguiente marca ya esté llegando: entonces la empuja.
                 val siguiente = marcas.firstOrNull { it > i }?.let { origen + hueco * it }
@@ -399,15 +340,15 @@ class GraficoNetoView @JvmOverloads constructor(
             }
             if (i != fija && x < areaIzquierda + margen) continue
             rect.set(x - margen, paddingTop.toFloat(), x + ancho + margen, paddingTop + altoMarca)
-            canvas.drawRect(rect, pintaMarcaFondo)
-            canvas.drawText(texto, x, lineaTexto, pintaMarca)
+            canvas.drawRect(rect, pinturas.marcaFondo)
+            canvas.drawText(texto, x, lineaTexto, pinturas.marca)
         }
     }
 
     // Un degradado del fondo a transparente, de 0 a [anchoDifuminado]; se coloca en cada borde con una matriz.
     private val degradado = LinearGradient(
-        0f, 0f, anchoDifuminado, 0f, colorFondo, ColorUtils.setAlphaComponent(colorFondo, 0), Shader.TileMode.CLAMP
-    ).also { pintaDifuminado.shader = it }
+        0f, 0f, anchoDifuminado, 0f, pinturas.colorFondo, ColorUtils.setAlphaComponent(pinturas.colorFondo, 0), Shader.TileMode.CLAMP
+    ).also { pinturas.difuminado.shader = it }
     private val matrizDegradado = Matrix()
 
     /** Difumina los bordes cuando hay más columnas por ese lado: así se ve que el gráfico se desplaza. */
@@ -423,7 +364,7 @@ class GraficoNetoView @JvmOverloads constructor(
         matrizDegradado.postTranslate(borde, 0f)
         degradado.setLocalMatrix(matrizDegradado)
         val desde = if (haciaLaDerecha) borde else borde - anchoDifuminado
-        canvas.drawRect(desde, paddingTop + altoMarca, desde + anchoDifuminado, height.toFloat(), pintaDifuminado)
+        canvas.drawRect(desde, paddingTop + altoMarca, desde + anchoDifuminado, height.toFloat(), pinturas.difuminado)
     }
 
     /** Barra con la punta (el extremo del dato) redondeada y la base recta, pegada a la línea base. */
@@ -437,22 +378,22 @@ class GraficoNetoView @JvmOverloads constructor(
         rect.set(izquierda, arriba, derecha, abajo)
         path.reset()
         path.addRoundRect(rect, radios, Path.Direction.CW)
-        canvas.drawPath(path, pintaBarra)
+        canvas.drawPath(path, pinturas.barra)
     }
 
     /** Pastilla con la etiqueta y el importe de la columna tocada, encima de su barra. */
     private fun dibujarAviso(canvas: Canvas, indice: Int, base: Float, altoUtil: Float, rango: Double) {
         val columna = columnas[indice]
         val texto = context.getString(R.string.grafico_seleccion, columna.etiquetaLarga, columna.neto.toEurosCompacto())
-        val ancho = pintaAvisoTexto.measureText(texto) + 20 * densidad
+        val ancho = pinturas.avisoTexto.measureText(texto) + 20 * densidad
         val alto = 24 * densidad
         val izquierda = (centroDe(indice) - ancho / 2).coerceIn(areaIzquierda, max(areaIzquierda, areaDerecha - ancho))
         val cima = if (columna.neto >= 0) base - altoDe(columna.neto, altoUtil, rango) else base
         val y = (cima - alto - 8 * densidad).coerceAtLeast(paddingTop + altoMarca)
         rect.set(izquierda, y, izquierda + ancho, y + alto)
-        canvas.drawRoundRect(rect, alto / 2, alto / 2, pintaAvisoFondo)
-        val baseTexto = rect.centerY() - (pintaAvisoTexto.descent() + pintaAvisoTexto.ascent()) / 2
-        canvas.drawText(texto, rect.centerX(), baseTexto, pintaAvisoTexto)
+        canvas.drawRoundRect(rect, alto / 2, alto / 2, pinturas.avisoFondo)
+        val baseTexto = rect.centerY() - (pinturas.avisoTexto.descent() + pinturas.avisoTexto.ascent()) / 2
+        canvas.drawText(texto, rect.centerX(), baseTexto, pinturas.avisoTexto)
     }
 
     // --- Toques ---

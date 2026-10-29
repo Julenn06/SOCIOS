@@ -18,7 +18,6 @@ import android.os.SystemClock
 import android.provider.Settings
 import android.util.AttributeSet
 import android.view.View
-import android.view.animation.DecelerateInterpolator
 import android.view.animation.OvershootInterpolator
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.ColorUtils
@@ -31,7 +30,6 @@ import kotlin.math.cos
 import kotlin.math.min
 import kotlin.math.roundToInt
 import kotlin.math.sin
-import kotlin.random.Random
 
 /**
  * Animación de la descarga de una actualización. Mientras descarga, un anillo con degradado avanza con un
@@ -82,13 +80,6 @@ class AnimacionDescargaView @JvmOverloads constructor(
     private val colorPrincipal = ContextCompat.getColor(context, R.color.primary)
     private val colorAcento = ContextCompat.getColor(context, R.color.accent_blue)
     private val colorError = ContextCompat.getColor(context, R.color.red_text)
-    private val coloresParticulas = intArrayOf(
-        colorPrincipal,
-        colorAcento,
-        ContextCompat.getColor(context, R.color.amber_text),
-        ContextCompat.getColor(context, R.color.green_text_soft),
-        ContextCompat.getColor(context, R.color.orange_pending)
-    )
 
     private val pintaPista = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         style = Paint.Style.STROKE
@@ -123,13 +114,10 @@ class AnimacionDescargaView @JvmOverloads constructor(
     private val tramoCheck = Path()
     private val medidaCheck = PathMeasure()
 
-    private class Particula(val angulo: Float, val distancia: Float, val tamano: Float, val color: Int, val retraso: Float)
-
-    private var particulas: List<Particula> = emptyList()
+    private val estallido = EstallidoDescarga(context)
 
     private val rebote = OvershootInterpolator(1.4f)
     private val suave = FastOutSlowInInterpolator()
-    private val frenada = DecelerateInterpolator(1.6f)
 
     private var temblor: ObjectAnimator? = null
 
@@ -310,16 +298,7 @@ class AnimacionDescargaView @JvmOverloads constructor(
         fase = Fase.COMPLETANDO
         inicioFinal = reloj
         completarAlLlegar = false
-        val azar = Random(SEMILLA)
-        particulas = List(N_PARTICULAS) { i ->
-            Particula(
-                angulo = (i * 2 * PI / N_PARTICULAS).toFloat() + azar.nextFloat() * 0.4f - 0.2f,
-                distancia = radio * (0.30f + azar.nextFloat() * 0.25f),
-                tamano = grosor * (0.26f + azar.nextFloat() * 0.24f),
-                color = coloresParticulas[i % coloresParticulas.size],
-                retraso = azar.nextFloat() * 90f
-            )
-        }
+        estallido.preparar(radio, grosor)
         HapticUtils.performConfirm(this)
         post { alCompletar?.invoke() }
     }
@@ -388,32 +367,7 @@ class AnimacionDescargaView @JvmOverloads constructor(
 
     private fun dibujarCelebracion(canvas: Canvas, t: Float) {
         canvas.drawCircle(cx, cy, radio, pintaArco)
-
-        // Dos ondas que se alejan del anillo.
-        for (i in 0 until 2) {
-            val p = ((t - 120f - i * 220f) / 700f).coerceIn(0f, 1f)
-            if (p <= 0f || p >= 1f) continue
-            val q = frenada.getInterpolation(p)
-            pintaTrazo.color = colorPrincipal
-            pintaTrazo.alpha = ((1 - p) * 140).roundToInt()
-            pintaTrazo.strokeWidth = grosor * 0.5f * (1 - q) + 1f
-            canvas.drawCircle(cx, cy, radio + grosor / 2 + radio * 0.55f * q, pintaTrazo)
-        }
-
-        // Partículas que salen disparadas y se apagan.
-        for (particula in particulas) {
-            val p = ((t - 140f - particula.retraso) / 760f).coerceIn(0f, 1f)
-            if (p <= 0f || p >= 1f) continue
-            val distancia = radio + grosor + particula.distancia * frenada.getInterpolation(p)
-            pintaRelleno.color = particula.color
-            pintaRelleno.alpha = ((1 - p * p) * 255).roundToInt()
-            canvas.drawCircle(
-                cx + distancia * cos(particula.angulo),
-                cy + distancia * sin(particula.angulo),
-                particula.tamano * (1 - p * 0.7f),
-                pintaRelleno
-            )
-        }
+        estallido.dibujar(canvas, t, cx, cy, radio, grosor)
 
         // El porcentaje se desvanece mientras el centro se rellena con un rebote.
         val desvanecido = (1 - t / 160f).coerceIn(0f, 1f)
@@ -496,7 +450,5 @@ class AnimacionDescargaView @JvmOverloads constructor(
         const val FLECHA_MS = 1150f
         const val DURACION_EXITO_MS = 1150f
         const val DURACION_ERROR_MS = 450f
-        const val N_PARTICULAS = 16
-        const val SEMILLA = 7
     }
 }

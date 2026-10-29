@@ -17,11 +17,8 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.content.pm.ShortcutManagerCompat
-import androidx.core.text.buildSpannedString
-import androidx.core.text.scale
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
-import androidx.core.view.doOnNextLayout
 import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
 import androidx.core.view.accessibility.AccessibilityNodeInfoCompat
@@ -30,20 +27,16 @@ import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
-import androidx.recyclerview.widget.LinearLayoutManager
-import com.google.android.material.button.MaterialButton
 import com.julen.socios.actualizaciones.VersionPublicada
 import com.julen.socios.databinding.ActivityMainBinding
 import com.julen.socios.export.ExportFormat
 import com.julen.socios.export.ExportRequest
 import com.julen.socios.export.ImportFormat
-import com.julen.socios.model.DiaSemana
 import com.julen.socios.model.ImportPreview
 import com.julen.socios.model.Socio
 import com.julen.socios.util.AnimationExtensions
 import com.julen.socios.util.DateUtils
 import com.julen.socios.util.HapticUtils
-import com.julen.socios.util.Movimiento
 import com.julen.socios.util.nombreVisible
 import com.julen.socios.util.rangoSemanaConAnio
 import com.julen.socios.util.semanaRelativa
@@ -52,25 +45,13 @@ import kotlinx.coroutines.launch
 class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
-    private lateinit var adapter: SocioAdapter
     private lateinit var cabecera: CabeceraResumen
+    private lateinit var filtroDias: FiltroDias
+    private lateinit var lista: ListaSemana
     private lateinit var deslizarEntreSemanas: DeslizarEntreSemanas
 
     private val viewModel: MainViewModel by viewModels { MainViewModel.Factory }
     private val actualizaciones: ActualizacionesViewModel by viewModels { ActualizacionesViewModel.Factory }
-
-    private val botonesFiltroDia: Map<DiaSemana, MaterialButton> by lazy {
-        DiaSemana.entries.zip(
-            listOf(
-                binding.btnFiltroLun, binding.btnFiltroMar, binding.btnFiltroMie,
-                binding.btnFiltroJue, binding.btnFiltroVie
-            )
-        ).toMap()
-    }
-    private var sincronizandoFiltro = false
-
-    /** La semana y el día que se pintaron la última vez, para animar solo lo que cambia. */
-    private var vistaAnterior: Pair<String, DiaSemana?>? = null
 
     private var dialogoDestinoExport: AlertDialog? = null
     private var dialogoEliminar: AlertDialog? = null
@@ -117,9 +98,14 @@ class MainActivity : AppCompatActivity() {
         }
 
         cabecera = CabeceraResumen(binding)
-        setupRecyclerView()
+        filtroDias = FiltroDias(binding, viewModel::setDiaFiltro)
+        lista = ListaSemana(
+            binding,
+            alCambiarHecho = { socio, hecho -> viewModel.setSocioHecho(socio.id, hecho) },
+            alEditar = ::openAddEditDialog,
+            alEliminar = ::confirmarEliminar
+        )
         setupWeekNavigation()
-        setupFiltroDias()
         setupFab()
         setupHeaderClickListeners()
         deslizarEntreSemanas = DeslizarEntreSemanas(this, binding.root) { delta ->
@@ -167,8 +153,6 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun renderUiState(state: MainUiState) {
-        val alTenerLaLista = prepararCambioDeVista(state)
-
         // Rango corto de la semana y cuánto queda de la actual
         binding.tvRangoSemana.text = rangoSemanaConAnio(state.semanaKey)
         binding.tvSemanaSubtitulo.text = semanaRelativa(state.weekOffset, R.string.subtitle_current_week)
@@ -179,82 +163,14 @@ class MainActivity : AppCompatActivity() {
 
         state.resumenSemana?.let { cabecera.mostrar(state.semanaKey, it, state.cobroSemana) }
 
-        // Filtro por día, con cuántos socios hay en cada uno
-        mostrarFiltro(binding.btnFiltroTodos, getString(R.string.filtro_todos), getString(R.string.filtro_todos_a11y), state.todosSociosSemana.size)
-        botonesFiltroDia.forEach { (dia, boton) ->
-            mostrarFiltro(boton, dia.nombreCorto, dia.nombreCompleto, state.conteoPorDia[dia] ?: 0)
-        }
-        sincronizarFiltro(state.diaFiltro)
-
-        // Lista de socios: con todos los días, agrupada por día; con un día elegido, sin cabecera.
-        adapter.submitList(
-            if (state.diaFiltro == null) {
-                FilaSocio.agrupadasPorDia(state.sociosFiltrados)
-            } else {
-                FilaSocio.sinAgrupar(state.sociosFiltrados.sortedBy { it.timestamp })
-            }
-        ) { alTenerLaLista?.invoke() }
-        binding.containerEmptyState.isVisible = state.sociosFiltrados.isEmpty()
-        binding.rvSocios.isVisible = state.sociosFiltrados.isNotEmpty()
-
-        binding.tvListaTitulo.text = state.diaFiltro
-            ?.let { getString(R.string.title_socios_day_format, it.nombreCompleto) }
-            ?: getString(R.string.title_socios_week)
-        binding.tvListaResumenDia.text = getString(
-            R.string.list_summary_day_format, state.sociosFiltrados.count { it.hecho }, state.sociosFiltrados.size
-        )
-    }
-
-    /**
-     * Al cambiar de día, los socios entran uno tras otro, cuando la lista nueva ya está puesta (se devuelve lo
-     * que hay que hacer entonces). Al cambiar de semana no se anima la página: solo los importes, que cuentan
-     * hasta su valor, y las filas, con la animación normal de la lista. Moverla entera daba un parpadeo.
-     * La primera vez y al recrearse la pantalla no se anima nada.
-     */
-    private fun prepararCambioDeVista(state: MainUiState): (() -> Unit)? {
-        val anterior = vistaAnterior
-        vistaAnterior = state.semanaKey to state.diaFiltro
-        if (anterior == null || !Movimiento.activas()) return null
-        val (semanaAnterior, diaAnterior) = anterior
-        if (semanaAnterior != state.semanaKey || diaAnterior == state.diaFiltro) return null
-        sinAnimarFilas()
-        return { binding.rvSocios.scheduleLayoutAnimation() }
-    }
-
-    /**
-     * Quita un momento las animaciones de cada fila (desvanecer las que se van, hacer aparecer las nuevas):
-     * al cambiar de día entran todas una tras otra, y las dos animaciones juntas parpadeaban.
-     */
-    private fun sinAnimarFilas() {
-        val lista = binding.rvSocios
-        val animador = lista.itemAnimator ?: return
-        lista.itemAnimator = null
-        lista.doOnNextLayout { lista.post { lista.itemAnimator = animador } }
+        filtroDias.mostrar(state)
+        lista.mostrar(state)
     }
 
     private fun mostrarAvisoPendientes(pendientes: List<Socio>) {
         binding.cardAvisoPendientes.isVisible = pendientes.isNotEmpty()
         binding.tvAvisoPendientes.text =
             resources.getQuantityString(R.plurals.pendientes_aviso, pendientes.size, pendientes.size)
-    }
-
-    /** El nombre en una línea y, debajo, cuántos socios hay. */
-    private fun mostrarFiltro(boton: MaterialButton, nombre: String, nombreLeido: String, socios: Int) {
-        boton.text = buildSpannedString {
-            append(nombre)
-            append('\n')
-            scale(0.9f) { append(socios.toString()) }
-        }
-        boton.contentDescription = resources.getQuantityString(R.plurals.filtro_dia_a11y, socios, nombreLeido, socios)
-    }
-
-    private fun sincronizarFiltro(dia: DiaSemana?) {
-        val id = dia?.let { botonesFiltroDia[it]?.id } ?: R.id.btnFiltroTodos
-        if (binding.toggleFiltroDias.checkedButtonId != id) {
-            sincronizandoFiltro = true
-            binding.toggleFiltroDias.check(id)
-            sincronizandoFiltro = false
-        }
     }
 
     private fun manejarEvento(evento: MainEvent) {
@@ -372,15 +288,10 @@ class MainActivity : AppCompatActivity() {
 
     // --- Configuración de vistas ---
 
-    private fun setupRecyclerView() {
-        adapter = SocioAdapter(
-            onCambiarHecho = { socio, hecho -> viewModel.setSocioHecho(socio.id, hecho) },
-            onEdit = { socio -> openAddEditDialog(socio) },
-            onDelete = ::confirmarEliminar
-        )
-        binding.rvSocios.layoutManager = LinearLayoutManager(this)
-        binding.rvSocios.adapter = adapter
-
+    private fun setupFab() {
+        binding.fabAddSocio.setOnClickListener { openAddEditDialog(null) }
+        binding.containerEmptyState.setOnClickListener { openAddEditDialog(null) }
+        // Se encoge al bajar por la lista y vuelve a mostrar su texto al subir.
         binding.nestedScrollView.setOnScrollChangeListener { _, _, scrollY, _, oldScrollY ->
             val dy = scrollY - oldScrollY
             if (dy > 12 && binding.fabAddSocio.isExtended) {
@@ -398,25 +309,6 @@ class MainActivity : AppCompatActivity() {
         val onHoyClick = View.OnClickListener { viewModel.irASemanaActual() }
         binding.btnHoyLeft.setOnClickListener(onHoyClick)
         binding.btnHoyRight.setOnClickListener(onHoyClick)
-    }
-
-    private fun setupFiltroDias() {
-        // Dos líneas: el día y, debajo, cuántos socios hay (los botones de Material traen una sola).
-        (botonesFiltroDia.values + binding.btnFiltroTodos).forEach {
-            it.isSingleLine = false
-            it.maxLines = 2
-        }
-        binding.toggleFiltroDias.addOnButtonCheckedListener { grupo, id, marcado ->
-            if (!marcado || sincronizandoFiltro) return@addOnButtonCheckedListener
-            HapticUtils.performClick(grupo)
-            grupo.findViewById<View>(id)?.let { Movimiento.latido(it, hacia = 0.6f) }
-            viewModel.setDiaFiltro(botonesFiltroDia.entries.firstOrNull { it.value.id == id }?.key)
-        }
-    }
-
-    private fun setupFab() {
-        binding.fabAddSocio.setOnClickListener { openAddEditDialog(null) }
-        binding.containerEmptyState.setOnClickListener { openAddEditDialog(null) }
     }
 
     private fun setupHeaderClickListeners() {

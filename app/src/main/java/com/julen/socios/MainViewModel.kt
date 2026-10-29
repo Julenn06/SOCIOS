@@ -17,6 +17,7 @@ import com.julen.socios.data.CobroRepository
 import com.julen.socios.data.SocioRepository
 import com.julen.socios.export.AlcanceExport
 import com.julen.socios.export.ExportFormat
+import com.julen.socios.export.ExportGuardada
 import com.julen.socios.export.ExportRequest
 import com.julen.socios.export.ExportService
 import com.julen.socios.export.ImportFormat
@@ -57,32 +58,6 @@ import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-
-data class MainUiState(
-    val weekOffset: Int,
-    val semanaKey: String,
-    val diaFiltro: DiaSemana? = null,
-    val todosSociosSemana: List<Socio> = emptyList(),
-    val sociosFiltrados: List<Socio> = emptyList(),
-    val conteoPorDia: Map<DiaSemana, Int> = emptyMap(),
-    val bonoInfoSemana: BonoRegaloInfo? = null,
-    val cobroSemana: CobroInfo? = null,
-    val resumenSemana: CalculoComisiones.ResumenCalculo? = null
-)
-
-/** Acciones puntuales que la Activity debe ejecutar una sola vez. */
-sealed interface MainEvent {
-    /** Un aviso: [titulo] dice qué ha pasado y [detalle], si hay, a qué o por qué. */
-    data class Mensaje(val titulo: UiText, val tipo: TipoAviso, val detalle: UiText? = null) : MainEvent
-    data class CrearDocumento(val formato: ExportFormat, val nombreSugerido: String) : MainEvent
-    data class Compartir(val uri: Uri, val formato: ExportFormat) : MainEvent {
-        val mimeType: String get() = formato.mimeType
-    }
-    data class SeleccionarArchivoImport(val formato: ImportFormat) : MainEvent
-
-    /** Se ha borrado un socio: la vista ofrece deshacerlo con [MainViewModel.restaurarSocio]. */
-    data class SocioEliminado(val socio: Socio) : MainEvent
-}
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class MainViewModel(
@@ -206,11 +181,14 @@ class MainViewModel(
     val cuotaPorDefecto: Double
         get() = preferencias.ultimaCuota ?: ImportesPredefinidos.CUOTA_POR_DEFECTO
 
+    // La exportación que espera a que el usuario elija destino, y la que espera al selector de archivos.
+    private val exportDestino = ExportGuardada(savedStateHandle, KEY_EXPORT_DESTINO)
+    private val exportGuardar = ExportGuardada(savedStateHandle, KEY_EXPORT_GUARDAR)
+
     /** Exportación preparada a la espera de que el usuario elija entre compartir o guardar. */
-    val exportPendienteDeDestino: StateFlow<ExportRequest?> =
-        savedStateHandle.getStateFlow<String?>(KEY_EXPORT_DESTINO + SUFIJO_FORMATO, null)
-            .map { leerExportRequest(KEY_EXPORT_DESTINO) }
-            .stateIn(viewModelScope, SharingStarted.Eagerly, leerExportRequest(KEY_EXPORT_DESTINO))
+    val exportPendienteDeDestino: StateFlow<ExportRequest?> = exportDestino.cambios
+        .map { exportDestino.leer() }
+        .stateIn(viewModelScope, SharingStarted.Eagerly, exportDestino.leer())
 
     private var lecturaPendiente: ResultadoLectura? = null
     private val _importPendiente = MutableStateFlow<ImportPreview?>(null)
@@ -320,14 +298,14 @@ class MainViewModel(
         if (datos.socios.isEmpty() && datos.bonosRegalo.isEmpty() && datos.cobros.isEmpty()) {
             avisar(R.string.msg_export_vacio, TipoAviso.INFO, UiText.Res(R.string.msg_export_vacio_detalle))
         } else {
-            guardarExportRequest(KEY_EXPORT_DESTINO, ExportRequest(formato, alcance))
+            exportDestino.guardar(ExportRequest(formato, alcance))
         }
     }
 
-    fun cancelarExport() = guardarExportRequest(KEY_EXPORT_DESTINO, null)
+    fun cancelarExport() = exportDestino.guardar(null)
 
     fun exportarCompartiendo() {
-        val request = tomarExportRequest(KEY_EXPORT_DESTINO) ?: return
+        val request = exportDestino.tomar() ?: return
         lanzar(R.string.msg_error_export) {
             val uri = exportService.crearArchivoCompartible(request, backupRepository.cargarDatos(request.alcance))
             enviar(MainEvent.Compartir(uri, request.formato))
@@ -335,15 +313,15 @@ class MainViewModel(
     }
 
     fun exportarGuardando() {
-        val request = tomarExportRequest(KEY_EXPORT_DESTINO) ?: return
+        val request = exportDestino.tomar() ?: return
         // Se guarda en el SavedStateHandle: el selector de archivos es otra app y la nuestra puede
         // recrearse (o morir) mientras está abierto.
-        guardarExportRequest(KEY_EXPORT_GUARDAR, request)
+        exportGuardar.guardar(request)
         enviar(MainEvent.CrearDocumento(request.formato, exportService.nombreArchivo(request)))
     }
 
     fun onDocumentoCreado(uri: Uri?) {
-        val request = tomarExportRequest(KEY_EXPORT_GUARDAR) ?: return
+        val request = exportGuardar.tomar() ?: return
         if (uri == null) return
         lanzar(R.string.msg_error_file_save) {
             exportService.escribirEnUri(request, backupRepository.cargarDatos(request.alcance), uri)
@@ -402,27 +380,6 @@ class MainViewModel(
         return SemanaVisible(semanaKey, DateUtils.semanasEntre(actual, semanaKey) ?: 0)
     }
 
-    private fun guardarExportRequest(prefijo: String, request: ExportRequest?) {
-        // El formato es la clave que observa exportPendienteDeDestino: se vacía primero y se escribe
-        // al final para que cualquier cambio de la petición se emita aunque el formato se repita.
-        savedStateHandle[prefijo + SUFIJO_FORMATO] = null
-        savedStateHandle[prefijo + SUFIJO_SEMANAS] =
-            (request?.alcance as? AlcanceExport.Semanas)?.semanaKeys?.let { ArrayList(it) }
-        savedStateHandle[prefijo + SUFIJO_FORMATO] = request?.formato?.name
-    }
-
-    private fun leerExportRequest(prefijo: String): ExportRequest? {
-        val formato = savedStateHandle.get<String>(prefijo + SUFIJO_FORMATO)
-            ?.let { nombre -> ExportFormat.entries.find { it.name == nombre } }
-            ?: return null
-        val semanas = savedStateHandle.get<ArrayList<String>>(prefijo + SUFIJO_SEMANAS)
-        val alcance = if (semanas != null) AlcanceExport.Semanas(semanas.toSet()) else AlcanceExport.Historico
-        return ExportRequest(formato, alcance)
-    }
-
-    private fun tomarExportRequest(prefijo: String): ExportRequest? =
-        leerExportRequest(prefijo).also { guardarExportRequest(prefijo, null) }
-
     private fun enviar(evento: MainEvent) {
         eventos.trySend(evento)
     }
@@ -458,8 +415,6 @@ class MainViewModel(
         private const val KEY_DIA_FILTRO = "diaFiltro"
         private const val KEY_EXPORT_DESTINO = "exportDestino"
         private const val KEY_EXPORT_GUARDAR = "exportGuardar"
-        private const val SUFIJO_FORMATO = ".formato"
-        private const val SUFIJO_SEMANAS = ".semanas"
         private const val INTERVALO_SEMANA_ACTUAL_MS = 60_000L
 
         /**
