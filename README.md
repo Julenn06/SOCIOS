@@ -41,6 +41,9 @@ Los esquemas de Room se exportan a `app/schemas/`. Al cambiar una entidad hay qu
 2. El workflow `Build and Release` pasa los tests y lint, firma el APK y, cuando también han pasado los
    tests en el emulador, crea la GitHub Release `v1.1.0`. Si fallan, no se publica nada y el informe de
    los tests queda como artefacto del workflow.
+3. Con la release ya publicada y su APK adjunto, el workflow borra las releases y los tags `vX.Y.Z`
+   anteriores: solo queda la última. Para quitar también los tags de tu copia local:
+   `git fetch --prune --prune-tags`.
 
 Los push a `main` solo generan el APK como artefacto del workflow, sin publicar release. El
 `versionCode` es el número de ejecución del workflow, así que cada APK es una actualización del anterior.
