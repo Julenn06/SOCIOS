@@ -153,20 +153,17 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:paddingTop="6dp">
+                android:orientation="vertical">
 
                 <!-- El neto: con un doble toque se ajusta a lo cobrado de verdad -->
                 <LinearLayout
                     android:id="@+id/containerNetoHeader"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginHorizontal="-8dp"
                     android:background="@drawable/ripple_resumen"
                     android:clickable="true"
                     android:focusable="true"
                     android:orientation="vertical"
-                    android:paddingHorizontal="8dp"
                     android:paddingVertical="6dp">
 
                     <TextView
