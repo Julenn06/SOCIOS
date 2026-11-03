@@ -1,0 +1,194 @@
+{
+  "version": 1,
+  "skills": {
+    "adaptive": {
+      "source": "android/skills",
+      "sourceType": "github",
+      "skillPath": "jetpack-compose/adaptive/SKILL.md",
+      "computedHash": "a528c78fb7ccad02aa671e91d76785b1495b725ba8d7a8030ec03fc444b39f63",
+      "installMode": "copy"
+    },
+    "android-accessibility": {
+      "source": "new-silvermoon/awesome-android-agent-skills",
+      "sourceType": "github",
+      "skillPath": ".github/skills/ui/android-accessibility/SKILL.md",
+      "computedHash": "d8d9d563f8930625eaf20ea4fdd2827b2020700f3205e9f6c15f97d38c391e25",
+      "installMode": "copy"
+    },
+    "android-clean-architecture": {
+      "source": "affaan-m/ecc",
+      "sourceType": "github",
+      "skillPath": "skills/android-clean-architecture/SKILL.md",
+      "computedHash": "80779b595f194a1ca3d59e36cbf4b29f426faaf90cf9c41dfd61a80442214890",
+      "installMode": "copy"
+    },
+    "android-cli": {
+      "source": "android/skills",
+      "sourceType": "github",
+      "skillPath": "devtools/android-cli/SKILL.md",
+      "computedHash": "bbe53f7481bc5de0a5fa1152ca113bff161b3e6aec6a228820c2485e4d861873",
+      "installMode": "copy"
+    },
+    "android-coroutines": {
+      "source": "new-silvermoon/awesome-android-agent-skills",
+      "sourceType": "github",
+      "skillPath": ".github/skills/concurrency_and_networking/android-coroutines/SKILL.md",
+      "computedHash": "ce2b8c0608e4a9bcbb47dcc0edab77111f3f5896b6fe4ef04882138cf0aa9f91",
+      "installMode": "copy"
+    },
+    "android-data-layer": {
+      "source": "new-silvermoon/awesome-android-agent-skills",
+      "sourceType": "github",
+      "skillPath": ".github/skills/architecture/android-data-layer/SKILL.md",
+      "computedHash": "fd7efba5e76d983f7d28b959530c47ea5914d92881c73c69bbe787de040328c3",
+      "installMode": "copy"
+    },
+    "android-design-guidelines": {
+      "source": "ehmo/platform-design-skills",
+      "sourceType": "github",
+      "skillPath": "skills/android/SKILL.md",
+      "computedHash": "4dd3502bf04dc3b81a58ca1af9a1a7fb08a0e35359db2a59530f9105331758b2",
+      "installMode": "copy"
+    },
+    "android-development": {
+      "source": "dpconde/claude-android-skill",
+      "sourceType": "github",
+      "skillPath": "SKILL.md",
+      "computedHash": "2537ca062ab80d0235db27b4dadee5e07a84c5356aedf7f9d426e7f23019197d",
+      "installMode": "copy"
+    },
+    "android-intent-security": {
+      "source": "android/skills",
+      "sourceType": "github",
+      "skillPath": "security/android-intent-security/SKILL.md",
+      "computedHash": "f3eb7d785071d1a161685563b834c5d702c582e9767ced3fe87e921b3e16bc6f",
+      "installMode": "copy"
+    },
+    "android-permissions-security": {
+      "source": "android/skills",
+      "sourceType": "github",
+      "skillPath": "security/android-permissions-security/SKILL.md",
+      "computedHash": "c792cf64c83091552ddbdb5b1e738e5efcfb252a639f1c46f1204f7f47ad2263",
+      "installMode": "copy"
+    },
+    "android-profiler": {
+      "source": "android/skills",
+      "sourceType": "github",
+      "skillPath": "profilers/android-profiler/SKILL.md",
+      "computedHash": "c5d6cfb3317b53898d284e350793b52003877a43cec9076dd6a924dca6321f07",
+      "installMode": "copy"
+    },
+    "android-testing": {
+      "source": "new-silvermoon/awesome-android-agent-skills",
+      "sourceType": "github",
+      "skillPath": ".github/skills/testing_and_automation/android-testing/SKILL.md",
+      "computedHash": "744cd26fe4f2b741f86a93d20e72b27399edd8aef8345e908aceae9df37c278c",
+      "installMode": "copy"
+    },
+    "android-viewmodel": {
+      "source": "new-silvermoon/awesome-android-agent-skills",
+      "sourceType": "github",
+      "skillPath": ".github/skills/architecture/android-viewmodel/SKILL.md",
+      "computedHash": "f2c9446a132774438af51f3656cccf4a390033c65377b02fc83d2dea7ed01b7e",
+      "installMode": "copy"
+    },
+    "anr-audit-and-fix": {
+      "source": "android/skills",
+      "sourceType": "github",
+      "skillPath": "performance/anr-audit-and-fix/SKILL.md",
+      "computedHash": "5257b2740fe6109651266bd4b8fce45c6e6614262ec27c58739f584010679905",
+      "installMode": "copy"
+    },
+    "audit-ai-design-slop": {
+      "source": "MengTo/Skills",
+      "sourceType": "github",
+      "skillPath": "agent-skills/ui/audit-ai-design-slop/SKILL.md",
+      "computedHash": "9e029607aaae049e80135af43be248d0b60394b6e2ca85426e6878765613029c",
+      "installMode": "copy"
+    },
+    "design-first-ui-prompting": {
+      "source": "MengTo/Skills",
+      "sourceType": "github",
+      "skillPath": "agent-skills/ui/design-first-ui-prompting/SKILL.md",
+      "computedHash": "8f5a040bc9b73645dedf34744a2db7e2ffbcbaa0fe8725a21e6c01112f68ecfa",
+      "installMode": "copy"
+    },
+    "edge-to-edge": {
+      "source": "android/skills",
+      "sourceType": "github",
+      "skillPath": "system/edge-to-edge/SKILL.md",
+      "computedHash": "7db3c09f145f5bad71b09da526dad46cb8b2ace56e62e87aa2ca7e81a0b4790e",
+      "installMode": "copy"
+    },
+    "frontend-design": {
+      "source": "anthropics/skills",
+      "sourceType": "github",
+      "skillPath": "skills/frontend-design/SKILL.md",
+      "computedHash": "89496d5dd00f4810205f351759594fc2742bf8eea85a2f2b2d1de59f4bd91576",
+      "installMode": "copy"
+    },
+    "gradle-build-performance": {
+      "source": "new-silvermoon/awesome-android-agent-skills",
+      "sourceType": "github",
+      "skillPath": ".github/skills/performance/gradle-build-performance/SKILL.md",
+      "computedHash": "4d9868684c2a41e519604e797df4cd8c6b32aa604dcb0d6b63174ea316a7f19f",
+      "installMode": "copy"
+    },
+    "impeccable": {
+      "source": "pbakaus/impeccable",
+      "sourceType": "github",
+      "skillPath": ".agents/skills/impeccable/SKILL.md",
+      "computedHash": "0e56cc00ab154fe34524e218232a21afbd5400a3096a1a3b4b37de75fd6861a5",
+      "installMode": "copy"
+    },
+    "kotlin-concurrency-expert": {
+      "source": "new-silvermoon/awesome-android-agent-skills",
+      "sourceType": "github",
+      "skillPath": ".github/skills/concurrency_and_networking/kotlin-concurrency-expert/SKILL.md",
+      "computedHash": "9b85fad8c81892908c8a4a7d0895c8f8b9647669640a22caa17f33c4553e3b49",
+      "installMode": "copy"
+    },
+    "migrate-xml-views-to-jetpack-compose": {
+      "source": "android/skills",
+      "sourceType": "github",
+      "skillPath": "jetpack-compose/migration/migrate-xml-views-to-jetpack-compose/SKILL.md",
+      "computedHash": "c3d009ea327d0c56bf2a062a7b9e69801006af47700e71f7bac38401225df4e8",
+      "installMode": "copy"
+    },
+    "mobile-android-design": {
+      "source": "wshobson/agents",
+      "sourceType": "github",
+      "skillPath": "plugins/ui-design/skills/mobile-android-design/SKILL.md",
+      "computedHash": "bcb274bcc4e0ad076b5947f90e5a247f370ed4da1274b2b7347dc293ee396309",
+      "installMode": "copy"
+    },
+    "no-ai-design-slop": {
+      "source": "MengTo/Skills",
+      "sourceType": "github",
+      "skillPath": "agent-skills/ui/no-ai-design-slop/SKILL.md",
+      "computedHash": "b3b7e88b282f4e498c10592d77f3a55e65ad1b81979cf2a6b06aa07e84eed34f",
+      "installMode": "copy"
+    },
+    "play-policy-insights": {
+      "source": "android/skills",
+      "sourceType": "github",
+      "skillPath": "play/play-policy-insights/SKILL.md",
+      "computedHash": "37c64bfcb566dc5814c27350311b05acd9cba996bc0d0c30e8b04842096051b5",
+      "installMode": "copy"
+    },
+    "r8-analyzer": {
+      "source": "android/skills",
+      "sourceType": "github",
+      "skillPath": "performance/r8-analyzer/SKILL.md",
+      "computedHash": "6b4ae24836e5b40bf783a926de659f0644fac78a1bc135655bb5fbca5dc07017",
+      "installMode": "copy"
+    },
+    "testing-setup": {
+      "source": "android/skills",
+      "sourceType": "github",
+      "skillPath": "testing/testing-setup/SKILL.md",
+      "computedHash": "d4746da1949ed59d282e6ff160324360e83b795c1b44fa393851ac138e43c901",
+      "installMode": "copy"
+    }
+  }
+}
