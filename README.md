@@ -48,6 +48,10 @@ Los esquemas de Room se exportan a `app/schemas/`. Al cambiar una entidad hay qu
    anteriores: solo queda la última. Para quitar también los tags de tu copia local:
    `git fetch --prune --prune-tags`.
 
+Sin poder subir el tag (por ejemplo, desde un entorno que no deja empujar tags), se lanza el workflow a mano
+sobre `main` (Actions → Build and Release → Run workflow) con la versión `vX.Y.Z`: hace lo mismo y la release crea
+el tag en el commit probado.
+
 Los push a `main` solo generan el APK como artefacto del workflow, sin publicar release. El
 `versionCode` es el número de ejecución del workflow, así que cada APK es una actualización del anterior.
 

@@ -1,8 +1,8 @@
 name: Build and Release
 
 # - Cada push a main y cada pull request: tests + APK como artefacto del workflow.
-# - Cada tag vX.Y.Z: además, publica una GitHub Release con el APK firmado, solo si también han pasado
-#   los tests en el emulador, y después borra las releases y los tags anteriores.
+# - Cada tag vX.Y.Z, o lanzarlo a mano (Actions → Run workflow) con la versión: además, publica una GitHub
+#   Release con el APK firmado, solo si también han pasado los tests en el emulador, y después borra las releases y los tags anteriores.
 #
 # Todos los APK de release se firman con la misma clave (secrets del repositorio), así que se pueden
 # instalar como actualización sin desinstalar la app ni perder sus datos. Ver README.md.
@@ -14,10 +14,22 @@ on:
     tags:
       - 'v*'
   pull_request:
+  # Para publicar sin subir el tag desde git (cuando no se puede): se lanza sobre main con la versión, y la
+  # release crea el tag vX.Y.Z en el commit que se ha probado.
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Versión a publicar, con el formato vX.Y.Z (por ejemplo v1.10.0)'
+        required: true
+        type: string
 
 # El push a main y el tag de su release llevan el mismo commit: basta con probarlo una vez. Al llegar el tag se
 # cancela lo que quede de la ejecución de main (la del tag hace lo mismo y además publica). Por eso se sube
 # primero main y después el tag: al revés, la de main esperaría a que acabe la del tag y repetiría el trabajo.
+# La versión que se publica: la del tag subido o la pedida al lanzarlo a mano. Vacía: no se publica nada.
+env:
+  VERSION_TAG: ${{ github.event_name == 'workflow_dispatch' && inputs.version || (startsWith(github.ref, 'refs/tags/v') && github.ref_name || '') }}
+
 concurrency:
   group: ${{ github.workflow }}-${{ github.sha }}
   cancel-in-progress: ${{ startsWith(github.ref, 'refs/tags/') }}
@@ -48,8 +60,12 @@ jobs:
         run: |
           # versionCode siempre creciente para que cada APK sea una actualización de la anterior.
           echo "SOCIOS_VERSION_CODE=${GITHUB_RUN_NUMBER}" >> "$GITHUB_ENV"
-          if [[ "$GITHUB_REF" == refs/tags/v* ]]; then
-            echo "SOCIOS_VERSION_NAME=${GITHUB_REF_NAME#v}" >> "$GITHUB_ENV"
+          if [[ -n "$VERSION_TAG" ]]; then
+            if [[ ! "$VERSION_TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+              echo "::error::La versión '$VERSION_TAG' no tiene el formato vX.Y.Z: la app no podría compararla."
+              exit 1
+            fi
+            echo "SOCIOS_VERSION_NAME=${VERSION_TAG#v}" >> "$GITHUB_ENV"
           else
             echo "SOCIOS_VERSION_NAME=dev-${GITHUB_RUN_NUMBER}" >> "$GITHUB_ENV"
           fi
@@ -79,7 +95,7 @@ jobs:
           cp app/build/outputs/apk/release/app-release.apk "socios-${SOCIOS_VERSION_NAME}.apk"
 
       - name: Refuse to publish without signing key
-        if: env.HAS_KEYSTORE != 'true' && startsWith(github.ref, 'refs/tags/v')
+        if: env.HAS_KEYSTORE != 'true' && env.VERSION_TAG != ''
         run: |
           echo "::error::Faltan los secrets de firma (SOCIOS_KEYSTORE_BASE64...). Una release firmada con otra clave no se podría instalar como actualización. Ver README.md."
           exit 1
@@ -168,7 +184,7 @@ jobs:
   # Solo con un tag, y solo si el build y los tests en el emulador han pasado: una migración rota no debe
   # llegar a la release, porque la app la instala sola y podría estropear los datos al actualizar.
   release:
-    if: startsWith(github.ref, 'refs/tags/v')
+    if: startsWith(github.ref, 'refs/tags/v') || (github.event_name == 'workflow_dispatch' && inputs.version != '')
     needs: [build, instrumented-tests]
     runs-on: ubuntu-latest
     permissions:
@@ -185,10 +201,11 @@ jobs:
       # el panel de actualizar (lee las líneas que empiezan por "- ").
       - name: Write release notes
         env:
-          TAG: ${{ github.ref_name }}
+          TAG: ${{ env.VERSION_TAG }}
         run: |
-          anterior=$(git describe --tags --abbrev=0 --match 'v*' "$TAG^" 2>/dev/null || true)
-          if [ -n "$anterior" ]; then rango="$anterior..$TAG"; else rango="-n 20 $TAG"; fi
+          # Con el commit y no con el tag: al lanzarlo a mano, el tag aún no existe.
+          anterior=$(git describe --tags --abbrev=0 --match 'v*' "$GITHUB_SHA^" 2>/dev/null || true)
+          if [ -n "$anterior" ]; then rango="$anterior..$GITHUB_SHA"; else rango="-n 20 $GITHUB_SHA"; fi
           # shellcheck disable=SC2086
           git log --no-merges --format=%s $rango \
             | grep -E '^(feat|fix|perf)(\([^)]*\))?!?: ' \
@@ -214,8 +231,10 @@ jobs:
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v3
         with:
-          tag_name: ${{ github.ref_name }}
-          name: Release ${{ github.ref_name }}
+          tag_name: ${{ env.VERSION_TAG }}
+          # Si el tag no existe (lanzado a mano), se crea en el commit probado.
+          target_commitish: ${{ github.sha }}
+          name: Release ${{ env.VERSION_TAG }}
           body_path: notas.md
           files: apk/*.apk
           fail_on_unmatched_files: true
@@ -229,7 +248,7 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GH_REPO: ${{ github.repository }}
-          TAG: ${{ github.ref_name }}
+          TAG: ${{ env.VERSION_TAG }}
         run: |
           apks=$(gh release view "$TAG" --json isDraft,assets \
             --jq 'select(.isDraft | not) | [.assets[].name | select(endswith(".apk"))] | length')
