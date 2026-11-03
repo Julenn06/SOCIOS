@@ -26,18 +26,9 @@
             android:id="@+id/encabezadoHistorico"
             style="@style/Socios.Fila">
 
-            <FrameLayout
-                style="@style/Socios.PlacaPanel"
-                android:background="@drawable/bg_icono_degradado">
-
-                <ImageView
-                    style="@style/Socios.IconoPanel"
-                    android:importantForAccessibility="no"
-                    android:src="@drawable/ic_history" />
-            </FrameLayout>
-
-            <LinearLayout
-                style="@style/Socios.ColumnaTextos">
+<LinearLayout
+                style="@style/Socios.ColumnaTextos"
+                android:layout_marginHorizontal="0dp">
 
                 <TextView
                     style="@style/Socios.TituloPanel"
@@ -58,8 +49,8 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="20dp"
-            app:cardCornerRadius="24dp"
-            app:cardElevation="6dp"
+            app:cardCornerRadius="16dp"
+            app:cardElevation="0dp"
             app:strokeWidth="0dp">
 
             <LinearLayout

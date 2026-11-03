@@ -25,18 +25,9 @@
         <LinearLayout
             style="@style/Socios.Fila">
 
-            <FrameLayout
-                style="@style/Socios.PlacaPanel"
-                android:background="@drawable/bg_icono_ambar">
-
-                <ImageView
-                    style="@style/Socios.IconoPanel"
-                    android:importantForAccessibility="no"
-                    android:src="@drawable/ic_gift" />
-            </FrameLayout>
-
-            <LinearLayout
-                style="@style/Socios.ColumnaTextos">
+<LinearLayout
+                style="@style/Socios.ColumnaTextos"
+                android:layout_marginHorizontal="0dp">
 
                 <TextView
                     style="@style/Socios.TituloPanel"

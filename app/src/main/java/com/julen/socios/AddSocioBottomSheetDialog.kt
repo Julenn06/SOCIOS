@@ -2,11 +2,9 @@ package com.julen.socios
 
 import android.animation.ValueAnimator
 import android.graphics.drawable.GradientDrawable
-import android.graphics.drawable.LayerDrawable
 import android.os.Bundle
 import android.view.View
 import androidx.appcompat.app.AlertDialog
-import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import androidx.core.widget.doOnTextChanged
 import androidx.fragment.app.activityViewModels
@@ -64,9 +62,7 @@ class AddSocioBottomSheetDialog :
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        binding.fondoHero.background = LayerDrawable(
-            arrayOf(fondoHero, requireNotNull(ContextCompat.getDrawable(requireContext(), R.drawable.bg_adorno_circulos)))
-        )
+        binding.fondoHero.background = fondoHero
         semanaKey = savedInstanceState?.getString(STATE_SEMANA) ?: requireNotNull(requireArguments().getString(ARG_SEMANA))
         anadidos = savedInstanceState?.getInt(STATE_ANADIDOS) ?: 0
         mostrarSemana()

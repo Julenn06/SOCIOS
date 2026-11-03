@@ -4,7 +4,7 @@
     android:color="?attr/colorControlHighlight">
     <item android:id="@android:id/mask">
         <shape android:shape="rectangle">
-            <corners android:radius="22dp" />
+            <corners android:radius="16dp" />
             <solid android:color="@android:color/white" />
         </shape>
     </item>

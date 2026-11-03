@@ -59,8 +59,6 @@ class ListaSociosBottomSheetDialog :
 
         val buscando = modo == Modo.BUSCAR
         binding.tilBuscar.isVisible = buscando
-        binding.placaLista.setBackgroundResource(if (buscando) R.drawable.bg_icono_degradado else R.drawable.bg_icono_ambar)
-        binding.ivLista.setImageResource(if (buscando) R.drawable.ic_search else R.drawable.ic_pendientes)
         binding.tvTituloLista.setText(if (buscando) R.string.buscar_titulo else R.string.pendientes_titulo)
         binding.tvSubtituloLista.setText(if (buscando) R.string.buscar_subtitulo else R.string.pendientes_subtitulo)
         binding.tvAyudaLista.setText(if (buscando) R.string.buscar_ayuda else R.string.pendientes_ayuda)

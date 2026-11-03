@@ -1,10 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Placa ámbar para el icono del panel del bonus. -->
+<!-- Placa ámbar lisa para el icono de la mejor semana del histórico. -->
 <shape xmlns:android="http://schemas.android.com/apk/res/android"
     android:shape="rectangle">
-    <corners android:radius="16dp" />
-    <gradient
-        android:angle="135"
-        android:endColor="@color/pendiente_gradient_end"
-        android:startColor="@color/pendiente_gradient_start" />
+    <corners android:radius="12dp" />
+    <solid android:color="@color/pendiente_gradient_start" />
 </shape>

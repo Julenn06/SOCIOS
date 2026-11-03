@@ -19,7 +19,7 @@
         <item name="android:orientation">vertical</item>
     </style>
 
-    <!-- Cabecera de los paneles: asa para arrastrar, placa de color con su icono, título y subtítulo. -->
+    <!-- Cabecera de los paneles: asa para arrastrar, título y subtítulo. -->
     <style name="Socios.AsaPanel" parent="">
         <item name="android:layout_width">40dp</item>
         <item name="android:layout_height">4dp</item>
@@ -28,18 +28,7 @@
         <item name="android:background">@color/handle</item>
     </style>
 
-    <style name="Socios.PlacaPanel" parent="">
-        <item name="android:layout_width">52dp</item>
-        <item name="android:layout_height">52dp</item>
-        <item name="android:elevation">3dp</item>
-    </style>
 
-    <style name="Socios.IconoPanel" parent="">
-        <item name="android:layout_width">26dp</item>
-        <item name="android:layout_height">26dp</item>
-        <item name="android:layout_gravity">center</item>
-        <item name="tint">@android:color/white</item>
-    </style>
 
     <style name="Socios.TituloPanel" parent="">
         <item name="android:layout_width">wrap_content</item>
@@ -84,7 +73,7 @@
     <!-- Fila grande y pulsable: placa con icono, título, descripción y flecha. -->
     <style name="Socios.TarjetaFila" parent="Widget.Material3.CardView.Outlined">
         <item name="cardBackgroundColor">@color/surface_muted</item>
-        <item name="cardCornerRadius">20dp</item>
+        <item name="cardCornerRadius">16dp</item>
         <item name="strokeColor">@color/divider</item>
         <item name="strokeWidth">1dp</item>
         <item name="android:stateListAnimator">@animator/pulsar</item>
@@ -96,7 +85,7 @@
         <item name="cardBackgroundColor">@color/tarjeta_fondo</item>
         <!-- Sin la capa azulada que Material pone encima al marcarla: el color lo da cardBackgroundColor. -->
         <item name="cardForegroundColor">@android:color/transparent</item>
-        <item name="cardCornerRadius">20dp</item>
+        <item name="cardCornerRadius">16dp</item>
         <item name="android:stateListAnimator">@animator/pulsar</item>
         <item name="strokeColor">@color/tarjeta_borde</item>
         <item name="strokeWidth">1.5dp</item>
@@ -119,7 +108,7 @@
         <item name="android:fontFamily">@font/geist_semibold</item>
         <item name="android:fontFeatureSettings">tnum</item>
         <item name="backgroundTint">@color/opcion_fondo</item>
-        <item name="cornerRadius">14dp</item>
+        <item name="cornerRadius">12dp</item>
         <item name="strokeColor">@color/opcion_borde</item>
         <item name="strokeWidth">1.5dp</item>
     </style>
@@ -144,8 +133,8 @@
     <!-- Botón redondo de icono, con el icono centrado: los de Material reservan un hueco a la izquierda
          que lo descentra cuando el botón no tiene su tamaño original. -->
     <style name="Socios.BotonIcono" parent="Widget.Material3.Button.IconButton.Filled.Tonal">
-        <item name="android:layout_width">44dp</item>
-        <item name="android:layout_height">44dp</item>
+        <item name="android:layout_width">48dp</item>
+        <item name="android:layout_height">48dp</item>
         <item name="android:insetTop">0dp</item>
         <item name="android:insetBottom">0dp</item>
         <item name="android:padding">0dp</item>
@@ -155,10 +144,10 @@
         <item name="android:stateListAnimator">@animator/pulsar</item>
     </style>
 
-    <!-- Lápiz y papelera de cada socio: sin placa, solo el icono, con zona táctil de 40 dp. -->
+    <!-- Botón de solo icono, sin placa, con la zona táctil mínima de Android (48 dp). -->
     <style name="Socios.BotonAccionSocio" parent="Widget.Material3.Button.IconButton">
-        <item name="android:layout_width">40dp</item>
-        <item name="android:layout_height">40dp</item>
+        <item name="android:layout_width">48dp</item>
+        <item name="android:layout_height">48dp</item>
         <item name="android:insetTop">0dp</item>
         <item name="android:insetBottom">0dp</item>
         <item name="android:padding">0dp</item>
@@ -189,7 +178,7 @@
         <item name="android:textSize">13sp</item>
         <item name="android:fontFamily">@font/geist_semibold</item>
         <item name="backgroundTint">@color/primary_container</item>
-        <item name="cornerRadius">20dp</item>
+        <item name="cornerRadius">16dp</item>
         <item name="icon">@drawable/ic_today</item>
         <item name="iconGravity">top</item>
         <item name="iconPadding">4dp</item>
@@ -201,7 +190,7 @@
     <!-- Botón flotante de "Nuevo socio", con las esquinas de las tarjetas. -->
     <style name="Socios.FormaFab" parent="">
         <item name="cornerFamily">rounded</item>
-        <item name="cornerSize">20dp</item>
+        <item name="cornerSize">16dp</item>
     </style>
 
     <!-- Botón ✕ para cerrar un panel, arriba a la derecha. -->
@@ -262,6 +251,42 @@
         <item name="android:textColor">@android:color/white</item>
         <item name="android:textSize">12sp</item>
         <item name="android:fontFamily">@font/geist_semibold</item>
+    </style>
+
+    <!-- Columnas del resumen de la pantalla principal (base, bonus, IRPF): tres del mismo ancho entre filos. -->
+    <style name="Socios.ColumnaResumen" parent="">
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_weight">1</item>
+        <item name="android:minHeight">64dp</item>
+        <item name="android:gravity">center_vertical</item>
+        <item name="android:orientation">vertical</item>
+        <item name="android:paddingStart">14dp</item>
+        <item name="android:paddingEnd">6dp</item>
+        <item name="android:paddingTop">10dp</item>
+        <item name="android:paddingBottom">10dp</item>
+    </style>
+
+    <style name="Socios.EtiquetaResumen" parent="">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:ellipsize">end</item>
+        <item name="android:maxLines">1</item>
+        <item name="android:textColor">@color/text_sub</item>
+        <item name="android:textSize">12.5sp</item>
+    </style>
+
+    <!-- La cifra encoge lo justo para caber entera: "+10.044,14 €" no debe cortarse. -->
+    <style name="Socios.ImporteResumen" parent="Socios.Cifra">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginTop">2dp</item>
+        <item name="android:autoSizeMaxTextSize">17sp</item>
+        <item name="android:autoSizeMinTextSize">10sp</item>
+        <item name="android:autoSizeTextType">uniform</item>
+        <item name="android:maxLines">1</item>
+        <item name="android:textColor">@color/text_main</item>
+        <item name="android:textSize">17sp</item>
     </style>
 
     <!-- Caja translúcida con una cifra en la cabecera verde: tres en fila, del mismo ancho. -->

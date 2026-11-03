@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Fila de lo descontado bajo el resumen: el tono naranja de los descuentos, con el resalte al tocarla. -->
+<ripple xmlns:android="http://schemas.android.com/apk/res/android"
+    android:color="?attr/colorControlHighlight">
+    <item>
+        <shape android:shape="rectangle">
+            <corners android:radius="12dp" />
+            <solid android:color="@color/orange_container" />
+        </shape>
+    </item>
+</ripple>

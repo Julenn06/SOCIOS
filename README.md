@@ -32,6 +32,9 @@ Las semanas se identifican con su clave ISO-8601 (`2026-W01` va del 29-dic-2025 
 > lances contra un móvil con datos reales. Los tests de la pantalla principal usan la base de datos de la
 > app, pero apuntan su propio socio y lo borran al acabar.
 
+`.claude/skills/` trae skills de agente para trabajar en el proyecto (diseño, Android, tests, rendimiento y
+seguridad). `skills-lock.json` guarda de dónde sale cada una; se actualizan con `npx skills update -p`.
+
 Los esquemas de Room se exportan a `app/schemas/`. Al cambiar una entidad hay que subir la versión de
 `AppDatabase`, añadir la `Migration` correspondiente y un test en `MigracionesTest`.
 

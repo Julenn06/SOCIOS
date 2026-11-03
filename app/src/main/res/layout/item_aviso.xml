@@ -10,7 +10,7 @@
     android:clickable="true"
     android:focusable="true"
     app:cardBackgroundColor="@color/surface_card"
-    app:cardCornerRadius="20dp"
+    app:cardCornerRadius="16dp"
     app:cardElevation="6dp"
     app:rippleColor="@android:color/transparent"
     app:strokeColor="@color/divider"

@@ -18,7 +18,7 @@ import com.julen.socios.util.toPorcentajeString
 import kotlin.math.abs
 
 /**
- * La cabecera verde (neto, base, bonus, IRPF y lo cobrado) y la tarjeta del bonus de la pantalla principal.
+ * El resumen de la semana (neto, base, bonus, IRPF y lo cobrado) y la tarjeta del bonus de la pantalla principal.
  * Recuerda el bonus de la última semana pintada: al subir de tramo dentro de la misma semana, la cabecera late.
  */
 class CabeceraResumen(private val binding: ActivityMainBinding) {

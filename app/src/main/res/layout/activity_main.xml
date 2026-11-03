@@ -44,7 +44,7 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 app:cardBackgroundColor="@color/surface_card"
-                app:cardCornerRadius="20dp">
+                app:cardCornerRadius="16dp">
 
                 <LinearLayout
                     style="@style/Socios.Fila"
@@ -147,187 +147,185 @@
             android:paddingTop="4dp"
             android:paddingBottom="88dp">
 
-            <!-- Resumen de la semana -->
-            <com.google.android.material.card.MaterialCardView
+            <!-- Resumen de la semana, como una línea de un libro de cuentas: el neto en grande sobre el propio fondo
+                 y, debajo de un filo, de dónde sale (base + bonus − IRPF). Sin tarjeta: es lo primero de la
+                 pantalla y no necesita una caja para destacar. -->
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:outlineAmbientShadowColor="@color/header_gradient_start"
-                android:outlineSpotShadowColor="@color/header_gradient_start"
-                app:cardCornerRadius="28dp"
-                app:cardElevation="10dp"
-                app:strokeColor="@color/header_filo"
-                app:strokeWidth="1dp"
-                tools:targetApi="p">
+                android:orientation="vertical"
+                android:paddingTop="6dp">
+
+                <!-- El neto: con un doble toque se ajusta a lo cobrado de verdad -->
+                <LinearLayout
+                    android:id="@+id/containerNetoHeader"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginHorizontal="-8dp"
+                    android:background="@drawable/ripple_resumen"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:orientation="vertical"
+                    android:paddingHorizontal="8dp"
+                    android:paddingVertical="6dp">
+
+                    <TextView
+                        android:id="@+id/tvNetoHeaderLabel"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:fontFamily="@font/geist_medium"
+                        android:text="@string/header_neto_semanal"
+                        android:textColor="@color/text_sub"
+                        android:textSize="14sp" />
+
+                    <!-- Con la letra grande del sistema la cifra se encoge en vez de partirse por la coma -->
+                    <TextView
+                        android:id="@+id/tvNetoHeader"
+                        style="@style/Socios.CifraGrande"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:autoSizeMaxTextSize="52sp"
+                        android:autoSizeMinTextSize="24sp"
+                        android:autoSizeTextType="uniform"
+                        android:maxLines="1"
+                        android:textColor="@color/text_main"
+                        android:textSize="52sp"
+                        tools:text="424,01 €" />
+                </LinearLayout>
+
+                <!-- Base, bonus (se puede ajustar) e IRPF, separados por filos finos. El color solo marca el
+                     significado: ámbar lo que suma el bonus y rojo lo que se retiene. -->
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:layout_marginTop="12dp"
+                    android:background="@color/divider" />
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:background="@drawable/bg_hero"
-                    android:orientation="vertical"
-                    android:paddingHorizontal="20dp"
-                    android:paddingTop="20dp"
-                    android:paddingBottom="18dp">
+                    android:baselineAligned="false"
+                    android:divider="@drawable/filo_vertical"
+                    android:orientation="horizontal"
+                    android:showDividers="middle">
 
-                    <!-- El neto: con un doble toque se ajusta a lo cobrado de verdad -->
                     <LinearLayout
-                        android:id="@+id/containerNetoHeader"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="-6dp"
+                        style="@style/Socios.ColumnaResumen"
+                        android:paddingStart="0dp"
+                        android:paddingEnd="6dp">
+
+                        <TextView
+                            style="@style/Socios.EtiquetaResumen"
+                            android:text="@string/label_base_x2" />
+
+                        <TextView
+                            android:id="@+id/tvBaseHeader"
+                            style="@style/Socios.ImporteResumen"
+                            tools:text="+400 €" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:id="@+id/containerBonusHeader"
+                        style="@style/Socios.ColumnaResumen"
+                        android:background="@drawable/ripple_resumen"
                         android:clickable="true"
-                        android:focusable="true"
-                        android:orientation="vertical"
-                        android:padding="6dp">
+                        android:focusable="true">
 
                         <TextView
-                            android:id="@+id/tvNetoHeaderLabel"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="@string/header_neto_semanal"
-                            android:textColor="@color/header_label_neto"
-                            android:textSize="13sp"
-                            android:fontFamily="@font/geist_medium" />
+                            android:id="@+id/tvBonusHeaderLabel"
+                            style="@style/Socios.EtiquetaResumen"
+                            android:drawablePadding="4dp"
+                            app:drawableEndCompat="@drawable/ic_edit_pequeno"
+                            app:drawableTint="@color/text_sub"
+                            tools:text="Bonus" />
 
-                        <!-- Con la letra grande del sistema la cifra se encoge en vez de partirse por la coma -->
                         <TextView
-                            android:id="@+id/tvNetoHeader"
-                            style="@style/Socios.CifraGrande"
+                            android:id="@+id/tvBonusHeader"
+                            style="@style/Socios.ImporteResumen"
+                            android:textColor="@color/amber_text"
+                            tools:text="+140 €" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        style="@style/Socios.ColumnaResumen">
+
+                        <!-- "IRPF 21,48 %" es la etiqueta más larga: con la letra grande encoge en vez de cortarse -->
+                        <TextView
+                            android:id="@+id/tvIrpfHeaderLabel"
+                            style="@style/Socios.EtiquetaResumen"
                             android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="8dp"
-                            android:autoSizeMaxTextSize="44sp"
-                            android:autoSizeMinTextSize="20sp"
+                            android:autoSizeMaxTextSize="12.5sp"
+                            android:autoSizeMinTextSize="8sp"
                             android:autoSizeTextType="uniform"
-                            android:maxLines="1"
-                            android:textColor="@android:color/white"
-                            android:textSize="44sp"
-                            tools:text="424,01 €" />
-                    </LinearLayout>
-
-                    <!-- Base, bonus (se puede ajustar) e IRPF. Las cajas que se tocan no llevan el resalte
-                         estándar: es rectangular y claro, y sobre la cabecera se veía como una caja blanca.
-                         Al tocarlas se encogen un poco y vibran (ver MainActivity). -->
-
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="20dp"
-                        android:baselineAligned="false"
-                        android:orientation="horizontal">
-
-                        <LinearLayout
-                            style="@style/Socios.CajaCabecera">
-
-                            <TextView
-                                style="@style/Socios.EtiquetaCajaCabecera"
-                                android:text="@string/label_base_x2"
-                                android:textColor="@color/header_label_base" />
-
-                            <TextView
-                                android:id="@+id/tvBaseHeader"
-                                style="@style/Socios.ImporteCajaCabecera"
-                                tools:text="+400 €" />
-                        </LinearLayout>
-
-                        <LinearLayout
-                            android:id="@+id/containerBonusHeader"
-                            style="@style/Socios.CajaCabecera"
-                            android:layout_marginHorizontal="8dp"
-                            android:clickable="true"
-                            android:focusable="true">
-
-                            <TextView
-                                android:id="@+id/tvBonusHeaderLabel"
-                                style="@style/Socios.EtiquetaCajaCabecera"
-                                android:drawablePadding="4dp"
-                                android:textColor="@color/header_label_bonus"
-                                app:drawableEndCompat="@drawable/ic_edit_pequeno"
-                                app:drawableTint="@color/header_label_bonus"
-                                tools:text="Bonus" />
-
-                            <TextView
-                                android:id="@+id/tvBonusHeader"
-                                style="@style/Socios.ImporteCajaCabecera"
-                                android:textColor="@color/header_bonus"
-                                tools:text="+140 €" />
-                        </LinearLayout>
-
-                        <LinearLayout
-                            style="@style/Socios.CajaCabecera">
-
-                            <!-- "IRPF 21,48 %" es la etiqueta más larga: con la letra grande encoge en vez de cortarse -->
-                            <TextView
-                                android:id="@+id/tvIrpfHeaderLabel"
-                                style="@style/Socios.EtiquetaCajaCabecera"
-                                android:layout_width="match_parent"
-                                android:autoSizeMaxTextSize="11.5sp"
-                                android:autoSizeMinTextSize="8sp"
-                                android:autoSizeTextType="uniform"
-                                android:textColor="@color/header_label_irpf"
-                                tools:text="IRPF 21,48 %" />
-
-                            <TextView
-                                android:id="@+id/tvIrpfHeader"
-                                style="@style/Socios.ImporteCajaCabecera"
-                                android:textColor="@color/header_irpf"
-                                tools:text="-115,99 €" />
-                        </LinearLayout>
-                    </LinearLayout>
-
-                    <!-- Solo con el neto ajustado a lo cobrado: cuánto se ha descontado de lo calculado -->
-                    <LinearLayout
-                        android:id="@+id/containerCobroHeader"
-                        style="@style/Socios.Fila"
-                        android:visibility="gone"
-                        tools:visibility="visible"
-                        android:layout_marginTop="8dp"
-                        android:background="@drawable/bg_caja_translucida"
-                        android:clickable="true"
-                        android:focusable="true"
-                        android:minHeight="44dp"
-                        android:paddingHorizontal="12dp"
-                        android:paddingVertical="8dp">
-
-                        <ImageView
-                            android:layout_width="18dp"
-                            android:layout_height="18dp"
-                            android:importantForAccessibility="no"
-                            android:src="@drawable/ic_cobro"
-                            app:tint="@color/header_label_cobro" />
+                            tools:text="IRPF 21,48 %" />
 
                         <TextView
-                            android:id="@+id/tvCobroHeaderLabel"
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_marginHorizontal="8dp"
-                            android:layout_weight="1"
-                            android:ellipsize="end"
-                            android:maxLines="2"
-                            android:text="@string/header_cobro_descontado"
-                            android:textColor="@color/header_label_cobro"
-                            android:textSize="12.5sp"
-                            tools:text="Te han descontado" />
-
-                        <TextView
-                            android:id="@+id/tvCobroHeader"
-                            style="@style/Socios.Cifra"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:maxLines="1"
-                            android:textColor="@color/header_cobro"
-                            android:textSize="15sp"
-                            tools:text="-15,31 €" />
-
-                        <ImageView
-                            android:layout_width="14dp"
-                            android:layout_height="14dp"
-                            android:layout_marginStart="6dp"
-                            android:importantForAccessibility="no"
-                            android:src="@drawable/ic_edit_pequeno"
-                            app:tint="@color/header_label_cobro" />
+                            android:id="@+id/tvIrpfHeader"
+                            style="@style/Socios.ImporteResumen"
+                            android:textColor="@color/red_text"
+                            tools:text="-115,99 €" />
                     </LinearLayout>
                 </LinearLayout>
-            </com.google.android.material.card.MaterialCardView>
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:background="@color/divider" />
+
+                <!-- Solo con el neto ajustado a lo cobrado: cuánto se ha descontado de lo calculado -->
+                <LinearLayout
+                    android:id="@+id/containerCobroHeader"
+                    style="@style/Socios.Fila"
+                    android:layout_marginTop="10dp"
+                    android:background="@drawable/bg_cobro_resumen"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:minHeight="48dp"
+                    android:paddingHorizontal="12dp"
+                    android:paddingVertical="8dp"
+                    android:visibility="gone"
+                    tools:visibility="visible">
+
+                    <ImageView
+                        android:layout_width="18dp"
+                        android:layout_height="18dp"
+                        android:importantForAccessibility="no"
+                        android:src="@drawable/ic_cobro"
+                        app:tint="@color/orange_text" />
+
+                    <TextView
+                        android:id="@+id/tvCobroHeaderLabel"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginHorizontal="8dp"
+                        android:layout_weight="1"
+                        android:ellipsize="end"
+                        android:maxLines="2"
+                        android:text="@string/header_cobro_descontado"
+                        android:textColor="@color/orange_text"
+                        android:textSize="13sp"
+                        tools:text="Te han descontado" />
+
+                    <TextView
+                        android:id="@+id/tvCobroHeader"
+                        style="@style/Socios.Cifra"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:maxLines="1"
+                        android:textColor="@color/orange_text"
+                        android:textSize="15sp"
+                        tools:text="-15,31 €" />
+
+                    <ImageView
+                        android:layout_width="14dp"
+                        android:layout_height="14dp"
+                        android:layout_marginStart="6dp"
+                        android:importantForAccessibility="no"
+                        android:src="@drawable/ic_edit_pequeno"
+                        app:tint="@color/orange_text" />
+                </LinearLayout>
+            </LinearLayout>
 
             <!-- Aviso de socios pendientes en semanas anteriores: una franja fina que lleva a revisarlos; la ✕
                  lo oculta hasta que haya otro. Fina para no quitarle sitio a la semana que se está viendo. -->
@@ -384,7 +382,7 @@
                 style="@style/Socios.TarjetaFila"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="14dp"
+                android:layout_marginTop="20dp"
                 app:cardBackgroundColor="@color/surface_card">
 
                 <LinearLayout
@@ -396,26 +394,13 @@
                     <LinearLayout
                         style="@style/Socios.Fila">
 
-                        <FrameLayout
-                            android:layout_width="44dp"
-                            android:layout_height="44dp"
-                            android:background="@drawable/bg_icono_ambar">
-
-                            <ImageView
-                                android:layout_width="24dp"
-                                android:layout_height="24dp"
-                                android:layout_gravity="center"
-                                android:importantForAccessibility="no"
-                                android:src="@drawable/ic_trophy"
-                                app:tint="@android:color/white" />
-                        </FrameLayout>
 
                         <TextView
                             android:id="@+id/tvBonusTitle"
                             style="@style/Socios.TituloFila"
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
-                            android:layout_marginHorizontal="12dp"
+                            android:layout_marginEnd="12dp"
                             android:layout_weight="1"
                             tools:text="Bonus de la semana: +100 €" />
 
@@ -533,12 +518,11 @@
                     android:id="@+id/tvListaResumenDia"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:background="@drawable/bg_pastilla_version"
-                    android:paddingHorizontal="10dp"
-                    android:paddingVertical="4dp"
-                    android:textColor="@color/on_primary_container"
-                    android:textSize="12sp"
-                    android:fontFamily="@font/geist_semibold"
+                    android:layout_marginStart="12dp"
+                    android:fontFeatureSettings="tnum"
+                    android:textColor="@color/text_sub"
+                    android:textSize="13sp"
+                    android:fontFamily="@font/geist_medium"
                     tools:text="5 de 7 hechos" />
             </LinearLayout>
 

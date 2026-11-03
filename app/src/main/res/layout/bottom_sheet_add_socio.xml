@@ -67,8 +67,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="18dp"
-                app:cardCornerRadius="24dp"
-                app:cardElevation="6dp"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="0dp"
                 app:strokeWidth="0dp">
 
                 <!-- El fondo (degradado y círculos de adorno) se pone desde código -->
@@ -176,7 +176,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:stateListAnimator="@null"
-                app:cardCornerRadius="18dp">
+                app:cardCornerRadius="16dp">
 
                 <LinearLayout
                     style="@style/Socios.Fila"
