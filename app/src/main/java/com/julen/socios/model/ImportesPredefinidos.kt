@@ -6,10 +6,4 @@ object ImportesPredefinidos {
     const val CUOTA_POR_DEFECTO = 20.0
 
     val BONUS = listOf(50.0, 100.0, 140.0)
-
-    /**
-     * Tope de cualquier importe (cuota, bonus o lo cobrado). Ninguno real se le acerca: más es un error al
-     * teclearlo (un cero de más) o un archivo dañado, y no debe estropear las cuentas de la semana.
-     */
-    const val IMPORTE_MAXIMO = 100_000.0
 }

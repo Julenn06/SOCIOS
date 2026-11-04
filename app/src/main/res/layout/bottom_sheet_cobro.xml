@@ -26,9 +26,18 @@
         <LinearLayout
             style="@style/Socios.Fila">
 
-<LinearLayout
-                style="@style/Socios.ColumnaTextos"
-                android:layout_marginHorizontal="0dp">
+            <FrameLayout
+                style="@style/Socios.PlacaPanel"
+                android:background="@drawable/bg_icono_verde">
+
+                <ImageView
+                    style="@style/Socios.IconoPanel"
+                    android:importantForAccessibility="no"
+                    android:src="@drawable/ic_cobro" />
+            </FrameLayout>
+
+            <LinearLayout
+                style="@style/Socios.ColumnaTextos">
 
                 <TextView
                     style="@style/Socios.TituloPanel"
@@ -132,7 +141,6 @@
                     android:fontFeatureSettings="tnum"
                     android:imeOptions="actionDone"
                     android:inputType="numberDecimal"
-                    android:maxLength="9"
                     android:textSize="18sp" />
             </com.google.android.material.textfield.TextInputLayout>
 
@@ -189,7 +197,7 @@
                         android:id="@+id/placaPreviewDiferencia"
                         style="@style/Socios.Fila"
                         android:layout_marginTop="16dp"
-                        android:background="@drawable/bg_caja_tono"
+                        android:background="@drawable/bg_icono_tile"
                         android:backgroundTint="@color/red_container"
                         android:padding="14dp">
 
@@ -218,7 +226,7 @@
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnGuardarCobro"
-            style="@style/Socios.BotonPrincipal"
+            style="@style/Widget.Material3.Button"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:minHeight="56dp"
@@ -228,7 +236,7 @@
             android:text="@string/action_save"
             android:textSize="15sp"
             android:fontFamily="@font/geist_semibold"
-            app:cornerRadius="12dp"
+            app:cornerRadius="16dp"
             app:icon="@drawable/ic_check"
             app:iconGravity="textStart" />
     </LinearLayout>

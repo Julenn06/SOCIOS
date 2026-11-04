@@ -25,9 +25,18 @@
         <LinearLayout
             style="@style/Socios.Fila">
 
-<LinearLayout
-                style="@style/Socios.ColumnaTextos"
-                android:layout_marginHorizontal="0dp">
+            <FrameLayout
+                style="@style/Socios.PlacaPanel"
+                android:background="@drawable/bg_icono_ambar">
+
+                <ImageView
+                    style="@style/Socios.IconoPanel"
+                    android:importantForAccessibility="no"
+                    android:src="@drawable/ic_gift" />
+            </FrameLayout>
+
+            <LinearLayout
+                style="@style/Socios.ColumnaTextos">
 
                 <TextView
                     style="@style/Socios.TituloPanel"
@@ -201,8 +210,7 @@
                     android:id="@+id/etCustomMonto"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:inputType="numberDecimal"
-                    android:maxLength="9" />
+                    android:inputType="numberDecimal" />
             </com.google.android.material.textfield.TextInputLayout>
 
             <!-- Motivo del ajuste (se muestra en el informe PDF) -->
@@ -249,13 +257,13 @@
                 android:textSize="15sp"
                 android:fontFamily="@font/geist_semibold"
                 android:visibility="gone"
-                app:cornerRadius="12dp"
+                app:cornerRadius="16dp"
                 app:strokeColor="@color/stroke"
                 tools:visibility="visible" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnGuardarBono"
-                style="@style/Socios.BotonPrincipal"
+                style="@style/Widget.Material3.Button"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:minHeight="56dp"
@@ -265,7 +273,7 @@
                 android:text="@string/action_save"
                 android:textSize="15sp"
                 android:fontFamily="@font/geist_semibold"
-                app:cornerRadius="12dp"
+                app:cornerRadius="16dp"
                 app:icon="@drawable/ic_check"
                 app:iconGravity="textStart" />
         </LinearLayout>

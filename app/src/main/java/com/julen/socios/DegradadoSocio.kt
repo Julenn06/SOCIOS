@@ -6,13 +6,11 @@ import android.graphics.drawable.GradientDrawable
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.ColorUtils
 
-/**
- * El color de la placa de un socio: verde si suma, ámbar si está pendiente. Es un color liso (los dos extremos
- * iguales): el estado ya lo dice el color, y un degradado encima solo era adorno.
- */
-fun coloresDegradadoSocio(context: Context, hecho: Boolean): IntArray {
-    val color = ContextCompat.getColor(context, if (hecho) R.color.badge_gradient_start else R.color.pendiente_gradient_start)
-    return intArrayOf(color, color)
+/** Los dos colores del degradado de un socio: verde si suma, ámbar si está pendiente. */
+fun coloresDegradadoSocio(context: Context, hecho: Boolean): IntArray = if (hecho) {
+    intArrayOf(ContextCompat.getColor(context, R.color.badge_gradient_start), ContextCompat.getColor(context, R.color.badge_gradient_end))
+} else {
+    intArrayOf(ContextCompat.getColor(context, R.color.pendiente_gradient_start), ContextCompat.getColor(context, R.color.pendiente_gradient_end))
 }
 
 /**

@@ -59,8 +59,11 @@ class HistoricoAdapter(
             binding.tvSemanaItemTitulo.text = fila.titulo
             binding.tvSemanaItemSociosCount.setTextoAccesible(fila.detalle)
             val contexto = binding.root.context
+            binding.placaSemanaItem.backgroundTintList = ContextCompat.getColorStateList(
+                contexto, if (fila.destacada) R.color.green_container else R.color.blue_container
+            )
             binding.tvSemanaItemEtiqueta.setTextColor(
-                ContextCompat.getColor(contexto, if (fila.destacada) R.color.green_text else R.color.text_sub)
+                ContextCompat.getColor(contexto, if (fila.destacada) R.color.green_text else R.color.blue_text_soft)
             )
             // Sin "+" delante de un neto negativo (quedaba "+-5,00 €").
             binding.tvSemanaItemNeto.text = fila.neto.toCurrencyString(prefix = if (fila.neto > 0.0) "+" else "")

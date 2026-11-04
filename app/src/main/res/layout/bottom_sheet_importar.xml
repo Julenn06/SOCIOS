@@ -27,9 +27,18 @@
         <LinearLayout
             style="@style/Socios.Fila">
 
-<LinearLayout
-                style="@style/Socios.ColumnaTextos"
-                android:layout_marginHorizontal="0dp">
+            <FrameLayout
+                style="@style/Socios.PlacaPanel"
+                android:background="@drawable/bg_icono_degradado">
+
+                <ImageView
+                    style="@style/Socios.IconoPanel"
+                    android:importantForAccessibility="no"
+                    android:src="@drawable/ic_import" />
+            </FrameLayout>
+
+            <LinearLayout
+                style="@style/Socios.ColumnaTextos">
 
                 <TextView
                     style="@style/Socios.TituloPanel"
@@ -53,8 +62,8 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="20dp"
-            app:cardCornerRadius="16dp"
-            app:cardElevation="0dp"
+            app:cardCornerRadius="24dp"
+            app:cardElevation="6dp"
             app:strokeWidth="0dp">
 
             <LinearLayout
@@ -77,15 +86,15 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="2dp"
-                    android:autoSizeMaxTextSize="52sp"
-                    android:autoSizeMinTextSize="24sp"
+                    android:autoSizeMaxTextSize="40sp"
+                    android:autoSizeMinTextSize="22sp"
                     android:autoSizeTextType="uniform"
-                    android:includeFontPadding="false"
+                    android:fontFeatureSettings="tnum"
                     android:letterSpacing="-0.02"
                     android:maxLines="1"
                     android:textColor="@android:color/white"
-                    android:textSize="52sp"
-                    android:fontFamily="@font/instrument_serif"
+                    android:textSize="40sp"
+                    android:fontFamily="@font/geist_semibold"
                     tools:text="194 socios" />
 
                 <com.google.android.material.chip.ChipGroup
@@ -223,17 +232,15 @@
                 android:insetBottom="0dp"
                 android:minHeight="56dp"
                 android:text="@string/action_cancel"
-                android:textColor="@color/text_main"
+                android:textColor="@color/on_primary_container"
                 android:textSize="15sp"
                 android:fontFamily="@font/geist_semibold"
-                app:backgroundTint="@android:color/transparent"
-                app:cornerRadius="12dp"
-                app:strokeColor="@color/stroke"
-                app:strokeWidth="1dp" />
+                app:backgroundTint="@color/primary_container"
+                app:cornerRadius="16dp" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnConfirmarImport"
-                style="@style/Socios.BotonPrincipal"
+                style="@style/Widget.Material3.Button"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1.6"
@@ -243,7 +250,7 @@
                 android:text="@string/action_importar"
                 android:textSize="15sp"
                 android:fontFamily="@font/geist_semibold"
-                app:cornerRadius="12dp"
+                app:cornerRadius="16dp"
                 app:icon="@drawable/ic_import"
                 app:iconGravity="textStart" />
         </LinearLayout>

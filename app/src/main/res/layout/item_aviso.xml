@@ -10,8 +10,8 @@
     android:clickable="true"
     android:focusable="true"
     app:cardBackgroundColor="@color/surface_card"
-    app:cardCornerRadius="14dp"
-    app:cardElevation="4dp"
+    app:cardCornerRadius="20dp"
+    app:cardElevation="6dp"
     app:rippleColor="@android:color/transparent"
     app:strokeColor="@color/divider"
     app:strokeWidth="1dp">
@@ -96,12 +96,12 @@
                 android:insetTop="0dp"
                 android:insetBottom="0dp"
                 android:paddingHorizontal="14dp"
-                android:textColor="@color/bg_light"
+                android:textColor="@color/on_primary_container"
                 android:textSize="13.5sp"
                 android:fontFamily="@font/geist_semibold"
                 android:visibility="gone"
-                app:backgroundTint="@color/text_main"
-                app:cornerRadius="10dp"
+                app:backgroundTint="@color/primary_container"
+                app:cornerRadius="12dp"
                 tools:text="Deshacer"
                 tools:visibility="visible" />
 

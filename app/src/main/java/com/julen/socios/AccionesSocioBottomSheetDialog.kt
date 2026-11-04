@@ -4,6 +4,7 @@ import android.graphics.drawable.GradientDrawable
 import android.os.Bundle
 import android.view.View
 import androidx.core.content.ContextCompat
+import androidx.core.os.bundleOf
 import androidx.core.view.isVisible
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.setFragmentResult
@@ -42,9 +43,9 @@ class AccionesSocioBottomSheetDialog :
     private fun mostrarSocio() {
         val contexto = requireContext()
         val base = CalculoComisiones.calcularBaseX2(socio.colaboracion)
-        binding.marcaAcciones.background = GradientDrawable(
-            GradientDrawable.Orientation.TOP_BOTTOM, coloresDegradadoSocio(contexto, socio.hecho)
-        ).apply { cornerRadius = 2 * resources.displayMetrics.density }
+        binding.placaAcciones.background = GradientDrawable(
+            GradientDrawable.Orientation.TL_BR, coloresDegradadoSocio(contexto, socio.hecho)
+        ).apply { cornerRadius = 20 * resources.displayMetrics.density }
         binding.tvImporteAcciones.text = socio.colaboracion.toEurosCompacto()
         binding.tvBaseAcciones.text = getString(R.string.socio_base_format, base.toEurosCompacto())
 
@@ -56,10 +57,12 @@ class AccionesSocioBottomSheetDialog :
         val estado = binding.tvEstadoAcciones
         if (socio.hecho) {
             estado.text = getString(R.string.socio_status_conseguido, base.toEurosCompacto())
-            estado.setTextColor(ContextCompat.getColor(contexto, R.color.primary))
+            estado.setTextColor(ContextCompat.getColor(contexto, R.color.on_primary_container))
+            estado.backgroundTintList = null
         } else {
             estado.setText(R.string.socio_status_pendiente)
             estado.setTextColor(ContextCompat.getColor(contexto, R.color.orange_pending))
+            estado.backgroundTintList = ContextCompat.getColorStateList(contexto, R.color.orange_container)
         }
 
         binding.tvNotasAcciones.isVisible = socio.notas.isNotBlank()
@@ -67,13 +70,7 @@ class AccionesSocioBottomSheetDialog :
     }
 
     private fun elegir(accion: Accion) {
-        setFragmentResult(
-            RESULTADO,
-            Bundle().apply {
-                putString(ARG_ACCION, accion.name)
-                putBundle(ARG_SOCIO, socio.toBundle())
-            }
-        )
+        setFragmentResult(RESULTADO, bundleOf(ARG_ACCION to accion.name, ARG_SOCIO to socio.toBundle()))
         dismiss()
     }
 
@@ -86,7 +83,7 @@ class AccionesSocioBottomSheetDialog :
         /** Abre el panel de [socio] en [fragmentManager]; lo elegido llega a quien escuche en ese mismo gestor. */
         fun mostrar(fragmentManager: FragmentManager, socio: Socio) =
             fragmentManager.mostrarSiNoEsta(TAG) {
-                AccionesSocioBottomSheetDialog().apply { arguments = Bundle().apply { putBundle(ARG_SOCIO, socio.toBundle()) } }
+                AccionesSocioBottomSheetDialog().apply { arguments = bundleOf(ARG_SOCIO to socio.toBundle()) }
             }
 
         /** Lo que se elija en los paneles abiertos en [fragmentManager], mientras [owner] esté activo. */

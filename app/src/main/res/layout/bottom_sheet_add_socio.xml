@@ -44,9 +44,8 @@
                         android:layout_height="wrap_content"
                         android:text="@string/title_add_socio"
                         android:textColor="@color/text_main"
-                        android:includeFontPadding="false"
-                        android:textSize="30sp"
-                        android:fontFamily="@font/instrument_serif" />
+                        android:textSize="24sp"
+                        android:fontFamily="@font/geist_semibold" />
 
                     <TextView
                         android:id="@+id/tvSubtituloSemana"
@@ -68,8 +67,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="18dp"
-                app:cardCornerRadius="16dp"
-                app:cardElevation="0dp"
+                app:cardCornerRadius="24dp"
+                app:cardElevation="6dp"
                 app:strokeWidth="0dp">
 
                 <!-- El fondo (degradado y círculos de adorno) se pone desde código -->
@@ -98,15 +97,13 @@
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="2dp"
-                            android:autoSizeMaxTextSize="50sp"
-                            android:autoSizeMinTextSize="22sp"
+                            android:autoSizeMaxTextSize="38sp"
+                            android:autoSizeMinTextSize="18sp"
                             android:autoSizeTextType="uniform"
-                            android:includeFontPadding="false"
-                            android:letterSpacing="-0.02"
                             android:maxLines="1"
                             android:textColor="@android:color/white"
-                            android:textSize="50sp"
-                            android:fontFamily="@font/instrument_serif"
+                            android:textSize="38sp"
+                            android:fontFamily="@font/geist_semibold"
                             tools:text="+40,00 €" />
 
                         <TextView
@@ -166,8 +163,7 @@
                     android:id="@+id/etCustomAmount"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:inputType="numberDecimal"
-                    android:maxLength="9" />
+                    android:inputType="numberDecimal" />
             </com.google.android.material.textfield.TextInputLayout>
 
             <!-- Semana: la visible al abrirlo; se puede cambiar, también para mover un socio de semana -->
@@ -180,7 +176,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:stateListAnimator="@null"
-                app:cardCornerRadius="16dp">
+                app:cardCornerRadius="18dp">
 
                 <LinearLayout
                     style="@style/Socios.Fila"
@@ -304,12 +300,20 @@
                         android:orientation="vertical"
                         android:padding="14dp">
 
-                        <ImageView
-                            android:layout_width="22dp"
-                            android:layout_height="22dp"
-                            android:importantForAccessibility="no"
-                            android:src="@drawable/ic_check_circle"
-                            app:tint="@color/green_text_soft" />
+                        <FrameLayout
+                            android:layout_width="40dp"
+                            android:layout_height="40dp"
+                            android:background="@drawable/bg_circulo"
+                            android:backgroundTint="@color/green_container">
+
+                            <ImageView
+                                android:layout_width="22dp"
+                                android:layout_height="22dp"
+                                android:layout_gravity="center"
+                                android:importantForAccessibility="no"
+                                android:src="@drawable/ic_check_circle"
+                                app:tint="@color/green_text_soft" />
+                        </FrameLayout>
 
                         <TextView
                             style="@style/Socios.TituloFila"
@@ -343,12 +347,20 @@
                         android:orientation="vertical"
                         android:padding="14dp">
 
-                        <ImageView
-                            android:layout_width="22dp"
-                            android:layout_height="22dp"
-                            android:importantForAccessibility="no"
-                            android:src="@drawable/ic_schedule"
-                            app:tint="@color/orange_text" />
+                        <FrameLayout
+                            android:layout_width="40dp"
+                            android:layout_height="40dp"
+                            android:background="@drawable/bg_circulo"
+                            android:backgroundTint="@color/orange_container">
+
+                            <ImageView
+                                android:layout_width="22dp"
+                                android:layout_height="22dp"
+                                android:layout_gravity="center"
+                                android:importantForAccessibility="no"
+                                android:src="@drawable/ic_schedule"
+                                app:tint="@color/orange_text" />
+                        </FrameLayout>
 
                         <TextView
                             style="@style/Socios.TituloFila"
@@ -512,17 +524,15 @@
             android:insetBottom="0dp"
             android:paddingHorizontal="16dp"
             android:text="@string/action_guardar_y_otro"
-            android:textColor="@color/text_main"
+            android:textColor="@color/on_primary_container"
             android:textSize="15sp"
             android:fontFamily="@font/geist_semibold"
             android:visibility="gone"
-            app:backgroundTint="@android:color/transparent"
-            app:strokeColor="@color/stroke"
-            app:strokeWidth="1dp"
-            app:cornerRadius="12dp"
+            app:backgroundTint="@color/primary_container"
+            app:cornerRadius="16dp"
             app:icon="@drawable/ic_add"
             app:iconGravity="textStart"
-            app:iconTint="@color/text_main"
+            app:iconTint="@color/on_primary_container"
             tools:visibility="visible" />
 
         <!-- Solo al editar: borra el socio (con confirmación y opción de deshacer). Para cancelar están la ✕
@@ -541,7 +551,7 @@
             android:textColor="@color/red_text"
             android:textSize="15sp"
             android:fontFamily="@font/geist_semibold"
-            app:cornerRadius="12dp"
+            app:cornerRadius="16dp"
             app:icon="@drawable/ic_delete"
             app:iconGravity="textStart"
             app:iconTint="@color/red_text"
@@ -549,7 +559,7 @@
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnGuardarSocio"
-            style="@style/Socios.BotonPrincipal"
+            style="@style/Widget.Material3.Button"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:minHeight="56dp"
@@ -559,7 +569,7 @@
             android:text="@string/action_save_socio"
             android:textSize="15sp"
             android:fontFamily="@font/geist_semibold"
-            app:cornerRadius="12dp"
+            app:cornerRadius="16dp"
             app:icon="@drawable/ic_check"
             app:iconGravity="textStart" />
     </LinearLayout>

@@ -17,19 +17,44 @@
 
         <View style="@style/Socios.AsaPanel" />
 
-        <!-- El socio, como su fila de la lista: marca del estado, nombre, día y estado, e importe a la derecha -->
+        <!-- El socio, con la misma placa que su fila de la lista -->
         <LinearLayout
             style="@style/Socios.Fila"
             android:baselineAligned="false">
 
-            <View
-                android:id="@+id/marcaAcciones"
-                android:layout_width="3dp"
-                android:layout_height="58dp"
-                android:importantForAccessibility="no" />
-
             <LinearLayout
-                style="@style/Socios.ColumnaTextos">
+                android:id="@+id/placaAcciones"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:elevation="3dp"
+                android:gravity="center"
+                android:minWidth="64dp"
+                android:minHeight="64dp"
+                android:orientation="vertical"
+                android:paddingHorizontal="8dp">
+
+                <TextView
+                    android:id="@+id/tvImporteAcciones"
+                    style="@style/Socios.Cifra"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:maxLines="1"
+                    android:textColor="@android:color/white"
+                    android:textSize="18sp"
+                    tools:text="15 €" />
+
+                <TextView
+                    android:id="@+id/tvBaseAcciones"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFeatureSettings="tnum"
+                    android:maxLines="1"
+                    android:textColor="#D9FFFFFF"
+                    android:textSize="11sp"
+                    tools:text="30 € base" />
+            </LinearLayout>
+
+            <LinearLayout style="@style/Socios.ColumnaTextos">
 
                 <TextView
                     android:id="@+id/tvNombreAcciones"
@@ -44,46 +69,20 @@
                 <TextView
                     android:id="@+id/tvSemanaAcciones"
                     style="@style/Socios.SubtituloPanel"
-                    android:layout_marginTop="4dp"
                     tools:text="Lunes · 26–30 oct" />
 
                 <TextView
                     android:id="@+id/tvEstadoAcciones"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="2dp"
-                    android:fontFamily="@font/geist_medium"
+                    android:layout_marginTop="8dp"
+                    android:background="@drawable/bg_pastilla_version"
+                    android:fontFamily="@font/geist_semibold"
                     android:fontFeatureSettings="tnum"
-                    android:textSize="13sp"
-                    tools:text="Suma 30 €" />
-            </LinearLayout>
-
-            <LinearLayout
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:gravity="end"
-                android:orientation="vertical">
-
-                <TextView
-                    android:id="@+id/tvImporteAcciones"
-                    style="@style/Socios.Cifra"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:maxLines="1"
-                    android:textColor="@color/text_main"
-                    android:textSize="20sp"
-                    tools:text="15 €" />
-
-                <TextView
-                    android:id="@+id/tvBaseAcciones"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="1dp"
-                    android:fontFeatureSettings="tnum"
-                    android:maxLines="1"
-                    android:textColor="@color/text_sub"
+                    android:paddingHorizontal="10dp"
+                    android:paddingVertical="3dp"
                     android:textSize="12sp"
-                    tools:text="30 € base" />
+                    tools:text="Suma 30 €" />
             </LinearLayout>
         </LinearLayout>
 

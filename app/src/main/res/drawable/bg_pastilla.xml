@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Etiqueta translúcida, de esquinas casi rectas, para textos sobre una cabecera con degradado. -->
+<!-- Pastilla translúcida para textos sobre una cabecera con degradado. -->
 <shape xmlns:android="http://schemas.android.com/apk/res/android"
     android:shape="rectangle">
-    <corners android:radius="5dp" />
-    <solid android:color="#1AFFFFFF" />
+    <corners android:radius="999dp" />
+    <solid android:color="#33FFFFFF" />
 </shape>

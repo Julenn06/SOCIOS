@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Grano muy suave en mosaico para que las cabeceras de color no parezcan planas y digitales. -->
+<bitmap xmlns:android="http://schemas.android.com/apk/res/android"
+    android:src="@drawable/grano"
+    android:tileMode="repeat" />

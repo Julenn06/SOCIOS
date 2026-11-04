@@ -24,8 +24,8 @@
         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            app:cardCornerRadius="16dp"
-            app:cardElevation="0dp"
+            app:cardCornerRadius="24dp"
+            app:cardElevation="6dp"
             app:strokeWidth="0dp">
 
             <LinearLayout
@@ -41,8 +41,8 @@
                     <ImageView
                         android:layout_width="64dp"
                         android:layout_height="64dp"
-                        android:background="@drawable/bg_caja_tono"
-                        android:elevation="0dp"
+                        android:background="@drawable/bg_icono_tile"
+                        android:elevation="4dp"
                         android:importantForAccessibility="no"
                         android:padding="3dp"
                         android:src="@drawable/icono" />
@@ -59,8 +59,8 @@
                             android:layout_height="wrap_content"
                             android:text="@string/title_app_bar"
                             android:textColor="@android:color/white"
-                            android:textSize="28sp"
-                            android:fontFamily="@font/instrument_serif" />
+                            android:textSize="21sp"
+                            android:fontFamily="@font/geist_semibold" />
 
                         <TextView
                             android:id="@+id/tvVersionMas"
@@ -147,7 +147,7 @@
                          una versión nueva pasa a blanca para destacar (colores e icono desde código). -->
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/btnEstadoVersion"
-                        style="@style/Socios.BotonPrincipal"
+                        style="@style/Widget.Material3.Button"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:minHeight="44dp"
@@ -156,7 +156,7 @@
                         android:textSize="13sp"
                         android:fontFamily="@font/geist_semibold"
                         app:backgroundTint="#1FFFFFFF"
-                        app:cornerRadius="10dp"
+                        app:cornerRadius="999dp"
                         app:icon="@drawable/ic_refresh"
                         app:iconPadding="6dp"
                         app:iconSize="16dp"

@@ -19,7 +19,6 @@ import com.julen.socios.model.DiaSemana
 import com.julen.socios.model.Socio
 import com.julen.socios.util.DateUtils
 import java.util.UUID
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import org.junit.After
 import org.junit.Assert.assertFalse
@@ -37,24 +36,13 @@ class HistoricoTest {
 
     private val app = ApplicationProvider.getApplicationContext<SociosApp>()
     private val socios = app.container.socioRepository
-    private val cobros = app.container.cobroRepository
     private val apuntados = mutableListOf<Socio>()
 
-    /** Semanas atrás de la que tendrá el socio enorme y será la mejor. */
-    private var semanasAtrasMejor = SEMANAS_ATRAS_MEJOR
-
-    /**
-     * Un socio en cada una de las 20 semanas anteriores (más de las que caben en el gráfico) y uno enorme hace 3.
-     * Si en el dispositivo esa semana ya tiene lo cobrado apuntado, su neto es lo cobrado y el socio enorme no
-     * cuenta: entonces va a la primera semana siguiente sin lo cobrado apuntado.
-     */
+    /** Un socio en cada una de las 20 semanas anteriores (más de las que caben en el gráfico) y uno enorme hace 3. */
     @Before
     fun apuntarSocios() = runBlocking {
         for (atras in 1..20) apuntar(atras, cuota = 10.0)
-        semanasAtrasMejor = (SEMANAS_ATRAS_MEJOR..20).first { atras ->
-            cobros.getCobroFlow(DateUtils.getSemanaKey(-atras, app.container.clock)).first() == null
-        }
-        apuntar(semanasAtrasMejor, cuota = 9_999.0)
+        apuntar(SEMANAS_ATRAS_MEJOR, cuota = 9_999.0)
     }
 
     @After
@@ -91,7 +79,7 @@ class HistoricoTest {
             reintentar {
                 onView(withId(R.id.graficoNeto)).inRoot(isDialog()).check { vista, error ->
                     if (error != null) throw error
-                    val acciones = vista.createAccessibilityNodeInfo().actionList
+                    val acciones = AccessibilityNodeInfo.obtain(vista).also(vista::onInitializeAccessibilityNodeInfo).actionList
                     assertTrue(AccessibilityNodeInfo.AccessibilityAction.ACTION_SCROLL_BACKWARD in acciones)
                     assertFalse(AccessibilityNodeInfo.AccessibilityAction.ACTION_SCROLL_FORWARD in acciones)
                 }
@@ -111,8 +99,8 @@ class HistoricoTest {
 
             // El panel se cierra (con su animación) y la pantalla principal pasa a esa semana.
             reintentar { onView(withId(R.id.filaMejorSemana)).check(doesNotExist()) }
-            val subtitulo = app.resources.getQuantityString(R.plurals.semana_pasada, semanasAtrasMejor, semanasAtrasMejor)
-            reintentar { onView(withId(R.id.tvSemanaSubtitulo)).check(matches(withText(subtitulo))) }
+            val haceTres = app.resources.getQuantityString(R.plurals.semana_pasada, SEMANAS_ATRAS_MEJOR, SEMANAS_ATRAS_MEJOR)
+            reintentar { onView(withId(R.id.tvSemanaSubtitulo)).check(matches(withText(haceTres))) }
         }
     }
 

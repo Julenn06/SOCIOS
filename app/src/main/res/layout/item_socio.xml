@@ -1,36 +1,63 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Un socio de la lista, como una línea de un libro de cuentas: una marca fina del color de su estado, el
-     nombre con el día y el estado, el importe alineado a la derecha y el interruptor que lo marca como
-     conseguido. Debajo, una línea fina lo separa del siguiente. -->
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<!-- Un socio de la lista, en una sola fila: placa del importe, nombre con día y estado, y a la derecha
+     el interruptor que lo marca como conseguido. -->
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    style="@style/Socios.TarjetaFila"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:foreground="?attr/selectableItemBackground"
-    android:clickable="true"
-    android:focusable="true"
-    android:orientation="vertical">
+    android:layout_marginVertical="5dp"
+    app:cardBackgroundColor="@color/surface_card"
+    app:cardCornerRadius="22dp">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:baselineAligned="false"
-        android:gravity="center_vertical"
-        android:minHeight="72dp"
         android:orientation="horizontal"
-        android:paddingVertical="12dp">
+        android:paddingStart="12dp"
+        android:paddingTop="12dp"
+        android:paddingEnd="8dp"
+        android:paddingBottom="12dp">
 
-        <!-- Marca del estado: verde si suma, ámbar si está pendiente. El color se pone desde código. -->
-        <View
-            android:id="@+id/marcaEstado"
-            android:layout_width="3dp"
-            android:layout_height="36dp"
-            android:importantForAccessibility="no" />
+        <!-- Placa del importe: el fondo (verde o ámbar según el estado) se pone desde código. Tamaño mínimo
+             y no fijo, para que con la letra grande del sistema crezca en lugar de cortar el importe. -->
+        <LinearLayout
+            android:id="@+id/placaImporte"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:minWidth="60dp"
+            android:minHeight="60dp"
+            android:gravity="center"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/tvColaboracionAmount"
+                style="@style/Socios.Cifra"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:maxLines="1"
+                android:textColor="@android:color/white"
+                android:textSize="17sp"
+                tools:text="20 €" />
+
+            <TextView
+                android:id="@+id/tvBaseX2Amount"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFeatureSettings="tnum"
+                android:maxLines="1"
+                android:textColor="#D9FFFFFF"
+                android:textSize="11sp"
+                tools:text="40 € base" />
+        </LinearLayout>
 
         <LinearLayout
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="14dp"
+            android:layout_marginTop="4dp"
             android:layout_weight="1"
             android:orientation="vertical">
 
@@ -53,13 +80,13 @@
                     android:id="@+id/tvDiaBadge"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:fontFamily="@font/geist_medium"
                     android:maxLines="1"
                     android:textColor="@color/text_sub"
                     android:textSize="13sp"
                     tools:text="Jueves" />
 
                 <TextView
-                    android:id="@+id/separadorDia"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginHorizontal="6dp"
@@ -74,7 +101,7 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:ellipsize="end"
-                    android:fontFamily="@font/geist_medium"
+                    android:fontFamily="@font/geist_semibold"
                     android:fontFeatureSettings="tnum"
                     android:maxLines="1"
                     android:textSize="13sp"
@@ -87,56 +114,25 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="6dp"
+                android:layout_marginBottom="4dp"
                 android:ellipsize="end"
                 android:lineSpacingExtra="2dp"
                 android:maxLines="2"
                 android:textColor="@color/text_sub"
                 android:textSize="13sp"
-                android:textStyle="italic"
                 tools:text="Firma realizada en punto presencial" />
         </LinearLayout>
 
-        <!-- El importe del socio y, debajo, lo que suma a la base. Sin ancho fijo, para que con la letra grande
-             del sistema crezca en lugar de cortarse. -->
-        <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="10dp"
-            android:gravity="end"
-            android:orientation="vertical">
-
-            <TextView
-                android:id="@+id/tvColaboracionAmount"
-                style="@style/Socios.Cifra"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:maxLines="1"
-                android:textColor="@color/text_main"
-                android:textSize="17sp"
-                tools:text="20 €" />
-
-            <TextView
-                android:id="@+id/tvBaseX2Amount"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="1dp"
-                android:fontFeatureSettings="tnum"
-                android:maxLines="1"
-                android:textColor="@color/text_sub"
-                android:textSize="11.5sp"
-                tools:text="40 € base" />
-        </LinearLayout>
-
-        <!-- Solo el interruptor cambia el estado. Tocar la fila la edita y mantenerla pulsada ofrece
+        <!-- Solo el interruptor cambia el estado. Tocar la tarjeta la edita y mantenerla pulsada ofrece
              editar o eliminar (con confirmación y opción de deshacer). -->
         <com.google.android.material.materialswitch.MaterialSwitch
             android:id="@+id/switchHecho"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="12dp"
+            android:layout_gravity="center_vertical"
+            android:layout_marginStart="4dp"
+            android:layout_marginEnd="4dp"
             android:contentDescription="@string/item_switch_hecho"
             android:minHeight="48dp" />
     </LinearLayout>
-
-    <View style="@style/Socios.Regla" />
-</LinearLayout>
+</com.google.android.material.card.MaterialCardView>

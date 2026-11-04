@@ -1,46 +1,41 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Paleta del tema oscuro: papel en negativo, casi negro cálido y nunca negro puro. Solo se redefinen los
-     colores que dependen del fondo. -->
+<!-- Paleta del tema oscuro. Solo se redefinen los colores que dependen del fondo. -->
 <resources>
-    <color name="primary">#74C9A2</color>
-    <color name="on_primary">#0B2A1D</color>
-    <color name="primary_container">#1C3328</color>
-    <color name="on_primary_container">#CDEBDB</color>
-    <color name="primary_inverse">#1D6B4C</color>
+    <color name="primary">#5CCB9E</color>
+    <color name="on_primary">#03261A</color>
+    <color name="primary_container">#11382A</color>
+    <color name="on_primary_container">#CBEEDB</color>
+    <color name="primary_inverse">#0E7A55</color>
 
-    <color name="accent_blue">#8FB5B0</color>
-    <color name="orange_pending">#E59A55</color>
+    <color name="accent_blue">#6FBFC9</color>
+    <color name="orange_pending">#F29A4A</color>
 
-    <!-- Neutros -->
-    <color name="bg_light">#121311</color>
-    <color name="surface_card">#1A1B18</color>
-    <color name="surface_muted">#1F201D</color>
-    <color name="text_main">#ECE9E1</color>
-    <color name="text_sub">#9C988D</color>
-    <color name="divider">#282925</color>
-    <color name="stroke">#3A3B35</color>
-    <color name="handle">#3F403A</color>
+    <!-- Neutros: casi negro con un toque verde, nunca negro puro -->
+    <color name="bg_light">#0B100E</color>
+    <color name="surface_card">#151C19</color>
+    <color name="surface_muted">#111714</color>
+    <color name="text_main">#E6ECE8</color>
+    <color name="text_sub">#97A39C</color>
+    <color name="divider">#243029</color>
+    <color name="stroke">#33413A</color>
+    <color name="handle">#3A4741</color>
 
     <!-- Acentos -->
-    <color name="blue_text">#A9CBC6</color>
-    <color name="blue_text_soft">#98BFB9</color>
-    <color name="blue_container">#1B2A28</color>
-    <color name="green_text">#9AD8B8</color>
-    <color name="green_text_soft">#7CCBA3</color>
-    <color name="green_container">#17291F</color>
-    <color name="red_text">#EDA49C</color>
-    <color name="red_container">#35191A</color>
-    <color name="orange_text">#EDB27C</color>
-    <color name="orange_container">#33251A</color>
-    <color name="amber_text">#E3C478</color>
-    <color name="amber_container">#2C2614</color>
-    <color name="amber_stroke">#4D4220</color>
+    <color name="blue_text">#9FD6DC</color>
+    <color name="blue_text_soft">#8FCDD4</color>
+    <color name="blue_container">#143236</color>
+    <color name="green_text">#8EE0B5</color>
+    <color name="green_text_soft">#6BD39F</color>
+    <color name="green_container">#12301F</color>
+    <color name="red_text">#F4A6A3</color>
+    <color name="red_container">#3A1617</color>
+    <color name="orange_text">#F7B57A</color>
+    <color name="orange_container">#3A2412</color>
+    <color name="amber_text">#F2CB6B</color>
+    <color name="amber_container">#352B10</color>
+    <color name="amber_stroke">#574614</color>
 
-    <!-- El bloque de tinta, un paso más claro que el fondo para que se distinga -->
-    <color name="header_gradient_start">#23241F</color>
-    <color name="header_gradient_end">#23241F</color>
-
-    <!-- Gráfico: en oscuro, un verde algo más profundo que el acento -->
-    <color name="grafico_barra">#4FA37F</color>
-    <color name="grafico_barra_suave">#2E4A3C</color>
+    <!-- Gráfico: en oscuro, un verde algo más profundo que el acento para quedar dentro de la banda de luminosidad -->
+    <color name="grafico_barra">#36A57B</color>
+    <color name="grafico_barra_suave">#2B5C49</color>
 </resources>

@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!-- Caja de esquinas contenidas con fondo propio (el color se pone con backgroundTint): el resultado de la
-     diferencia en "Lo que has cobrado" y la placa blanca del icono de la app. -->
-<shape xmlns:android="http://schemas.android.com/apk/res/android"
-    android:shape="rectangle">
-    <corners android:radius="12dp" />
-    <solid android:color="@android:color/white" />
-</shape>

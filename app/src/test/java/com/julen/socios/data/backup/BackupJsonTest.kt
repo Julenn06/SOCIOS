@@ -85,7 +85,6 @@ class BackupJsonTest {
                 {"id":"ok","colaboracion":20.0,"diaSemanaId":1,"semanaKey":"2026-W10"},
                 {"id":"sin-dia","colaboracion":20.0,"semanaKey":"2026-W10"},
                 {"id":"negativo","colaboracion":-5.0,"diaSemanaId":1,"semanaKey":"2026-W10"},
-                {"id":"enorme","colaboracion":2000000.0,"diaSemanaId":1,"semanaKey":"2026-W10"},
                 null
               ],
               "bonosRegalo": [{"semanaKey":"2026-W10","monto":50.0}, {"semanaKey":"x","monto":50.0}],
@@ -96,7 +95,7 @@ class BackupJsonTest {
 
         assertEquals(listOf("ok"), resultado.datos.socios.map { it.id })
         assertEquals(1, resultado.datos.bonosRegalo.size)
-        assertEquals(5, resultado.descartados)
+        assertEquals(4, resultado.descartados)
         assertEquals(1, resultado.irpfIgnorados)
     }
 

@@ -4,12 +4,10 @@ import com.julen.socios.model.BonoRegaloInfo
 import com.julen.socios.model.CobroInfo
 import com.julen.socios.model.DatosBackup
 import com.julen.socios.model.DiaSemana
-import com.julen.socios.model.ImportesPredefinidos.IMPORTE_MAXIMO
 import com.julen.socios.model.ResultadoLectura
 import com.julen.socios.model.Socio
 import com.julen.socios.util.DateUtils
 import java.util.UUID
-import kotlin.math.abs
 
 /** Conversión y validación entre el formato de copia de seguridad y el modelo de dominio. */
 object ConversionBackup {
@@ -75,7 +73,7 @@ object ConversionBackup {
     private fun claveValida(texto: String?): String? = texto?.trim()?.takeIf(DateUtils::esSemanaKeyValida)
 
     private fun aSocio(dto: SocioDto, ahora: Long): Socio? {
-        val colaboracion = dto.colaboracion?.takeIf { it.isFinite() && it > 0 && it <= IMPORTE_MAXIMO } ?: return null
+        val colaboracion = dto.colaboracion?.takeIf { it.isFinite() && it > 0 } ?: return null
         val dia = dto.diaSemanaId?.let(DiaSemana::fromIdOrNull) ?: return null
         val semanaKey = claveValida(dto.semanaKey) ?: return null
         return Socio(
@@ -92,7 +90,7 @@ object ConversionBackup {
 
     private fun aBono(dto: BonoRegaloDto): BonoRegaloInfo? {
         val semanaKey = claveValida(dto.semanaKey) ?: return null
-        val monto = dto.monto?.takeIf { it.isFinite() && it >= 0 && it <= IMPORTE_MAXIMO } ?: return null
+        val monto = dto.monto?.takeIf { it.isFinite() && it >= 0 } ?: return null
         return BonoRegaloInfo(
             semanaKey = semanaKey,
             activo = dto.activo ?: true,
@@ -105,7 +103,7 @@ object ConversionBackup {
     private fun aCobro(dto: CobroDto): CobroInfo? {
         val semanaKey = claveValida(dto.semanaKey) ?: return null
         // Puede ser negativo: así quedaban las semanas de la 1.9.0 con más devoluciones que ganancias.
-        val neto = dto.netoCobrado?.takeIf { it.isFinite() && abs(it) <= IMPORTE_MAXIMO } ?: return null
+        val neto = dto.netoCobrado?.takeIf { it.isFinite() } ?: return null
         return CobroInfo(semanaKey = semanaKey, netoCobrado = neto, nota = dto.nota.orEmpty())
     }
 }

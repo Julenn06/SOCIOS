@@ -3,9 +3,11 @@ package com.julen.socios.export
 import android.content.Context
 import android.graphics.Canvas
 import android.graphics.DashPathEffect
+import android.graphics.LinearGradient
 import android.graphics.Paint
 import android.graphics.Path
 import android.graphics.RectF
+import android.graphics.Shader
 import android.graphics.Typeface
 import android.graphics.pdf.PdfDocument
 import android.text.TextPaint
@@ -36,7 +38,7 @@ import kotlin.math.max
 import kotlin.math.min
 
 /**
- * Informe PDF A4 con el aspecto de la app: el bloque de tinta con el neto, las cifras que lo forman, un gráfico
+ * Informe PDF A4 con el aspecto de la app: la cabecera verde con el neto, las cifras que lo forman, un gráfico
  * con la evolución del neto (si hay más de una semana) y los socios de cada semana, con su resumen.
  *
  * Los colores son los del tema claro, también con el móvil en modo oscuro: un informe se imprime en papel blanco.
@@ -46,7 +48,7 @@ class PdfReportGenerator(private val context: Context) {
     private val fuenteNormal: Typeface = ResourcesCompat.getFont(context, R.font.geist_regular) ?: Typeface.DEFAULT
     private val fuenteMedia: Typeface = ResourcesCompat.getFont(context, R.font.geist_medium) ?: Typeface.DEFAULT
     private val fuenteFuerte: Typeface = ResourcesCompat.getFont(context, R.font.geist_semibold) ?: Typeface.DEFAULT_BOLD
-    private val fuenteSerif: Typeface = ResourcesCompat.getFont(context, R.font.instrument_serif) ?: Typeface.SERIF
+    private val fuenteNegrita: Typeface = ResourcesCompat.getFont(context, R.font.geist_bold) ?: Typeface.DEFAULT_BOLD
 
     private val texto = TextPaint(Paint.ANTI_ALIAS_FLAG)
     private val relleno = Paint(Paint.ANTI_ALIAS_FLAG)
@@ -117,21 +119,22 @@ class PdfReportGenerator(private val context: Context) {
         private fun dibujarCabecera() {
             val alto = 158f
             rect.set(MARGEN, y, ANCHO - MARGEN, y + alto)
-            relleno.color = TINTA_BLOQUE
-            canvas.drawRoundRect(rect, 12f, 12f, relleno)
+            relleno.shader = LinearGradient(rect.left, rect.top, rect.right, rect.bottom, VERDE_CABECERA, VERDE_CABECERA_OSCURO, Shader.TileMode.CLAMP)
+            canvas.drawRoundRect(rect, 18f, 18f, relleno)
+            relleno.shader = null
 
             val izquierda = MARGEN + 22f
             val derecha = ANCHO - MARGEN - 22f
             escribir(context.getString(R.string.pdf_titulo).uppercase(LOCALE_ES), izquierda, y + 30f, 8.5f, ETIQUETA_NETO, fuenteFuerte, espaciado = 0.12f)
             val generado = DateTimeFormatter.ofPattern("d/M/yyyy, H:mm", LOCALE_ES).format(LocalDateTime.now(clock))
             escribir(context.getString(R.string.pdf_generado, generado), derecha, y + 30f, 8.5f, ETIQUETA_CLARA, fuenteNormal, Paint.Align.RIGHT)
-            escribir(tituloPeriodo(), izquierda, y + 54f, 20f, BLANCO, fuenteSerif, ancho = derecha - izquierda)
+            escribir(tituloPeriodo(), izquierda, y + 52f, 15f, BLANCO, fuenteFuerte, ancho = derecha - izquierda)
 
             escribir(context.getString(R.string.pdf_kpi_neto), izquierda, y + 82f, 9.5f, ETIQUETA_NETO, fuenteMedia)
-            escribir(historico.totalNetoAcumulado.toCurrencyString(), izquierda, y + 116f, 38f, BLANCO, fuenteSerif, espaciado = -0.02f)
+            escribir(historico.totalNetoAcumulado.toCurrencyString(), izquierda, y + 114f, 30f, BLANCO, fuenteNegrita)
 
             var x = izquierda
-            for (pastilla in pastillas()) x = dibujarPastilla(pastilla, x, y + 128f) + 14f
+            for (pastilla in pastillas()) x = dibujarPastilla(pastilla, x, y + 128f) + 6f
             y += alto + 14f
         }
 
@@ -155,11 +158,15 @@ class PdfReportGenerator(private val context: Context) {
             }
         }
 
-        /** Un dato corto sobre el bloque de tinta, como texto suelto (sin caja); devuelve dónde termina. */
+        /** Pastilla translúcida sobre la cabecera; devuelve dónde termina. */
         private fun dibujarPastilla(contenido: String, x: Float, arriba: Float): Float {
-            preparar(8.5f, ETIQUETA_CLARA, fuenteMedia)
-            canvas.drawText(contenido, x, arriba + 12.5f, texto)
-            return x + texto.measureText(contenido)
+            preparar(8.5f, BLANCO, fuenteFuerte)
+            val ancho = texto.measureText(contenido) + 18f
+            rect.set(x, arriba, x + ancho, arriba + 18f)
+            relleno.color = PASTILLA
+            canvas.drawRoundRect(rect, 9f, 9f, relleno)
+            canvas.drawText(contenido, x + 9f, arriba + 12.5f, texto)
+            return rect.right
         }
 
         // --- Las cifras que forman el neto ---
@@ -167,27 +174,23 @@ class PdfReportGenerator(private val context: Context) {
         private fun dibujarCifras() {
             val bonusManual = historico.semanasHistoricas.any { it.resumenSemana.esBonoRegaloAplicado }
             val cifras = listOf(
-                Cifra(R.string.pdf_kpi_bruto, historico.totalBrutoAcumulado.toEurosCompacto(), TEXTO),
-                Cifra(R.string.pdf_kpi_base, historico.totalBaseX2Acumulado.toEurosCompacto(prefix = "+"), TEXTO),
+                Cifra(R.string.pdf_kpi_bruto, historico.totalBrutoAcumulado.toEurosCompacto(), GRIS_FONDO, TEXTO),
+                Cifra(R.string.pdf_kpi_base, historico.totalBaseX2Acumulado.toEurosCompacto(prefix = "+"), AZUL_FONDO, AZUL),
                 Cifra(
                     if (bonusManual) R.string.pdf_kpi_bonus_manual else R.string.pdf_kpi_bonus,
-                    historico.totalBonusAcumulado.toEurosCompacto(prefix = "+"), AMBAR
+                    historico.totalBonusAcumulado.toEurosCompacto(prefix = "+"), AMBAR_FONDO, AMBAR
                 ),
-                Cifra(R.string.historico_irpf_label, historico.totalIrpfRetenidoAcumulado.toEurosCompacto(prefix = "-"), ROJO)
+                Cifra(R.string.historico_irpf_label, historico.totalIrpfRetenidoAcumulado.toEurosCompacto(prefix = "-"), ROJO_FONDO, ROJO)
             )
             val separacion = 10f
             val ancho = (ANCHO - 2 * MARGEN - separacion * (cifras.size - 1)) / cifras.size
             cifras.forEachIndexed { i, cifra ->
                 val x = MARGEN + i * (ancho + separacion)
-                // Como las columnas de la app: una regla fina encima, el rótulo en mayúsculas y la cifra.
-                trazo.color = REGLA
-                trazo.strokeWidth = 0.75f
-                canvas.drawLine(x, y, x + ancho, y, trazo)
-                escribir(
-                    context.getString(cifra.etiqueta).uppercase(LOCALE_ES), x, y + 17f, 7.5f, TEXTO_SUAVE, fuenteFuerte,
-                    ancho = ancho, espaciado = 0.08f
-                )
-                escribir(cifra.valor, x, y + 39f, 14f, cifra.color, fuenteFuerte, ancho = ancho)
+                rect.set(x, y, x + ancho, y + 52f)
+                relleno.color = cifra.fondo
+                canvas.drawRoundRect(rect, 12f, 12f, relleno)
+                escribir(context.getString(cifra.etiqueta), x + 12f, y + 19f, 8.5f, TEXTO_SUAVE, fuenteMedia, ancho = ancho - 24f)
+                escribir(cifra.valor, x + 12f, y + 39f, 14f, cifra.color, fuenteNegrita, ancho = ancho - 24f)
             }
             y += 52f
 
@@ -220,7 +223,7 @@ class PdfReportGenerator(private val context: Context) {
 
             val alto = 150f
             asegurar(alto + 40f)
-            escribir(context.getString(R.string.historico_seccion_evolucion), MARGEN + 2f, y + 13f, 17f, TEXTO, fuenteSerif)
+            escribir(context.getString(R.string.historico_seccion_evolucion), MARGEN + 2f, y + 12f, 12f, TEXTO, fuenteFuerte)
             val subtitulo = if (porSemanas.size <= MAX_BARRAS_SEMANAS) R.string.pdf_por_semanas else R.string.pdf_por_meses
             escribir(context.getString(subtitulo), ANCHO - MARGEN - 2f, y + 12f, 9f, TEXTO_SUAVE, fuenteNormal, Paint.Align.RIGHT)
             y += 24f
@@ -286,7 +289,7 @@ class PdfReportGenerator(private val context: Context) {
 
         private fun dibujarDetalle() {
             asegurar(80f)
-            escribir(context.getString(R.string.pdf_seccion_detalle), MARGEN + 2f, y + 13f, 17f, TEXTO, fuenteSerif)
+            escribir(context.getString(R.string.pdf_seccion_detalle), MARGEN + 2f, y + 12f, 12f, TEXTO, fuenteFuerte)
             y += 24f
             dibujarCabeceraTabla()
             for (semana in historico.semanasHistoricas) {
@@ -393,7 +396,7 @@ class PdfReportGenerator(private val context: Context) {
         }
     }
 
-    private class Cifra(val etiqueta: Int, val valor: String, val color: Int)
+    private class Cifra(val etiqueta: Int, val valor: String, val fondo: Int, val color: Int)
 
     private fun preparar(
         tamano: Float,
@@ -428,22 +431,26 @@ class PdfReportGenerator(private val context: Context) {
         const val COL_ESTADO = 345f
         const val COL_NOTAS = 420f
 
-        // Los colores del tema claro de la app (values/colors.xml): papel, tinta y un solo verde.
-        val TINTA_BLOQUE = "#1F201C".toColorInt()
-        val ETIQUETA_NETO = "#ABA698".toColorInt()
-        val ETIQUETA_CLARA = "#C4BFB1".toColorInt()
+        // Los colores del tema claro de la app (values/colors.xml).
+        val VERDE_CABECERA = "#155E46".toColorInt()
+        val VERDE_CABECERA_OSCURO = "#0A2D22".toColorInt()
+        val ETIQUETA_NETO = "#9FD9C0".toColorInt()
+        val ETIQUETA_CLARA = "#CDE8DC".toColorInt()
+        val PASTILLA = "#33FFFFFF".toColorInt()
         val BLANCO = "#FFFFFF".toColorInt()
-        val TEXTO = "#1A1A17".toColorInt()
-        val TEXTO_SUAVE = "#6E6A61".toColorInt()
-        val DIVISOR = "#E0DBD0".toColorInt()
-        val REGLA = "#CCC6B8".toColorInt()
-        val GRIS_FONDO = "#F4F1EA".toColorInt()
-        val VERDE = "#1D6B4C".toColorInt()
-        val VERDE_SUAVE = "#B7CBBC".toColorInt()
-        val VERDE_FONDO = "#E3EDE5".toColorInt()
-        val VERDE_TEXTO = "#1A5A40".toColorInt()
-        val AMBAR = "#80600F".toColorInt()
-        val AMBAR_FONDO = "#F3EAD2".toColorInt()
-        val ROJO = "#A8322D".toColorInt()
+        val TEXTO = "#111814".toColorInt()
+        val TEXTO_SUAVE = "#57625C".toColorInt()
+        val DIVISOR = "#E3E7E1".toColorInt()
+        val GRIS_FONDO = "#F6F7F4".toColorInt()
+        val VERDE = "#0E7A55".toColorInt()
+        val VERDE_SUAVE = "#9CCCB5".toColorInt()
+        val VERDE_FONDO = "#E1F1E8".toColorInt()
+        val VERDE_TEXTO = "#0B5A3E".toColorInt()
+        val AZUL = "#1F6470".toColorInt()
+        val AZUL_FONDO = "#E2EFEE".toColorInt()
+        val AMBAR = "#8F5D00".toColorInt()
+        val AMBAR_FONDO = "#FBF3DC".toColorInt()
+        val ROJO = "#B4282C".toColorInt()
+        val ROJO_FONDO = "#FBE9E8".toColorInt()
     }
 }

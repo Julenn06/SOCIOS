@@ -1,6 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Bloque de tinta de los paneles: un color plano, sin degradado, sin luces y sin grano. -->
-<shape xmlns:android="http://schemas.android.com/apk/res/android"
-    android:shape="rectangle">
-    <solid android:color="@color/header_gradient_start" />
-</shape>
+<!-- Cabecera verde bosque de la pantalla principal y de los paneles, con luz y grano encima. -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item>
+        <shape android:shape="rectangle">
+            <gradient
+                android:angle="315"
+                android:endColor="@color/header_gradient_end"
+                android:startColor="@color/header_gradient_start" />
+        </shape>
+    </item>
+    <item android:drawable="@drawable/bg_adorno_circulos" />
+</layer-list>

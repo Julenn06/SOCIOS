@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!-- Celda de una cifra sobre el papel: una regla fina encima, como una columna de un libro de cuentas. -->
-<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
-    <item android:gravity="top" android:height="1dp">
-        <shape android:shape="rectangle">
-            <solid android:color="@color/stroke" />
-        </shape>
-    </item>
-</layer-list>

@@ -17,9 +17,11 @@
         android:padding="14dp">
 
         <FrameLayout
-            android:layout_width="46dp"
-            android:layout_height="46dp"
-            android:background="@drawable/bg_marco_cifra">
+            android:id="@+id/placaSemanaItem"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:background="@drawable/bg_icono_tile"
+            android:backgroundTint="@color/blue_container">
 
             <TextView
                 android:id="@+id/tvSemanaItemEtiqueta"
@@ -28,7 +30,7 @@
                 android:layout_gravity="center"
                 android:importantForAccessibility="no"
                 android:maxLines="1"
-                android:textColor="@color/text_sub"
+                android:textColor="@color/blue_text_soft"
                 android:textSize="13sp"
                 android:fontFamily="@font/geist_semibold"
                 tools:text="S42" />
