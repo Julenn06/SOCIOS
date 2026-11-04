@@ -16,6 +16,7 @@ import com.julen.socios.util.CalculoComisiones
 import com.julen.socios.util.HapticUtils
 import com.julen.socios.util.descontadoConSigno
 import com.julen.socios.util.etiquetaDescontado
+import com.julen.socios.model.ImportesPredefinidos
 import com.julen.socios.util.parseImporte
 import com.julen.socios.util.rangoSemanaConAnio
 import com.julen.socios.util.toCurrencyString
@@ -73,9 +74,11 @@ class CobroBottomSheetDialog : PanelInferior<BottomSheetCobroBinding>(BottomShee
         binding.containerCobroConfig.isVisible = binding.switchActivarCobro.isChecked
     }
 
-    /** Lo escrito, redondeado a céntimos; null si está vacío o no es un importe válido. */
+    /** Lo escrito, redondeado a céntimos; null si está vacío, no es un importe válido o pasa del tope. */
     private fun netoEscrito(): Double? =
-        parseImporte(binding.etNetoCobrado.text)?.takeIf { it >= 0.0 }?.let(CalculoComisiones::redondearCentimos)
+        parseImporte(binding.etNetoCobrado.text)
+            ?.takeIf { it >= 0.0 && it <= ImportesPredefinidos.IMPORTE_MAXIMO }
+            ?.let(CalculoComisiones::redondearCentimos)
 
     private fun actualizarVistaPrevia() {
         val b = bindingSiExiste ?: return

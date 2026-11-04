@@ -201,7 +201,8 @@
                     android:id="@+id/etCustomMonto"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:inputType="numberDecimal" />
+                    android:inputType="numberDecimal"
+                    android:maxLength="9" />
             </com.google.android.material.textfield.TextInputLayout>
 
             <!-- Motivo del ajuste (se muestra en el informe PDF) -->

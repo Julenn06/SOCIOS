@@ -3,7 +3,6 @@ package com.julen.socios
 import android.animation.ValueAnimator
 import android.graphics.drawable.GradientDrawable
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.core.content.ContextCompat

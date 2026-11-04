@@ -46,7 +46,6 @@ class PdfReportGenerator(private val context: Context) {
     private val fuenteNormal: Typeface = ResourcesCompat.getFont(context, R.font.geist_regular) ?: Typeface.DEFAULT
     private val fuenteMedia: Typeface = ResourcesCompat.getFont(context, R.font.geist_medium) ?: Typeface.DEFAULT
     private val fuenteFuerte: Typeface = ResourcesCompat.getFont(context, R.font.geist_semibold) ?: Typeface.DEFAULT_BOLD
-    private val fuenteNegrita: Typeface = ResourcesCompat.getFont(context, R.font.geist_bold) ?: Typeface.DEFAULT_BOLD
     private val fuenteSerif: Typeface = ResourcesCompat.getFont(context, R.font.instrument_serif) ?: Typeface.SERIF
 
     private val texto = TextPaint(Paint.ANTI_ALIAS_FLAG)

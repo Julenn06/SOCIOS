@@ -132,6 +132,7 @@
                     android:fontFeatureSettings="tnum"
                     android:imeOptions="actionDone"
                     android:inputType="numberDecimal"
+                    android:maxLength="9"
                     android:textSize="18sp" />
             </com.google.android.material.textfield.TextInputLayout>
 
