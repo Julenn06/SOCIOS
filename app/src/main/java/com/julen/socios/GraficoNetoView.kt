@@ -94,12 +94,34 @@ class GraficoNetoView @JvmOverloads constructor(
     private val rect = RectF()
     private val path = Path()
 
+    // Lo que solo depende de las columnas: se prepara en [mostrar] y no en cada fotograma, porque al desplazar o
+    // durante la animación se dibuja 60 veces por segundo (y con años de histórico hay muchas columnas).
+    private var escala: EscalaGrafico = EscalaGrafico.para(emptyList())
+    private var guias: List<Double> = emptyList()
+    private var textosGuias: List<String> = emptyList()
+    private var anchoEscala = 0f
+    private var textosNeto: List<String> = emptyList()
+    private var indiceMaximo = -1
+    private var marcas = IntArray(0)
+    private var anchosMarca = FloatArray(0)
+
+    // El aviso de la columna tocada: su texto se forma una vez por columna, no en cada fotograma.
+    private var avisoIndice = -1
+    private var avisoTexto = ""
+    private var avisoAncho = 0f
+
+    // Piezas que se reutilizan al dibujar, para no crear objetos en cada fotograma.
+    private val radiosBarra = FloatArray(8)
+    private val rotuloDestacada = Rotulo()
+    private val rotuloMaximo = Rotulo()
+
     /** Muestra [nuevas] columnas; con [animar], las barras crecen desde la línea base. */
     fun mostrar(nuevas: List<Columna>, destacada: Int, animar: Boolean) {
         val mismas = nuevas.map { it.etiquetaLarga } == columnas.map { it.etiquetaLarga }
         columnas = nuevas
         anchoEtiqueta = (nuevas.maxOfOrNull { pinturas.etiqueta.measureText(it.etiqueta) } ?: 0f) + 6 * densidad
         this.destacada = destacada
+        prepararDatos()
         medirArea()
         media = nuevas.filter { it.neto != 0.0 }.takeIf { it.size >= 2 }
             ?.let { conDatos -> CalculoComisiones.redondearCentimos(conDatos.sumOf { it.neto } / conDatos.size) }
@@ -141,11 +163,21 @@ class GraficoNetoView @JvmOverloads constructor(
 
     // --- Geometría ---
 
-    private fun escala(): EscalaGrafico = EscalaGrafico.para(columnas.map { it.neto })
-
-    /** Ancho de la escala fija de la derecha: el de su rótulo más largo y un margen. */
-    private fun anchoEscala(e: EscalaGrafico): Float =
-        e.guias.maxOf { pinturas.escala.measureText(it.toEurosCompacto()) } + 8 * densidad
+    /**
+     * La escala, sus líneas de guía con sus textos, el ancho de la escala fija de la derecha (el de su rótulo más
+     * largo y un margen), los importes, la columna máxima y las marcas de año.
+     */
+    private fun prepararDatos() {
+        escala = EscalaGrafico.para(columnas.map { it.neto })
+        guias = escala.guias
+        textosGuias = guias.map { it.toEurosCompacto() }
+        anchoEscala = (textosGuias.maxOfOrNull { pinturas.escala.measureText(it) } ?: 0f) + 8 * densidad
+        textosNeto = columnas.map { it.neto.toEurosCompacto() }
+        indiceMaximo = columnas.indices.maxByOrNull { columnas[it].neto }?.takeIf { columnas[it].neto > 0.0 } ?: -1
+        marcas = columnas.indices.filter { columnas[it].separador != null }.toIntArray()
+        anchosMarca = FloatArray(marcas.size) { pinturas.marca.measureText(columnas[marcas[it]].separador.orEmpty()) }
+        avisoIndice = -1
+    }
 
     private var areaIzquierda = 0f
     private var areaDerecha = 0f
@@ -157,7 +189,7 @@ class GraficoNetoView @JvmOverloads constructor(
     private fun medirArea() {
         if (width == 0 || columnas.isEmpty()) return
         areaIzquierda = paddingLeft.toFloat()
-        areaDerecha = width - paddingRight - anchoEscala(escala())
+        areaDerecha = width - paddingRight - anchoEscala
     }
 
     private val anchoArea: Float get() = areaDerecha - areaIzquierda
@@ -213,9 +245,9 @@ class GraficoNetoView @JvmOverloads constructor(
         super.onDraw(canvas)
         if (columnas.isEmpty()) return
 
-        val e = escala()
+        val e = escala
         areaIzquierda = paddingLeft.toFloat()
-        areaDerecha = width - paddingRight - anchoEscala(e)
+        areaDerecha = width - paddingRight - anchoEscala
         if (pegadoAlFinal) desplazamiento = maxDesplazamiento else desplazamiento = desplazamiento.coerceIn(0f, maxDesplazamiento)
 
         // Arriba, las marcas de año, el aviso de la columna tocada y los rótulos; abajo, las etiquetas.
@@ -223,13 +255,15 @@ class GraficoNetoView @JvmOverloads constructor(
         val abajo = height - paddingBottom - altoEje
         val altoUtil = abajo - arriba
         val base = arriba + (altoUtil * (e.techo / e.rango)).toFloat()
-        fun yDe(valor: Double) = base - (altoUtil * (valor / e.rango)).toFloat()
 
-        dibujarEscala(canvas, e, ::yDe)
+        dibujarEscala(canvas, e, base, altoUtil)
 
         canvas.withClip(areaIzquierda, 0f, areaDerecha, height.toFloat()) {
             dibujarColumnas(this, e, base, altoUtil, abajo)
-            media?.let { raya(this, areaIzquierda, yDe(it), areaDerecha, yDe(it), pinturas.media) }
+            media?.let {
+                val y = yDe(it, base, altoUtil, e.rango)
+                raya(this, areaIzquierda, y, areaDerecha, y, pinturas.media)
+            }
             dibujarRotulos(this, e, base, altoUtil, abajo)
             dibujarMarcas(this, base)
             dibujarDifuminados(this)
@@ -245,17 +279,21 @@ class GraficoNetoView @JvmOverloads constructor(
         canvas.drawPath(path, pinta)
     }
 
+    /** Altura en la vista del importe [valor], con la línea base en [base]. */
+    private fun yDe(valor: Double, base: Float, altoUtil: Float, rango: Double) = base - (altoUtil * (valor / rango)).toFloat()
+
     /** Las líneas de guía (la del cero, continua) y sus importes en la columna fija de la derecha. */
-    private fun dibujarEscala(canvas: Canvas, e: EscalaGrafico, yDe: (Double) -> Float) {
+    private fun dibujarEscala(canvas: Canvas, e: EscalaGrafico, base: Float, altoUtil: Float) {
         val ajusteTexto = -(pinturas.escala.descent() + pinturas.escala.ascent()) / 2
-        for (valor in e.guias) {
-            val y = yDe(valor)
+        for (g in guias.indices) {
+            val valor = guias[g]
+            val y = yDe(valor, base, altoUtil, e.rango)
             if (e.esCero(valor)) {
                 canvas.drawLine(areaIzquierda, y, areaDerecha, y, pinturas.eje)
             } else {
                 raya(canvas, areaIzquierda, y, areaDerecha, y, pinturas.guia)
             }
-            canvas.drawText(valor.toEurosCompacto(), (width - paddingRight).toFloat(), y + ajusteTexto, pinturas.escala)
+            canvas.drawText(textosGuias[g], (width - paddingRight).toFloat(), y + ajusteTexto, pinturas.escala)
         }
     }
 
@@ -265,7 +303,11 @@ class GraficoNetoView @JvmOverloads constructor(
         val paso = max(1, ceil(anchoEtiqueta / hueco).toInt())
         val anclaje = if (destacada in columnas.indices) destacada else columnas.lastIndex
 
-        for (i in visibles()) {
+        if (hueco <= 0f) return
+        // Solo las columnas que se ven (con una de margen a cada lado).
+        val primera = (floor((areaIzquierda - origen) / hueco).toInt() - 1).coerceAtLeast(0)
+        val ultima = ceil((areaDerecha - origen) / hueco).toInt().coerceAtMost(columnas.lastIndex)
+        for (i in primera..ultima) {
             val columna = columnas[i]
             val centro = centroDe(i)
             val alto = altoDe(columna.neto, altoUtil, e.rango) * progreso
@@ -288,47 +330,53 @@ class GraficoNetoView @JvmOverloads constructor(
         }
     }
 
-    /** Índices de las columnas que se ven (con una de margen a cada lado). */
-    private fun visibles(): IntRange {
-        if (hueco <= 0f) return IntRange.EMPTY
-        val primera = floor((areaIzquierda - origen) / hueco).toInt() - 1
-        val ultima = ceil((areaDerecha - origen) / hueco).toInt()
-        return primera.coerceAtLeast(0)..ultima.coerceAtMost(columnas.lastIndex)
-    }
-
     /**
      * Rótulos directos solo en la destacada y en el máximo, cuando la animación ha terminado y no hay una columna
      * tocada encima. Si los dos se pisarían, se queda el de la destacada.
      */
     private fun dibujarRotulos(canvas: Canvas, e: EscalaGrafico, base: Float, altoUtil: Float, abajo: Float) {
         if (progreso < 1f) return
-        val indiceMaximo = columnas.indices.maxByOrNull { columnas[it].neto }?.takeIf { columnas[it].neto > 0.0 } ?: -1
-        val rotuloDestacada = rotulo(destacada, base, altoUtil, e.rango, abajo)
-        val rotuloMaximo = rotulo(indiceMaximo, base, altoUtil, e.rango, abajo)?.takeIf { maximo ->
-            indiceMaximo != destacada && rotuloDestacada?.let { RectF.intersects(it.caja, maximo.caja) } != true
-        }
-        for (r in listOfNotNull(rotuloDestacada, rotuloMaximo)) {
-            canvas.drawText(r.texto, r.caja.centerX(), r.linea, pinturas.rotuloContorno)
-            canvas.drawText(r.texto, r.caja.centerX(), r.linea, pinturas.rotulo)
-        }
+        val hayDestacada = colocarRotulo(rotuloDestacada, destacada, base, altoUtil, e.rango, abajo)
+        val hayMaximo = indiceMaximo != destacada &&
+            colocarRotulo(rotuloMaximo, indiceMaximo, base, altoUtil, e.rango, abajo) &&
+            !(hayDestacada && RectF.intersects(rotuloDestacada.caja, rotuloMaximo.caja))
+        if (hayDestacada) pintarRotulo(canvas, rotuloDestacada)
+        if (hayMaximo) pintarRotulo(canvas, rotuloMaximo)
     }
 
-    private class Rotulo(val texto: String, val caja: RectF, val linea: Float)
+    private fun pintarRotulo(canvas: Canvas, r: Rotulo) {
+        canvas.drawText(r.texto, r.caja.centerX(), r.linea, pinturas.rotuloContorno)
+        canvas.drawText(r.texto, r.caja.centerX(), r.linea, pinturas.rotulo)
+    }
 
-    /** El importe sobre la punta de la barra [indice] (bajo ella si es negativa), o null si no se rotula. */
-    private fun rotulo(indice: Int, base: Float, altoUtil: Float, rango: Double, abajo: Float): Rotulo? {
-        val columna = columnas.getOrNull(indice) ?: return null
-        if (indice == seleccionada || columna.neto == 0.0) return null
+    /** Dónde va un rótulo: se reutiliza en cada fotograma. */
+    private class Rotulo {
+        var texto = ""
+        val caja = RectF()
+        var linea = 0f
+    }
+
+    /**
+     * Coloca en [r] el importe sobre la punta de la barra [indice] (bajo ella si es negativa). Devuelve false si
+     * no se rotula.
+     */
+    private fun colocarRotulo(r: Rotulo, indice: Int, base: Float, altoUtil: Float, rango: Double, abajo: Float): Boolean {
+        val columna = columnas.getOrNull(indice) ?: return false
+        if (indice == seleccionada || columna.neto == 0.0) return false
         // Si su barra está fuera de la vista (por desplazar), el rótulo no se queda flotando en el borde.
-        if (centroDe(indice) !in areaIzquierda..areaDerecha) return null
+        val centroBarra = centroDe(indice)
+        if (centroBarra < areaIzquierda || centroBarra > areaDerecha) return false
         val alto = altoDe(columna.neto, altoUtil, rango)
         val linea = (if (columna.neto >= 0) base - alto - 6 * densidad else base + alto + altoRotulo - 4 * densidad)
             .coerceAtMost(abajo)
-        val texto = columna.neto.toEurosCompacto()
+        val texto = textosNeto[indice]
         // En las barras de los extremos el rótulo se mete hacia dentro en lugar de salirse del gráfico.
         val mitad = pinturas.rotulo.measureText(texto) / 2
-        val centro = centroDe(indice).coerceIn(areaIzquierda + mitad, areaDerecha - mitad)
-        return Rotulo(texto, RectF(centro - mitad, linea + pinturas.rotulo.ascent(), centro + mitad, linea + pinturas.rotulo.descent()), linea)
+        val centro = centroBarra.coerceIn(areaIzquierda + mitad, areaDerecha - mitad)
+        r.texto = texto
+        r.linea = linea
+        r.caja.set(centro - mitad, linea + pinturas.rotulo.ascent(), centro + mitad, linea + pinturas.rotulo.descent())
+        return true
     }
 
     /**
@@ -337,24 +385,26 @@ class GraficoNetoView @JvmOverloads constructor(
      */
     private fun dibujarMarcas(canvas: Canvas, base: Float) {
         val lineaTexto = paddingTop - pinturas.marca.ascent()
-        val marcas = columnas.indices.filter { columnas[it].separador != null }
         for (i in marcas) {
             val x = origen + hueco * i
             if (i > 0 && x > areaIzquierda) raya(canvas, x, paddingTop + altoMarca, x, base, pinturas.guia)
         }
         val margen = 4 * densidad
-        val fija = marcas.lastOrNull { origen + hueco * it <= areaIzquierda + margen }
-        for (i in marcas) {
+        // La última marca que ya ha pasado el borde izquierdo: la del año que se está viendo.
+        var fija = -1
+        for (k in marcas.indices) if (origen + hueco * marcas[k] <= areaIzquierda + margen) fija = k
+        for (k in marcas.indices) {
+            val i = marcas[k]
             val texto = columnas[i].separador ?: continue
-            val ancho = pinturas.marca.measureText(texto)
-            val x = if (i == fija) {
+            val ancho = anchosMarca[k]
+            val x = if (k == fija) {
                 // Pegada a la izquierda, salvo que la siguiente marca ya esté llegando: entonces la empuja.
-                val siguiente = marcas.firstOrNull { it > i }?.let { origen + hueco * it }
-                min(max(origen, areaIzquierda) + margen, (siguiente ?: Float.MAX_VALUE) - ancho - margen * 3)
+                val siguiente = if (k + 1 < marcas.size) origen + hueco * marcas[k + 1] else Float.MAX_VALUE
+                min(max(origen, areaIzquierda) + margen, siguiente - ancho - margen * 3)
             } else {
                 origen + hueco * i + margen
             }
-            if (i != fija && x < areaIzquierda + margen) continue
+            if (k != fija && x < areaIzquierda + margen) continue
             rect.set(x - margen, paddingTop.toFloat(), x + ancho + margen, paddingTop + altoMarca)
             canvas.drawRect(rect, pinturas.marcaFondo)
             canvas.drawText(texto, x, lineaTexto, pinturas.marca)
@@ -386,22 +436,25 @@ class GraficoNetoView @JvmOverloads constructor(
     /** Barra con la punta (el extremo del dato) redondeada y la base recta, pegada a la línea base. */
     private fun barra(canvas: Canvas, izquierda: Float, arriba: Float, derecha: Float, abajo: Float, puntaArriba: Boolean) {
         val r = min(radio, (abajo - arriba) / 2)
-        val radios = if (puntaArriba) {
-            floatArrayOf(r, r, r, r, 0f, 0f, 0f, 0f)
-        } else {
-            floatArrayOf(0f, 0f, 0f, 0f, r, r, r, r)
-        }
+        // Las cuatro primeras son las esquinas de arriba y las cuatro últimas las de abajo.
+        radiosBarra.fill(if (puntaArriba) r else 0f, 0, 4)
+        radiosBarra.fill(if (puntaArriba) 0f else r, 4, 8)
         rect.set(izquierda, arriba, derecha, abajo)
         path.reset()
-        path.addRoundRect(rect, radios, Path.Direction.CW)
+        path.addRoundRect(rect, radiosBarra, Path.Direction.CW)
         canvas.drawPath(path, pinturas.barra)
     }
 
     /** Pastilla con la etiqueta y el importe de la columna tocada, encima de su barra. */
     private fun dibujarAviso(canvas: Canvas, indice: Int, base: Float, altoUtil: Float, rango: Double) {
         val columna = columnas[indice]
-        val texto = context.getString(R.string.grafico_seleccion, columna.etiquetaLarga, columna.neto.toEurosCompacto())
-        val ancho = pinturas.avisoTexto.measureText(texto) + 20 * densidad
+        if (avisoIndice != indice) {
+            avisoTexto = context.getString(R.string.grafico_seleccion, columna.etiquetaLarga, textosNeto[indice])
+            avisoAncho = pinturas.avisoTexto.measureText(avisoTexto) + 20 * densidad
+            avisoIndice = indice
+        }
+        val texto = avisoTexto
+        val ancho = avisoAncho
         val alto = 24 * densidad
         val izquierda = (centroDe(indice) - ancho / 2).coerceIn(areaIzquierda, max(areaIzquierda, areaDerecha - ancho))
         val cima = if (columna.neto >= 0) base - altoDe(columna.neto, altoUtil, rango) else base
