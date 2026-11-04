@@ -4,7 +4,6 @@ import android.graphics.drawable.GradientDrawable
 import android.os.Bundle
 import android.view.View
 import androidx.core.content.ContextCompat
-import androidx.core.os.bundleOf
 import androidx.core.view.isVisible
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.setFragmentResult
@@ -70,7 +69,13 @@ class AccionesSocioBottomSheetDialog :
     }
 
     private fun elegir(accion: Accion) {
-        setFragmentResult(RESULTADO, bundleOf(ARG_ACCION to accion.name, ARG_SOCIO to socio.toBundle()))
+        setFragmentResult(
+            RESULTADO,
+            Bundle().apply {
+                putString(ARG_ACCION, accion.name)
+                putBundle(ARG_SOCIO, socio.toBundle())
+            }
+        )
         dismiss()
     }
 
@@ -83,7 +88,7 @@ class AccionesSocioBottomSheetDialog :
         /** Abre el panel de [socio] en [fragmentManager]; lo elegido llega a quien escuche en ese mismo gestor. */
         fun mostrar(fragmentManager: FragmentManager, socio: Socio) =
             fragmentManager.mostrarSiNoEsta(TAG) {
-                AccionesSocioBottomSheetDialog().apply { arguments = bundleOf(ARG_SOCIO to socio.toBundle()) }
+                AccionesSocioBottomSheetDialog().apply { arguments = Bundle().apply { putBundle(ARG_SOCIO, socio.toBundle()) } }
             }
 
         /** Lo que se elija en los paneles abiertos en [fragmentManager], mientras [owner] esté activo. */

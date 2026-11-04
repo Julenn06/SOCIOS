@@ -4,6 +4,7 @@ import androidx.core.view.isVisible
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.textfield.TextInputLayout
 import com.julen.socios.util.CalculoComisiones
+import com.julen.socios.model.ImportesPredefinidos
 import com.julen.socios.util.parseImporte
 import com.julen.socios.util.toImporteInput
 
@@ -41,9 +42,16 @@ class OpcionesImporte(private val botones: List<MaterialButton>, private val cam
         }
     }
 
-    /** El importe en euros; el escrito a mano, redondeado a céntimos (10,555 → 10,56). */
+    /**
+     * El importe en euros; el escrito a mano, redondeado a céntimos (10,555 → 10,56). null si no es un importe o
+     * pasa de [ImportesPredefinidos.IMPORTE_MAXIMO] (un cero de más al teclearlo).
+     */
     fun elegido(): Double? {
-        if (otro.isChecked) return parseImporte(campo.editText?.text)?.let(CalculoComisiones::redondearCentimos)
+        if (otro.isChecked) {
+            return parseImporte(campo.editText?.text)
+                ?.takeIf { it <= ImportesPredefinidos.IMPORTE_MAXIMO }
+                ?.let(CalculoComisiones::redondearCentimos)
+        }
         return botones.firstOrNull { it.isChecked }?.tag as? Double
     }
 }

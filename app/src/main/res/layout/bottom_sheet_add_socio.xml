@@ -163,7 +163,8 @@
                     android:id="@+id/etCustomAmount"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:inputType="numberDecimal" />
+                    android:inputType="numberDecimal"
+                    android:maxLength="9" />
             </com.google.android.material.textfield.TextInputLayout>
 
             <!-- Semana: la visible al abrirlo; se puede cambiar, también para mover un socio de semana -->
