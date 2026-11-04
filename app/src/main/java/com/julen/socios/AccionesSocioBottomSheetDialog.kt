@@ -43,9 +43,9 @@ class AccionesSocioBottomSheetDialog :
     private fun mostrarSocio() {
         val contexto = requireContext()
         val base = CalculoComisiones.calcularBaseX2(socio.colaboracion)
-        binding.placaAcciones.background = GradientDrawable(
-            GradientDrawable.Orientation.TL_BR, coloresDegradadoSocio(contexto, socio.hecho)
-        ).apply { cornerRadius = 20 * resources.displayMetrics.density }
+        binding.marcaAcciones.background = GradientDrawable(
+            GradientDrawable.Orientation.TOP_BOTTOM, coloresDegradadoSocio(contexto, socio.hecho)
+        ).apply { cornerRadius = 2 * resources.displayMetrics.density }
         binding.tvImporteAcciones.text = socio.colaboracion.toEurosCompacto()
         binding.tvBaseAcciones.text = getString(R.string.socio_base_format, base.toEurosCompacto())
 
@@ -57,12 +57,10 @@ class AccionesSocioBottomSheetDialog :
         val estado = binding.tvEstadoAcciones
         if (socio.hecho) {
             estado.text = getString(R.string.socio_status_conseguido, base.toEurosCompacto())
-            estado.setTextColor(ContextCompat.getColor(contexto, R.color.on_primary_container))
-            estado.backgroundTintList = null
+            estado.setTextColor(ContextCompat.getColor(contexto, R.color.primary))
         } else {
             estado.setText(R.string.socio_status_pendiente)
             estado.setTextColor(ContextCompat.getColor(contexto, R.color.orange_pending))
-            estado.backgroundTintList = ContextCompat.getColorStateList(contexto, R.color.orange_container)
         }
 
         binding.tvNotasAcciones.isVisible = socio.notas.isNotBlank()

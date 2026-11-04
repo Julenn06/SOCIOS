@@ -303,20 +303,12 @@
                         android:orientation="vertical"
                         android:padding="14dp">
 
-                        <FrameLayout
-                            android:layout_width="40dp"
-                            android:layout_height="40dp"
-                            android:background="@drawable/bg_circulo"
-                            android:backgroundTint="@color/green_container">
-
-                            <ImageView
-                                android:layout_width="22dp"
-                                android:layout_height="22dp"
-                                android:layout_gravity="center"
-                                android:importantForAccessibility="no"
-                                android:src="@drawable/ic_check_circle"
-                                app:tint="@color/green_text_soft" />
-                        </FrameLayout>
+                        <ImageView
+                            android:layout_width="22dp"
+                            android:layout_height="22dp"
+                            android:importantForAccessibility="no"
+                            android:src="@drawable/ic_check_circle"
+                            app:tint="@color/green_text_soft" />
 
                         <TextView
                             style="@style/Socios.TituloFila"
@@ -350,20 +342,12 @@
                         android:orientation="vertical"
                         android:padding="14dp">
 
-                        <FrameLayout
-                            android:layout_width="40dp"
-                            android:layout_height="40dp"
-                            android:background="@drawable/bg_circulo"
-                            android:backgroundTint="@color/orange_container">
-
-                            <ImageView
-                                android:layout_width="22dp"
-                                android:layout_height="22dp"
-                                android:layout_gravity="center"
-                                android:importantForAccessibility="no"
-                                android:src="@drawable/ic_schedule"
-                                app:tint="@color/orange_text" />
-                        </FrameLayout>
+                        <ImageView
+                            android:layout_width="22dp"
+                            android:layout_height="22dp"
+                            android:importantForAccessibility="no"
+                            android:src="@drawable/ic_schedule"
+                            app:tint="@color/orange_text" />
 
                         <TextView
                             style="@style/Socios.TituloFila"
@@ -527,15 +511,17 @@
             android:insetBottom="0dp"
             android:paddingHorizontal="16dp"
             android:text="@string/action_guardar_y_otro"
-            android:textColor="@color/on_primary_container"
+            android:textColor="@color/text_main"
             android:textSize="15sp"
             android:fontFamily="@font/geist_semibold"
             android:visibility="gone"
-            app:backgroundTint="@color/primary_container"
+            app:backgroundTint="@android:color/transparent"
+            app:strokeColor="@color/stroke"
+            app:strokeWidth="1dp"
             app:cornerRadius="12dp"
             app:icon="@drawable/ic_add"
             app:iconGravity="textStart"
-            app:iconTint="@color/on_primary_container"
+            app:iconTint="@color/text_main"
             tools:visibility="visible" />
 
         <!-- Solo al editar: borra el socio (con confirmación y opción de deshacer). Para cancelar están la ✕

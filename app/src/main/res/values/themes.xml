@@ -47,17 +47,26 @@
         <item name="materialAlertDialogTheme">@style/ThemeOverlay.Socios.Dialogo</item>
     </style>
 
-    <!-- Diálogos con el título en negrita, como los paneles. -->
+    <!-- Diálogos como los paneles: título en serif, esquinas contenidas y botones en tinta (el de borrar se
+         pinta de rojo desde código). -->
     <style name="ThemeOverlay.Socios.Dialogo" parent="ThemeOverlay.Material3.MaterialAlertDialog">
         <item name="materialAlertDialogTitleTextStyle">@style/Socios.Dialogo.Titulo</item>
+        <item name="colorPrimary">@color/text_main</item>
+        <item name="shapeAppearanceCornerExtraLarge">@style/Socios.Esquinas.Dialogo</item>
         <!-- Sin el tinte verdoso de la elevación, igual que en los paneles. -->
         <item name="elevationOverlayEnabled">false</item>
     </style>
 
     <style name="Socios.Dialogo.Titulo" parent="MaterialAlertDialog.Material3.Title.Text">
         <item name="android:textColor">@color/text_main</item>
-        <item name="android:fontFamily">@font/geist_semibold</item>
-        <item name="fontFamily">@font/geist_semibold</item>
+        <item name="android:textSize">26sp</item>
+        <item name="android:fontFamily">@font/instrument_serif</item>
+        <item name="fontFamily">@font/instrument_serif</item>
+    </style>
+
+    <style name="Socios.Esquinas.Dialogo" parent="">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">18dp</item>
     </style>
 
     <style name="CustomBottomSheetDialogTheme" parent="ThemeOverlay.Material3.BottomSheetDialog">
@@ -66,9 +75,19 @@
         <item name="elevationOverlayEnabled">false</item>
     </style>
 
+    <!-- Paneles con las esquinas de arriba algo más contenidas que las de Material (28 dp). -->
     <style name="CustomBottomSheet" parent="Widget.Material3.BottomSheet.Modal">
         <item name="backgroundTint">@color/surface_card</item>
         <item name="android:elevation">8dp</item>
+        <item name="shapeAppearance">@style/Socios.Esquinas.Panel</item>
+    </style>
+
+    <style name="Socios.Esquinas.Panel" parent="">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSizeTopLeft">22dp</item>
+        <item name="cornerSizeTopRight">22dp</item>
+        <item name="cornerSizeBottomLeft">0dp</item>
+        <item name="cornerSizeBottomRight">0dp</item>
     </style>
 
     <!-- Escala tipográfica de Material con Geist. -->

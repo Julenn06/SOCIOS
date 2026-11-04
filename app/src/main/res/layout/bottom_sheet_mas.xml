@@ -41,7 +41,7 @@
                     <ImageView
                         android:layout_width="64dp"
                         android:layout_height="64dp"
-                        android:background="@drawable/bg_icono_tile"
+                        android:background="@drawable/bg_caja_tono"
                         android:elevation="0dp"
                         android:importantForAccessibility="no"
                         android:padding="3dp"

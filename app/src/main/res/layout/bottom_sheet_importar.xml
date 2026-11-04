@@ -223,11 +223,13 @@
                 android:insetBottom="0dp"
                 android:minHeight="56dp"
                 android:text="@string/action_cancel"
-                android:textColor="@color/on_primary_container"
+                android:textColor="@color/text_main"
                 android:textSize="15sp"
                 android:fontFamily="@font/geist_semibold"
-                app:backgroundTint="@color/primary_container"
-                app:cornerRadius="12dp" />
+                app:backgroundTint="@android:color/transparent"
+                app:cornerRadius="12dp"
+                app:strokeColor="@color/stroke"
+                app:strokeWidth="1dp" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnConfirmarImport"

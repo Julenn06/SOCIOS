@@ -44,7 +44,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="10dp"
             android:background="@drawable/bg_pastilla_version"
-            android:paddingHorizontal="14dp"
+            android:paddingHorizontal="12dp"
             android:paddingVertical="5dp"
             android:textColor="@color/on_primary_container"
             android:textSize="13sp"

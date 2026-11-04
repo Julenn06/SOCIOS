@@ -96,12 +96,12 @@
                 android:insetTop="0dp"
                 android:insetBottom="0dp"
                 android:paddingHorizontal="14dp"
-                android:textColor="@color/on_primary_container"
+                android:textColor="@color/bg_light"
                 android:textSize="13.5sp"
                 android:fontFamily="@font/geist_semibold"
                 android:visibility="gone"
-                app:backgroundTint="@color/primary_container"
-                app:cornerRadius="12dp"
+                app:backgroundTint="@color/text_main"
+                app:cornerRadius="10dp"
                 tools:text="Deshacer"
                 tools:visibility="visible" />
 

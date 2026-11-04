@@ -188,7 +188,7 @@
                         android:id="@+id/placaPreviewDiferencia"
                         style="@style/Socios.Fila"
                         android:layout_marginTop="16dp"
-                        android:background="@drawable/bg_icono_tile"
+                        android:background="@drawable/bg_caja_tono"
                         android:backgroundTint="@color/red_container"
                         android:padding="14dp">
 

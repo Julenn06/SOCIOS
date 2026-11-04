@@ -63,13 +63,13 @@
 
     <!-- Miniaturas del selector de tema: cada una muestra su tema, sea cual sea el actual -->
     <color name="muestra_claro_fondo">#F4F1EA</color>
-    <color name="muestra_claro_tarjeta">#FBF9F4</color>
     <color name="muestra_claro_linea">#CCC6B8</color>
     <color name="muestra_claro_acento">#1D6B4C</color>
+    <color name="muestra_claro_tinta">#1A1A17</color>
     <color name="muestra_oscuro_fondo">#121311</color>
-    <color name="muestra_oscuro_tarjeta">#1B1C19</color>
     <color name="muestra_oscuro_linea">#3A3B35</color>
     <color name="muestra_oscuro_acento">#74C9A2</color>
+    <color name="muestra_oscuro_tinta">#ECE9E1</color>
 
     <!-- Gráfico de evolución: la barra de la semana elegida en el acento y el resto en un paso más suave del
          mismo verde. -->

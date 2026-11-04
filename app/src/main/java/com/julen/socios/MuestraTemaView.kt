@@ -2,15 +2,12 @@ package com.julen.socios
 
 import android.content.Context
 import android.graphics.Canvas
-import android.graphics.LinearGradient
 import android.graphics.Paint
 import android.graphics.Path
 import android.graphics.RectF
-import android.graphics.Shader
 import android.util.AttributeSet
 import android.view.View
 import androidx.core.content.ContextCompat
-import androidx.core.graphics.ColorUtils
 import androidx.core.graphics.withClip
 import com.julen.socios.ajustes.Tema
 
@@ -31,25 +28,25 @@ class MuestraTemaView @JvmOverloads constructor(
             invalidate()
         }
 
-    private class Paleta(val fondo: Int, val tarjeta: Int, val linea: Int, val acento: Int)
+    private class Paleta(val fondo: Int, val linea: Int, val acento: Int, val tinta: Int)
 
     private val claro = Paleta(
-        color(R.color.muestra_claro_fondo), color(R.color.muestra_claro_tarjeta),
-        color(R.color.muestra_claro_linea), color(R.color.muestra_claro_acento)
+        color(R.color.muestra_claro_fondo), color(R.color.muestra_claro_linea),
+        color(R.color.muestra_claro_acento), color(R.color.muestra_claro_tinta)
     )
     private val oscuro = Paleta(
-        color(R.color.muestra_oscuro_fondo), color(R.color.muestra_oscuro_tarjeta),
-        color(R.color.muestra_oscuro_linea), color(R.color.muestra_oscuro_acento)
+        color(R.color.muestra_oscuro_fondo), color(R.color.muestra_oscuro_linea),
+        color(R.color.muestra_oscuro_acento), color(R.color.muestra_oscuro_tinta)
     )
-    private val textoCabecera = ColorUtils.setAlphaComponent(color(R.color.muestra_claro_tarjeta), 170)
 
     private val pinta = Paint(Paint.ANTI_ALIAS_FLAG)
-    private val pintaCabecera = Paint(Paint.ANTI_ALIAS_FLAG)
     private val rect = RectF()
     private val pantalla = Path()
     private val mitadOscura = Path()
-    private val radio = resources.displayMetrics.density * 10
-    private val radioPequeno = resources.displayMetrics.density * 4
+    private val densidad = resources.displayMetrics.density
+    private val radio = densidad * 10
+    private val radioPequeno = densidad * 2
+    private val pelo = densidad.coerceAtLeast(1f)
 
     private fun color(id: Int) = ContextCompat.getColor(context, id)
 
@@ -62,10 +59,6 @@ class MuestraTemaView @JvmOverloads constructor(
         mitadOscura.lineTo(w.toFloat(), h.toFloat())
         mitadOscura.lineTo(0f, h.toFloat())
         mitadOscura.close()
-        pintaCabecera.shader = LinearGradient(
-            0f, h * 0.17f, w.toFloat(), h * 0.42f,
-            color(R.color.header_gradient_start), color(R.color.header_gradient_end), Shader.TileMode.CLAMP
-        )
     }
 
     override fun onDraw(canvas: Canvas) {
@@ -81,40 +74,50 @@ class MuestraTemaView @JvmOverloads constructor(
         }
     }
 
-    /** Título, tarjeta azul del resumen, dos socios y el botón de añadir. */
+    /** Título, el neto en grande, sus tres columnas, dos socios en filas y el botón de añadir en tinta. */
     private fun dibujarPantalla(canvas: Canvas, paleta: Paleta) {
         val w = width.toFloat()
         val h = height.toFloat()
         val margen = w * 0.09f
+        val ancho = w - 2 * margen
         canvas.drawColor(paleta.fondo)
 
-        pinta.color = paleta.linea
-        rect.set(margen, h * 0.07f, w * 0.55f, h * 0.115f)
-        canvas.drawRoundRect(rect, radioPequeno, radioPequeno, pinta)
+        // Título de la barra
+        pinta.color = paleta.tinta
+        barra(canvas, margen, h * 0.07f, w * 0.52f, h * 0.105f)
 
-        rect.set(margen, h * 0.17f, w - margen, h * 0.42f)
-        canvas.drawRoundRect(rect, radioPequeno * 1.5f, radioPequeno * 1.5f, pintaCabecera)
-        pinta.color = textoCabecera
-        rect.set(margen * 1.8f, h * 0.23f, w * 0.45f, h * 0.26f)
-        canvas.drawRoundRect(rect, radioPequeno, radioPequeno, pinta)
-        rect.set(margen * 1.8f, h * 0.30f, w * 0.62f, h * 0.36f)
-        canvas.drawRoundRect(rect, radioPequeno, radioPequeno, pinta)
-
-        val altoFila = h * 0.13f
-        for (i in 0 until 2) {
-            val arriba = h * 0.48f + i * h * 0.17f
-            pinta.color = paleta.tarjeta
-            rect.set(margen, arriba, w - margen, arriba + altoFila)
-            canvas.drawRoundRect(rect, radioPequeno, radioPequeno, pinta)
-            pinta.color = paleta.acento
-            canvas.drawCircle(margen + altoFila / 2, arriba + altoFila / 2, altoFila * 0.22f, pinta)
+        // El neto, grande, y sus tres columnas con una regla encima
+        barra(canvas, margen, h * 0.18f, w * 0.58f, h * 0.27f)
+        for (i in 0 until 3) {
+            val izquierda = margen + i * ancho / 3
+            val derecha = izquierda + ancho / 3 - margen * 0.4f
             pinta.color = paleta.linea
-            rect.set(margen + altoFila, arriba + altoFila * 0.4f, w * (0.62f - i * 0.12f), arriba + altoFila * 0.6f)
-            canvas.drawRoundRect(rect, radioPequeno, radioPequeno, pinta)
+            canvas.drawRect(izquierda, h * 0.33f, derecha, h * 0.33f + pelo, pinta)
+            pinta.color = if (i == 0) paleta.tinta else paleta.linea
+            barra(canvas, izquierda, h * 0.37f, izquierda + (derecha - izquierda) * 0.7f, h * 0.40f)
         }
 
-        pinta.color = paleta.acento
-        rect.set(w - margen - w * 0.26f, h * 0.84f, w - margen, h * 0.94f)
-        canvas.drawRoundRect(rect, h, h, pinta)
+        // Dos socios: marca del estado, nombre, importe a la derecha y una línea fina debajo
+        val altoFila = h * 0.13f
+        for (i in 0 until 2) {
+            val arriba = h * 0.49f + i * altoFila
+            pinta.color = paleta.acento
+            canvas.drawRect(margen, arriba + altoFila * 0.25f, margen + pelo * 2, arriba + altoFila * 0.75f, pinta)
+            pinta.color = paleta.tinta
+            barra(canvas, margen + ancho * 0.08f, arriba + altoFila * 0.4f, w * (0.5f - i * 0.08f), arriba + altoFila * 0.6f)
+            barra(canvas, w - margen - ancho * 0.16f, arriba + altoFila * 0.4f, w - margen, arriba + altoFila * 0.6f)
+            pinta.color = paleta.linea
+            canvas.drawRect(margen, arriba + altoFila, w - margen, arriba + altoFila + pelo, pinta)
+        }
+
+        // Botón de "Nuevo socio", en tinta
+        pinta.color = paleta.tinta
+        rect.set(w - margen - w * 0.26f, h * 0.83f, w - margen, h * 0.94f)
+        canvas.drawRoundRect(rect, radioPequeno * 3, radioPequeno * 3, pinta)
+    }
+
+    private fun barra(canvas: Canvas, izquierda: Float, arriba: Float, derecha: Float, abajo: Float) {
+        rect.set(izquierda, arriba, derecha, abajo)
+        canvas.drawRoundRect(rect, radioPequeno, radioPequeno, pinta)
     }
 }
