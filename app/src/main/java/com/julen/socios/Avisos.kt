@@ -79,13 +79,12 @@ object Avisos {
         titulo: CharSequence,
         tipo: TipoAviso,
         detalle: CharSequence? = null,
-        duracionMs: Int? = null,
         anclaje: View? = null,
         @StringRes accion: Int? = null,
         alPulsarAccion: (() -> Unit)? = null
-    ): Snackbar {
+    ) {
         // Con detalle hay más que leer: un segundo más.
-        val duracion = duracionMs ?: (tipo.duracionMs + if (detalle != null) TIEMPO_DETALLE_MS else 0)
+        val duracion = tipo.duracionMs + if (detalle != null) TIEMPO_DETALLE_MS else 0
         // Un aviso que ya se está yendo no se reutiliza: el nuevo se iría con él (pasaba al deshacer un borrado).
         val anterior = visible?.get()?.takeIf { it.reutilizable(vista) }
         val actual = anterior ?: crear(vista, anclaje)
@@ -117,7 +116,6 @@ object Avisos {
         }
         // Si ya se estaba mostrando, show() solo vuelve a contar el tiempo desde ahora.
         snackbar.show()
-        return snackbar
     }
 
     private fun crear(vista: View, anclaje: View?): Visible {

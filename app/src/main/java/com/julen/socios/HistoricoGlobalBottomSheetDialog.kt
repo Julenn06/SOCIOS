@@ -3,6 +3,7 @@ package com.julen.socios
 import android.os.Bundle
 import android.view.View
 import androidx.core.view.ViewCompat
+import androidx.core.view.doOnLayout
 import androidx.core.view.isVisible
 import androidx.fragment.app.activityViewModels
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -14,7 +15,7 @@ import com.julen.socios.util.LOCALE_ES
 import com.julen.socios.util.Movimiento
 import com.julen.socios.util.NumberAnimators
 import com.julen.socios.util.descontadoConSigno
-import com.julen.socios.util.rangoSemanaConAnio
+import com.julen.socios.util.DateUtils
 import com.julen.socios.util.toCurrencyString
 import com.julen.socios.util.toEurosCompacto
 import java.time.Month
@@ -138,7 +139,7 @@ class HistoricoGlobalBottomSheetDialog :
     private fun renderMejorSemana(mejor: CalculoComisiones.SemanaHistoricaItem?) {
         binding.tarjetaMejorSemana.isVisible = mejor != null
         if (mejor == null) return
-        binding.tvMejorSemanaRango.text = requireContext().rangoSemanaConAnio(mejor.semanaKey)
+        binding.tvMejorSemanaRango.text = DateUtils.rangoCortoConAnio(mejor.semanaKey)
         binding.tvMejorSemanaDetalle.text = resumenDeSemana(mejor.resumenSemana)
         binding.tvMejorSemanaNeto.text = mejor.resumenSemana.totalNeto.toCurrencyString()
         binding.filaMejorSemana.setOnClickListener {
@@ -187,7 +188,7 @@ class HistoricoGlobalBottomSheetDialog :
             barras.mapIndexed { i, barra ->
                 GraficoNetoView.Columna(
                     etiqueta = etiquetaSemana(barra.clave),
-                    etiquetaLarga = requireContext().rangoSemanaConAnio(barra.clave),
+                    etiquetaLarga = DateUtils.rangoCortoConAnio(barra.clave),
                     neto = barra.neto,
                     separador = marcaDeAnio(barras, i)
                 )
@@ -211,9 +212,12 @@ class HistoricoGlobalBottomSheetDialog :
         binding.graficoNeto.mostrar(columnas, destacada = columnas.lastIndex, animar = animar)
         graficoDibujado = true
         periodoDelGrafico = periodo
-        binding.tvGraficoAyuda.setText(
-            if (binding.graficoNeto.sePuedeDesplazar) R.string.grafico_ayuda_desplazar else R.string.grafico_ayuda
-        )
+        // Cuando el gráfico ya tiene su ancho (al abrir el panel aún no lo tiene): solo así se sabe si caben todas.
+        binding.graficoNeto.doOnLayout {
+            binding.tvGraficoAyuda.setText(
+                if (binding.graficoNeto.sePuedeDesplazar) R.string.grafico_ayuda_desplazar else R.string.grafico_ayuda
+            )
+        }
         val media = binding.graficoNeto.media
         binding.tvGraficoMedia.isVisible = media != null
         binding.tvGraficoMedia.text = media?.let { getString(R.string.grafico_media, it.toEurosCompacto()) }
@@ -258,7 +262,7 @@ class HistoricoGlobalBottomSheetDialog :
         return FilaHistorico(
             id = item.semanaKey,
             etiqueta = etiquetaSemana(item.semanaKey),
-            titulo = requireContext().rangoSemanaConAnio(item.semanaKey),
+            titulo = DateUtils.rangoCortoConAnio(item.semanaKey),
             detalle = conDescontado(resumenDeSemana(r), r.descontado),
             neto = r.totalNeto,
             irpf = r.retencionIrpf,

@@ -76,7 +76,9 @@ object BackupCsv {
             if (campos.all { it.isBlank() }) continue
 
             val primero = campos.first().trim()
-            if (campos.size == 1 && primero.startsWith("#")) {
+            // Las hojas de cálculo rellenan con comas las filas cortas al guardar en CSV ("# COBROS,,,,"): la
+            // línea sigue siendo de sección si lo que hay detrás está vacío.
+            if (primero.startsWith("#") && campos.drop(1).all { it.isBlank() }) {
                 // La línea de la versión no cambia de sección: se lee igual cualquier versión.
                 if (PATRON_VERSION.matches(primero)) continue
                 seccion = when {
@@ -108,7 +110,7 @@ object BackupCsv {
                     semanaKey = campos[4].trim(),
                     nombreSocio = campos.getOrNull(5),
                     notas = campos.getOrNull(6),
-                    timestamp = campos.getOrNull(7)?.trim()?.toLongOrNull()
+                    timestamp = campos.getOrNull(7)?.let(::parseHora)
                 )
 
                 Seccion.BONOS -> bonos += BonoRegaloDto(
@@ -174,6 +176,12 @@ object BackupCsv {
         }
         if (campo.isNotEmpty() || campos.isNotEmpty()) cerrarRegistro()
         return registros
+    }
+
+    /** La hora de alta del socio; también como la deja Excel al guardar un número largo ("1.772E+12"). */
+    private fun parseHora(texto: String): Long? {
+        val limpio = texto.trim()
+        return limpio.toLongOrNull() ?: limpio.toBigDecimalOrNull()?.takeIf { it.signum() >= 0 }?.toLong()
     }
 
     private fun parseBooleano(texto: String): Boolean? = when (texto.trim().lowercase()) {

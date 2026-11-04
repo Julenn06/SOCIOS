@@ -17,8 +17,8 @@ import java.util.Locale
  */
 object ReparacionSemanaKeys {
 
-    /** [timestamp] null: no se sabe cuándo se creó, así que solo se corrige si la clave es imposible. */
-    data class SocioRef(val id: String, val semanaKey: String, val timestamp: Long?)
+    /** Un socio de la base de datos antigua: [timestamp] es cuándo se apuntó (la columna nunca es nula). */
+    data class SocioRef(val id: String, val semanaKey: String, val timestamp: Long)
 
     data class Resultado(
         /** id del socio → clave corregida. */
@@ -33,9 +33,7 @@ object ReparacionSemanaKeys {
         zona: ZoneId = ZoneId.systemDefault()
     ): Resultado {
         val sociosCorregidos = socios.mapNotNull { socio ->
-            val corregida = socio.timestamp?.let { claveCorregida(socio.semanaKey, it, zona) }
-                ?: claveImposibleCorregida(socio.semanaKey)
-            corregida?.let { socio.id to it }
+            claveCorregida(socio.semanaKey, socio.timestamp, zona)?.let { socio.id to it }
         }.toMap()
 
         // Un bono no tiene fecha propia: se mueve si es una clave imposible, o si todos los socios

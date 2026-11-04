@@ -70,10 +70,8 @@ object CalculoComisiones {
     data class ResumenCalculo(
         val totalSociosRegistrados: Int,
         val totalSociosHechos: Int,
-        val sumaColaboracionesBase: Double, // Suma de cuotas
         val gananciasBaseX2: Double,        // Suma de cuotas x2
         val bonusSemanal: Double,           // Bonus total acumulado (automático o ajustado)
-        val bonusAutomatico: Double,        // Bonus que correspondería sin ajuste manual
         val esBonoRegaloAplicado: Boolean,
         val totalBruto: Double,             // Base x2 + Bonus
         val porcentajeIrpf: Double,         // Porcentaje de IRPF aplicado a la semana
@@ -180,10 +178,8 @@ object CalculoComisiones {
         return ResumenCalculo(
             totalSociosRegistrados = socios.size,
             totalSociosHechos = countHechos,
-            sumaColaboracionesBase = sumaCuotas,
             gananciasBaseX2 = baseX2,
             bonusSemanal = bonusFinal,
-            bonusAutomatico = bonusAuto,
             esBonoRegaloAplicado = bonoAplicado != null,
             totalBruto = bruto,
             porcentajeIrpf = porcentajeIrpf,

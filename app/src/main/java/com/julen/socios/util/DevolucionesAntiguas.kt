@@ -5,8 +5,9 @@ import com.julen.socios.model.Socio
 
 /**
  * La versión 1.9.0 guardaba lo descontado por devoluciones (en bruto, antes del IRPF) en lugar de lo cobrado.
- * Esto lo pasa al neto que salía con esas cuentas, para que al actualizar (o al importar una copia de esa
- * versión) cada semana siga mostrando el mismo neto.
+ * Esto lo pasa al neto que salía con esas cuentas, para que al actualizar la base de datos (Migracion5a6) cada
+ * semana siga mostrando el mismo neto. Las devoluciones de una copia de esa versión no se importan: se cuentan
+ * como descartadas.
  */
 object DevolucionesAntiguas {
 

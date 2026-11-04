@@ -1,6 +1,7 @@
 package com.julen.socios
 
 import android.annotation.SuppressLint
+import android.content.ActivityNotFoundException
 import android.content.ClipData
 import android.content.Intent
 import android.os.Bundle
@@ -171,8 +172,13 @@ class MainActivity : AppCompatActivity() {
         when (evento) {
             is MainEvent.Mensaje -> aviso(evento.titulo.resolver(this), evento.tipo, evento.detalle?.resolver(this))
 
-            is MainEvent.CrearDocumento ->
+            is MainEvent.CrearDocumento -> try {
                 crearDocumentoLaunchers.getValue(evento.formato).launch(evento.nombreSugerido)
+            } catch (e: ActivityNotFoundException) {
+                // Sin selector de archivos (desactivado en algunos móviles): se olvida la exportación pendiente.
+                viewModel.onDocumentoCreado(null)
+                aviso(getString(R.string.msg_sin_selector_archivos), TipoAviso.ERROR)
+            }
 
             is MainEvent.Compartir -> {
                 val intent = Intent(Intent.ACTION_SEND).apply {
@@ -187,7 +193,11 @@ class MainActivity : AppCompatActivity() {
 
             // Cualquier tipo: muchos gestores de archivos marcan los .json y .csv como "octet-stream" y,
             // filtrando por tipo, saldrían en gris. Si no es una copia válida, la importación lo dice.
-            is MainEvent.SeleccionarArchivoImport -> abrirArchivoLaunchers.getValue(evento.formato).launch("*/*")
+            is MainEvent.SeleccionarArchivoImport -> try {
+                abrirArchivoLaunchers.getValue(evento.formato).launch("*/*")
+            } catch (e: ActivityNotFoundException) {
+                aviso(getString(R.string.msg_sin_selector_archivos), TipoAviso.ERROR)
+            }
 
             is MainEvent.SocioEliminado -> aviso(
                 getString(R.string.msg_socio_deleted),

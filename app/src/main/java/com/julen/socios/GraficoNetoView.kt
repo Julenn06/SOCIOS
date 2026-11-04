@@ -100,6 +100,7 @@ class GraficoNetoView @JvmOverloads constructor(
         columnas = nuevas
         anchoEtiqueta = (nuevas.maxOfOrNull { pinturas.etiqueta.measureText(it.etiqueta) } ?: 0f) + 6 * densidad
         this.destacada = destacada
+        medirArea()
         media = nuevas.filter { it.neto != 0.0 }.takeIf { it.size >= 2 }
             ?.let { conDatos -> CalculoComisiones.redondearCentimos(conDatos.sumOf { it.neto } / conDatos.size) }
         if (!mismas) {
@@ -125,6 +126,11 @@ class GraficoNetoView @JvmOverloads constructor(
         setMeasuredDimension(getDefaultSize(suggestedMinimumWidth, widthMeasureSpec), alto)
     }
 
+    override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
+        super.onSizeChanged(w, h, oldw, oldh)
+        medirArea()
+    }
+
     override fun onDetachedFromWindow() {
         animacion?.cancel()
         scroller.forceFinished(true)
@@ -143,6 +149,16 @@ class GraficoNetoView @JvmOverloads constructor(
 
     private var areaIzquierda = 0f
     private var areaDerecha = 0f
+
+    /**
+     * Dónde van las columnas: todo el ancho menos la escala de la derecha. Se calcula al cambiar de tamaño o de
+     * datos, no solo al dibujar: así [sePuedeDesplazar] acierta antes del primer dibujo.
+     */
+    private fun medirArea() {
+        if (width == 0 || columnas.isEmpty()) return
+        areaIzquierda = paddingLeft.toFloat()
+        areaDerecha = width - paddingRight - anchoEscala(escala())
+    }
 
     private val anchoArea: Float get() = areaDerecha - areaIzquierda
 

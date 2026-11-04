@@ -161,6 +161,33 @@ class BackupCsvTest {
     }
 
     @Test
+    fun unaHojaGuardadaDesdeUnaHojaDeCalculoConservaBonusYCobros() {
+        // Sheets, LibreOffice y Excel rellenan las filas cortas con comas al guardar en CSV.
+        val datos = DatosBackup(
+            socios = listOf(Socio(id = "s1", colaboracion = 20.0, dia = DiaSemana.LUNES, semanaKey = "2026-W10", timestamp = 1)),
+            bonosRegalo = listOf(BonoRegaloInfo("2026-W10", activo = true, esMontoFijo = true, monto = 50.0, nota = "")),
+            cobros = listOf(CobroInfo("2026-W10", 284.69, ""))
+        )
+        val out = ByteArrayOutputStream()
+        BackupCsv.escribir(datos, out)
+        val rellenado = out.toString(Charsets.UTF_8.name()).lines().joinToString("\n") { linea ->
+            if (linea.isEmpty()) linea else linea + ",".repeat((7 - linea.count { it == ',' }).coerceAtLeast(0))
+        }
+
+        val resultado = leer(rellenado)
+
+        assertEquals(datos, resultado.datos)
+        assertEquals(0, resultado.descartados)
+    }
+
+    @Test
+    fun laHoraEnNotacionCientificaDeExcelNoSePierde() {
+        val resultado = leer("# SOCIOS\ns1,20,true,1,2026-W10,,,1.772E+12\n")
+
+        assertEquals(1_772_000_000_000, resultado.datos.socios.single().timestamp)
+    }
+
+    @Test
     fun parserRespetaComillasEntreLineas() {
         val registros = BackupCsv.parsearRegistros("a,\"b\nc\",\"d\"\"e\"\nf,g")
 

@@ -15,7 +15,7 @@ class BusquedaSociosTest {
         Socio(id = "ana", colaboracion = 15.0, dia = DiaSemana.JUEVES, semanaKey = "2026-W41", nombreSocio = "Ana")
     )
 
-    private fun buscar(texto: String) = BusquedaSocios.filtrar(socios, texto).map { it.id }
+    private fun buscar(texto: String) = BusquedaSocios.filtrar(BusquedaSocios.indexar(socios), texto).map { it.id }
 
     @Test
     fun noDistingueTildesNiMayusculas() {

@@ -36,8 +36,6 @@ object BusquedaSocios {
             .map { it.first }
     }
 
-    fun filtrar(socios: List<Socio>, texto: String): List<Socio> = filtrar(indexar(socios), texto)
-
     internal fun normalizar(texto: String): String =
         Normalizer.normalize(texto, Normalizer.Form.NFD)
             .replace(MARCAS_DIACRITICAS, "")

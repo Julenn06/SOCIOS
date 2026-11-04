@@ -7,7 +7,7 @@ import java.io.IOException
 import kotlinx.serialization.SerializationException
 
 /** Error cuyo mensaje ya está escrito para el usuario: se muestra tal cual. */
-class ErrorParaUsuario(mensaje: String, causa: Throwable? = null) : IOException(mensaje, causa)
+class ErrorParaUsuario(mensaje: String) : IOException(mensaje)
 
 /**
  * Explica [e] al usuario. Los mensajes propios se muestran tal cual; los del sistema, que suelen estar en

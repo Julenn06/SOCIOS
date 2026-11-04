@@ -12,7 +12,6 @@ import androidx.core.view.isVisible
 import com.julen.socios.databinding.ActivityMainBinding
 import com.julen.socios.util.DateUtils
 import com.julen.socios.util.Movimiento
-import com.julen.socios.util.rangoSemanaConAnio
 import com.julen.socios.util.semanaRelativa
 import java.time.LocalDate
 import kotlin.math.sign
@@ -62,7 +61,7 @@ class SelectorSemana(
             // El año solo si no es el de ahora: "19–23 oct" cabe hasta en pantallas estrechas con "Hoy" al lado.
             val delAnioActual = state.semanaKey.take(4) == DateUtils.getSemanaKey(0).take(4)
             binding.tvRangoSemana.text =
-                if (delAnioActual) DateUtils.rangoCorto(state.semanaKey) else context.rangoSemanaConAnio(state.semanaKey)
+                if (delAnioActual) DateUtils.rangoCorto(state.semanaKey) else DateUtils.rangoCortoConAnio(state.semanaKey)
             binding.tvSemanaSubtitulo.text = context.semanaRelativa(distancia, R.string.subtitle_current_week)
             pintarMomento(distancia)
             // A la vez que el texto: mientras la tarjeta cambia de tamaño, Android no recoloca lo de dentro, y un

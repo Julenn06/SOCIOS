@@ -15,7 +15,6 @@
     <string name="title_app_bar_corto">Socios</string>
     <string name="btn_hoy">Hoy</string>
     <string name="subtitle_current_week">Semana actual</string>
-    <string name="rango_semana_anio">%1$s %2$s</string>
     <plurals name="semana_pasada">
         <item quantity="one">Hace %d semana</item>
         <item quantity="many">Hace %d semanas</item>
@@ -65,6 +64,7 @@
     <string name="actualizacion_disponible_detalle">Ahora tienes la %s</string>
     <string name="action_actualizar">Actualizar</string>
     <string name="msg_sin_navegador">No hay ninguna app para abrir el enlace</string>
+    <string name="msg_sin_selector_archivos">No hay ninguna app para elegir archivos</string>
 
     <!-- Descarga e instalación de una versión nueva -->
     <string name="descarga_titulo">Descargando la versión %s</string>

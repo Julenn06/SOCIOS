@@ -37,12 +37,12 @@ object Movimiento {
      * Lo que cambia de tamaño, aparece o desaparece, todo a la vez. AutoTransition lo hace por turnos
      * (primero desvanece, luego redimensiona y al final muestra) y deja un instante vacío entre medias.
      */
-    fun transicionSuave(context: Context, duracion: Long = MEDIA_MS): Transition =
+    fun transicionSuave(context: Context): Transition =
         TransitionSet()
             .setOrdering(TransitionSet.ORDERING_TOGETHER)
             .addTransition(ChangeBounds())
             .addTransition(Fade())
-            .setDuration(duracion)
+            .setDuration(MEDIA_MS)
             .setInterpolator(curva(context))
 
     /** Lleva un número de [desde] a [hasta] con la curva de la app (la altura de las barras, el avance del bonus…). */
@@ -55,8 +55,8 @@ object Movimiento {
         }
 
     /** Anima los cambios que se hagan a continuación dentro de [raiz] (mostrar, ocultar, cambiar de tamaño). */
-    fun animarCambios(raiz: ViewGroup, duracion: Long = MEDIA_MS) {
-        if (activas()) TransitionManager.beginDelayedTransition(raiz, transicionSuave(raiz.context, duracion))
+    fun animarCambios(raiz: ViewGroup) {
+        if (activas()) TransitionManager.beginDelayedTransition(raiz, transicionSuave(raiz.context))
     }
 
     /**

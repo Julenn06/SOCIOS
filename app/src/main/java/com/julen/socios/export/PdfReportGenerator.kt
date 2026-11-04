@@ -23,7 +23,7 @@ import com.julen.socios.util.EscalaGrafico
 import com.julen.socios.util.LOCALE_ES
 import com.julen.socios.util.descontadoConSigno
 import com.julen.socios.util.nombreVisible
-import com.julen.socios.util.rangoSemanaConAnio
+import com.julen.socios.util.DateUtils
 import com.julen.socios.util.toCurrencyString
 import com.julen.socios.util.toEurosCompacto
 import java.io.OutputStream
@@ -140,7 +140,7 @@ class PdfReportGenerator(private val context: Context) {
 
         private fun tituloPeriodo(): String = when (alcance) {
             AlcanceExport.Historico -> context.getString(R.string.export_titulo_historico)
-            is AlcanceExport.Semanas -> alcance.semanaKeys.singleOrNull()?.let { context.rangoSemanaConAnio(it) }
+            is AlcanceExport.Semanas -> alcance.semanaKeys.singleOrNull()?.let { DateUtils.rangoCortoConAnio(it) }
                 ?: context.resources.getQuantityString(R.plurals.export_titulo_semanas, alcance.semanaKeys.size, alcance.semanaKeys.size)
         }
 
@@ -330,7 +330,7 @@ class PdfReportGenerator(private val context: Context) {
             rect.set(MARGEN, y, ANCHO - MARGEN, y + ALTO_SEMANA - 4f)
             relleno.color = GRIS_FONDO
             canvas.drawRoundRect(rect, 8f, 8f, relleno)
-            val fechas = context.rangoSemanaConAnio(semana.semanaKey)
+            val fechas = DateUtils.rangoCortoConAnio(semana.semanaKey)
             val titulo = if (continuacion) context.getString(R.string.pdf_semana_continuacion, fechas) else fechas
             escribir(titulo, MARGEN + 10f, y + 15f, 9.5f, TEXTO, fuenteFuerte)
             val resumen = context.getString(

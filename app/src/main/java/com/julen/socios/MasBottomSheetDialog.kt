@@ -3,7 +3,10 @@ package com.julen.socios
 import android.content.res.ColorStateList
 import android.graphics.Color
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.view.View
+import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import androidx.core.widget.TextViewCompat
@@ -69,12 +72,14 @@ class MasBottomSheetDialog : PanelInferior<BottomSheetMasBinding>(BottomSheetMas
     }
 
     private fun elegirTema(tema: Tema) {
-        if (tema == preferenciasTema.tema) return
+        // Se compara también con el que está aplicado: si se guardó pero no llegó a aplicarse, volver a tocarlo lo aplica.
+        if (tema == preferenciasTema.tema && tema.modoNoche == AppCompatDelegate.getDefaultNightMode()) return
         HapticUtils.performClick(binding.root)
         opcionesTema.forEach { (t, opcion) -> opcion.root.isChecked = t == tema }
         preferenciasTema.tema = tema
-        // Un instante para que se vea la marca antes de que la pantalla se recree con los colores nuevos.
-        binding.root.postDelayed({ if (bindingSiExiste != null) tema.aplicar() }, RETRASO_TEMA_MS)
+        // Un instante para que se vea la marca antes de que la pantalla se recree con los colores nuevos. En el
+        // hilo principal y no en la vista: si el panel se cierra antes, el tema elegido se aplica igual.
+        Handler(Looper.getMainLooper()).postDelayed(tema::aplicar, RETRASO_TEMA_MS)
     }
 
     private fun mostrarEstadoVersion(estado: EstadoVersion) {

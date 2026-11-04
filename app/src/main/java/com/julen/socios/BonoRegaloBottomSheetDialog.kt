@@ -10,7 +10,7 @@ import com.julen.socios.model.BonoRegaloInfo
 import com.julen.socios.model.ImportesPredefinidos
 import com.julen.socios.util.AnimationExtensions
 import com.julen.socios.util.HapticUtils
-import com.julen.socios.util.rangoSemanaConAnio
+import com.julen.socios.util.DateUtils
 
 /** Ajuste manual del bonus de una semana: sustituye al automático o se suma a él. */
 class BonoRegaloBottomSheetDialog : PanelInferior<BottomSheetBonoRegaloBinding>(BottomSheetBonoRegaloBinding::inflate) {
@@ -28,7 +28,7 @@ class BonoRegaloBottomSheetDialog : PanelInferior<BottomSheetBonoRegaloBinding>(
         super.onViewCreated(view, savedInstanceState)
         val args = requireArguments()
 
-        binding.tvSubtituloBonoRegalo.text = requireContext().rangoSemanaConAnio(semanaKey)
+        binding.tvSubtituloBonoRegalo.text = DateUtils.rangoCortoConAnio(semanaKey)
         montos = crearOpcionesImporte(
             binding.gridMontos, ImportesPredefinidos.BONUS, binding.tilCustomMonto, binding.contenidoBono
         )

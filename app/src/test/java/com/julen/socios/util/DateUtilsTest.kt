@@ -110,4 +110,14 @@ class DateUtilsTest {
         assertEquals("sept 2026", DateUtils.mesConAnio("2026-W39"))
         assertEquals("no-es-clave", DateUtils.mesConAnio("no-es-clave"))
     }
+
+    @Test
+    fun elRangoConAnioLlevaElAnioDeSuViernes() {
+        // 2026-W53 va del lunes 28 de diciembre de 2026 al viernes 1 de enero de 2027.
+        assertEquals("28 dic – 1 ene 2027", DateUtils.rangoCortoConAnio("2026-W53"))
+        // 2026-W01 empieza en diciembre de 2025 y acaba en 2026.
+        assertEquals("29 dic – 2 ene 2026", DateUtils.rangoCortoConAnio("2026-W01"))
+        assertEquals("12–16 oct 2026", DateUtils.rangoCortoConAnio("2026-W42"))
+        assertEquals("no-es-clave", DateUtils.rangoCortoConAnio("no-es-clave"))
+    }
 }

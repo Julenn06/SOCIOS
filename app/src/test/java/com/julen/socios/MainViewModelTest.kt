@@ -104,6 +104,7 @@ class MainViewModelTest {
         backgroundScope.launch(dispatcher) { viewModel.uiState.collect {} }
         backgroundScope.launch(dispatcher) { viewModel.historicoGlobal.collect {} }
         backgroundScope.launch(dispatcher) { viewModel.avisoPendientes.collect {} }
+        backgroundScope.launch(dispatcher) { viewModel.pendientesAnteriores.collect {} }
         backgroundScope.launch(dispatcher) { viewModel.events.toList(eventos) }
         return eventos
     }
@@ -394,6 +395,20 @@ class MainViewModelTest {
         assertTrue(viewModel.avisoPendientes.value.isEmpty())
         viewModel.setSocioHecho("hecho", false)
         assertEquals(listOf("anterior", "hecho"), viewModel.avisoPendientes.value.map { it.id }.sorted())
+    }
+
+    @Test
+    fun unPendienteYaDescartadoQueVuelveAEstarPendienteAvisaOtraVez() = runTest(dispatcher) {
+        socioDao.socios.value = listOf(entidad("a", DateUtils.getSemanaKey(-1, clock), hecho = false))
+        val viewModel = crearViewModel()
+        observar(viewModel)
+        viewModel.ocultarAvisoPendientes()
+        assertTrue(viewModel.avisoPendientes.value.isEmpty())
+
+        viewModel.setSocioHecho("a", true)
+        viewModel.setSocioHecho("a", false)
+
+        assertEquals(listOf("a"), viewModel.avisoPendientes.value.map { it.id })
     }
 
     @Test

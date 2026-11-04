@@ -71,7 +71,7 @@ class CalculoComisionesTest {
         )
         assertEquals(7, resumen.totalSociosRegistrados)
         assertEquals(4, resumen.totalSociosHechos)
-        assertEquals(80.0, resumen.sumaColaboracionesBase, 0.0)
+        assertEquals(160.0, resumen.gananciasBaseX2, 0.0)
         assertEquals(0.0, resumen.bonusSemanal, 0.0)
         assertEquals(1, resumen.sociosFaltantesParaSiguienteMeta)
     }
@@ -102,7 +102,6 @@ class CalculoComisionesTest {
 
         assertTrue(resumen.esBonoRegaloAplicado)
         assertEquals(140.0, resumen.bonusSemanal, 0.0)
-        assertEquals(100.0, resumen.bonusAutomatico, 0.0)
     }
 
     @Test

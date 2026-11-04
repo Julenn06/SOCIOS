@@ -18,7 +18,7 @@ import com.julen.socios.util.descontadoConSigno
 import com.julen.socios.util.etiquetaDescontado
 import com.julen.socios.model.ImportesPredefinidos
 import com.julen.socios.util.parseImporte
-import com.julen.socios.util.rangoSemanaConAnio
+import com.julen.socios.util.DateUtils
 import com.julen.socios.util.toCurrencyString
 import com.julen.socios.util.toImporteInput
 
@@ -44,7 +44,7 @@ class CobroBottomSheetDialog : PanelInferior<BottomSheetCobroBinding>(BottomShee
         val args = requireArguments()
         val tieneCobro = args.containsKey(ARG_NETO)
 
-        binding.tvSubtituloCobro.text = requireContext().rangoSemanaConAnio(semanaKey)
+        binding.tvSubtituloCobro.text = DateUtils.rangoCortoConAnio(semanaKey)
 
         // El teclado no sale al abrir: solo al tocar el campo.
         if (savedInstanceState == null) {

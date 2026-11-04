@@ -60,6 +60,8 @@ class ProgresoBonusView @JvmOverloads constructor(
     /** Socios que dibuja la barra; persigue al valor real con una animación. */
     private var mostrado = 0f
     private var animacion: ValueAnimator? = null
+    /** Hasta dónde va (o fue) la última animación de la barra. */
+    private var objetivoAnimado = -1f
 
     /** Brillo y latido del siguiente hito, de 0 a 1; null cuando no hay ninguno en marcha. */
     private var efecto: Float? = null
@@ -132,8 +134,15 @@ class ProgresoBonusView @JvmOverloads constructor(
         hitos = CalculoComisiones.tramosBonus().takeWhile { it <= fin }.filter { it > inicio }.toList()
         importes = importesDe(hitos)
 
-        animacion?.cancel()
         val objetivo = socios.toFloat()
+        // El mismo dato otra vez (otro cambio en la semana, o filtrar por día) no reinicia lo que ya se mueve.
+        if (animar && animacion?.isRunning == true && objetivoAnimado == objetivo) return
+        // Se suelta antes de cancelarla: así su final no la deja en el objetivo antiguo ni lanza el brillo, y
+        // la nueva sale de donde se ve la barra.
+        val anterior = animacion
+        animacion = null
+        anterior?.cancel()
+        objetivoAnimado = objetivo
         if (!animar || !Movimiento.activas()) {
             mostrado = objetivo
             saltos.clear()

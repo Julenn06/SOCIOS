@@ -21,7 +21,6 @@ import com.julen.socios.util.DateUtils
 import com.julen.socios.util.HapticUtils
 import com.julen.socios.util.Movimiento
 import com.julen.socios.util.NumberAnimators
-import com.julen.socios.util.rangoSemanaConAnio
 import com.julen.socios.util.semanaRelativa
 import com.julen.socios.util.setTextoAccesible
 import com.julen.socios.util.toEurosCompacto
@@ -180,7 +179,7 @@ class AddSocioBottomSheetDialog :
         } else {
             getString(R.string.add_subtitulo_semana, rango)
         }
-        binding.tvFormSemana.text = requireContext().rangoSemanaConAnio(semanaKey)
+        binding.tvFormSemana.text = DateUtils.rangoCortoConAnio(semanaKey)
         val distancia = DateUtils.semanasEntre(DateUtils.getSemanaKey(), semanaKey) ?: 0
         binding.tvFormSemanaRelativa.text = requireContext().semanaRelativa(distancia, R.string.add_semana_actual)
         binding.contenedorFormSemana.contentDescription = getString(

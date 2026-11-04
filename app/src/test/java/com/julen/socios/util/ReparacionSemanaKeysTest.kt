@@ -71,13 +71,13 @@ class ReparacionSemanaKeysTest {
     }
 
     @Test
-    fun sinFechaSoloSeCorrigenLasClavesImposibles() {
+    fun lasClavesImposiblesSeCorrigenSeaCualSeaLaFecha() {
         val resultado = ReparacionSemanaKeys.calcular(
-            socios = listOf(SocioRef("ambigua", "2025-W01", null), SocioRef("imposible", "2027-W53", null)),
+            socios = listOf(SocioRef("imposible", "2027-W53", ts("2027-01-01")), SocioRef("tarde", "2027-W53", ts("2027-03-15"))),
             bonoKeys = emptySet(),
             zona = zona
         )
-        assertEquals(mapOf("imposible" to "2026-W53"), resultado.socios)
+        assertEquals(mapOf("imposible" to "2026-W53", "tarde" to "2026-W53"), resultado.socios)
     }
 
     @Test

@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.View
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
+import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.activityViewModels
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.julen.socios.databinding.BottomSheetExportImportBinding
@@ -37,6 +38,9 @@ class ExportImportBottomSheetDialog :
 
     /** null hasta que se conocen las semanas disponibles y se elige la selección inicial. */
     private var semanasSeleccionadas: MutableSet<String>? = null
+
+    /** La lista para elegir semanas mientras está abierta: una sola a la vez, y se cierra con el panel. */
+    private var dialogoSemanas: AlertDialog? = null
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -157,7 +161,14 @@ class ExportImportBottomSheetDialog :
             resources.getQuantityString(R.plurals.export_semanas, semanasDisponibles.size, semanasDisponibles.size)
     }
 
+    override fun onDestroyView() {
+        dialogoSemanas?.dismiss()
+        dialogoSemanas = null
+        super.onDestroyView()
+    }
+
     private fun mostrarDialogoSeleccionarSemanas() {
+        if (dialogoSemanas?.isShowing == true) return
         val semanas = semanasDisponibles
         if (semanas.isEmpty()) {
             Avisos.mostrar(binding.root, getString(R.string.msg_sin_semanas), TipoAviso.INFO)
@@ -170,13 +181,14 @@ class ExportImportBottomSheetDialog :
         }.toTypedArray()
         val checkedItems = BooleanArray(semanas.size) { i -> semanas[i] in seleccion }
 
-        MaterialAlertDialogBuilder(requireContext())
+        dialogoSemanas = MaterialAlertDialogBuilder(requireContext())
             .setTitle(R.string.export_dialogo_semanas_titulo)
             .setMultiChoiceItems(itemsText, checkedItems) { _, which, isChecked ->
                 if (isChecked) seleccion.add(semanas[which]) else seleccion.remove(semanas[which])
                 actualizarDetallesAlcance()
             }
             .setPositiveButton(R.string.action_accept, null)
+            .setOnDismissListener { dialogoSemanas = null }
             .show()
     }
 

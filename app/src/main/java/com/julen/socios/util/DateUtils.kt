@@ -97,6 +97,15 @@ object DateUtils {
     }
 
     /**
+     * [rangoCorto] con el año del viernes: "12–16 oct 2026", "28 dic – 1 ene 2027". No con el de la clave: la
+     * semana 53 de 2026 acaba en 2027. La propia clave si no es válida.
+     */
+    fun rangoCortoConAnio(semanaKey: String): String {
+        val viernes = lunesDeSemanaKey(semanaKey)?.plusDays(4) ?: return semanaKey
+        return "${rangoCorto(semanaKey)} ${viernes.year}"
+    }
+
+    /**
      * Mes y año de la semana [semanaKey], ej. "oct 2026": el de su jueves, como al agrupar el histórico por meses.
      * La propia clave si no es válida.
      */

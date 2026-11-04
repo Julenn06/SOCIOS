@@ -163,17 +163,22 @@ class MainViewModel(
     /** Todos los socios, del más reciente al más antiguo, para buscar en el histórico. */
     val todosLosSocios: StateFlow<List<Socio>> = sociosDeTodasLasSemanas.mientrasSeObserve(emptyList())
 
+    private val pendientesAnterioresDeLaBase: Flow<List<Socio>> =
+        semanaActual.flatMapLatest { socioRepository.getPendientesAnterioresFlow(it) }
+
     /** Socios que siguen pendientes en semanas anteriores a la actual, de la más reciente a la más antigua. */
-    val pendientesAnteriores: StateFlow<List<Socio>> = semanaActual
-        .flatMapLatest { socioRepository.getPendientesAnterioresFlow(it) }
-        .mientrasSeObserve(emptyList())
+    val pendientesAnteriores: StateFlow<List<Socio>> = pendientesAnterioresDeLaBase.mientrasSeObserve(emptyList())
 
     /**
      * Los pendientes anteriores mientras haya alguno que el usuario no haya descartado; vacío si ya cerró el
-     * aviso con estos mismos. Un pendiente nuevo (o que vuelve a estar pendiente) hace que salga otra vez.
+     * aviso con estos mismos. Un pendiente nuevo (o que vuelve a estar pendiente) hace que salga otra vez: el
+     * que deja de estar pendiente se olvida de los descartados. Se lee de la base de datos y no de
+     * [pendientesAnteriores], cuya lista vacía inicial haría olvidar todos los descartados.
      */
     val avisoPendientes: StateFlow<List<Socio>> =
-        combine(pendientesAnteriores, preferencias.pendientesOcultos) { pendientes, ocultos ->
+        combine(pendientesAnterioresDeLaBase, preferencias.pendientesOcultos) { pendientes, ocultos ->
+            val ids = pendientes.mapTo(HashSet()) { it.id }
+            if (!ids.containsAll(ocultos)) preferencias.ocultarPendientes(ocultos intersect ids)
             pendientes.takeIf { lista -> lista.any { it.id !in ocultos } }.orEmpty()
         }.mientrasSeObserve(emptyList())
 
@@ -253,7 +258,7 @@ class MainViewModel(
     }
 
     /** Cierra el aviso de pendientes de semanas pasadas hasta que aparezca uno nuevo. */
-    fun ocultarAvisoPendientes() = preferencias.ocultarPendientes(pendientesAnteriores.value.map { it.id }.toSet())
+    fun ocultarAvisoPendientes() = preferencias.ocultarPendientes(avisoPendientes.value.mapTo(HashSet()) { it.id })
 
     fun eliminarSocio(socio: Socio) = lanzar {
         socioRepository.deleteSocio(socio.id)
