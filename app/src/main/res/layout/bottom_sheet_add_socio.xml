@@ -44,8 +44,9 @@
                         android:layout_height="wrap_content"
                         android:text="@string/title_add_socio"
                         android:textColor="@color/text_main"
-                        android:textSize="24sp"
-                        android:fontFamily="@font/geist_semibold" />
+                        android:includeFontPadding="false"
+                        android:textSize="30sp"
+                        android:fontFamily="@font/instrument_serif" />
 
                     <TextView
                         android:id="@+id/tvSubtituloSemana"
@@ -97,13 +98,15 @@
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="2dp"
-                            android:autoSizeMaxTextSize="38sp"
-                            android:autoSizeMinTextSize="18sp"
+                            android:autoSizeMaxTextSize="50sp"
+                            android:autoSizeMinTextSize="22sp"
                             android:autoSizeTextType="uniform"
+                            android:includeFontPadding="false"
+                            android:letterSpacing="-0.02"
                             android:maxLines="1"
                             android:textColor="@android:color/white"
-                            android:textSize="38sp"
-                            android:fontFamily="@font/geist_semibold"
+                            android:textSize="50sp"
+                            android:fontFamily="@font/instrument_serif"
                             tools:text="+40,00 €" />
 
                         <TextView
@@ -529,7 +532,7 @@
             android:fontFamily="@font/geist_semibold"
             android:visibility="gone"
             app:backgroundTint="@color/primary_container"
-            app:cornerRadius="16dp"
+            app:cornerRadius="12dp"
             app:icon="@drawable/ic_add"
             app:iconGravity="textStart"
             app:iconTint="@color/on_primary_container"
@@ -551,7 +554,7 @@
             android:textColor="@color/red_text"
             android:textSize="15sp"
             android:fontFamily="@font/geist_semibold"
-            app:cornerRadius="16dp"
+            app:cornerRadius="12dp"
             app:icon="@drawable/ic_delete"
             app:iconGravity="textStart"
             app:iconTint="@color/red_text"
@@ -559,7 +562,7 @@
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnGuardarSocio"
-            style="@style/Widget.Material3.Button"
+            style="@style/Socios.BotonPrincipal"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:minHeight="56dp"
@@ -569,7 +572,7 @@
             android:text="@string/action_save_socio"
             android:textSize="15sp"
             android:fontFamily="@font/geist_semibold"
-            app:cornerRadius="16dp"
+            app:cornerRadius="12dp"
             app:icon="@drawable/ic_check"
             app:iconGravity="textStart" />
     </LinearLayout>

@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Bloque verde bosque de los paneles (Más, Histórico, Importar): un color liso. Sin brillos, grano ni
-     degradado: el bloque ya destaca por contraste con el panel claro. -->
+<!-- Bloque de tinta de los paneles: un color plano, sin degradado, sin luces y sin grano. -->
 <shape xmlns:android="http://schemas.android.com/apk/res/android"
     android:shape="rectangle">
     <solid android:color="@color/header_gradient_start" />

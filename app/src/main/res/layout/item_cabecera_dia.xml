@@ -1,33 +1,43 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Cabecera de un día en la lista de socios: el día y cuántos están hechos y cuánto suman. -->
+<!-- Cabecera de un día en la lista de socios, como el rótulo de una columna: el día en mayúsculas espaciadas
+     y, a la derecha, cuántos están hechos y cuánto suman. Una línea en tinta la separa de sus socios. -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    style="@style/Socios.Fila"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
     android:focusable="true"
-    android:paddingStart="4dp"
-    android:paddingTop="14dp"
-    android:paddingEnd="4dp"
-    android:paddingBottom="4dp">
+    android:orientation="vertical"
+    android:paddingTop="22dp">
 
-    <TextView
-        android:id="@+id/tvCabeceraDia"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_weight="1"
-        android:fontFamily="@font/geist_semibold"
-        android:importantForAccessibility="no"
-        android:textColor="@color/text_main"
-        android:textSize="14sp"
-        tools:text="Martes" />
+    <LinearLayout
+        style="@style/Socios.Fila"
+        android:paddingBottom="8dp">
 
-    <TextView
-        android:id="@+id/tvCabeceraDetalle"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:fontFamily="@font/geist_medium"
-        android:fontFeatureSettings="tnum"
-        android:importantForAccessibility="no"
-        android:textColor="@color/text_sub"
-        android:textSize="12.5sp"
-        tools:text="2 de 3 · +80 €" />
+        <TextView
+            android:id="@+id/tvCabeceraDia"
+            style="@style/Socios.Rotulo"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:importantForAccessibility="no"
+            android:textColor="@color/text_main"
+            android:textSize="11sp"
+            tools:text="Martes" />
+
+        <TextView
+            android:id="@+id/tvCabeceraDetalle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/geist_medium"
+            android:fontFeatureSettings="tnum"
+            android:importantForAccessibility="no"
+            android:textColor="@color/text_sub"
+            android:textSize="12sp"
+            tools:text="2 de 3 · +80 €" />
+    </LinearLayout>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@color/text_main"
+        android:importantForAccessibility="no" />
 </LinearLayout>

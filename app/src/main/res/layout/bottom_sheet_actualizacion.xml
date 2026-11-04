@@ -34,8 +34,8 @@
             android:accessibilityLiveRegion="polite"
             android:gravity="center"
             android:textColor="@color/text_main"
-            android:textSize="20sp"
-            android:fontFamily="@font/geist_semibold"
+            android:textSize="28sp"
+            android:fontFamily="@font/instrument_serif"
             tools:text="Descargando la versión 1.6.0" />
 
         <TextView
@@ -112,7 +112,7 @@
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnPrincipalDescarga"
-            style="@style/Widget.Material3.Button"
+            style="@style/Socios.BotonPrincipal"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"

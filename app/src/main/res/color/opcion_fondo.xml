@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Fondo de una opción seleccionable (cuotas, días): verde si está elegida. -->
+<!-- Fondo de una opción seleccionable (cuotas, días): en tinta si está elegida. -->
 <selector xmlns:android="http://schemas.android.com/apk/res/android">
-    <item android:color="@color/primary" android:state_checked="true" />
-    <item android:color="@color/surface_muted" />
+    <item android:color="@color/text_main" android:state_checked="true" />
+    <item android:color="@android:color/transparent" />
 </selector>

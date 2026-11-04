@@ -134,14 +134,14 @@ class SocioAdapter(
         private var textColorAnimator: ValueAnimator? = null
         private var fondoAnimator: ValueAnimator? = null
 
-        /** Fondo de la placa del importe: verde si está conseguido, ámbar si está pendiente. */
+        /** Color de la marca del estado: verde si está conseguido, ámbar si está pendiente. */
         private val fondoPlaca = GradientDrawable().apply {
-            orientation = GradientDrawable.Orientation.TL_BR
-            cornerRadius = 18 * binding.root.resources.displayMetrics.density
+            orientation = GradientDrawable.Orientation.TOP_BOTTOM
+            cornerRadius = 2 * binding.root.resources.displayMetrics.density
         }
 
         init {
-            binding.placaImporte.background = fondoPlaca
+            binding.marcaEstado.background = fondoPlaca
 
             // Los listeners se registran una sola vez y leen el socio actual de la lista en el momento
             // del clic. Si capturasen el socio del último bind, tras una actualización parcial (payload)
@@ -190,11 +190,13 @@ class SocioAdapter(
 
             binding.tvColaboracionAmount.text = socio.colaboracion.toEurosCompacto()
             binding.tvBaseX2Amount.text = context.getString(R.string.socio_base_format, baseX2.toEurosCompacto())
-            binding.tvDiaBadge.text = if (mostrarSemana) {
-                // Día abreviado: con la semana al lado, el nombre completo no deja sitio al estado.
-                context.getString(R.string.socio_dia_semana, socio.dia.nombreCorto, DateUtils.rangoCorto(socio.semanaKey))
-            } else {
-                socio.dia.nombreCompleto
+            // En la lista de la semana el día ya lo dicen su cabecera o el filtro: solo se escribe con la semana al
+            // lado (búsqueda y pendientes), abreviado para dejar sitio al estado.
+            binding.tvDiaBadge.isVisible = mostrarSemana
+            binding.separadorDia.isVisible = mostrarSemana
+            if (mostrarSemana) {
+                binding.tvDiaBadge.text =
+                    context.getString(R.string.socio_dia_semana, socio.dia.nombreCorto, DateUtils.rangoCorto(socio.semanaKey))
             }
 
             binding.tvNombreSocio.text = socio.nombreVisible().resolver(context)

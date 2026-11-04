@@ -26,7 +26,7 @@
                 android:id="@+id/placaAcciones"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:elevation="3dp"
+                android:elevation="0dp"
                 android:gravity="center"
                 android:minWidth="64dp"
                 android:minHeight="64dp"
