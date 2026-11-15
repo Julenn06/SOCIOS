@@ -126,6 +126,40 @@ class MigracionesTest {
     }
 
     @Test
+    fun migra7a8PasandoLosImportesACentimosSinTocarLoDemas() {
+        helper.createDatabase(nombreDb, 7).apply {
+            execSQL("INSERT INTO socios VALUES ('a', 12.345, 0, 3, '2026-W42', 'Ana', 'Llamar', 1234)")
+            execSQL("INSERT INTO socios VALUES ('b', 0.1, 1, 1, '2026-W43', '', '', 5678)")
+            execSQL("INSERT INTO bonos_regalo VALUES ('2026-W42', 1, 0, -15.5, 'Ajuste')")
+            execSQL("INSERT INTO cobros VALUES ('2026-W42', 284.69, 'Devolución')")
+            close()
+        }
+
+        val db = helper.runMigrationsAndValidate(nombreDb, 8, true, Migracion7a8)
+
+        db.query("SELECT id, colaboracionCentimos, hecho, diaSemanaId, semanaKey, nombreSocio, notas, timestamp FROM socios ORDER BY id")
+            .use { cursor ->
+                cursor.moveToFirst()
+                // El medio céntimo hacia arriba, como en la app (ROUND de SQLite daría 1234).
+                assertEquals(listOf("a", "1235", "0", "3", "2026-W42", "Ana", "Llamar", "1234"), (0..7).map(cursor::getString))
+                cursor.moveToNext()
+                assertEquals(10L, cursor.getLong(1))
+                assertEquals(5678L, cursor.getLong(7))
+            }
+        db.query("SELECT montoCentimos, nota, esMontoFijo FROM bonos_regalo").use { cursor ->
+            cursor.moveToFirst()
+            assertEquals(-1550L, cursor.getLong(0))
+            assertEquals("Ajuste", cursor.getString(1))
+            assertEquals(0, cursor.getInt(2))
+        }
+        db.query("SELECT netoCobradoCentimos, nota FROM cobros").use { cursor ->
+            cursor.moveToFirst()
+            assertEquals(28469L, cursor.getLong(0))
+            assertEquals("Devolución", cursor.getString(1))
+        }
+    }
+
+    @Test
     fun roomAbreLaBaseDeDatosMigrada() {
         helper.createDatabase(nombreDb, 3).apply {
             execSQL("INSERT INTO socios VALUES ('a', 20.0, 1, 1, '2026-W42', '', '', 0)")
@@ -134,7 +168,7 @@ class MigracionesTest {
 
         val context = InstrumentationRegistry.getInstrumentation().targetContext
         val room = Room.databaseBuilder(context, AppDatabase::class.java, nombreDb)
-            .addMigrations(Migracion3a4(zona), Migracion4a5, Migracion5a6, Migracion6a7)
+            .addMigrations(Migracion3a4(zona), Migracion4a5, Migracion5a6, Migracion6a7, Migracion7a8)
             .build()
         helper.closeWhenFinished(room)
 

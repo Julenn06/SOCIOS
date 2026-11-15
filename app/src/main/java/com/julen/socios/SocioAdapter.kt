@@ -17,6 +17,7 @@ import com.julen.socios.databinding.ItemSocioBinding
 import com.julen.socios.model.DiaSemana
 import com.julen.socios.model.Socio
 import com.julen.socios.util.CalculoComisiones
+import com.julen.socios.util.Centimos
 import com.julen.socios.util.DateUtils
 import com.julen.socios.util.HapticUtils
 import com.julen.socios.util.nombreVisible
@@ -46,7 +47,7 @@ sealed interface FilaSocio {
                         dia = dia,
                         socios = delDia.size,
                         hechos = hechos.size,
-                        ganancia = CalculoComisiones.redondearCentimos(hechos.sumOf { CalculoComisiones.calcularBaseX2(it.colaboracion) })
+                        ganancia = Centimos.suma(hechos) { CalculoComisiones.calcularBaseX2(it.colaboracion) }
                     )
                 ) + delDia.sortedBy { it.timestamp }.map(::Item)
             }

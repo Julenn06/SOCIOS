@@ -24,6 +24,7 @@ import com.julen.socios.model.ImportPreview
 import com.julen.socios.model.ResultadoLectura
 import com.julen.socios.model.Socio
 import com.julen.socios.util.CalculoComisiones
+import com.julen.socios.util.Centimos
 import com.julen.socios.util.DateUtils
 import com.julen.socios.util.UiText
 import java.time.Clock
@@ -96,7 +97,7 @@ class MainViewModelTest {
         hecho: Boolean = true,
         cuota: Double = 20.0,
         timestamp: Long = 0
-    ) = SocioEntity(id, cuota, hecho, dia.id, semana, "", "", timestamp)
+    ) = SocioEntity(id, Centimos.de(cuota), hecho, dia.id, semana, "", "", timestamp)
 
     /** Mantiene suscritos los StateFlow (WhileSubscribed) y recoge los eventos emitidos. */
     private fun TestScope.observar(viewModel: MainViewModel): MutableList<MainEvent> {
@@ -152,7 +153,7 @@ class MainViewModelTest {
 
     @Test
     fun exportarUnaSemanaSinSociosPeroConBonusManualSeDeja() = runTest(dispatcher) {
-        bonoDao.saveBonoRegalo(BonoRegaloEntity(semanaActual, activo = true, esMontoFijo = true, monto = 50.0, nota = ""))
+        bonoDao.saveBonoRegalo(BonoRegaloEntity(semanaActual, activo = true, esMontoFijo = true, montoCentimos = 5000, nota = ""))
         val viewModel = crearViewModel()
         observar(viewModel)
         val request = ExportRequest(ExportFormat.PDF, AlcanceExport.Semanas(setOf(semanaActual)))
@@ -283,7 +284,7 @@ class MainViewModelTest {
 
         assertNull(viewModel.importPendiente.value)
         assertEquals(setOf("existente", "nuevo"), socioDao.socios.value.map { it.id }.toSet())
-        assertEquals(30.0, socioDao.socios.value.first { it.id == "existente" }.colaboracion, 0.0)
+        assertEquals(3000L, socioDao.socios.value.first { it.id == "existente" }.colaboracionCentimos)
         assertEquals(
             // Solo lo que venía en la copia: "2 socios", sin "0 bonus, 0 semanas con lo cobrado".
             MainEvent.Mensaje(

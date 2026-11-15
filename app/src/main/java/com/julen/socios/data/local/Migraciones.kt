@@ -7,6 +7,7 @@ import com.julen.socios.model.BonoRegaloInfo
 import com.julen.socios.model.DiaSemana
 import com.julen.socios.model.Socio
 import com.julen.socios.util.CalculoComisiones
+import com.julen.socios.util.Centimos
 import com.julen.socios.util.DevolucionesAntiguas
 import com.julen.socios.util.ReparacionSemanaKeys
 import java.time.ZoneId
@@ -110,6 +111,62 @@ object Migracion5a6 : Migration(5, 6) {
 object Migracion6a7 : Migration(6, 7) {
     override fun migrate(db: SupportSQLiteDatabase) {
         db.execSQL("DROP TABLE IF EXISTS `irpf_vigencias`")
+    }
+}
+
+/**
+ * v7 → v8: los importes (cuota, bono y lo cobrado) se guardan en céntimos enteros ([Centimos]) en lugar de en euros
+ * con decimales. SQLite no deja cambiar el tipo de una columna: cada tabla se rehace con la columna nueva y sus filas
+ * se copian convirtiendo el importe aquí, con el mismo redondeo que usa la app (`ROUND` de SQLite redondea el valor
+ * binario y 12,345 € daría 1234 céntimos en lugar de 1235).
+ */
+object Migracion7a8 : Migration(7, 8) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        rehacer(
+            db, "socios",
+            crear = "CREATE TABLE IF NOT EXISTS `socios_v8` (`id` TEXT NOT NULL, `colaboracionCentimos` INTEGER NOT NULL, " +
+                "`hecho` INTEGER NOT NULL, `diaSemanaId` INTEGER NOT NULL, `semanaKey` TEXT NOT NULL, " +
+                "`nombreSocio` TEXT NOT NULL, `notas` TEXT NOT NULL, `timestamp` INTEGER NOT NULL, PRIMARY KEY(`id`))",
+            columnas = listOf("id", "colaboracion", "hecho", "diaSemanaId", "semanaKey", "nombreSocio", "notas", "timestamp"),
+            importe = "colaboracion"
+        )
+        db.execSQL("CREATE INDEX IF NOT EXISTS `index_socios_semanaKey` ON `socios` (`semanaKey`)")
+        rehacer(
+            db, "bonos_regalo",
+            crear = "CREATE TABLE IF NOT EXISTS `bonos_regalo_v8` (`semanaKey` TEXT NOT NULL, `activo` INTEGER NOT NULL, " +
+                "`esMontoFijo` INTEGER NOT NULL, `montoCentimos` INTEGER NOT NULL, `nota` TEXT NOT NULL, PRIMARY KEY(`semanaKey`))",
+            columnas = listOf("semanaKey", "activo", "esMontoFijo", "monto", "nota"),
+            importe = "monto"
+        )
+        rehacer(
+            db, "cobros",
+            crear = "CREATE TABLE IF NOT EXISTS `cobros_v8` (`semanaKey` TEXT NOT NULL, `netoCobradoCentimos` INTEGER NOT NULL, " +
+                "`nota` TEXT NOT NULL, PRIMARY KEY(`semanaKey`))",
+            columnas = listOf("semanaKey", "netoCobrado", "nota"),
+            importe = "netoCobrado"
+        )
+    }
+
+    /**
+     * Crea `[tabla]_v8` con [crear], copia en ella cada fila de [tabla] (sus [columnas], en el mismo orden que en la
+     * tabla nueva) pasando a céntimos la columna [importe], y la deja en lugar de la antigua.
+     */
+    private fun rehacer(db: SupportSQLiteDatabase, tabla: String, crear: String, columnas: List<String>, importe: String) {
+        db.execSQL(crear)
+        val posicionImporte = columnas.indexOf(importe)
+        val filas = db.filas("SELECT ${columnas.joinToString { "`$it`" }} FROM `$tabla`") { cursor ->
+            Array<Any?>(columnas.size) { i ->
+                when {
+                    i == posicionImporte -> Centimos.de(cursor.getDouble(i))
+                    cursor.getType(i) == Cursor.FIELD_TYPE_INTEGER -> cursor.getLong(i)
+                    else -> cursor.getString(i)
+                }
+            }
+        }
+        val huecos = columnas.joinToString { "?" }
+        filas.forEach { db.execSQL("INSERT INTO `${tabla}_v8` VALUES ($huecos)", it) }
+        db.execSQL("DROP TABLE `$tabla`")
+        db.execSQL("ALTER TABLE `${tabla}_v8` RENAME TO `$tabla`")
     }
 }
 

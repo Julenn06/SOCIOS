@@ -86,7 +86,8 @@ object CalculoComisiones {
         val tieneCobroReal: Boolean get() = netoCobrado != null
 
         /** Lo que falta de lo calculado: positivo si te han descontado, negativo si has cobrado de más. */
-        val descontado: Double get() = netoCobrado?.let { redondearCentimos(netoCalculado - it) } ?: 0.0
+        val descontado: Double
+            get() = netoCobrado?.let { Centimos.aEuros(Centimos.de(netoCalculado) - Centimos.de(it)) } ?: 0.0
     }
 
     data class SemanaHistoricaItem(
@@ -140,10 +141,10 @@ object CalculoComisiones {
                     anio = clave.first,
                     mes = clave.second,
                     sociosHechos = resumenes.sumOf { it.totalSociosHechos },
-                    bruto = redondearCentimos(resumenes.sumOf { it.totalBruto }),
-                    descontado = redondearCentimos(resumenes.sumOf { it.descontado }),
-                    irpf = redondearCentimos(resumenes.sumOf { it.retencionIrpf }),
-                    neto = redondearCentimos(resumenes.sumOf { it.totalNeto })
+                    bruto = Centimos.suma(resumenes) { it.totalBruto },
+                    descontado = Centimos.suma(resumenes) { it.descontado },
+                    irpf = Centimos.suma(resumenes) { it.retencionIrpf },
+                    neto = Centimos.suma(resumenes) { it.totalNeto }
                 )
             }
             .sortedWith(compareByDescending<ResumenPeriodo> { it.anio }.thenByDescending { it.mes ?: 0 })
@@ -157,36 +158,37 @@ object CalculoComisiones {
         val hechos = socios.filter { it.hecho }
         val countHechos = hechos.size
 
-        val sumaCuotas = redondearCentimos(hechos.sumOf { it.colaboracion })
-        val baseX2 = redondearCentimos(calcularBaseX2(sumaCuotas))
-        val bonusAuto = calcularBonusSemanal(countHechos)
+        // Todas las cuentas en céntimos enteros: sumar euros con decimales arrastra restos (ver [Centimos]).
+        val sumaCuotas = hechos.sumOf { Centimos.de(it.colaboracion) }
+        val baseX2 = sumaCuotas * 2
+        val bonusAuto = Centimos.de(calcularBonusSemanal(countHechos))
 
         val bonoAplicado = bonoRegalo?.takeIf { it.activo }
         val bonusFinal = when {
             bonoAplicado == null -> bonusAuto
-            bonoAplicado.esMontoFijo -> bonoAplicado.monto
-            else -> bonusAuto + bonoAplicado.monto
+            bonoAplicado.esMontoFijo -> Centimos.de(bonoAplicado.monto)
+            else -> bonusAuto + Centimos.de(bonoAplicado.monto)
         }
 
-        val bruto = redondearCentimos(baseX2 + bonusFinal)
-        val irpf = redondearCentimos(bruto * porcentajeIrpf / 100.0)
-        val neto = redondearCentimos(bruto - irpf)
-        val cobrado = cobro?.netoCobrado?.let(::redondearCentimos)
+        val bruto = baseX2 + bonusFinal
+        val irpf = Centimos.porcentaje(bruto, porcentajeIrpf)
+        val neto = bruto - irpf
+        val cobrado = cobro?.netoCobrado?.let(Centimos::de)
 
         val (siguienteMeta, siguienteBonus) = obtenerSiguienteMetaBonus(countHechos)
 
         return ResumenCalculo(
             totalSociosRegistrados = socios.size,
             totalSociosHechos = countHechos,
-            gananciasBaseX2 = baseX2,
-            bonusSemanal = bonusFinal,
+            gananciasBaseX2 = Centimos.aEuros(baseX2),
+            bonusSemanal = Centimos.aEuros(bonusFinal),
             esBonoRegaloAplicado = bonoAplicado != null,
-            totalBruto = bruto,
+            totalBruto = Centimos.aEuros(bruto),
             porcentajeIrpf = porcentajeIrpf,
-            retencionIrpf = irpf,
-            netoCalculado = neto,
-            netoCobrado = cobrado,
-            totalNeto = cobrado ?: neto,
+            retencionIrpf = Centimos.aEuros(irpf),
+            netoCalculado = Centimos.aEuros(neto),
+            netoCobrado = cobrado?.let(Centimos::aEuros),
+            totalNeto = Centimos.aEuros(cobrado ?: neto),
             siguienteMetaSocios = siguienteMeta,
             siguienteMetaBonus = siguienteBonus,
             sociosFaltantesParaSiguienteMeta = (siguienteMeta - countHechos).coerceAtLeast(0)
@@ -223,12 +225,12 @@ object CalculoComisiones {
         val resumenes = itemsSemanas.map { it.resumenSemana }
 
         return ResumenHistoricoGlobal(
-            totalIrpfRetenidoAcumulado = redondearCentimos(resumenes.sumOf { it.retencionIrpf }),
-            totalNetoAcumulado = redondearCentimos(resumenes.sumOf { it.totalNeto }),
-            totalBrutoAcumulado = redondearCentimos(resumenes.sumOf { it.totalBruto }),
-            totalBaseX2Acumulado = redondearCentimos(resumenes.sumOf { it.gananciasBaseX2 }),
-            totalBonusAcumulado = redondearCentimos(resumenes.sumOf { it.bonusSemanal }),
-            totalDescontadoAcumulado = redondearCentimos(resumenes.sumOf { it.descontado }),
+            totalIrpfRetenidoAcumulado = Centimos.suma(resumenes) { it.retencionIrpf },
+            totalNetoAcumulado = Centimos.suma(resumenes) { it.totalNeto },
+            totalBrutoAcumulado = Centimos.suma(resumenes) { it.totalBruto },
+            totalBaseX2Acumulado = Centimos.suma(resumenes) { it.gananciasBaseX2 },
+            totalBonusAcumulado = Centimos.suma(resumenes) { it.bonusSemanal },
+            totalDescontadoAcumulado = Centimos.suma(resumenes) { it.descontado },
             totalSociosHechosAcumulado = resumenes.sumOf { it.totalSociosHechos },
             totalSociosRegistradosAcumulado = resumenes.sumOf { it.totalSociosRegistrados },
             semanasHistoricas = itemsSemanas

@@ -19,7 +19,7 @@ class SocioDaoTest {
     private lateinit var dao: SocioDao
 
     private fun socio(id: String, semana: String, hecho: Boolean = true, timestamp: Long = 0) =
-        SocioEntity(id, 20.0, hecho, 1, semana, "", "", timestamp)
+        SocioEntity(id, 2000, hecho, 1, semana, "", "", timestamp)
 
     @Before
     fun crear() {

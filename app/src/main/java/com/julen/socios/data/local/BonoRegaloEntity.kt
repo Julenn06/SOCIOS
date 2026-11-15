@@ -3,6 +3,7 @@ package com.julen.socios.data.local
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.julen.socios.model.BonoRegaloInfo
+import com.julen.socios.util.Centimos
 
 @Entity(tableName = "bonos_regalo")
 data class BonoRegaloEntity(
@@ -10,7 +11,8 @@ data class BonoRegaloEntity(
     val semanaKey: String,
     val activo: Boolean,
     val esMontoFijo: Boolean,
-    val monto: Double,
+    /** El importe en céntimos (ver [Centimos]). */
+    val montoCentimos: Long,
     val nota: String
 ) {
     fun toBonoRegaloInfo(): BonoRegaloInfo {
@@ -18,7 +20,7 @@ data class BonoRegaloEntity(
             semanaKey = semanaKey,
             activo = activo,
             esMontoFijo = esMontoFijo,
-            monto = monto,
+            monto = Centimos.aEuros(montoCentimos),
             nota = nota
         )
     }
@@ -29,7 +31,7 @@ data class BonoRegaloEntity(
                 semanaKey = info.semanaKey,
                 activo = info.activo,
                 esMontoFijo = info.esMontoFijo,
-                monto = info.monto,
+                montoCentimos = Centimos.de(info.monto),
                 nota = info.nota
             )
         }

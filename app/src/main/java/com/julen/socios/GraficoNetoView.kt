@@ -20,6 +20,7 @@ import android.widget.OverScroller
 import androidx.core.graphics.ColorUtils
 import androidx.core.graphics.withClip
 import com.julen.socios.util.CalculoComisiones
+import com.julen.socios.util.Centimos
 import com.julen.socios.util.EscalaGrafico
 import com.julen.socios.util.HapticUtils
 import com.julen.socios.util.Movimiento
@@ -124,7 +125,7 @@ class GraficoNetoView @JvmOverloads constructor(
         prepararDatos()
         medirArea()
         media = nuevas.filter { it.neto != 0.0 }.takeIf { it.size >= 2 }
-            ?.let { conDatos -> CalculoComisiones.redondearCentimos(conDatos.sumOf { it.neto } / conDatos.size) }
+            ?.let { conDatos -> CalculoComisiones.redondearCentimos(Centimos.suma(conDatos) { it.neto } / conDatos.size) }
         if (!mismas) {
             // Otras columnas (se ha cambiado de semanas a meses, por ejemplo): se vuelve a lo más reciente.
             seleccionada = -1

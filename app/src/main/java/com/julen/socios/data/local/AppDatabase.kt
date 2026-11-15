@@ -7,7 +7,7 @@ import androidx.room.RoomDatabase
 
 @Database(
     entities = [SocioEntity::class, BonoRegaloEntity::class, CobroEntity::class],
-    version = 7,
+    version = 8,
     exportSchema = true
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -20,7 +20,7 @@ abstract class AppDatabase : RoomDatabase() {
 
         fun crear(context: Context): AppDatabase =
             Room.databaseBuilder(context.applicationContext, AppDatabase::class.java, NOMBRE)
-                .addMigrations(Migracion3a4(), Migracion4a5, Migracion5a6, Migracion6a7)
+                .addMigrations(Migracion3a4(), Migracion4a5, Migracion5a6, Migracion6a7, Migracion7a8)
                 .fallbackToDestructiveMigrationOnDowngrade(dropAllTables = true)
                 .build()
     }
