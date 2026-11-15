@@ -6,6 +6,7 @@ import com.julen.socios.actualizaciones.ComprobadorActualizaciones
 import com.julen.socios.actualizaciones.DescargadorGitHub
 import com.julen.socios.actualizaciones.GitHubReleases
 import com.julen.socios.actualizaciones.RegistroEnPreferencias
+import com.julen.socios.ajustes.Bloqueo
 import com.julen.socios.ajustes.PreferenciasTema
 import com.julen.socios.ajustes.PreferenciasUsuario
 import com.julen.socios.ajustes.PreferenciasUsuarioCompartidas
@@ -47,6 +48,7 @@ class AppContainer(context: Context) {
     )
     val descargadorActualizaciones = DescargadorGitHub(context)
     val preferenciasTema = PreferenciasTema(context)
+    val bloqueo = Bloqueo.conPreferencias(context)
     val preferenciasUsuario: PreferenciasUsuario = PreferenciasUsuarioCompartidas(context)
 
     /** Avisa (al empezar y con cada cambio) de que han cambiado datos, sin leerlos: lo que haga falta se lee después. */

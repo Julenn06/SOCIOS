@@ -12,7 +12,10 @@ import androidx.core.view.isVisible
 import androidx.core.widget.TextViewCompat
 import androidx.fragment.app.activityViewModels
 import com.julen.socios.ActualizacionesViewModel.EstadoVersion
+import androidx.biometric.BiometricManager
+import com.julen.socios.ajustes.Bloqueo
 import com.julen.socios.ajustes.Tema
+import com.julen.socios.ajustes.ocultarEnRecientesSiHaceFalta
 import com.julen.socios.databinding.BottomSheetMasBinding
 import com.julen.socios.databinding.ItemTemaBinding
 import com.julen.socios.util.AnimationExtensions
@@ -29,6 +32,16 @@ class MasBottomSheetDialog : PanelInferior<BottomSheetMasBinding>(BottomSheetMas
     private val actualizaciones: ActualizacionesViewModel by activityViewModels { ActualizacionesViewModel.Factory }
 
     private val preferenciasTema by lazy { (requireActivity().application as SociosApp).container.preferenciasTema }
+
+    private val bloqueo by lazy { (requireActivity().application as SociosApp).container.bloqueo }
+
+    /** Se pide la huella o el PIN tanto para poner el bloqueo como para quitarlo; al acertar, se cambia. */
+    private lateinit var identificacion: Identificacion
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        identificacion = Identificacion(this) { cambiarBloqueo(!bloqueo.activo) }
+    }
 
     private val opcionesTema: Map<Tema, ItemTemaBinding> by lazy {
         mapOf(Tema.SISTEMA to binding.temaSistema, Tema.CLARO to binding.temaClaro, Tema.OSCURO to binding.temaOscuro)
@@ -47,6 +60,7 @@ class MasBottomSheetDialog : PanelInferior<BottomSheetMasBinding>(BottomSheetMas
         ponerDebajoConLetraGrande(binding.btnEstadoVersion, binding.columnaEstadoVersion)
 
         configurarTemas()
+        configurarBloqueo()
 
         mientrasSeVea { actualizaciones.estadoVersion.collect(::mostrarEstadoVersion) }
     }
@@ -69,6 +83,44 @@ class MasBottomSheetDialog : PanelInferior<BottomSheetMasBinding>(BottomSheetMas
             opcion.root.setOnClickListener { elegirTema(tema) }
             AnimationExtensions.setupPressScaleAnimation(opcion.root)
         }
+    }
+
+    private fun configurarBloqueo() {
+        mostrarBloqueo()
+        binding.cardBloqueo.setOnClickListener {
+            HapticUtils.performClick(it)
+            val disponibilidad = Bloqueo.disponibilidad(requireContext())
+            // Quitarlo siempre se puede (si el móvil ya no tiene bloqueo, sin pedir nada); ponerlo, solo si hay con qué.
+            when {
+                disponibilidad == BiometricManager.BIOMETRIC_SUCCESS -> identificacion.pedir(
+                    getString(R.string.bloqueo_titulo),
+                    getString(if (bloqueo.activo) R.string.bloqueo_prompt_desactivar else R.string.bloqueo_prompt_activar)
+                )
+                bloqueo.activo -> cambiarBloqueo(false)
+                disponibilidad == BiometricManager.BIOMETRIC_ERROR_NONE_ENROLLED ->
+                    Avisos.mostrar(binding.root, getString(R.string.bloqueo_sin_bloqueo_pantalla), TipoAviso.INFO)
+                else -> Avisos.mostrar(binding.root, getString(R.string.bloqueo_no_disponible), TipoAviso.ERROR)
+            }
+        }
+        AnimationExtensions.setupPressScaleAnimation(binding.cardBloqueo)
+    }
+
+    private fun cambiarBloqueo(activo: Boolean) {
+        bloqueo.activo = activo
+        mostrarBloqueo()
+        requireActivity().ocultarEnRecientesSiHaceFalta(bloqueo)
+        Avisos.mostrar(
+            binding.root,
+            getString(if (activo) R.string.bloqueo_activado else R.string.bloqueo_desactivado),
+            if (activo) TipoAviso.EXITO else TipoAviso.INFO
+        )
+    }
+
+    private fun mostrarBloqueo() {
+        binding.switchBloqueo.isChecked = bloqueo.activo
+        // TalkBack lee la fila entera como un interruptor, con su estado.
+        binding.cardBloqueo.contentDescription =
+            getString(if (bloqueo.activo) R.string.bloqueo_a11y_activado else R.string.bloqueo_a11y_desactivado)
     }
 
     private fun elegirTema(tema: Tema) {

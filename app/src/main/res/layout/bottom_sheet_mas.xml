@@ -223,6 +223,59 @@
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
+        <!-- Bloqueo con la huella, la cara o el PIN del móvil. Toda la fila cambia el interruptor. -->
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/cardBloqueo"
+            style="@style/Socios.TarjetaFila"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp">
+
+            <LinearLayout
+                style="@style/Socios.Fila"
+                android:padding="14dp">
+
+                <FrameLayout
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:background="@drawable/bg_icono_tile"
+                    android:backgroundTint="@color/blue_container">
+
+                    <ImageView
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:layout_gravity="center"
+                        android:importantForAccessibility="no"
+                        android:src="@drawable/ic_lock"
+                        app:tint="@color/blue_text_soft" />
+                </FrameLayout>
+
+                <LinearLayout
+                    style="@style/Socios.ColumnaTextos">
+
+                    <TextView
+                        style="@style/Socios.TituloFila"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/bloqueo_titulo" />
+
+                    <TextView
+                        style="@style/Socios.DescripcionFila"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/bloqueo_descripcion" />
+                </LinearLayout>
+
+                <com.google.android.material.materialswitch.MaterialSwitch
+                    android:id="@+id/switchBloqueo"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:clickable="false"
+                    android:focusable="false"
+                    android:importantForAccessibility="no" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
         <!-- Apariencia -->
         <TextView
             style="@style/Socios.Seccion"

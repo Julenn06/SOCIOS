@@ -29,6 +29,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import com.julen.socios.actualizaciones.VersionPublicada
+import com.julen.socios.ajustes.ocultarEnRecientesSiHaceFalta
 import com.julen.socios.databinding.ActivityMainBinding
 import com.julen.socios.export.ExportFormat
 import com.julen.socios.export.ExportRequest
@@ -138,6 +139,23 @@ class MainActivity : AppCompatActivity() {
             ShortcutManagerCompat.reportShortcutUsed(this, ATAJO_NUEVO_SOCIO)
             openAddEditDialog(null)
         }
+    }
+
+    private val bloqueo by lazy { (application as SociosApp).container.bloqueo }
+
+    override fun onResume() {
+        super.onResume()
+        // En onResume y no en onStart: así la pantalla de bloqueo queda encima también de los diálogos que se
+        // vuelven a abrir al empezar (destino de la exportación, revisión de la importación).
+        bloqueo.alVolver()
+        ocultarEnRecientesSiHaceFalta(bloqueo)
+        PantallaBloqueo.mostrarSiHaceFalta(bloqueo, supportFragmentManager)
+    }
+
+    override fun onStop() {
+        super.onStop()
+        // Girar la pantalla o cambiar el tema recrean la Activity sin que la app deje de verse.
+        if (!isChangingConfigurations) bloqueo.alSalir()
     }
 
     override fun onDestroy() {

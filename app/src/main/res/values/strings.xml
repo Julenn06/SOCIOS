@@ -38,6 +38,22 @@
     <string name="mas_seccion_datos">Datos</string>
     <string name="mas_seccion_apariencia">Tema</string>
     <string name="mas_exportar_descripcion">PDF, Excel o copia de seguridad</string>
+
+    <!-- Bloqueo de la app -->
+    <string name="bloqueo_titulo">Bloquear la app</string>
+    <string name="bloqueo_descripcion">Pide la huella, la cara o el PIN del móvil al abrirla</string>
+    <string name="bloqueo_sin_bloqueo_pantalla">Pon primero un bloqueo de pantalla en el móvil (PIN, patrón, huella o cara) para poder usar esto</string>
+    <string name="bloqueo_no_disponible">Este móvil no permite bloquear la app con la huella ni el PIN</string>
+    <string name="bloqueo_activado">App bloqueada: pedirá la huella o el PIN al abrirla</string>
+    <string name="bloqueo_desactivado">Ya no se pedirá la huella ni el PIN</string>
+    <string name="bloqueo_a11y_activado">Bloquear la app: activado</string>
+    <string name="bloqueo_a11y_desactivado">Bloquear la app: desactivado</string>
+    <string name="bloqueo_prompt_titulo">Desbloquear Socios</string>
+    <string name="bloqueo_prompt_activar">Confirma que eres tú para bloquear la app</string>
+    <string name="bloqueo_prompt_desactivar">Confirma que eres tú para quitar el bloqueo</string>
+    <string name="bloqueo_pantalla_titulo">Socios está bloqueada</string>
+    <string name="bloqueo_pantalla_detalle">Desbloquéala con la huella, la cara o el PIN del móvil para ver tus cuentas.</string>
+    <string name="bloqueo_pantalla_boton">Desbloquear</string>
     <string name="tema_a11y">Tema: %s</string>
     <string name="version_sin_comprobar">¿Hay una versión nueva?</string>
     <string name="version_nunca_comprobada">Todavía no se ha comprobado</string>
@@ -254,23 +270,27 @@
     <string name="estadistica_mejor_dia">Tu mejor día</string>
     <plurals name="estadistica_mejor_dia_detalle">
         <item quantity="one">%1$d socio hecho, el %2$s de todos</item>
+        <item quantity="many">%1$d socios hechos, el %2$s de todos</item>
         <item quantity="other">%1$d socios hechos, el %2$s de todos</item>
     </plurals>
     <string name="estadistica_cuota">Cuota media</string>
     <string name="estadistica_cuota_reciente">Últimas 8 semanas: %1$s</string>
     <plurals name="estadistica_cuota_detalle">
         <item quantity="one">De %1$d socio hecho</item>
+        <item quantity="many">De %1$d socios hechos</item>
         <item quantity="other">De %1$d socios hechos</item>
     </plurals>
     <string name="estadistica_apuntados">Apuntados que se hicieron</string>
     <plurals name="estadistica_apuntados_detalle">
         <item quantity="one">De %1$d en semanas pasadas · %2$d sigue pendiente</item>
+        <item quantity="many">De %1$d en semanas pasadas · %2$d siguen pendientes</item>
         <item quantity="other">De %1$d en semanas pasadas · %2$d siguen pendientes</item>
     </plurals>
     <string name="estadistica_apuntados_todos">De %1$d en semanas pasadas · ninguno pendiente</string>
     <string name="estadistica_descontado">Descontado al mes</string>
     <plurals name="estadistica_descontado_detalle">
         <item quantity="one">Media de %1$d mes con lo cobrado apuntado</item>
+        <item quantity="many">Media de %1$d meses con lo cobrado apuntado</item>
         <item quantity="other">Media de %1$d meses con lo cobrado apuntado</item>
     </plurals>
     <string name="estadistica_descontado_sube">Últimos 3 meses: %1$s, va a más</string>

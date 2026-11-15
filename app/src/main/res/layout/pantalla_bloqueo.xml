@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Tapa toda la app mientras está bloqueada: el icono, qué pasa y el botón para volver a pedir la huella o el PIN. -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:gravity="center"
+    android:orientation="vertical"
+    android:padding="32dp">
+
+    <ImageView
+        android:layout_width="88dp"
+        android:layout_height="88dp"
+        android:importantForAccessibility="no"
+        android:src="@mipmap/ic_launcher_round" />
+
+    <ImageView
+        android:layout_width="28dp"
+        android:layout_height="28dp"
+        android:layout_marginTop="28dp"
+        android:importantForAccessibility="no"
+        android:src="@drawable/ic_lock"
+        app:tint="@color/text_sub" />
+
+    <TextView
+        style="@style/Socios.TituloPanel"
+        android:layout_marginTop="12dp"
+        android:accessibilityHeading="true"
+        android:gravity="center"
+        android:text="@string/bloqueo_pantalla_titulo"
+        tools:targetApi="28" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:gravity="center"
+        android:maxWidth="320dp"
+        android:text="@string/bloqueo_pantalla_detalle"
+        android:textColor="@color/text_sub"
+        android:textSize="14sp" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnDesbloquear"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="28dp"
+        android:minHeight="52dp"
+        android:paddingHorizontal="28dp"
+        android:text="@string/bloqueo_pantalla_boton"
+        app:icon="@drawable/ic_lock"
+        app:iconGravity="textStart" />
+</LinearLayout>

@@ -7,7 +7,8 @@
     android:paddingHorizontal="16dp"
     android:paddingVertical="12dp"
     android:focusable="true"
-    android:screenReaderFocusable="true">
+    android:screenReaderFocusable="true"
+    tools:targetApi="28">
 
     <LinearLayout
         android:layout_width="0dp"

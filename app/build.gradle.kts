@@ -71,6 +71,7 @@ dependencies {
     implementation(libs.androidx.lifecycle.viewmodel.savedstate)
     implementation(libs.androidx.recyclerview)
     implementation(libs.androidx.coordinatorlayout)
+    implementation(libs.androidx.biometric)
     implementation(libs.androidx.dynamicanimation)
     implementation(libs.material)
     implementation(libs.kotlinx.coroutines.android)
