@@ -245,6 +245,44 @@
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
+        <!-- Cómo trabajas: datos sacados de todo el histórico. Cada fila se oculta si aún no hay datos para ella. -->
+        <TextView
+            android:id="@+id/tvSeccionEstadisticas"
+            style="@style/Socios.Seccion"
+            android:text="@string/estadisticas_titulo" />
+
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/tarjetaEstadisticas"
+            style="@style/Socios.TarjetaFila"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:stateListAnimator="@null">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:divider="@drawable/divisor_fino"
+                android:orientation="vertical"
+                android:showDividers="middle">
+
+                <include
+                    android:id="@+id/estadisticaMejorDia"
+                    layout="@layout/item_estadistica" />
+
+                <include
+                    android:id="@+id/estadisticaCuota"
+                    layout="@layout/item_estadistica" />
+
+                <include
+                    android:id="@+id/estadisticaApuntados"
+                    layout="@layout/item_estadistica" />
+
+                <include
+                    android:id="@+id/estadisticaDescontado"
+                    layout="@layout/item_estadistica" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
         <!-- Desglose -->
         <TextView
             style="@style/Socios.Seccion"

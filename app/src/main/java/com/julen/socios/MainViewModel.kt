@@ -31,6 +31,7 @@ import com.julen.socios.model.ResultadoLectura
 import com.julen.socios.model.Socio
 import com.julen.socios.util.CalculoComisiones
 import com.julen.socios.util.DateUtils
+import com.julen.socios.util.EstadisticasHistorico
 import com.julen.socios.util.UiText
 import com.julen.socios.util.motivoDeError
 import com.julen.socios.util.nombreVisible
@@ -50,6 +51,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
@@ -148,6 +150,16 @@ class MainViewModel(
         cobroRepository.getAllFlow()
     ) { socios, bonos, cobros ->
         CalculoComisiones.calcularResumenHistoricoGlobal(socios, bonos, cobrosMap = cobros)
+    }.flowOn(calculoDispatcher)
+        .mientrasSeObserve(null)
+
+    /** Cómo se trabaja según todo el histórico: el mejor día, la cuota media, los apuntados y lo descontado. */
+    val estadisticas: StateFlow<EstadisticasHistorico.Estadisticas?> = combine(
+        sociosDeTodasLasSemanas,
+        historicoGlobal.filterNotNull(),
+        semanaActual
+    ) { socios, historico, actual ->
+        EstadisticasHistorico.calcular(socios, historico.semanasHistoricas, actual)
     }.flowOn(calculoDispatcher)
         .mientrasSeObserve(null)
 

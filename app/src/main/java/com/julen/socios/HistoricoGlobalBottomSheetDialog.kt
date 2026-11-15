@@ -7,7 +7,9 @@ import androidx.core.view.doOnLayout
 import androidx.core.view.isVisible
 import androidx.fragment.app.activityViewModels
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.annotation.StringRes
 import com.julen.socios.databinding.BottomSheetHistoricoGlobalBinding
+import com.julen.socios.databinding.ItemEstadisticaBinding
 import com.julen.socios.util.CalculoComisiones
 import com.julen.socios.util.CalculoComisiones.Periodo
 import com.julen.socios.util.HapticUtils
@@ -16,10 +18,13 @@ import com.julen.socios.util.Movimiento
 import com.julen.socios.util.NumberAnimators
 import com.julen.socios.util.descontadoConSigno
 import com.julen.socios.util.DateUtils
+import com.julen.socios.util.ESPACIO_CIFRA
+import com.julen.socios.util.EstadisticasHistorico
 import com.julen.socios.util.toCurrencyString
 import com.julen.socios.util.toEurosCompacto
 import java.time.Month
 import java.time.format.TextStyle
+import kotlin.math.roundToInt
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.filterNotNull
 
@@ -89,6 +94,9 @@ class HistoricoGlobalBottomSheetDialog :
                 if (entradaPendiente) entrar()
             }
         }
+        mientrasSeVea {
+            viewModel.estadisticas.filterNotNull().collect(::renderEstadisticas)
+        }
     }
 
     /** Lo que va debajo de la cabecera: el total, la mejor semana, el desglose, el gráfico y la lista. */
@@ -148,6 +156,56 @@ class HistoricoGlobalBottomSheetDialog :
             dismiss()
         }
     }
+
+    /** Cómo trabajas: cada dato, solo si ya hay con qué calcularlo; sin ninguno, la sección entera se oculta. */
+    private fun renderEstadisticas(e: EstadisticasHistorico.Estadisticas) {
+        mostrarEstadistica(binding.estadisticaMejorDia, R.string.estadistica_mejor_dia, e.mejorDia, { it.dia.nombreCompleto }) {
+            resources.getQuantityString(R.plurals.estadistica_mejor_dia_detalle, it.hechos, it.hechos, porcentaje(it.proporcion))
+        }
+        mostrarEstadistica(binding.estadisticaCuota, R.string.estadistica_cuota, e.cuota, { it.media.toCurrencyString() }) { cuota ->
+            cuota.mediaReciente?.let { getString(R.string.estadistica_cuota_reciente, it.toCurrencyString()) }
+                ?: resources.getQuantityString(R.plurals.estadistica_cuota_detalle, cuota.hechos, cuota.hechos)
+        }
+        mostrarEstadistica(binding.estadisticaApuntados, R.string.estadistica_apuntados, e.apuntados, { porcentaje(it.proporcionHechos) }) {
+            if (it.pendientes == 0) {
+                getString(R.string.estadistica_apuntados_todos, it.total)
+            } else {
+                resources.getQuantityString(R.plurals.estadistica_apuntados_detalle, it.pendientes, it.total, it.pendientes)
+            }
+        }
+        mostrarEstadistica(binding.estadisticaDescontado, R.string.estadistica_descontado, e.descontado, { it.media.descontadoConSigno() }) {
+            val reciente = it.mediaReciente?.descontadoConSigno()
+            when (it.tendencia) {
+                EstadisticasHistorico.Tendencia.SUBE -> getString(R.string.estadistica_descontado_sube, reciente)
+                EstadisticasHistorico.Tendencia.BAJA -> getString(R.string.estadistica_descontado_baja, reciente)
+                EstadisticasHistorico.Tendencia.IGUAL -> getString(R.string.estadistica_descontado_igual, reciente)
+                EstadisticasHistorico.Tendencia.SIN_DATOS ->
+                    resources.getQuantityString(R.plurals.estadistica_descontado_detalle, it.meses, it.meses)
+            }
+        }
+
+        val alguna = listOf(e.mejorDia, e.cuota, e.apuntados, e.descontado).any { it != null }
+        binding.tvSeccionEstadisticas.isVisible = alguna
+        binding.tarjetaEstadisticas.isVisible = alguna
+    }
+
+    /** Una fila de [renderEstadisticas]: oculta si aún no hay [dato]; si no, su [titulo], su [valor] y su [detalle]. */
+    private inline fun <T : Any> mostrarEstadistica(
+        fila: ItemEstadisticaBinding,
+        @StringRes titulo: Int,
+        dato: T?,
+        valor: (T) -> String,
+        detalle: (T) -> String
+    ) {
+        fila.root.isVisible = dato != null
+        if (dato == null) return
+        fila.tvEstadisticaTitulo.setText(titulo)
+        fila.tvEstadisticaValor.text = valor(dato)
+        fila.tvEstadisticaDetalle.text = detalle(dato)
+    }
+
+    /** 0,284 → "28 %". */
+    private fun porcentaje(proporcion: Double) = "${(proporcion * 100).roundToInt()}$ESPACIO_CIFRA%"
 
     private fun mostrarFilas() {
         val semanas = resumenActual?.semanasHistoricas ?: return
