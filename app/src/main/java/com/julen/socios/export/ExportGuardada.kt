@@ -17,6 +17,7 @@ class ExportGuardada(private val handle: SavedStateHandle, private val clave: St
         // cualquier cambio de la petición se emita aunque el formato se repita.
         handle[clave + SUFIJO_FORMATO] = null
         handle[clave + SUFIJO_SEMANAS] = (request?.alcance as? AlcanceExport.Semanas)?.semanaKeys?.let { ArrayList(it) }
+        handle[clave + SUFIJO_ANIO] = (request?.alcance as? AlcanceExport.Anio)?.anio
         handle[clave + SUFIJO_FORMATO] = request?.formato?.name
     }
 
@@ -25,7 +26,12 @@ class ExportGuardada(private val handle: SavedStateHandle, private val clave: St
             ?.let { nombre -> ExportFormat.entries.find { it.name == nombre } }
             ?: return null
         val semanas = handle.get<ArrayList<String>>(clave + SUFIJO_SEMANAS)
-        val alcance = if (semanas != null) AlcanceExport.Semanas(semanas.toSet()) else AlcanceExport.Historico
+        val anio = handle.get<Int>(clave + SUFIJO_ANIO)
+        val alcance = when {
+            semanas != null -> AlcanceExport.Semanas(semanas.toSet())
+            anio != null -> AlcanceExport.Anio(anio)
+            else -> AlcanceExport.Historico
+        }
         return ExportRequest(formato, alcance)
     }
 
@@ -35,5 +41,6 @@ class ExportGuardada(private val handle: SavedStateHandle, private val clave: St
     private companion object {
         const val SUFIJO_FORMATO = ".formato"
         const val SUFIJO_SEMANAS = ".semanas"
+        const val SUFIJO_ANIO = ".anio"
     }
 }

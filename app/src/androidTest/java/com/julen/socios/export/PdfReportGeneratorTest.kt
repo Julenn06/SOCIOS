@@ -96,6 +96,14 @@ class PdfReportGeneratorTest {
     }
 
     @Test
+    fun elInformeDeUnAnioLlevaSusMesesSinPaginasEnBlanco() {
+        val paginas = generarYAbrir(datos(semanas = 52, porSemana = 3), AlcanceExport.Anio(2026))
+
+        assertTrue(paginas.size > 1)
+        assertTrue("Hay páginas en blanco", paginas.all { it.conContenido })
+    }
+
+    @Test
     fun unInformeSinSociosTambienSeGenera() {
         val paginas = generarYAbrir(DatosBackup(), AlcanceExport.Historico)
 

@@ -101,6 +101,7 @@
                     style="@style/Socios.Seccion"
                     android:text="@string/export_alcance_label" />
 
+                <!-- Dos filas de dos: con cuatro opciones en una sola, en un móvil estrecho no cabían los nombres. -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -112,6 +113,7 @@
                         layout="@layout/item_alcance"
                         android:layout_width="0dp"
                         android:layout_height="match_parent"
+                        android:layout_marginEnd="10dp"
                         android:layout_weight="1" />
 
                     <include
@@ -119,7 +121,22 @@
                         layout="@layout/item_alcance"
                         android:layout_width="0dp"
                         android:layout_height="match_parent"
-                        android:layout_marginHorizontal="10dp"
+                        android:layout_weight="1" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:baselineAligned="false"
+                    android:orientation="horizontal">
+
+                    <include
+                        android:id="@+id/alcanceAnio"
+                        layout="@layout/item_alcance"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_marginEnd="10dp"
                         android:layout_weight="1" />
 
                     <include

@@ -306,6 +306,8 @@
     <string name="export_alcance_semana">Semana</string>
     <string name="export_alcance_elegir">Elegir</string>
     <string name="export_alcance_historico">Todo</string>
+    <string name="export_alcance_anio">Un año</string>
+    <string name="export_dialogo_anio_titulo">¿De qué año?</string>
     <string name="export_pdf">Informe PDF</string>
     <string name="export_csv">Hoja de cálculo CSV</string>
     <string name="export_json">Copia de seguridad JSON</string>
@@ -322,6 +324,7 @@
     <string name="export_destino_guardar_detalle">Elige la carpeta donde dejarlo</string>
     <string name="export_compartir_titulo">Compartir reporte %s</string>
     <string name="export_titulo_historico">Histórico global</string>
+    <string name="export_titulo_anio">Año %1$d</string>
     <plurals name="export_titulo_semanas">
         <item quantity="one">%d semana seleccionada</item>
         <item quantity="many">%d semanas seleccionadas</item>
@@ -383,6 +386,13 @@
     <string name="pdf_col_dia">Día</string>
     <string name="pdf_col_estado">Estado</string>
     <string name="pdf_col_notas">Notas</string>
+    <string name="pdf_seccion_meses">Mes a mes</string>
+    <string name="pdf_col_mes">Mes</string>
+    <string name="pdf_col_socios">Socios</string>
+    <string name="pdf_col_irpf">IRPF</string>
+    <string name="pdf_col_descontado">Descontado</string>
+    <string name="pdf_fila_total">Total del año</string>
+    <string name="pdf_nota_renta">El bruto y el IRPF son los calculados en la app (IRPF del %1$s sobre el bruto). Para la declaración de la renta, compáralos con el certificado de retenciones de la empresa: si te descontaron devoluciones, sus cifras pueden ser algo menores.</string>
     <string name="pdf_estado_hecho">Hecho</string>
     <string name="pdf_estado_pendiente">Pendiente</string>
     <string name="pdf_pie">Generado con Gestión de Socios</string>

@@ -39,6 +39,12 @@ class BackupRepository(
 
             AlcanceExport.Historico ->
                 DatosBackup(socioDao.getAllSocios().map { it.toSocio() }, bonos, cobros)
+
+            is AlcanceExport.Anio -> DatosBackup(
+                socioDao.getAllSocios().filter { alcance.incluye(it.semanaKey) }.map { it.toSocio() },
+                bonos.filter { alcance.incluye(it.semanaKey) },
+                cobros.filter { alcance.incluye(it.semanaKey) }
+            )
         }
     }
 

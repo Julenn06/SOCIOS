@@ -44,6 +44,7 @@ class ExportadorArchivos(
         val alcance = when (val a = request.alcance) {
             is AlcanceExport.Semanas -> a.semanaKeys.singleOrNull() ?: "semanas"
             AlcanceExport.Historico -> "historico"
+            is AlcanceExport.Anio -> a.anio.toString()
         }
         return "socios_${alcance}_$sello.${request.formato.extension}"
     }

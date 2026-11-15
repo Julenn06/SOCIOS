@@ -26,6 +26,7 @@ import com.julen.socios.util.nombreVisible
 import com.julen.socios.util.DateUtils
 import com.julen.socios.util.toCurrencyString
 import com.julen.socios.util.toEurosCompacto
+import com.julen.socios.util.toPorcentajeString
 import java.io.OutputStream
 import java.time.Clock
 import java.time.LocalDateTime
@@ -91,6 +92,7 @@ class PdfReportGenerator(private val context: Context) {
             dibujarCabecera()
             dibujarCifras()
             if (historico.semanasHistoricas.size > 1) dibujarGrafico()
+            if (alcance is AlcanceExport.Anio) dibujarMeses()
             dibujarDetalle()
             cerrarPagina()
         }
@@ -140,6 +142,7 @@ class PdfReportGenerator(private val context: Context) {
 
         private fun tituloPeriodo(): String = when (alcance) {
             AlcanceExport.Historico -> context.getString(R.string.export_titulo_historico)
+            is AlcanceExport.Anio -> context.getString(R.string.export_titulo_anio, alcance.anio)
             is AlcanceExport.Semanas -> alcance.semanaKeys.singleOrNull()?.let { DateUtils.rangoCortoConAnio(it) }
                 ?: context.resources.getQuantityString(R.plurals.export_titulo_semanas, alcance.semanaKeys.size, alcance.semanaKeys.size)
         }
@@ -283,6 +286,92 @@ class PdfReportGenerator(private val context: Context) {
                 }
             }
             y += alto + 26f
+        }
+
+        // --- El año mes a mes, para la declaración de la renta ---
+
+        /**
+         * Una fila por mes con algo apuntado (de enero a diciembre) y la del total del año: socios hechos, bruto, IRPF,
+         * lo descontado y el neto. Cada semana cuenta en el mes de su jueves, como en el histórico.
+         */
+        private fun dibujarMeses() {
+            val meses = CalculoComisiones.agruparPorPeriodo(historico.semanasHistoricas, Periodo.MES).sortedBy { it.mes }
+            if (meses.isEmpty()) return
+            asegurar(24f + 20f + ALTO_FILA * (meses.size + 1) + 40f)
+            escribir(context.getString(R.string.pdf_seccion_meses), MARGEN + 2f, y + 12f, 12f, TEXTO, fuenteFuerte)
+            y += 24f
+
+            dibujarCabeceraMeses()
+            meses.forEach { mes ->
+                val nombre = Month.of(mes.mes ?: 1).getDisplayName(TextStyle.FULL_STANDALONE, LOCALE_ES)
+                    .replaceFirstChar { it.titlecase(LOCALE_ES) }
+                dibujarFilaMes(nombre, mes.sociosHechos, mes.bruto, mes.irpf, mes.descontado, mes.neto, total = false)
+                trazo.color = DIVISOR
+                trazo.strokeWidth = 0.5f
+                canvas.drawLine(COL_SOCIO, y, ANCHO - MARGEN - 6f, y, trazo)
+            }
+            dibujarFilaMes(
+                context.getString(R.string.pdf_fila_total),
+                historico.totalSociosHechosAcumulado,
+                historico.totalBrutoAcumulado,
+                historico.totalIrpfRetenidoAcumulado,
+                historico.totalDescontadoAcumulado,
+                historico.totalNetoAcumulado,
+                total = true
+            )
+
+            // De dónde salen el bruto y el IRPF, y con qué compararlos.
+            y += 6f
+            val nota = context.getString(R.string.pdf_nota_renta, CalculoComisiones.IRPF.toPorcentajeString())
+            for (linea in partirEnLineas(nota, 8.5f, ANCHO - 2 * MARGEN - 4f)) {
+                escribir(linea, MARGEN + 2f, y + 11f, 8.5f, TEXTO_SUAVE, fuenteNormal)
+                y += 12f
+            }
+            y += 22f
+        }
+
+        private fun dibujarCabeceraMeses() {
+            val linea = y + 12f
+            escribir(context.getString(R.string.pdf_col_mes).uppercase(LOCALE_ES), COL_SOCIO, linea, 7.5f, TEXTO_SUAVE, fuenteFuerte, espaciado = 0.08f)
+            listOf(
+                R.string.pdf_col_socios to COL_MES_SOCIOS, R.string.pdf_kpi_bruto to COL_MES_BRUTO, R.string.pdf_col_irpf to COL_MES_IRPF,
+                R.string.pdf_col_descontado to COL_MES_DESCONTADO, R.string.pdf_kpi_neto to COL_MES_NETO
+            ).forEach { (columna, x) ->
+                escribir(context.getString(columna).uppercase(LOCALE_ES), x, linea, 7.5f, TEXTO_SUAVE, fuenteFuerte, Paint.Align.RIGHT, espaciado = 0.08f)
+            }
+            y += 20f
+        }
+
+        /** Una fila de la tabla de meses; la del [total], en negrita sobre fondo gris. Las cifras, alineadas a la derecha. */
+        private fun dibujarFilaMes(nombre: String, socios: Int, bruto: Double, irpf: Double, descontado: Double, neto: Double, total: Boolean) {
+            if (total) {
+                rect.set(MARGEN, y + 2f, ANCHO - MARGEN, y + ALTO_FILA + 4f)
+                relleno.color = GRIS_FONDO
+                canvas.drawRoundRect(rect, 8f, 8f, relleno)
+            }
+            val linea = y + 14f
+            val fuente = if (total) fuenteNegrita else fuenteMedia
+            escribir(nombre, COL_SOCIO, linea, 9f, TEXTO, fuente)
+            escribir(socios.toString(), COL_MES_SOCIOS, linea, 9f, TEXTO_SUAVE, fuente, Paint.Align.RIGHT)
+            escribir(bruto.toCurrencyString(), COL_MES_BRUTO, linea, 9f, TEXTO, fuente, Paint.Align.RIGHT)
+            escribir(irpf.toCurrencyString(), COL_MES_IRPF, linea, 9f, ROJO, fuente, Paint.Align.RIGHT)
+            escribir(if (descontado != 0.0) descontado.descontadoConSigno() else "—", COL_MES_DESCONTADO, linea, 9f, TEXTO_SUAVE, fuente, Paint.Align.RIGHT)
+            escribir(neto.toCurrencyString(), COL_MES_NETO, linea, 9f, if (total) VERDE_TEXTO else TEXTO, fuenteNegrita, Paint.Align.RIGHT)
+            y += ALTO_FILA + if (total) 4f else 0f
+        }
+
+        /** [contenido] repartido en las líneas de [ancho] que hagan falta, cortando entre palabras. */
+        private fun partirEnLineas(contenido: String, tamano: Float, ancho: Float): List<String> {
+            preparar(tamano, TEXTO_SUAVE, fuenteNormal)
+            return contenido.split(' ').fold(mutableListOf<String>()) { lineas, palabra ->
+                val actual = lineas.lastOrNull()
+                if (actual != null && texto.measureText("$actual $palabra") <= ancho) {
+                    lineas[lineas.lastIndex] = "$actual $palabra"
+                } else {
+                    lineas += palabra
+                }
+                lineas
+            }
         }
 
         // --- Los socios de cada semana ---
@@ -430,6 +519,13 @@ class PdfReportGenerator(private val context: Context) {
         const val COL_CUOTA = 290f
         const val COL_ESTADO = 345f
         const val COL_NOTAS = 420f
+
+        // Columnas de la tabla de meses: dónde termina cada cifra (van alineadas a la derecha).
+        const val COL_MES_SOCIOS = 190f
+        const val COL_MES_BRUTO = 280f
+        const val COL_MES_IRPF = 365f
+        const val COL_MES_DESCONTADO = 455f
+        const val COL_MES_NETO = ANCHO - MARGEN - 10f
 
         // Los colores del tema claro de la app (values/colors.xml).
         val VERDE_CABECERA = "#155E46".toColorInt()

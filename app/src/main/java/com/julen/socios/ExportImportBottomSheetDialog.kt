@@ -24,13 +24,19 @@ class ExportImportBottomSheetDialog :
     private enum class Alcance(@param:DrawableRes val icono: Int, @param:StringRes val nombre: Int) {
         SEMANA(R.drawable.ic_today, R.string.export_alcance_semana),
         ELEGIR(R.drawable.ic_date_range, R.string.export_alcance_elegir),
+        ANIO(R.drawable.ic_calendar_year, R.string.export_alcance_anio),
         TODO(R.drawable.ic_history, R.string.export_alcance_historico)
     }
 
     private val viewModel: MainViewModel by activityViewModels { MainViewModel.Factory }
 
     private val tarjetasAlcance: Map<Alcance, ItemAlcanceBinding> by lazy {
-        mapOf(Alcance.SEMANA to binding.alcanceSemana, Alcance.ELEGIR to binding.alcanceElegir, Alcance.TODO to binding.alcanceTodo)
+        mapOf(
+            Alcance.SEMANA to binding.alcanceSemana,
+            Alcance.ELEGIR to binding.alcanceElegir,
+            Alcance.ANIO to binding.alcanceAnio,
+            Alcance.TODO to binding.alcanceTodo
+        )
     }
 
     private var alcance = Alcance.SEMANA
@@ -39,13 +45,17 @@ class ExportImportBottomSheetDialog :
     /** null hasta que se conocen las semanas disponibles y se elige la selección inicial. */
     private var semanasSeleccionadas: MutableSet<String>? = null
 
-    /** La lista para elegir semanas mientras está abierta: una sola a la vez, y se cierra con el panel. */
+    /** null hasta que se conocen las semanas disponibles y se elige el año inicial. */
+    private var anioSeleccionado: Int? = null
+
+    /** La lista para elegir semanas (o el año) mientras está abierta: una sola a la vez, y se cierra con el panel. */
     private var dialogoSemanas: AlertDialog? = null
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
         semanasSeleccionadas = savedInstanceState?.getStringArrayList(STATE_SEMANAS)?.toMutableSet()
+        anioSeleccionado = savedInstanceState?.getInt(STATE_ANIO)?.takeIf { it > 0 }
         alcance = savedInstanceState?.getString(STATE_ALCANCE)?.let(Alcance::valueOf) ?: Alcance.SEMANA
 
         binding.btnCerrar.setOnClickListener { dismiss() }
@@ -81,6 +91,11 @@ class ExportImportBottomSheetDialog :
                     val activa = viewModel.uiState.value.semanaKey
                     semanasSeleccionadas = mutableSetOf(if (activa in semanas) activa else semanas.first())
                 }
+                if (anioSeleccionado == null && semanas.isNotEmpty()) {
+                    // El año de la semana visible si tiene datos; si no, el más reciente.
+                    val anios = aniosDisponibles()
+                    anioSeleccionado = anioDe(viewModel.uiState.value.semanaKey)?.takeIf { it in anios } ?: anios.firstOrNull()
+                }
                 actualizarDetallesAlcance()
             }
         }
@@ -96,6 +111,7 @@ class ExportImportBottomSheetDialog :
         super.onSaveInstanceState(outState)
         semanasSeleccionadas?.let { outState.putStringArrayList(STATE_SEMANAS, ArrayList(it)) }
         outState.putString(STATE_ALCANCE, alcance.name)
+        anioSeleccionado?.let { outState.putInt(STATE_ANIO, it) }
     }
 
     /**
@@ -136,7 +152,11 @@ class ExportImportBottomSheetDialog :
             tarjeta.root.setOnClickListener {
                 HapticUtils.performClick(it)
                 elegirAlcance(opcion)
-                if (opcion == Alcance.ELEGIR) mostrarDialogoSeleccionarSemanas()
+                when (opcion) {
+                    Alcance.ELEGIR -> mostrarDialogoSeleccionarSemanas()
+                    Alcance.ANIO -> mostrarDialogoSeleccionarAnio()
+                    else -> Unit
+                }
             }
             AnimationExtensions.setupPressScaleAnimation(tarjeta.root)
         }
@@ -157,6 +177,8 @@ class ExportImportBottomSheetDialog :
         } else {
             resources.getQuantityString(R.plurals.export_semanas, seleccion.size, seleccion.size)
         }
+        binding.alcanceAnio.tvAlcanceDetalle.text =
+            anioSeleccionado?.toString() ?: getString(R.string.export_alcance_elegir_vacio)
         binding.alcanceTodo.tvAlcanceDetalle.text =
             resources.getQuantityString(R.plurals.export_semanas, semanasDisponibles.size, semanasDisponibles.size)
     }
@@ -192,8 +214,33 @@ class ExportImportBottomSheetDialog :
             .show()
     }
 
+    /** Los años con algo apuntado, del más reciente al más antiguo. */
+    private fun aniosDisponibles(): List<Int> = semanasDisponibles.mapNotNull(::anioDe).distinct().sortedDescending()
+
+    /** El año de una semana: el de su clave ("2026-W01" → 2026), que es el de su jueves. */
+    private fun anioDe(semanaKey: String): Int? = semanaKey.substringBefore("-W").toIntOrNull()
+
+    private fun mostrarDialogoSeleccionarAnio() {
+        if (dialogoSemanas?.isShowing == true) return
+        val anios = aniosDisponibles()
+        if (anios.isEmpty()) {
+            Avisos.mostrar(binding.root, getString(R.string.msg_sin_semanas), TipoAviso.INFO)
+            return
+        }
+        dialogoSemanas = MaterialAlertDialogBuilder(requireContext())
+            .setTitle(R.string.export_dialogo_anio_titulo)
+            .setSingleChoiceItems(anios.map(Int::toString).toTypedArray(), anios.indexOf(anioSeleccionado)) { dialogo, cual ->
+                anioSeleccionado = anios[cual]
+                actualizarDetallesAlcance()
+                dialogo.dismiss()
+            }
+            .setOnDismissListener { dialogoSemanas = null }
+            .show()
+    }
+
     private fun alcanceSeleccionado(): AlcanceExport = when (alcance) {
         Alcance.TODO -> AlcanceExport.Historico
+        Alcance.ANIO -> AlcanceExport.Anio(checkNotNull(anioSeleccionado))
         Alcance.ELEGIR -> AlcanceExport.Semanas(semanasSeleccionadas.orEmpty().toSet())
         Alcance.SEMANA -> AlcanceExport.Semanas(setOf(viewModel.uiState.value.semanaKey))
     }
@@ -205,6 +252,10 @@ class ExportImportBottomSheetDialog :
                 Avisos.mostrar(binding.root, getString(R.string.msg_elige_semanas), TipoAviso.INFO)
             }
             mostrarDialogoSeleccionarSemanas()
+            return
+        }
+        if (alcance == Alcance.ANIO && anioSeleccionado == null) {
+            mostrarDialogoSeleccionarAnio()
             return
         }
         viewModel.solicitarExport(formato, alcanceSeleccionado())
@@ -220,6 +271,7 @@ class ExportImportBottomSheetDialog :
         const val TAG = "ExportImportDialog"
         private const val STATE_SEMANAS = "semanasSeleccionadas"
         private const val STATE_ALCANCE = "alcance"
+        private const val STATE_ANIO = "anio"
         private const val DESPLAZAMIENTO_DP = 24f
     }
 }
