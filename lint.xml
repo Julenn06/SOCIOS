@@ -1,11 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <lint>
-    <!-- El plugin de serialización va con la versión de Kotlin que trae AGP. Dependabot ya propone
-         las versiones nuevas; subirlo cambia el compilador de Kotlin de todo el proyecto. La librería
-         de serialización también: sus versiones nuevas necesitan un Kotlin más reciente que el de AGP. -->
+    <!-- El plugin de serialización fija el Kotlin de todo el proyecto: se sube a mano, ver
+         gradle/libs.versions.toml. -->
     <issue id="NewerVersionAvailable">
         <ignore regexp="org\.jetbrains\.kotlin\.plugin\.serialization" />
-        <ignore regexp="org\.jetbrains\.kotlinx:kotlinx-serialization-json" />
     </issue>
     <!-- Recursos e ids que ya nada usa (lint no los revisa por defecto): que la CI avise si queda alguno. -->
     <issue id="UnusedResources" severity="warning" />

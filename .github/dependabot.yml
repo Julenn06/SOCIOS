@@ -10,12 +10,8 @@ updates:
       dependencias:
         update-types: ["minor", "patch"]
     ignore:
-      # Desde la 1.12 necesita Kotlin 2.4 y la app compila con el Kotlin 2.2 que trae AGP: subirla junto
-      # con AGP, a mano. Ver gradle/libs.versions.toml.
-      - dependency-name: "org.jetbrains.kotlinx:kotlinx-serialization-json"
-        versions: [">= 1.12.0"]
-      # El plugin de serialización va en la versión de Kotlin de AGP: subirlo cambia el Kotlin de todo el
-      # proyecto. Se sube a mano junto con AGP.
+      # El plugin de serialización fija la versión de Kotlin de todo el proyecto: se sube a mano, comprobando
+      # que KSP y Room siguen funcionando. Ver gradle/libs.versions.toml.
       - dependency-name: "org.jetbrains.kotlin.plugin.serialization"
 
   - package-ecosystem: "github-actions"

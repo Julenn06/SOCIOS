@@ -74,7 +74,7 @@ class EstadisticasHistoricoTest {
     fun sinSociosAnterioresLaCuotaRecienteNoSeMuestra() {
         val e = calcular(listOf(socio("2026-W41", cuota = 12.5), socio("2026-W42", cuota = 15.0)))
         assertEquals(13.75, e.cuota!!.media, 0.0)
-        assertNull(e.cuota!!.mediaReciente)
+        assertNull(e.cuota.mediaReciente)
     }
 
     @Test

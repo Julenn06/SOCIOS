@@ -75,7 +75,7 @@ object Migracion5a6 : Migration(5, 6) {
                 porcentajeIrpf = irpfDe(db, semanaKey),
                 devolucion = monto
             )
-            db.execSQL("INSERT OR REPLACE INTO cobros VALUES (?, ?, ?)", arrayOf(semanaKey, neto, nota))
+            db.execSQL("INSERT OR REPLACE INTO cobros VALUES (?, ?, ?)", arrayOf<Any>(semanaKey, neto, nota))
         }
         db.execSQL("DROP TABLE IF EXISTS `devoluciones`")
     }

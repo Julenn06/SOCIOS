@@ -1,9 +1,10 @@
 [versions]
-agp = "9.5.0"
-# Plugin de serialización: igual a la versión de Kotlin que trae AGP. Si se sube, todo el proyecto
-# pasa a compilarse con esa versión de Kotlin.
-kotlin = "2.2.10"
-ksp = "2.3.12"
+agp = "9.5.1"
+# Versión de Kotlin de todo el proyecto. AGP trae su propio Kotlin (2.2.10 en AGP 9.5), pero el plugin de
+# serialización pone este en el classpath de Gradle y, al ser más nuevo, es el que compila la app. Se sube a mano
+# (Dependabot no lo propone): comprobar que KSP y Room siguen funcionando.
+kotlin = "2.4.21"
+ksp = "2.3.14"
 coreKtx = "1.19.1"
 junit = "4.13.2"
 junitVersion = "1.3.0"
@@ -23,8 +24,8 @@ biometric = "1.1.0"
 dynamicanimation = "1.1.0"
 coroutines = "1.11.0"
 room = "2.8.5"
-# La 1.12 trae la stdlib de Kotlin 2.4 y no compila con el Kotlin 2.2 de AGP: subirla junto con AGP.
-kotlinxSerialization = "1.11.0"
+# Necesita una versión de Kotlin igual o más nueva que la suya (la 1.12 y la 1.13 piden Kotlin 2.4).
+kotlinxSerialization = "1.13.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
