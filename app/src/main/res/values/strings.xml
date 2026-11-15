@@ -54,6 +54,7 @@
     <string name="bloqueo_pantalla_titulo">Socios está bloqueada</string>
     <string name="bloqueo_pantalla_detalle">Desbloquéala con la huella, la cara o el PIN del móvil para ver tus cuentas.</string>
     <string name="bloqueo_pantalla_boton">Desbloquear</string>
+    <string name="widget_neto_oculto">Neto oculto: la app está bloqueada</string>
     <string name="tema_a11y">Tema: %s</string>
     <string name="version_sin_comprobar">¿Hay una versión nueva?</string>
     <string name="version_nunca_comprobada">Todavía no se ha comprobado</string>

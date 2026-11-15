@@ -40,6 +40,8 @@ import com.julen.socios.util.AnimationExtensions
 import com.julen.socios.util.DateUtils
 import com.julen.socios.util.HapticUtils
 import com.julen.socios.util.nombreVisible
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
 class MainActivity : AppCompatActivity() {
@@ -127,9 +129,19 @@ class MainActivity : AppCompatActivity() {
                 launch { viewModel.uiState.collect(::renderUiState) }
                 launch { viewModel.events.collect(::manejarEvento) }
                 launch { viewModel.exportPendienteDeDestino.collect(::mostrarDialogoDestinoExport) }
-                launch { viewModel.importPendiente.collect(::mostrarRevisionImport) }
+                // La revisión de una importación no se abre encima del bloqueo (el archivo elegido puede llegar justo
+                // cuando la app se vuelve a bloquear): espera a que se desbloquee.
+                launch {
+                    combine(viewModel.importPendiente, bloqueo.estado) { preview, bloqueada -> preview.takeUnless { bloqueada } }
+                        .collect(::mostrarRevisionImport)
+                }
                 launch { viewModel.avisoPendientes.collect(::mostrarAvisoPendientes) }
-                launch { actualizaciones.nuevaVersion.collect(::avisarNuevaVersion) }
+                launch {
+                    actualizaciones.nuevaVersion.collect { publicada ->
+                        bloqueo.estado.first { bloqueada -> !bloqueada }
+                        avisarNuevaVersion(publicada)
+                    }
+                }
             }
         }
 

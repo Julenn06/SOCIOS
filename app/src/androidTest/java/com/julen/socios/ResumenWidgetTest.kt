@@ -13,6 +13,7 @@ import com.julen.socios.util.CalculoComisiones
 import com.julen.socios.util.toCurrencyString
 import com.julen.socios.util.toEurosCompacto
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -29,10 +30,10 @@ class ResumenWidgetTest {
         List(hechos + pendientes) { i -> Socio(colaboracion = 20.0, hecho = i < hechos, dia = DiaSemana.LUNES, semanaKey = semanaKey) }
 
     /** Dibuja el widget con [resumen] como lo haría el lanzador. */
-    private fun dibujar(resumen: CalculoComisiones.ResumenCalculo): View {
+    private fun dibujar(resumen: CalculoComisiones.ResumenCalculo, netoOculto: Boolean = false): View {
         lateinit var vista: View
         instrumentacion.runOnMainSync {
-            vista = ResumenWidget.vistas(context, semanaKey, resumen).apply(context, FrameLayout(context))
+            vista = ResumenWidget.vistas(context, semanaKey, resumen, netoOculto).apply(context, FrameLayout(context))
         }
         return vista
     }
@@ -65,5 +66,14 @@ class ResumenWidgetTest {
 
         assertEquals(context.getString(R.string.header_neto_cobrado), vista.texto(R.id.tvWidgetEtiqueta))
         assertEquals(300.0.toCurrencyString(), vista.texto(R.id.tvWidgetNeto))
+    }
+
+    @Test
+    fun conLaAppBloqueadaNoEnsenaElNeto() {
+        val resumen = CalculoComisiones.calcularResumenSemana(socios(hechos = 8), null)
+        val vista = dibujar(resumen, netoOculto = true)
+
+        assertEquals(context.getString(R.string.widget_neto_oculto), vista.texto(R.id.tvWidgetEtiqueta))
+        assertFalse(vista.texto(R.id.tvWidgetNeto).contains("€"))
     }
 }

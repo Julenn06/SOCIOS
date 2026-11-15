@@ -8,6 +8,9 @@ import androidx.biometric.BiometricManager
 import androidx.biometric.BiometricManager.Authenticators.BIOMETRIC_WEAK
 import androidx.biometric.BiometricManager.Authenticators.DEVICE_CREDENTIAL
 import androidx.core.content.edit
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 
 /**
  * El bloqueo de la app con la huella, la cara o el PIN del móvil: si está puesto y cuándo hay que volver a pedirlo.
@@ -23,12 +26,25 @@ class Bloqueo(
     private var desbloqueada = false
     private var fueraDesde: Long? = null
 
+    /**
+     * Cambia cada vez que la app se bloquea (al abrirse en un proceso nuevo o al volver tras [ESPERA_MS] fuera). La
+     * pantalla de bloqueo pide la huella sola una vez por turno: no al girar la pantalla, pero sí tras un bloqueo nuevo
+     * aunque se recupere su estado guardado (por ejemplo, si Android cerró la app con ella a la vista).
+     */
+    var turno: Long = System.nanoTime()
+        private set
+
+    private val _estado = MutableStateFlow(leerActivo())
+
+    /** [bloqueada], para quien tenga que esperar a que se desbloquee (lo que no debe abrirse encima del bloqueo). */
+    val estado: StateFlow<Boolean> = _estado.asStateFlow()
+
     var activo: Boolean
         get() = leerActivo()
         set(valor) {
             guardarActivo(valor)
             // Quien lo activa ya ha confirmado que es él: no se le pide otra vez enseguida.
-            desbloqueada = true
+            desbloquear()
         }
 
     /** Si ahora mismo hay que tapar la app y pedir la huella o el PIN. */
@@ -36,6 +52,10 @@ class Bloqueo(
 
     fun desbloquear() {
         desbloqueada = true
+        // En Android 9 o anterior el PIN se pide en otra pantalla, que deja la app en segundo plano: lo que se tarde
+        // en escribirlo no cuenta como tiempo fuera.
+        fueraDesde = null
+        _estado.value = bloqueada
     }
 
     /** La app deja de verse (no al girar la pantalla ni al cambiar de tema, que solo la recrean). */
@@ -47,7 +67,11 @@ class Bloqueo(
     fun alVolver() {
         val desde = fueraDesde ?: return
         fueraDesde = null
-        if (reloj() - desde >= ESPERA_MS) desbloqueada = false
+        if (reloj() - desde >= ESPERA_MS) {
+            desbloqueada = false
+            turno = System.nanoTime()
+        }
+        _estado.value = bloqueada
     }
 
     companion object {

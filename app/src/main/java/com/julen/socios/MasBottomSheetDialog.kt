@@ -11,6 +11,9 @@ import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import androidx.core.widget.TextViewCompat
 import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.launch
 import com.julen.socios.ActualizacionesViewModel.EstadoVersion
 import androidx.biometric.BiometricManager
 import com.julen.socios.ajustes.Bloqueo
@@ -40,7 +43,7 @@ class MasBottomSheetDialog : PanelInferior<BottomSheetMasBinding>(BottomSheetMas
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        identificacion = Identificacion(this) { cambiarBloqueo(!bloqueo.activo) }
+        identificacion = Identificacion(this) { if (view != null) cambiarBloqueo(!bloqueo.activo) }
     }
 
     private val opcionesTema: Map<Tema, ItemTemaBinding> by lazy {
@@ -109,6 +112,17 @@ class MasBottomSheetDialog : PanelInferior<BottomSheetMasBinding>(BottomSheetMas
         bloqueo.activo = activo
         mostrarBloqueo()
         requireActivity().ocultarEnRecientesSiHaceFalta(bloqueo)
+        // El widget oculta o vuelve a enseñar el neto.
+        val app = requireActivity().application
+        viewLifecycleOwner.lifecycleScope.launch {
+            try {
+                ResumenWidget.actualizarTodos(app)
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                // Un fallo al pintar el widget no debe cerrar la app: se pondrá al día con el próximo cambio.
+            }
+        }
         Avisos.mostrar(
             binding.root,
             getString(if (activo) R.string.bloqueo_activado else R.string.bloqueo_desactivado),

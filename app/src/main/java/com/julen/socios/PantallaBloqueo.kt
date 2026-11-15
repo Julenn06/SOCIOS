@@ -27,18 +27,19 @@ class PantallaBloqueo : DialogFragment() {
 
     private val bloqueo: Bloqueo by lazy { (requireActivity().application as SociosApp).container.bloqueo }
 
-    /** El cuadro de la huella sale solo una vez al aparecer; si se cancela, queda el botón. */
-    private var pedidoAlAparecer = false
+    /** El [Bloqueo.turno] en el que ya salió solo el cuadro de la huella; si se cancela, queda el botón. */
+    private var turnoPedido: Long? = null
 
     private lateinit var identificacion: Identificacion
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         isCancelable = false
-        pedidoAlAparecer = savedInstanceState?.getBoolean(STATE_PEDIDO) ?: false
+        turnoPedido = savedInstanceState?.getLong(STATE_TURNO)
         identificacion = Identificacion(this) {
             bloqueo.desbloquear()
-            dismissAllowingStateLoss()
+            // Si la pantalla se ha recreado mientras tanto, la nueva se quita sola en su onResume.
+            if (isAdded) dismissAllowingStateLoss()
         }
     }
 
@@ -71,15 +72,15 @@ class PantallaBloqueo : DialogFragment() {
         // Ya desbloqueada (por ejemplo, se quitó el bloqueo de pantalla del móvil, ver pedir()) o aún por pedir.
         if (!bloqueo.bloqueada) {
             dismissAllowingStateLoss()
-        } else if (!pedidoAlAparecer) {
-            pedidoAlAparecer = true
+        } else if (turnoPedido != bloqueo.turno) {
+            turnoPedido = bloqueo.turno
             pedir()
         }
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
-        outState.putBoolean(STATE_PEDIDO, pedidoAlAparecer)
+        turnoPedido?.let { outState.putLong(STATE_TURNO, it) }
     }
 
     private fun pedir() {
@@ -95,7 +96,7 @@ class PantallaBloqueo : DialogFragment() {
 
     companion object {
         const val TAG = "PantallaBloqueo"
-        private const val STATE_PEDIDO = "pedido"
+        private const val STATE_TURNO = "turnoPedido"
 
         /** La pone encima de todo si hace falta y no está ya. */
         fun mostrarSiHaceFalta(bloqueo: Bloqueo, fragmentManager: FragmentManager) {
@@ -108,11 +109,17 @@ class PantallaBloqueo : DialogFragment() {
 
 /**
  * Pide la huella, la cara o el PIN del móvil con el cuadro del sistema y llama a [alAcertar] si es el dueño.
- * Cancelarlo o fallar no hace nada: el cuadro del sistema ya explica lo que ha pasado. Se crea en el onCreate del
- * [fragment], como pide BiometricPrompt para no perder la respuesta si la pantalla se recrea mientras tanto.
+ * Cancelarlo o fallar no hace nada: el cuadro del sistema ya explica lo que ha pasado.
+ *
+ * Se crea en el onCreate del [fragment], como pide BiometricPrompt para recuperar la respuesta si la pantalla se
+ * recrea mientras tanto. Además, [pedir] vuelve a crear el BiometricPrompt: todos los de una Activity comparten a
+ * quién avisar, y el último en crearse se lo queda. Sin esto, tras desbloquear con "Más" abierto debajo, el
+ * interruptor de "Más" ya no recibía la respuesta (se la había quedado la pantalla de bloqueo, ya cerrada).
  */
-class Identificacion(fragment: Fragment, alAcertar: () -> Unit) {
-    private val prompt = BiometricPrompt(
+class Identificacion(private val fragment: Fragment, private val alAcertar: () -> Unit) {
+    private var prompt = crear()
+
+    private fun crear() = BiometricPrompt(
         fragment,
         ContextCompat.getMainExecutor(fragment.requireContext()),
         object : BiometricPrompt.AuthenticationCallback() {
@@ -121,6 +128,7 @@ class Identificacion(fragment: Fragment, alAcertar: () -> Unit) {
     )
 
     fun pedir(titulo: String, subtitulo: String? = null) {
+        prompt = crear()
         val info = BiometricPrompt.PromptInfo.Builder()
             .setTitle(titulo)
             .apply { subtitulo?.let(::setSubtitle) }

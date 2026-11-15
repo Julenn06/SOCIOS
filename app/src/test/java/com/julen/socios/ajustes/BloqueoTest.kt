@@ -1,6 +1,8 @@
 package com.julen.socios.ajustes
 
+import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
@@ -47,6 +49,50 @@ class BloqueoTest {
         ahora += Bloqueo.ESPERA_MS
         bloqueo.alVolver()
         assertTrue(bloqueo.bloqueada)
+    }
+
+    @Test
+    fun tardarEnEscribirElPinEnOtraPantallaNoVuelveABloquearla() {
+        guardado = true
+        val bloqueo = bloqueo()
+        // Android 9 o anterior: el PIN se pide en otra pantalla, que deja la app en segundo plano.
+        bloqueo.alSalir()
+        ahora += Bloqueo.ESPERA_MS * 2
+        bloqueo.desbloquear()
+        bloqueo.alVolver()
+        assertFalse(bloqueo.bloqueada)
+    }
+
+    @Test
+    fun elEstadoSigueAlBloqueoYCadaBloqueoNuevoEsOtroTurno() {
+        guardado = true
+        val bloqueo = bloqueo()
+        assertTrue(bloqueo.estado.value)
+        val primero = bloqueo.turno
+
+        bloqueo.desbloquear()
+        assertFalse(bloqueo.estado.value)
+
+        bloqueo.alSalir()
+        ahora += Bloqueo.ESPERA_MS
+        bloqueo.alVolver()
+        assertTrue(bloqueo.estado.value)
+        assertNotEquals(primero, bloqueo.turno)
+
+        val segundo = bloqueo.turno
+        bloqueo.alSalir()
+        ahora += 1_000
+        bloqueo.alVolver()
+        assertEquals("Una vuelta corta no es un bloqueo nuevo", segundo, bloqueo.turno)
+    }
+
+    @Test
+    fun quitarloDesbloquea() {
+        guardado = true
+        val bloqueo = bloqueo()
+        bloqueo.activo = false
+        assertFalse(bloqueo.bloqueada)
+        assertFalse(bloqueo.estado.value)
     }
 
     @Test

@@ -57,19 +57,27 @@ object ResumenWidget {
             bonoRegalo = container.bonoRegaloRepository.getBonoRegaloFlow(semanaKey).first(),
             cobro = container.cobroRepository.getCobroFlow(semanaKey).first()
         )
-        val vistas = vistas(app, semanaKey, resumen)
+        val vistas = vistas(app, semanaKey, resumen, netoOculto = container.bloqueo.activo)
         AppWidgetManager.getInstance(app).updateAppWidget(ids, vistas)
     }
 
     @VisibleForTesting
-    internal fun vistas(context: Context, semanaKey: String, r: CalculoComisiones.ResumenCalculo): RemoteViews {
+    internal fun vistas(
+        context: Context,
+        semanaKey: String,
+        r: CalculoComisiones.ResumenCalculo,
+        netoOculto: Boolean = false
+    ): RemoteViews {
         val res = context.resources
         return RemoteViews(context.packageName, R.layout.widget_resumen).apply {
-            setTextViewText(
-                R.id.tvWidgetEtiqueta,
-                context.getString(if (r.tieneCobroReal) R.string.header_neto_cobrado else R.string.header_neto_semanal)
-            )
-            setTextViewText(R.id.tvWidgetNeto, r.totalNeto.toCurrencyString())
+            // Con la app bloqueada, el neto no se enseña en la pantalla de inicio sin pedir nada.
+            val etiqueta = when {
+                netoOculto -> R.string.widget_neto_oculto
+                r.tieneCobroReal -> R.string.header_neto_cobrado
+                else -> R.string.header_neto_semanal
+            }
+            setTextViewText(R.id.tvWidgetEtiqueta, context.getString(etiqueta))
+            setTextViewText(R.id.tvWidgetNeto, if (netoOculto) NETO_OCULTO else r.totalNeto.toCurrencyString())
             setTextViewText(
                 R.id.tvWidgetSocios,
                 context.getString(
@@ -108,6 +116,7 @@ object ResumenWidget {
         }
     }
 
+    private const val NETO_OCULTO = "•••"
     private const val PETICION_ABRIR = 1
     private const val PETICION_NUEVO = 2
 }
