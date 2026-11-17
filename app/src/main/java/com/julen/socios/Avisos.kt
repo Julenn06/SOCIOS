@@ -24,6 +24,8 @@ import com.julen.socios.databinding.ItemAvisoBinding
 import com.julen.socios.util.HapticUtils
 import com.julen.socios.util.Movimiento
 import com.julen.socios.util.ponerDebajoConLetraGrande
+import com.julen.socios.vidrio.EstiloVidrio
+import com.julen.socios.vidrio.Vidrio
 import java.lang.ref.WeakReference
 import kotlin.math.abs
 import kotlin.math.min
@@ -141,6 +143,9 @@ object Avisos {
         val aviso = ItemAvisoBinding.inflate(LayoutInflater.from(vista.context), capa, false)
         ponerDebajoConLetraGrande(aviso.btnAccionAviso, aviso.columnaAviso)
         capa.addView(aviso.root)
+        // Fuera de los paneles flota sobre la pantalla: vidrio, como la barra y el botón. Dentro de un panel (otra
+        // ventana, que no ve la pantalla) se queda como tarjeta.
+        Vidrio.aplicar(aviso.root, EstiloVidrio.AVISO, desde = vista)
         val visible = Visible(snackbar, aviso, vista)
         aviso.btnCerrarAviso.setOnClickListener { visible.cerrar() }
         aviso.root.setOnClickListener { visible.cerrar() }

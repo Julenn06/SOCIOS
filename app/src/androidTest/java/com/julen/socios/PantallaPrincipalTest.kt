@@ -62,7 +62,8 @@ class PantallaPrincipalTest {
     /**
      * Sube la vista hasta la parte de arriba de la pantalla. scrollTo() se conforma con dejarla en el borde de
      * abajo, que en pantallas pequeñas queda detrás de la barra de navegación: allí el sistema se queda con los
-     * gestos y no llegan a la app.
+     * gestos y no llegan a la app. Arriba del todo, justo debajo de la barra: el contenido pasa por debajo de ella
+     * (su relleno de arriba) y lo que quede ahí lo taparía.
      */
     private fun subirArriba() = object : ViewAction {
         override fun getConstraints(): Matcher<View> = isDescendantOfA(isAssignableFrom(NestedScrollView::class.java))
@@ -74,7 +75,7 @@ class PantallaPrincipalTest {
             while (padre !is NestedScrollView) padre = (padre as View).parent
             val posVista = IntArray(2).also(view::getLocationInWindow)
             val posScroll = IntArray(2).also(padre::getLocationInWindow)
-            padre.scrollBy(0, posVista[1] - posScroll[1])
+            padre.scrollBy(0, posVista[1] - posScroll[1] - padre.paddingTop)
             uiController.loopMainThreadUntilIdle()
         }
     }

@@ -27,6 +27,7 @@ import com.julen.socios.util.AnimationExtensions
 import com.julen.socios.util.HapticUtils
 import com.julen.socios.util.Movimiento
 import com.julen.socios.util.toEurosCompacto
+import com.julen.socios.vidrio.VidrioVentana
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
@@ -63,9 +64,22 @@ abstract class PanelInferior<B : ViewBinding>(
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View =
         inflar(inflater, container, false).also { _binding = it }.root
 
+    /** El diálogo al que ya se le ha puesto el vidrio: onStart se repite al volver de segundo plano. */
+    private var dialogoConVidrio: Dialog? = null
+
+    override fun onStart() {
+        super.onStart()
+        // Ya se muestra: existe la hoja. Lo de detrás se desenfoca y el panel se vuelve vidrio esmerilado.
+        val dialogo = dialog as? BottomSheetDialog ?: return
+        if (dialogo === dialogoConVidrio) return
+        dialogoConVidrio = dialogo
+        VidrioVentana.aplicar(dialogo, dialogo.findViewById(com.google.android.material.R.id.design_bottom_sheet))
+    }
+
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
+        dialogoConVidrio = null
     }
 
     /** Ejecuta [bloque] mientras el panel se ve: se para al pasar a segundo plano y vuelve a empezar al volver. */

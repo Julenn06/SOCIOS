@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Vidrio en los diálogos: Android desenfoca lo que queda detrás (si el sistema lo quita, por ejemplo en ahorro
+         de batería, se ve oscurecido como siempre). El diálogo sigue opaco para que su texto se lea igual. -->
+    <style name="ThemeOverlay.Socios.Dialogo" parent="Base.ThemeOverlay.Socios.Dialogo">
+        <item name="android:windowBlurBehindEnabled">true</item>
+        <item name="android:windowBlurBehindRadius">24dp</item>
+    </style>
+</resources>

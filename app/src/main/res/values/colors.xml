@@ -81,4 +81,13 @@
 
     <!-- Icono del atajo "Nuevo socio": va sobre la placa blanca del icono, igual en claro y en oscuro. -->
     <color name="icono_atajo">#0E7A55</color>
+    <!-- Vidrio líquido (paquete vidrio): el tinte de cada vidrio sobre lo desenfocado de detrás. El del botón es más
+         oscuro que primary para que su texto blanco se lea (4,5:1) aunque detrás haya una tarjeta blanca. -->
+    <color name="vidrio_barra">#F2F4F0</color>
+    <color name="vidrio_boton">#0B6748</color>
+    <color name="vidrio_aviso">#FFFFFF</color>
+    <!-- Panel translúcido mientras Android desenfoca lo que hay detrás. -->
+    <color name="vidrio_panel">#C7FFFFFF</color>
+    <!-- Contorno del selector de semana cuando va sobre la barra de vidrio, en lugar de su tarjeta. -->
+    <color name="vidrio_filo_tarjeta">#8CFFFFFF</color>
 </resources>

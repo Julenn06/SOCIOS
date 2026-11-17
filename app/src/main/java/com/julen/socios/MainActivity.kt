@@ -17,7 +17,9 @@ import androidx.annotation.StringRes
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.coordinatorlayout.widget.CoordinatorLayout
+import androidx.core.content.ContextCompat
 import androidx.core.content.pm.ShortcutManagerCompat
+import androidx.core.graphics.ColorUtils
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.isVisible
@@ -40,6 +42,8 @@ import com.julen.socios.util.AnimationExtensions
 import com.julen.socios.util.DateUtils
 import com.julen.socios.util.HapticUtils
 import com.julen.socios.util.nombreVisible
+import com.julen.socios.vidrio.EstiloVidrio
+import com.julen.socios.vidrio.Vidrio
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
@@ -94,6 +98,15 @@ class MainActivity : AppCompatActivity() {
             binding.nestedScrollView.updatePadding(bottom = systemBars.bottom + (80 * density).toInt())
             insets
         }
+        // El contenido pasa por debajo de la barra (para verse a través de su vidrio) y empieza justo debajo de ella.
+        binding.appBar.addOnLayoutChangeListener { barra, _, _, _, _, _, _, _, _ ->
+            if (binding.nestedScrollView.paddingTop != barra.height) {
+                binding.nestedScrollView.updatePadding(top = barra.height)
+            }
+        }
+        ponerVidrio()
+        // Si se cambia el contraste en los ajustes con la app abierta, la pantalla se rehace con o sin vidrio.
+        Vidrio.recrearAlCambiarContraste(this)
 
         setSupportActionBar(binding.toolbar)
         if (resources.configuration.fontScale >= ESCALA_LETRA_TITULO_CORTO) {
@@ -176,6 +189,26 @@ class MainActivity : AppCompatActivity() {
         dialogoEliminar?.dismiss()
         dialogoDestinoExport?.cerrarSinAvisar()
         super.onDestroy()
+    }
+
+    /**
+     * Vidrio líquido en lo que flota sobre el contenido y se toca: la barra de arriba y el botón de añadir. El
+     * contenido (las tarjetas) no lleva vidrio. Sin vidrio (Android 11 o anterior, o con más contraste en los
+     * ajustes) se quedan como siempre.
+     */
+    @SuppressLint("ClickableViewAccessibility") // No es una acción: solo impide que el toque atraviese la barra.
+    private fun ponerVidrio() {
+        // El contenido pasa por debajo de la barra: un toque en una zona de la barra sin botón (sus márgenes, la
+        // franja de la barra de estado) no debe llegar a lo que hay debajo. Lo que sí toca un botón le llega antes.
+        binding.appBar.setOnTouchListener { _, _ -> true }
+        if (!Vidrio.aplicar(binding.appBar, EstiloVidrio.BARRA)) return
+        Vidrio.aplicar(binding.fabAddSocio, EstiloVidrio.BOTON)
+        // Sobre el vidrio, el selector de semana deja de ser una tarjeta opaca: un velo claro con el filo de luz,
+        // sin un segundo vidrio dentro del primero.
+        binding.tarjetaSemana.setCardBackgroundColor(
+            ColorUtils.setAlphaComponent(ContextCompat.getColor(this, R.color.surface_card), ALFA_VELO_SEMANA)
+        )
+        binding.tarjetaSemana.setStrokeColor(ContextCompat.getColorStateList(this, R.color.vidrio_filo_tarjeta))
     }
 
     /** Lo cierra sin que su listener tome el cierre por una cancelación del usuario. */
@@ -457,5 +490,8 @@ class MainActivity : AppCompatActivity() {
 
         /** A partir de esta letra del sistema, "Gestión de Socios" no cabe junto a los tres iconos de la barra. */
         private const val ESCALA_LETRA_TITULO_CORTO = 1.3f
+
+        /** Opacidad (0–255) del velo del selector de semana sobre la barra de vidrio. */
+        private const val ALFA_VELO_SEMANA = 115
     }
 }

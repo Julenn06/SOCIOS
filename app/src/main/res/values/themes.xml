@@ -48,11 +48,14 @@
     </style>
 
     <!-- Diálogos con el título en negrita, como los paneles. -->
-    <style name="ThemeOverlay.Socios.Dialogo" parent="ThemeOverlay.Material3.MaterialAlertDialog">
+    <style name="Base.ThemeOverlay.Socios.Dialogo" parent="ThemeOverlay.Material3.MaterialAlertDialog">
         <item name="materialAlertDialogTitleTextStyle">@style/Socios.Dialogo.Titulo</item>
         <!-- Sin el tinte verdoso de la elevación, igual que en los paneles. -->
         <item name="elevationOverlayEnabled">false</item>
     </style>
+
+    <!-- En Android 12 o más (values-v31) desenfoca lo que queda detrás, como los paneles. -->
+    <style name="ThemeOverlay.Socios.Dialogo" parent="Base.ThemeOverlay.Socios.Dialogo" />
 
     <style name="Socios.Dialogo.Titulo" parent="MaterialAlertDialog.Material3.Title.Text">
         <item name="android:textColor">@color/text_main</item>

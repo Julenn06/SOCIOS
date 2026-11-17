@@ -506,7 +506,6 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:baselineAligned="false"
-        android:background="@color/surface_card"
         android:orientation="horizontal"
         android:paddingHorizontal="20dp"
         android:paddingVertical="12dp">

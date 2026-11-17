@@ -9,6 +9,490 @@
     tools:context=".MainActivity"
     tools:targetApi="q">
 
+    <!-- Lo que se ve a través del vidrio de la barra, del botón y de los avisos (paquete vidrio). Va antes que
+         ellos: se tienen que pintar después. El contenido pasa por debajo de la barra (su relleno de arriba es
+         el alto de la barra, ver MainActivity). -->
+    <com.julen.socios.vidrio.FuenteVidrio
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/bg_light">
+
+        <com.julen.socios.vidrio.ScrollBajoVidrio
+            android:id="@+id/nestedScrollView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:clipToPadding="false">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:paddingHorizontal="16dp"
+                android:paddingTop="4dp"
+                android:paddingBottom="88dp">
+
+                <!-- Resumen de la semana -->
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:outlineAmbientShadowColor="@color/header_gradient_start"
+                    android:outlineSpotShadowColor="@color/header_gradient_start"
+                    app:cardCornerRadius="28dp"
+                    app:cardElevation="10dp"
+                    app:strokeColor="@color/header_filo"
+                    app:strokeWidth="1dp"
+                    tools:targetApi="p">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:background="@drawable/bg_hero"
+                        android:orientation="vertical"
+                        android:paddingHorizontal="20dp"
+                        android:paddingTop="20dp"
+                        android:paddingBottom="18dp">
+
+                        <!-- El neto: con un doble toque se ajusta a lo cobrado de verdad -->
+                        <LinearLayout
+                            android:id="@+id/containerNetoHeader"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="-6dp"
+                            android:clickable="true"
+                            android:focusable="true"
+                            android:orientation="vertical"
+                            android:padding="6dp">
+
+                            <TextView
+                                android:id="@+id/tvNetoHeaderLabel"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="@string/header_neto_semanal"
+                                android:textColor="@color/header_label_neto"
+                                android:textSize="13sp"
+                                android:fontFamily="@font/geist_medium" />
+
+                            <!-- Con la letra grande del sistema la cifra se encoge en vez de partirse por la coma -->
+                            <TextView
+                                android:id="@+id/tvNetoHeader"
+                                style="@style/Socios.CifraGrande"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="8dp"
+                                android:autoSizeMaxTextSize="44sp"
+                                android:autoSizeMinTextSize="20sp"
+                                android:autoSizeTextType="uniform"
+                                android:maxLines="1"
+                                android:textColor="@android:color/white"
+                                android:textSize="44sp"
+                                tools:text="424,01 €" />
+                        </LinearLayout>
+
+                        <!-- Base, bonus (se puede ajustar) e IRPF. Las cajas que se tocan no llevan el resalte
+                             estándar: es rectangular y claro, y sobre la cabecera se veía como una caja blanca.
+                             Al tocarlas se encogen un poco y vibran (ver MainActivity). -->
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="20dp"
+                            android:baselineAligned="false"
+                            android:orientation="horizontal">
+
+                            <LinearLayout
+                                style="@style/Socios.CajaCabecera">
+
+                                <TextView
+                                    style="@style/Socios.EtiquetaCajaCabecera"
+                                    android:text="@string/label_base_x2"
+                                    android:textColor="@color/header_label_base" />
+
+                                <TextView
+                                    android:id="@+id/tvBaseHeader"
+                                    style="@style/Socios.ImporteCajaCabecera"
+                                    tools:text="+400 €" />
+                            </LinearLayout>
+
+                            <LinearLayout
+                                android:id="@+id/containerBonusHeader"
+                                style="@style/Socios.CajaCabecera"
+                                android:layout_marginHorizontal="8dp"
+                                android:clickable="true"
+                                android:focusable="true">
+
+                                <TextView
+                                    android:id="@+id/tvBonusHeaderLabel"
+                                    style="@style/Socios.EtiquetaCajaCabecera"
+                                    android:drawablePadding="4dp"
+                                    android:textColor="@color/header_label_bonus"
+                                    app:drawableEndCompat="@drawable/ic_edit_pequeno"
+                                    app:drawableTint="@color/header_label_bonus"
+                                    tools:text="Bonus" />
+
+                                <TextView
+                                    android:id="@+id/tvBonusHeader"
+                                    style="@style/Socios.ImporteCajaCabecera"
+                                    android:textColor="@color/header_bonus"
+                                    tools:text="+140 €" />
+                            </LinearLayout>
+
+                            <LinearLayout
+                                style="@style/Socios.CajaCabecera">
+
+                                <!-- "IRPF 21,48 %" es la etiqueta más larga: con la letra grande encoge en vez de cortarse -->
+                                <TextView
+                                    android:id="@+id/tvIrpfHeaderLabel"
+                                    style="@style/Socios.EtiquetaCajaCabecera"
+                                    android:layout_width="match_parent"
+                                    android:autoSizeMaxTextSize="11.5sp"
+                                    android:autoSizeMinTextSize="8sp"
+                                    android:autoSizeTextType="uniform"
+                                    android:textColor="@color/header_label_irpf"
+                                    tools:text="IRPF 21,48 %" />
+
+                                <TextView
+                                    android:id="@+id/tvIrpfHeader"
+                                    style="@style/Socios.ImporteCajaCabecera"
+                                    android:textColor="@color/header_irpf"
+                                    tools:text="-115,99 €" />
+                            </LinearLayout>
+                        </LinearLayout>
+
+                        <!-- Solo con el neto ajustado a lo cobrado: cuánto se ha descontado de lo calculado -->
+                        <LinearLayout
+                            android:id="@+id/containerCobroHeader"
+                            style="@style/Socios.Fila"
+                            android:visibility="gone"
+                            tools:visibility="visible"
+                            android:layout_marginTop="8dp"
+                            android:background="@drawable/bg_caja_translucida"
+                            android:clickable="true"
+                            android:focusable="true"
+                            android:minHeight="44dp"
+                            android:paddingHorizontal="12dp"
+                            android:paddingVertical="8dp">
+
+                            <ImageView
+                                android:layout_width="18dp"
+                                android:layout_height="18dp"
+                                android:importantForAccessibility="no"
+                                android:src="@drawable/ic_cobro"
+                                app:tint="@color/header_label_cobro" />
+
+                            <TextView
+                                android:id="@+id/tvCobroHeaderLabel"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_marginHorizontal="8dp"
+                                android:layout_weight="1"
+                                android:ellipsize="end"
+                                android:maxLines="2"
+                                android:text="@string/header_cobro_descontado"
+                                android:textColor="@color/header_label_cobro"
+                                android:textSize="12.5sp"
+                                tools:text="Te han descontado" />
+
+                            <TextView
+                                android:id="@+id/tvCobroHeader"
+                                style="@style/Socios.Cifra"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:maxLines="1"
+                                android:textColor="@color/header_cobro"
+                                android:textSize="15sp"
+                                tools:text="-15,31 €" />
+
+                            <ImageView
+                                android:layout_width="14dp"
+                                android:layout_height="14dp"
+                                android:layout_marginStart="6dp"
+                                android:importantForAccessibility="no"
+                                android:src="@drawable/ic_edit_pequeno"
+                                app:tint="@color/header_label_cobro" />
+                        </LinearLayout>
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <!-- Aviso de socios pendientes en semanas anteriores: una franja fina que lleva a revisarlos; la ✕
+                     lo oculta hasta que haya otro. Fina para no quitarle sitio a la semana que se está viendo. -->
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/cardAvisoPendientes"
+                    style="@style/Socios.TarjetaFila"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:visibility="gone"
+                    app:cardBackgroundColor="@color/amber_container"
+                    app:cardCornerRadius="16dp"
+                    app:strokeColor="@color/amber_stroke"
+                    tools:visibility="visible">
+
+                    <LinearLayout
+                        style="@style/Socios.Fila"
+                        android:paddingStart="14dp"
+                        android:paddingEnd="2dp">
+
+                        <ImageView
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
+                            android:importantForAccessibility="no"
+                            android:src="@drawable/ic_pendientes"
+                            app:tint="@color/amber_text" />
+
+                        <TextView
+                            android:id="@+id/tvAvisoPendientes"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginHorizontal="10dp"
+                            android:layout_weight="1"
+                            android:fontFamily="@font/geist_semibold"
+                            android:paddingVertical="6dp"
+                            android:textColor="@color/amber_text"
+                            android:textSize="14sp"
+                            tools:text="3 pendientes de semanas anteriores" />
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btnOcultarAvisoPendientes"
+                            style="@style/Socios.BotonAccionSocio"
+                            android:layout_width="48dp"
+                            android:layout_height="48dp"
+                            android:contentDescription="@string/cd_ocultar_aviso_pendientes"
+                            app:icon="@drawable/ic_close"
+                            app:iconSize="18dp"
+                            app:iconTint="@color/amber_text" />
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <!-- Progreso del bonus por tramos -->
+                <com.google.android.material.card.MaterialCardView
+                    style="@style/Socios.TarjetaFila"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="14dp"
+                    app:cardBackgroundColor="@color/surface_card">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="16dp">
+
+                        <LinearLayout
+                            style="@style/Socios.Fila">
+
+                            <FrameLayout
+                                android:layout_width="44dp"
+                                android:layout_height="44dp"
+                                android:background="@drawable/bg_icono_ambar">
+
+                                <ImageView
+                                    android:layout_width="24dp"
+                                    android:layout_height="24dp"
+                                    android:layout_gravity="center"
+                                    android:importantForAccessibility="no"
+                                    android:src="@drawable/ic_trophy"
+                                    app:tint="@android:color/white" />
+                            </FrameLayout>
+
+                            <TextView
+                                android:id="@+id/tvBonusTitle"
+                                style="@style/Socios.TituloFila"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_marginHorizontal="12dp"
+                                android:layout_weight="1"
+                                tools:text="Bonus de la semana: +100 €" />
+
+                            <!-- La pastilla se queda quieta y el número rueda dentro (recortado a su forma) al cambiar.
+                                 Con ancho mínimo y cifras de igual ancho, "3 / 5" y "6 / 7" miden lo mismo. -->
+                            <FrameLayout
+                                android:id="@+id/pastillaBonus"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:background="@drawable/bg_pastilla_version"
+                                android:minWidth="52dp"
+                                android:paddingHorizontal="10dp"
+                                android:paddingVertical="4dp">
+
+                                <TextView
+                                    android:id="@+id/tvBonusProgressCount"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_gravity="center"
+                                    android:fontFamily="@font/geist_semibold"
+                                    android:fontFeatureSettings="tnum"
+                                    android:maxLines="1"
+                                    android:textColor="@color/on_primary_container"
+                                    android:textSize="12sp"
+                                    tools:text="7 / 10" />
+                            </FrameLayout>
+                        </LinearLayout>
+
+                        <com.julen.socios.ProgresoBonusView
+                            android:id="@+id/progressBonus"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="16dp" />
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <!-- Filtro por día: Todos y los cinco días, con cuántos socios hay en cada uno -->
+                <TextView
+                    style="@style/Socios.Seccion"
+                    android:text="@string/filtro_dias_label" />
+
+                <com.google.android.material.button.MaterialButtonToggleGroup
+                    android:id="@+id/toggleFiltroDias"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:checkedButton="@id/btnFiltroTodos"
+                    app:selectionRequired="true"
+                    app:singleSelection="true">
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnFiltroTodos"
+                        style="@style/Socios.OpcionFiltro"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1.25"
+                        tools:text="Todos\n7" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnFiltroLun"
+                        style="@style/Socios.OpcionFiltro"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        tools:text="Lun\n2" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnFiltroMar"
+                        style="@style/Socios.OpcionFiltro"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        tools:text="Mar\n1" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnFiltroMie"
+                        style="@style/Socios.OpcionFiltro"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        tools:text="Mié\n0" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnFiltroJue"
+                        style="@style/Socios.OpcionFiltro"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        tools:text="Jue\n3" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnFiltroVie"
+                        style="@style/Socios.OpcionFiltro"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        tools:text="Vie\n1" />
+                </com.google.android.material.button.MaterialButtonToggleGroup>
+
+                <!-- Encabezado de la lista -->
+                <LinearLayout
+                    style="@style/Socios.Fila"
+                    android:layout_marginTop="22dp">
+
+                    <TextView
+                        android:id="@+id/tvListaTitulo"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:textColor="@color/text_main"
+                        android:textSize="19sp"
+                        android:fontFamily="@font/geist_semibold"
+                        tools:text="Socios de la semana" />
+
+                    <TextView
+                        android:id="@+id/tvListaResumenDia"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:background="@drawable/bg_pastilla_version"
+                        android:paddingHorizontal="10dp"
+                        android:paddingVertical="4dp"
+                        android:textColor="@color/on_primary_container"
+                        android:textSize="12sp"
+                        android:fontFamily="@font/geist_semibold"
+                        tools:text="5 de 7 hechos" />
+                </LinearLayout>
+
+                <!-- Estado vacío: una tarjeta compacta (para que no quede bajo el botón flotante) que abre el formulario -->
+                <LinearLayout
+                    android:id="@+id/containerEmptyState"
+                    style="@style/Socios.Fila"
+                    android:layout_marginTop="12dp"
+                    android:visibility="gone"
+                    tools:visibility="visible"
+                    android:background="@drawable/bg_vacio"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:foreground="@drawable/ripple_vacio"
+                    android:padding="16dp"
+                    android:stateListAnimator="@animator/pulsar">
+
+                    <FrameLayout
+                        android:layout_width="52dp"
+                        android:layout_height="52dp"
+                        android:background="@drawable/bg_icono_tile"
+                        android:backgroundTint="@color/primary_container">
+
+                        <ImageView
+                            android:layout_width="26dp"
+                            android:layout_height="26dp"
+                            android:layout_gravity="center"
+                            android:importantForAccessibility="no"
+                            android:src="@drawable/ic_group"
+                            app:tint="@color/primary" />
+                    </FrameLayout>
+
+                    <LinearLayout
+                        style="@style/Socios.ColumnaTextos">
+
+                        <TextView
+                            style="@style/Socios.TituloFila"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/empty_titulo" />
+
+                        <TextView
+                            style="@style/Socios.DescripcionFila"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/empty_mensaje" />
+                    </LinearLayout>
+
+                    <ImageView
+                        android:layout_width="22dp"
+                        android:layout_height="22dp"
+                        android:importantForAccessibility="no"
+                        android:src="@drawable/ic_add"
+                        app:tint="@color/primary" />
+                </LinearLayout>
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/rvSocios"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:layoutAnimation="@anim/layout_animation_fall_down"
+                    android:nestedScrollingEnabled="false"
+                    tools:itemCount="3"
+                    tools:listitem="@layout/item_socio" />
+            </LinearLayout>
+        </com.julen.socios.vidrio.ScrollBajoVidrio>
+
+    </com.julen.socios.vidrio.FuenteVidrio>
+
     <com.google.android.material.appbar.AppBarLayout
         android:id="@+id/appBar"
         android:layout_width="match_parent"
@@ -39,6 +523,7 @@
                 tools:visibility="visible" />
 
             <com.google.android.material.card.MaterialCardView
+                android:id="@+id/tarjetaSemana"
                 style="@style/Socios.TarjetaFila"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
@@ -131,481 +616,6 @@
                 android:visibility="gone" />
         </LinearLayout>
     </com.google.android.material.appbar.AppBarLayout>
-
-    <androidx.core.widget.NestedScrollView
-        android:id="@+id/nestedScrollView"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:clipToPadding="false"
-        app:layout_behavior="@string/appbar_scrolling_view_behavior">
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:paddingHorizontal="16dp"
-            android:paddingTop="4dp"
-            android:paddingBottom="88dp">
-
-            <!-- Resumen de la semana -->
-            <com.google.android.material.card.MaterialCardView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:outlineAmbientShadowColor="@color/header_gradient_start"
-                android:outlineSpotShadowColor="@color/header_gradient_start"
-                app:cardCornerRadius="28dp"
-                app:cardElevation="10dp"
-                app:strokeColor="@color/header_filo"
-                app:strokeWidth="1dp"
-                tools:targetApi="p">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:background="@drawable/bg_hero"
-                    android:orientation="vertical"
-                    android:paddingHorizontal="20dp"
-                    android:paddingTop="20dp"
-                    android:paddingBottom="18dp">
-
-                    <!-- El neto: con un doble toque se ajusta a lo cobrado de verdad -->
-                    <LinearLayout
-                        android:id="@+id/containerNetoHeader"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="-6dp"
-                        android:clickable="true"
-                        android:focusable="true"
-                        android:orientation="vertical"
-                        android:padding="6dp">
-
-                        <TextView
-                            android:id="@+id/tvNetoHeaderLabel"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="@string/header_neto_semanal"
-                            android:textColor="@color/header_label_neto"
-                            android:textSize="13sp"
-                            android:fontFamily="@font/geist_medium" />
-
-                        <!-- Con la letra grande del sistema la cifra se encoge en vez de partirse por la coma -->
-                        <TextView
-                            android:id="@+id/tvNetoHeader"
-                            style="@style/Socios.CifraGrande"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="8dp"
-                            android:autoSizeMaxTextSize="44sp"
-                            android:autoSizeMinTextSize="20sp"
-                            android:autoSizeTextType="uniform"
-                            android:maxLines="1"
-                            android:textColor="@android:color/white"
-                            android:textSize="44sp"
-                            tools:text="424,01 €" />
-                    </LinearLayout>
-
-                    <!-- Base, bonus (se puede ajustar) e IRPF. Las cajas que se tocan no llevan el resalte
-                         estándar: es rectangular y claro, y sobre la cabecera se veía como una caja blanca.
-                         Al tocarlas se encogen un poco y vibran (ver MainActivity). -->
-
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="20dp"
-                        android:baselineAligned="false"
-                        android:orientation="horizontal">
-
-                        <LinearLayout
-                            style="@style/Socios.CajaCabecera">
-
-                            <TextView
-                                style="@style/Socios.EtiquetaCajaCabecera"
-                                android:text="@string/label_base_x2"
-                                android:textColor="@color/header_label_base" />
-
-                            <TextView
-                                android:id="@+id/tvBaseHeader"
-                                style="@style/Socios.ImporteCajaCabecera"
-                                tools:text="+400 €" />
-                        </LinearLayout>
-
-                        <LinearLayout
-                            android:id="@+id/containerBonusHeader"
-                            style="@style/Socios.CajaCabecera"
-                            android:layout_marginHorizontal="8dp"
-                            android:clickable="true"
-                            android:focusable="true">
-
-                            <TextView
-                                android:id="@+id/tvBonusHeaderLabel"
-                                style="@style/Socios.EtiquetaCajaCabecera"
-                                android:drawablePadding="4dp"
-                                android:textColor="@color/header_label_bonus"
-                                app:drawableEndCompat="@drawable/ic_edit_pequeno"
-                                app:drawableTint="@color/header_label_bonus"
-                                tools:text="Bonus" />
-
-                            <TextView
-                                android:id="@+id/tvBonusHeader"
-                                style="@style/Socios.ImporteCajaCabecera"
-                                android:textColor="@color/header_bonus"
-                                tools:text="+140 €" />
-                        </LinearLayout>
-
-                        <LinearLayout
-                            style="@style/Socios.CajaCabecera">
-
-                            <!-- "IRPF 21,48 %" es la etiqueta más larga: con la letra grande encoge en vez de cortarse -->
-                            <TextView
-                                android:id="@+id/tvIrpfHeaderLabel"
-                                style="@style/Socios.EtiquetaCajaCabecera"
-                                android:layout_width="match_parent"
-                                android:autoSizeMaxTextSize="11.5sp"
-                                android:autoSizeMinTextSize="8sp"
-                                android:autoSizeTextType="uniform"
-                                android:textColor="@color/header_label_irpf"
-                                tools:text="IRPF 21,48 %" />
-
-                            <TextView
-                                android:id="@+id/tvIrpfHeader"
-                                style="@style/Socios.ImporteCajaCabecera"
-                                android:textColor="@color/header_irpf"
-                                tools:text="-115,99 €" />
-                        </LinearLayout>
-                    </LinearLayout>
-
-                    <!-- Solo con el neto ajustado a lo cobrado: cuánto se ha descontado de lo calculado -->
-                    <LinearLayout
-                        android:id="@+id/containerCobroHeader"
-                        style="@style/Socios.Fila"
-                        android:visibility="gone"
-                        tools:visibility="visible"
-                        android:layout_marginTop="8dp"
-                        android:background="@drawable/bg_caja_translucida"
-                        android:clickable="true"
-                        android:focusable="true"
-                        android:minHeight="44dp"
-                        android:paddingHorizontal="12dp"
-                        android:paddingVertical="8dp">
-
-                        <ImageView
-                            android:layout_width="18dp"
-                            android:layout_height="18dp"
-                            android:importantForAccessibility="no"
-                            android:src="@drawable/ic_cobro"
-                            app:tint="@color/header_label_cobro" />
-
-                        <TextView
-                            android:id="@+id/tvCobroHeaderLabel"
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_marginHorizontal="8dp"
-                            android:layout_weight="1"
-                            android:ellipsize="end"
-                            android:maxLines="2"
-                            android:text="@string/header_cobro_descontado"
-                            android:textColor="@color/header_label_cobro"
-                            android:textSize="12.5sp"
-                            tools:text="Te han descontado" />
-
-                        <TextView
-                            android:id="@+id/tvCobroHeader"
-                            style="@style/Socios.Cifra"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:maxLines="1"
-                            android:textColor="@color/header_cobro"
-                            android:textSize="15sp"
-                            tools:text="-15,31 €" />
-
-                        <ImageView
-                            android:layout_width="14dp"
-                            android:layout_height="14dp"
-                            android:layout_marginStart="6dp"
-                            android:importantForAccessibility="no"
-                            android:src="@drawable/ic_edit_pequeno"
-                            app:tint="@color/header_label_cobro" />
-                    </LinearLayout>
-                </LinearLayout>
-            </com.google.android.material.card.MaterialCardView>
-
-            <!-- Aviso de socios pendientes en semanas anteriores: una franja fina que lleva a revisarlos; la ✕
-                 lo oculta hasta que haya otro. Fina para no quitarle sitio a la semana que se está viendo. -->
-            <com.google.android.material.card.MaterialCardView
-                android:id="@+id/cardAvisoPendientes"
-                style="@style/Socios.TarjetaFila"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
-                android:visibility="gone"
-                app:cardBackgroundColor="@color/amber_container"
-                app:cardCornerRadius="16dp"
-                app:strokeColor="@color/amber_stroke"
-                tools:visibility="visible">
-
-                <LinearLayout
-                    style="@style/Socios.Fila"
-                    android:paddingStart="14dp"
-                    android:paddingEnd="2dp">
-
-                    <ImageView
-                        android:layout_width="20dp"
-                        android:layout_height="20dp"
-                        android:importantForAccessibility="no"
-                        android:src="@drawable/ic_pendientes"
-                        app:tint="@color/amber_text" />
-
-                    <TextView
-                        android:id="@+id/tvAvisoPendientes"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_marginHorizontal="10dp"
-                        android:layout_weight="1"
-                        android:fontFamily="@font/geist_semibold"
-                        android:paddingVertical="6dp"
-                        android:textColor="@color/amber_text"
-                        android:textSize="14sp"
-                        tools:text="3 pendientes de semanas anteriores" />
-
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/btnOcultarAvisoPendientes"
-                        style="@style/Socios.BotonAccionSocio"
-                        android:layout_width="48dp"
-                        android:layout_height="48dp"
-                        android:contentDescription="@string/cd_ocultar_aviso_pendientes"
-                        app:icon="@drawable/ic_close"
-                        app:iconSize="18dp"
-                        app:iconTint="@color/amber_text" />
-                </LinearLayout>
-            </com.google.android.material.card.MaterialCardView>
-
-            <!-- Progreso del bonus por tramos -->
-            <com.google.android.material.card.MaterialCardView
-                style="@style/Socios.TarjetaFila"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="14dp"
-                app:cardBackgroundColor="@color/surface_card">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:padding="16dp">
-
-                    <LinearLayout
-                        style="@style/Socios.Fila">
-
-                        <FrameLayout
-                            android:layout_width="44dp"
-                            android:layout_height="44dp"
-                            android:background="@drawable/bg_icono_ambar">
-
-                            <ImageView
-                                android:layout_width="24dp"
-                                android:layout_height="24dp"
-                                android:layout_gravity="center"
-                                android:importantForAccessibility="no"
-                                android:src="@drawable/ic_trophy"
-                                app:tint="@android:color/white" />
-                        </FrameLayout>
-
-                        <TextView
-                            android:id="@+id/tvBonusTitle"
-                            style="@style/Socios.TituloFila"
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_marginHorizontal="12dp"
-                            android:layout_weight="1"
-                            tools:text="Bonus de la semana: +100 €" />
-
-                        <!-- La pastilla se queda quieta y el número rueda dentro (recortado a su forma) al cambiar.
-                             Con ancho mínimo y cifras de igual ancho, "3 / 5" y "6 / 7" miden lo mismo. -->
-                        <FrameLayout
-                            android:id="@+id/pastillaBonus"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:background="@drawable/bg_pastilla_version"
-                            android:minWidth="52dp"
-                            android:paddingHorizontal="10dp"
-                            android:paddingVertical="4dp">
-
-                            <TextView
-                                android:id="@+id/tvBonusProgressCount"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_gravity="center"
-                                android:fontFamily="@font/geist_semibold"
-                                android:fontFeatureSettings="tnum"
-                                android:maxLines="1"
-                                android:textColor="@color/on_primary_container"
-                                android:textSize="12sp"
-                                tools:text="7 / 10" />
-                        </FrameLayout>
-                    </LinearLayout>
-
-                    <com.julen.socios.ProgresoBonusView
-                        android:id="@+id/progressBonus"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="16dp" />
-                </LinearLayout>
-            </com.google.android.material.card.MaterialCardView>
-
-            <!-- Filtro por día: Todos y los cinco días, con cuántos socios hay en cada uno -->
-            <TextView
-                style="@style/Socios.Seccion"
-                android:text="@string/filtro_dias_label" />
-
-            <com.google.android.material.button.MaterialButtonToggleGroup
-                android:id="@+id/toggleFiltroDias"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                app:checkedButton="@id/btnFiltroTodos"
-                app:selectionRequired="true"
-                app:singleSelection="true">
-
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btnFiltroTodos"
-                    style="@style/Socios.OpcionFiltro"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1.25"
-                    tools:text="Todos\n7" />
-
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btnFiltroLun"
-                    style="@style/Socios.OpcionFiltro"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    tools:text="Lun\n2" />
-
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btnFiltroMar"
-                    style="@style/Socios.OpcionFiltro"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    tools:text="Mar\n1" />
-
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btnFiltroMie"
-                    style="@style/Socios.OpcionFiltro"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    tools:text="Mié\n0" />
-
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btnFiltroJue"
-                    style="@style/Socios.OpcionFiltro"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    tools:text="Jue\n3" />
-
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btnFiltroVie"
-                    style="@style/Socios.OpcionFiltro"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    tools:text="Vie\n1" />
-            </com.google.android.material.button.MaterialButtonToggleGroup>
-
-            <!-- Encabezado de la lista -->
-            <LinearLayout
-                style="@style/Socios.Fila"
-                android:layout_marginTop="22dp">
-
-                <TextView
-                    android:id="@+id/tvListaTitulo"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:textColor="@color/text_main"
-                    android:textSize="19sp"
-                    android:fontFamily="@font/geist_semibold"
-                    tools:text="Socios de la semana" />
-
-                <TextView
-                    android:id="@+id/tvListaResumenDia"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:background="@drawable/bg_pastilla_version"
-                    android:paddingHorizontal="10dp"
-                    android:paddingVertical="4dp"
-                    android:textColor="@color/on_primary_container"
-                    android:textSize="12sp"
-                    android:fontFamily="@font/geist_semibold"
-                    tools:text="5 de 7 hechos" />
-            </LinearLayout>
-
-            <!-- Estado vacío: una tarjeta compacta (para que no quede bajo el botón flotante) que abre el formulario -->
-            <LinearLayout
-                android:id="@+id/containerEmptyState"
-                style="@style/Socios.Fila"
-                android:layout_marginTop="12dp"
-                android:visibility="gone"
-                tools:visibility="visible"
-                android:background="@drawable/bg_vacio"
-                android:clickable="true"
-                android:focusable="true"
-                android:foreground="@drawable/ripple_vacio"
-                android:padding="16dp"
-                android:stateListAnimator="@animator/pulsar">
-
-                <FrameLayout
-                    android:layout_width="52dp"
-                    android:layout_height="52dp"
-                    android:background="@drawable/bg_icono_tile"
-                    android:backgroundTint="@color/primary_container">
-
-                    <ImageView
-                        android:layout_width="26dp"
-                        android:layout_height="26dp"
-                        android:layout_gravity="center"
-                        android:importantForAccessibility="no"
-                        android:src="@drawable/ic_group"
-                        app:tint="@color/primary" />
-                </FrameLayout>
-
-                <LinearLayout
-                    style="@style/Socios.ColumnaTextos">
-
-                    <TextView
-                        style="@style/Socios.TituloFila"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/empty_titulo" />
-
-                    <TextView
-                        style="@style/Socios.DescripcionFila"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/empty_mensaje" />
-                </LinearLayout>
-
-                <ImageView
-                    android:layout_width="22dp"
-                    android:layout_height="22dp"
-                    android:importantForAccessibility="no"
-                    android:src="@drawable/ic_add"
-                    app:tint="@color/primary" />
-            </LinearLayout>
-
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/rvSocios"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:layoutAnimation="@anim/layout_animation_fall_down"
-                android:nestedScrollingEnabled="false"
-                tools:itemCount="3"
-                tools:listitem="@layout/item_socio" />
-        </LinearLayout>
-    </androidx.core.widget.NestedScrollView>
 
     <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
         android:id="@+id/fabAddSocio"

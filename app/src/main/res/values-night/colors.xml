@@ -38,4 +38,10 @@
     <!-- Gráfico: en oscuro, un verde algo más profundo que el acento para quedar dentro de la banda de luminosidad -->
     <color name="grafico_barra">#36A57B</color>
     <color name="grafico_barra_suave">#2B5C49</color>
+    <!-- Vidrio líquido: ver values/colors.xml. -->
+    <color name="vidrio_barra">#0B100E</color>
+    <color name="vidrio_boton">#5CCB9E</color>
+    <color name="vidrio_aviso">#151C19</color>
+    <color name="vidrio_panel">#CC151C19</color>
+    <color name="vidrio_filo_tarjeta">#1FFFFFFF</color>
 </resources>
