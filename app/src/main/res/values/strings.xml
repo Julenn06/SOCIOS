@@ -267,36 +267,6 @@
     <string name="comparativa_mejor">Tu mejor semana</string>
 
     <!-- Estadísticas del histórico -->
-    <string name="estadisticas_titulo">Cómo trabajas</string>
-    <string name="estadistica_mejor_dia">Tu mejor día</string>
-    <plurals name="estadistica_mejor_dia_detalle">
-        <item quantity="one">%1$d socio hecho, el %2$s de todos</item>
-        <item quantity="many">%1$d socios hechos, el %2$s de todos</item>
-        <item quantity="other">%1$d socios hechos, el %2$s de todos</item>
-    </plurals>
-    <string name="estadistica_cuota">Cuota media</string>
-    <string name="estadistica_cuota_reciente">Últimas 8 semanas: %1$s</string>
-    <plurals name="estadistica_cuota_detalle">
-        <item quantity="one">De %1$d socio hecho</item>
-        <item quantity="many">De %1$d socios hechos</item>
-        <item quantity="other">De %1$d socios hechos</item>
-    </plurals>
-    <string name="estadistica_apuntados">Apuntados que se hicieron</string>
-    <plurals name="estadistica_apuntados_detalle">
-        <item quantity="one">De %1$d en semanas pasadas · %2$d sigue pendiente</item>
-        <item quantity="many">De %1$d en semanas pasadas · %2$d siguen pendientes</item>
-        <item quantity="other">De %1$d en semanas pasadas · %2$d siguen pendientes</item>
-    </plurals>
-    <string name="estadistica_apuntados_todos">De %1$d en semanas pasadas · ninguno pendiente</string>
-    <string name="estadistica_descontado">Descontado al mes</string>
-    <plurals name="estadistica_descontado_detalle">
-        <item quantity="one">Media de %1$d mes con lo cobrado apuntado</item>
-        <item quantity="many">Media de %1$d meses con lo cobrado apuntado</item>
-        <item quantity="other">Media de %1$d meses con lo cobrado apuntado</item>
-    </plurals>
-    <string name="estadistica_descontado_sube">Últimos 3 meses: %1$s, va a más</string>
-    <string name="estadistica_descontado_baja">Últimos 3 meses: %1$s, va a menos</string>
-    <string name="estadistica_descontado_igual">Últimos 3 meses: %1$s, sin cambios</string>
     <string name="historico_seccion_evolucion">Evolución del neto</string>
     <string name="grafico_ayuda">Toca una barra para ver su importe</string>
     <string name="grafico_ayuda_desplazar">Desliza para ver todo · toca una barra para ver su importe</string>

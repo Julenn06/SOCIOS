@@ -31,7 +31,6 @@ import com.julen.socios.model.ResultadoLectura
 import com.julen.socios.model.Socio
 import com.julen.socios.util.CalculoComisiones
 import com.julen.socios.util.DateUtils
-import com.julen.socios.util.EstadisticasHistorico
 import com.julen.socios.util.UiText
 import com.julen.socios.util.motivoDeError
 import com.julen.socios.util.nombreVisible
@@ -149,16 +148,6 @@ class MainViewModel(
         cobroRepository.getAllFlow()
     ) { socios, bonos, cobros ->
         CalculoComisiones.calcularResumenHistoricoGlobal(socios, bonos, cobrosMap = cobros)
-    }.flowOn(calculoDispatcher)
-        .mientrasSeObserve(null)
-
-    /** Cómo se trabaja según todo el histórico: el mejor día, la cuota media, los apuntados y lo descontado. */
-    val estadisticas: StateFlow<EstadisticasHistorico.Estadisticas?> = combine(
-        sociosDeTodasLasSemanas,
-        historicoGlobal.filterNotNull(),
-        semanaActual
-    ) { socios, historico, actual ->
-        EstadisticasHistorico.calcular(socios, historico.semanasHistoricas, actual)
     }.flowOn(calculoDispatcher)
         .mientrasSeObserve(null)
 

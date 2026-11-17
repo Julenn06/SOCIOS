@@ -2,8 +2,7 @@
 
 App Android para registrar los socios conseguidos cada semana y calcular la ganancia: base (cuota × 2),
 bonus por tramos o ajustado a mano, retención de IRPF y neto, y lo cobrado de verdad. Incluye histórico global con
-comparativa, gráfico de evolución y estadísticas ("Cómo trabajas": mejor día, cuota media, apuntados que se hicieron y
-descontado al mes), búsqueda de socios, aviso de pendientes de semanas anteriores, widget para la pantalla de inicio,
+comparativa y gráfico de evolución, búsqueda de socios, aviso de pendientes de semanas anteriores, widget para la pantalla de inicio,
 bloqueo opcional con la huella o el PIN del móvil y exportación a PDF, CSV y JSON de una semana, de varias, de un año
 (con el PDF mes a mes para la renta) o de todo (copia de seguridad que se puede volver a importar).
 
