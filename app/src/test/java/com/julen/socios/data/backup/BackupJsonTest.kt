@@ -6,9 +6,9 @@ import com.julen.socios.model.DatosBackup
 import com.julen.socios.model.DiaSemana
 import com.julen.socios.model.Socio
 import java.io.ByteArrayOutputStream
+import kotlin.test.assertFailsWith
 import kotlinx.serialization.SerializationException
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertThrows
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
@@ -172,8 +172,8 @@ class BackupJsonTest {
 
     @Test
     fun unJsonMalFormadoLanzaUnErrorControlado() {
-        assertThrows(SerializationException::class.java) { leer("{esto no es json") }
-        assertThrows(SerializationException::class.java) { leer("42") }
-        assertThrows(SerializationException::class.java) { leer("""{"socios":{"no":"es una lista"}}""") }
+        assertFailsWith<SerializationException> { leer("{esto no es json") }
+        assertFailsWith<SerializationException> { leer("42") }
+        assertFailsWith<SerializationException> { leer("""{"socios":{"no":"es una lista"}}""") }
     }
 }

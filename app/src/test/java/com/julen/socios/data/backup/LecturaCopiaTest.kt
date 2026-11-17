@@ -1,8 +1,8 @@
 package com.julen.socios.data.backup
 
 import java.io.IOException
+import kotlin.test.assertFailsWith
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertThrows
 import org.junit.Test
 
 class LecturaCopiaTest {
@@ -21,6 +21,6 @@ class LecturaCopiaTest {
 
     @Test
     fun rechazaUnArchivoMayorQueElLimiteSinLeerloEntero() {
-        assertThrows(IOException::class.java) { leer("abcde", limite = 4) }
+        assertFailsWith<IOException> { leer("abcde", limite = 4) }
     }
 }

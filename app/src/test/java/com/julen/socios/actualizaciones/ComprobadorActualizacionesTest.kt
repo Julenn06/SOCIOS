@@ -4,13 +4,12 @@ import java.io.IOException
 import java.time.Clock
 import java.time.Instant
 import java.time.ZoneOffset
-import kotlinx.coroutines.runBlocking
+import kotlin.test.assertFailsWith
 import kotlinx.coroutines.test.runTest
 import kotlinx.serialization.json.JsonPrimitive
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
-import org.junit.Assert.assertThrows
 import org.junit.Test
 
 class ComprobadorActualizacionesTest {
@@ -90,9 +89,7 @@ class ComprobadorActualizacionesTest {
         val desarrollo = comprobador("dev-12", FuenteFalsa("1.4.0"), RegistroEnMemoria()).comprobar()
         assertFalse(desarrollo.hayNueva)
 
-        assertThrows(IOException::class.java) {
-            runBlocking { comprobador("1.3.0", FuenteFalsa(falla = true), RegistroEnMemoria()).comprobar() }
-        }
+        assertFailsWith<IOException> { comprobador("1.3.0", FuenteFalsa(falla = true), RegistroEnMemoria()).comprobar() }
     }
 
     @Test
@@ -169,8 +166,8 @@ class ComprobadorActualizacionesTest {
 
     @Test
     fun unaRespuestaInesperadaEsUnErrorDeConexion() {
-        assertThrows(IOException::class.java) { GitHubReleases.leerRelease("""{"message":"Not Found"}""") }
-        assertThrows(IOException::class.java) { GitHubReleases.leerRelease("""{"tag_name":"nightly"}""") }
-        assertThrows(IOException::class.java) { GitHubReleases.leerRelease("<html>") }
+        assertFailsWith<IOException> { GitHubReleases.leerRelease("""{"message":"Not Found"}""") }
+        assertFailsWith<IOException> { GitHubReleases.leerRelease("""{"tag_name":"nightly"}""") }
+        assertFailsWith<IOException> { GitHubReleases.leerRelease("<html>") }
     }
 }
