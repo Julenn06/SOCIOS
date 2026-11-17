@@ -26,11 +26,12 @@ ventanas (`FLAG_BLUR_BEHIND`, API 31).
 |---|---|
 | `FuenteVidrio` | FrameLayout que guarda lo que pintan sus hijos en un `RenderNode` (API 31+). Los vidrios lo vuelven a pintar sin copiar píxeles. Cuando algo de dentro se invalida, invalida a sus vidrios antes de pintar (`onDescendantInvalidated`): se regraban en el mismo fotograma, sin uno de más. |
 | `ScrollBajoVidrio` | El scroll de la pantalla principal: pasa por debajo de la barra (relleno de arriba = alto de la barra) y del botón (relleno de abajo); al llevar una vista a la pantalla (TalkBack, teclado, `scrollTo()`) la deja entre los dos. La barra se queda con los toques que no recogen sus botones (`setOnTouchListener` en `ponerVidrio`), para que no atraviesen al contenido. |
-| `VidrioDrawable` | El vidrio: API 33+ un shader AGSL (refracción en el borde, dispersión, tinte, filo de luz arriba a la izquierda, brillo al pulsar) sobre lo desenfocado; API 31–32 solo desenfoque con tinte y filo pintados. |
-| `EstiloVidrio` | Tinte, fuerza del tinte, color opaco de siempre, radio, desenfoque y refracción. Presets `BARRA`, `BOTON`, `AVISO`. |
-| `Vidrio.aplicar(vista, estilo, desde)` | Pone el vidrio de fondo. Devuelve false y no toca nada si no se puede. |
-| `VidrioVentana` | Paneles: desenfoque de lo de detrás y panel translúcido mientras el sistema lo permita (escucha `addCrossWindowBlurEnabledListener`; en ahorro de batería vuelve a opaco y oscurecido). |
-| `values-v31/themes.xml` | Diálogos: `windowBlurBehindEnabled` (siguen opacos). |
+| `VidrioDrawable` | El vidrio. API 33+: un shader AGSL sobre lo desenfocado con lente de perfil redondo en el borde (se hunde al pulsar), dispersión, vibrancia (saturación), **tinte adaptativo** (mínimo `fuerzaTinte`, y por bisección lo justo para que el texto más exigente de `textos` llegue a 4,5:1 con la luminancia WCAG real), grosor (luz por dentro arriba, sombra abajo), brillo superior, filo de luz y brillo al pulsar o con foco. API 31–32: desenfoque con un tinte fijo (`fuerzaSinShader`) y el filo pintados. Muestrea lo de detrás a escala real aunque el botón esté hundido. |
+| `EstiloVidrio` | Tinte, fuerzas, textos que lleva encima, color opaco de siempre, radio, desenfoque, refracción, banda, saturación y brillo superior. Presets `BARRA` (solo el título: muy transparente), `CAPSULA` (el selector de semana, que flota sobre la barra con sus propios textos), `BOTON` y `AVISO`. |
+| `Vidrio.aplicar(vista, estilo, desde)` | Pone el vidrio de fondo y devuelve un `VidrioPuesto` (null y sin tocar nada si no se puede). `mostrarBorde(f)` enciende el borde de la barra según el contenido que pasa por debajo. |
+| `DebajoDeLaBarra` | Behavior de la fuente: pone el relleno de arriba del scroll al medir (la barra se mide antes), sin un segundo pase de layout. |
+| `VidrioVentana` | Paneles y diálogos: desenfoque de lo de detrás (y, en los diálogos, bajo su propio fondo), superficie translúcida y filo de luz mientras el sistema lo permita (escucha `addCrossWindowBlurEnabledListener`; en ahorro de batería vuelven a opacos y oscurecidos). Los diálogos se muestran con `MaterialAlertDialogBuilder.mostrarConVidrio()`. |
+| `values-v31/themes.xml` | Diálogos: `windowBlurBehindEnabled` y ventana translúcida. |
 
 ## Reglas al añadir un vidrio
 
@@ -39,8 +40,11 @@ ventanas (`FLAG_BLUR_BEHIND`, API 31).
 2. Otra ventana (panel, diálogo) no ve la fuente: ahí se usa `VidrioVentana`, no `VidrioDrawable`.
 3. Sin vidrio (Android 11 o anterior, o con más contraste en Android 14+, `Vidrio.reducirTransparencia`) la vista se
    queda exactamente como era: no hace falta un segundo diseño.
-4. Contraste: el texto sobre vidrio tiene que llegar a 4,5:1 con el peor fondo posible detrás (por eso
-   `vidrio_boton` es más oscuro que `primary` y la barra tiñe al 62 %). Probar en claro y en oscuro.
+4. Contraste: con el shader lo garantiza el tinte adaptativo, siempre que `textos` incluya todos los colores de
+   texto que van encima (también los que cambian según el estado). Sin shader (Android 12) lo garantiza
+   `fuerzaSinShader`, que tiene que bastar con el peor fondo posible. Probar en claro y en oscuro.
+   Si un vidrio lleva un texto mucho menos contrastado que el resto, mejor darle su propia cápsula (como el
+   selector de semana) que obligar a toda la superficie a ser casi opaca.
 5. Lint `NewApi` no deduce el nivel de API de un null: usar comprobaciones explícitas de `Build.VERSION.SDK_INT`.
 6. El vidrio interactivo sustituye al ripple de Material: tiene que marcar también el foco (teclado, mando,
    acceso por interruptores) y el hover, no solo la pulsación.
