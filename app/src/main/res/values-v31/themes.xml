@@ -1,9 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Vidrio en los diálogos: Android desenfoca lo que queda detrás (si el sistema lo quita, por ejemplo en ahorro
-         de batería, se ve oscurecido como siempre). El diálogo sigue opaco para que su texto se lea igual. -->
+    <!-- Vidrio en los diálogos: Android desenfoca lo que queda detrás y lo que queda bajo el propio diálogo, que
+         entonces se vuelve translúcido (VidrioVentana.aplicarDialogo). Si el sistema quita el desenfoque, por ejemplo
+         en ahorro de batería, el diálogo vuelve a ser opaco y lo de detrás se ve oscurecido como siempre. Para que el
+         desenfoque bajo el diálogo se vea, la ventana tiene que ser translúcida. -->
     <style name="ThemeOverlay.Socios.Dialogo" parent="Base.ThemeOverlay.Socios.Dialogo">
         <item name="android:windowBlurBehindEnabled">true</item>
         <item name="android:windowBlurBehindRadius">24dp</item>
+        <item name="android:windowIsTranslucent">true</item>
     </style>
 </resources>

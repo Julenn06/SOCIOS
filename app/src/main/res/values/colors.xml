@@ -88,6 +88,6 @@
     <color name="vidrio_aviso">#FFFFFF</color>
     <!-- Panel translúcido mientras Android desenfoca lo que hay detrás. -->
     <color name="vidrio_panel">#C7FFFFFF</color>
-    <!-- Contorno del selector de semana cuando va sobre la barra de vidrio, en lugar de su tarjeta. -->
+    <!-- Filo de luz de los paneles y diálogos de vidrio. -->
     <color name="vidrio_filo_tarjeta">#8CFFFFFF</color>
 </resources>

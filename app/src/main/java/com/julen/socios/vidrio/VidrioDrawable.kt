@@ -31,11 +31,13 @@ import kotlin.math.min
 import kotlin.math.roundToInt
 
 /**
- * Fondo de vidrio líquido para [host]: lo que hay detrás en [fuente], desenfocado, con el borde curvando la luz como
- * una lente, un filo de luz arriba a la izquierda y el tinte del [estilo]. Si es interactivo, brilla donde se pulsa.
+ * Fondo de vidrio líquido para [host]: lo que hay detrás en [fuente], desenfocado y más vivo, con el borde curvando la
+ * luz como una lente, el grosor del vidrio (luz por dentro arriba, sombra abajo), un filo de luz arriba a la izquierda
+ * y el tinte del [estilo]. Si es interactivo, brilla donde se pulsa y la lente se hunde.
  *
- * - Android 13 o más: todo en un shader AGSL sobre lo desenfocado (refracción, dispersión, tinte, filo y brillo).
- * - Android 12: desenfoque con RenderEffect, y el tinte y el filo pintados encima.
+ * - Android 13 o más: todo en un shader AGSL sobre lo desenfocado. El tinte es adaptativo: poco donde detrás hay algo
+ *   que ya deja leer el texto, y más solo donde haga falta para que el texto que menos contrasta llegue a 4,5:1.
+ * - Android 12: desenfoque con RenderEffect, y un tinte fijo (que basta con cualquier fondo) y el filo pintados encima.
  * Antes de Android 12 no se usa: [Vidrio.aplicar] deja la vista como estaba.
  */
 @RequiresApi(Build.VERSION_CODES.S)
@@ -43,7 +45,7 @@ class VidrioDrawable internal constructor(
     private val host: View,
     private val estilo: EstiloVidrio,
     private val fuente: FuenteVidrio
-) : Drawable() {
+) : Drawable(), VidrioPuesto {
 
     private val densidad = host.resources.displayMetrics.density
     private val oscuro = (host.resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK) ==
@@ -60,7 +62,7 @@ class VidrioDrawable internal constructor(
     private val nodo = RenderNode("Vidrio")
     private val desenfoque = RenderEffect.createBlurEffect(desenfoquePx, desenfoquePx, Shader.TileMode.CLAMP)
     private val refraccion = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-        Refraccion(estilo, densidad, tinte, brillo)
+        Refraccion(estilo, densidad, tinte, brillo, Contraste.de(host, estilo, tinte))
     } else {
         null
     }
@@ -71,7 +73,7 @@ class VidrioDrawable internal constructor(
 
     // Solo para Android 12, sin shader.
     private val pinturaTinte = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        color = ColorUtils.setAlphaComponent(tinte, (estilo.fuerzaTinte * 255).roundToInt())
+        color = ColorUtils.setAlphaComponent(tinte, (estilo.fuerzaSinShader * 255).roundToInt())
     }
     private val pinturaFilo = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         style = Paint.Style.STROKE
@@ -86,12 +88,17 @@ class VidrioDrawable internal constructor(
     private val posFuente = IntArray(2)
     private var dibujadoX = Int.MIN_VALUE
     private var dibujadoY = Int.MIN_VALUE
+    private var desplazamientoX = 0
+    private var desplazamientoY = 0
 
     private var toqueX = 0f
     private var toqueY = 0f
     private var toque = 0f
     private var objetivoToque = 0f
     private var animacionToque: ValueAnimator? = null
+
+    /** Cuánto se ve el borde (0–1): la barra en reposo no tiene nada debajo y no debe marcar una línea. */
+    private var borde = 1f
 
     /**
      * Enganchado dentro de su propia fuente (por ejemplo, si el aviso acabara colgando de ella): se vería a sí mismo
@@ -131,15 +138,19 @@ class VidrioDrawable internal constructor(
         if (host.isAttachedToWindow) alEngancharse.onViewAttachedToWindow(host)
     }
 
-    private var desplazamientoX = 0
-    private var desplazamientoY = 0
+    override fun mostrarBorde(fraccion: Float) {
+        val nuevo = fraccion.coerceIn(0f, 1f)
+        if (nuevo == borde) return
+        borde = nuevo
+        invalidateSelf()
+    }
 
-    /** Dónde está el vidrio dentro de la fuente, en píxeles (en los campos, sin crear objetos en cada fotograma). */
+    /** Dónde empieza el vidrio dentro de la fuente, en píxeles (en los campos, sin crear objetos en cada fotograma). */
     private fun calcularDesplazamiento() {
         host.getLocationInWindow(posHost)
         fuente.getLocationInWindow(posFuente)
-        desplazamientoX = posHost[0] + bounds.left - posFuente[0]
-        desplazamientoY = posHost[1] + bounds.top - posFuente[1]
+        desplazamientoX = posHost[0] + (bounds.left * host.scaleX).roundToInt() - posFuente[0]
+        desplazamientoY = posHost[1] + (bounds.top * host.scaleY).roundToInt() - posFuente[1]
     }
 
     private fun radio(): Float =
@@ -166,8 +177,11 @@ class VidrioDrawable internal constructor(
             canvas.drawPath(ruta, pinturaSolida)
             return
         }
-        // El margen solo donde hay algo detrás: más allá de la fuente (fuera de la pantalla) no hay nada, y el
-        // desenfoque lo mezclaría con el borde como una bruma clara. Sin margen, repite el último píxel.
+
+        // Al pulsar, el botón se encoge: lo de detrás se muestrea a la escala real y no se desplaza con él.
+        val escalaX = host.scaleX.takeIf { it > 0f } ?: 1f
+        val escalaY = host.scaleY.takeIf { it > 0f } ?: 1f
+        // El margen solo donde hay algo detrás: más allá de la fuente (fuera de la pantalla) no hay nada.
         val izq = margen.coerceAtMost(x).coerceAtLeast(0)
         val arr = margen.coerceAtMost(y).coerceAtLeast(0)
         val der = margen.coerceAtMost(fuente.width - x - b.width()).coerceAtLeast(0)
@@ -180,7 +194,9 @@ class VidrioDrawable internal constructor(
             // Lo que cae fuera de la fuente (un aviso que entra desde abajo o se desliza para cerrarlo) tiene el fondo
             // de la pantalla, no un hueco transparente que el desenfoque convertiría en una banda oscura.
             fuente.colorFondo?.let(grabacion::drawColor)
-            grabacion.translate((izq - x).toFloat(), (arr - y).toFloat())
+            grabacion.translate(izq.toFloat(), arr.toFloat())
+            grabacion.scale(1f / escalaX, 1f / escalaY)
+            grabacion.translate(-x.toFloat(), -y.toFloat())
             grabacion.drawRenderNode(contenido)
         } finally {
             nodo.endRecording()
@@ -200,7 +216,8 @@ class VidrioDrawable internal constructor(
                     radio = radio,
                     toqueX = izq + toqueX,
                     toqueY = arr + toqueY,
-                    toque = toque
+                    toque = toque,
+                    borde = borde
                 )
             )
             canvas.withTranslation((b.left - izq).toFloat(), (b.top - arr).toFloat()) { drawRenderNode(nodo) }
@@ -216,7 +233,8 @@ class VidrioDrawable internal constructor(
     }
 
     private fun pintarFilo(canvas: Canvas, radio: Float) {
-        val blanco = (brillo * 255 * 1.6f).roundToInt().coerceAtMost(255)
+        val blanco = (brillo * 255 * 1.6f * borde).roundToInt().coerceIn(0, 255)
+        if (blanco == 0) return
         if (estilo.soloBordeInferior) {
             pinturaFilo.shader = null
             pinturaFilo.color = ColorUtils.setAlphaComponent(0xFFFFFFFF.toInt(), blanco / 2)
@@ -303,7 +321,7 @@ class VidrioDrawable internal constructor(
     @Deprecated("Deprecated in Java")
     override fun getOpacity() = PixelFormat.TRANSLUCENT
 
-    private companion object {
+    internal companion object {
         const val BRILLO_CLARO = 0.42f
         const val BRILLO_OSCURO = 0.16f
         const val ALFA_SOMBRA = 0.6f
@@ -314,57 +332,89 @@ class VidrioDrawable internal constructor(
     }
 }
 
-/** La parte de Android 13: refracción, dispersión, tinte, filo y brillo en un solo shader sobre lo desenfocado. */
+/**
+ * Lo que tiene que cumplir el fondo de un vidrio para que todos sus textos se lean (WCAG AA, 4,5:1): una luminancia
+ * mínima si los textos son más oscuros que el tinte, o máxima si son más claros. Se calcula con el texto que menos
+ * contrasta de los de [EstiloVidrio.textos].
+ */
+internal class Contraste(val limite: Float, val sentido: Float) {
+    companion object {
+        private const val MINIMO = 4.5
+
+        fun de(host: View, estilo: EstiloVidrio, tinte: Int): Contraste {
+            val luzTinte = ColorUtils.calculateLuminance(tinte)
+            val luces = estilo.textos.map { ColorUtils.calculateLuminance(ContextCompat.getColor(host.context, it)) }
+            val oscuros = luces.filter { it < luzTinte }
+            return if (oscuros.size >= luces.size - oscuros.size) {
+                // Textos oscuros sobre vidrio claro: el fondo tiene que ser al menos así de claro.
+                Contraste((MINIMO * (oscuros.max() + 0.05) - 0.05).coerceIn(0.0, 1.0).toFloat(), 1f)
+            } else {
+                val claros = luces.filter { it >= luzTinte }
+                Contraste(((claros.min() + 0.05) / MINIMO - 0.05).coerceIn(0.0, 1.0).toFloat(), -1f)
+            }
+        }
+    }
+}
+
+/** La parte de Android 13: refracción, vibrancia, tinte adaptativo, grosor, filo y brillo en un solo shader. */
 @RequiresApi(Build.VERSION_CODES.TIRAMISU)
-private class Refraccion(estilo: EstiloVidrio, densidad: Float, tinte: Int, brillo: Float) {
+private class Refraccion(estilo: EstiloVidrio, densidad: Float, tinte: Int, brillo: Float, contraste: Contraste) {
 
     private val shader = RuntimeShader(AGSL_VIDRIO).apply {
         setFloatUniform("banda", estilo.bandaDp * densidad)
         setFloatUniform("refraccion", estilo.refraccionDp * densidad)
         setFloatUniform("dispersion", DISPERSION)
-        setFloatUniform(
-            "tinte",
-            ((tinte shr 16) and 0xFF) / 255f, ((tinte shr 8) and 0xFF) / 255f, (tinte and 0xFF) / 255f,
-            estilo.fuerzaTinte
-        )
+        setFloatUniform("tinte", ((tinte shr 16) and 0xFF) / 255f, ((tinte shr 8) and 0xFF) / 255f, (tinte and 0xFF) / 255f)
+        setFloatUniform("fuerza", estilo.fuerzaTinte)
+        setFloatUniform("saturacion", estilo.saturacion)
+        setFloatUniform("limite", contraste.limite)
+        setFloatUniform("sentido", contraste.sentido)
         setFloatUniform("brillo", brillo)
+        setFloatUniform("brilloSuperior", estilo.brilloSuperior * brillo / VidrioDrawable.BRILLO_CLARO)
         setFloatUniform("grosorFilo", GROSOR_FILO_DP * densidad)
     }
 
     private var ultimo: RenderEffect? = null
-    private val clave = FloatArray(8) { Float.NaN }
+    private val clave = FloatArray(9) { Float.NaN }
 
     fun efecto(
         desenfoque: RenderEffect,
         izquierda: Float, arriba: Float, ancho: Float, alto: Float, radio: Float,
-        toqueX: Float, toqueY: Float, toque: Float
+        toqueX: Float, toqueY: Float, toque: Float, borde: Float
     ): RenderEffect {
         // Lo normal (el contenido se mueve por detrás, el vidrio no) es que nada cambie: se reutiliza el efecto.
         val igual = clave[0] == izquierda && clave[1] == arriba && clave[2] == ancho && clave[3] == alto &&
-            clave[4] == radio && clave[5] == toqueX && clave[6] == toqueY && clave[7] == toque
+            clave[4] == radio && clave[5] == toqueX && clave[6] == toqueY && clave[7] == toque && clave[8] == borde
         ultimo?.let { if (igual) return it }
-        clave[0] = izquierda; clave[1] = arriba; clave[2] = ancho; clave[3] = alto
-        clave[4] = radio; clave[5] = toqueX; clave[6] = toqueY; clave[7] = toque
+        clave[0] = izquierda; clave[1] = arriba; clave[2] = ancho; clave[3] = alto; clave[4] = radio
+        clave[5] = toqueX; clave[6] = toqueY; clave[7] = toque; clave[8] = borde
         shader.setFloatUniform("origen", izquierda, arriba)
         shader.setFloatUniform("tamano", ancho, alto)
         shader.setFloatUniform("radio", radio)
         shader.setFloatUniform("toque", toqueX, toqueY, toque)
+        shader.setFloatUniform("borde", borde)
         // El efecto toma los valores del shader al crearse: con otros valores hace falta uno nuevo.
         return RenderEffect.createChainEffect(RenderEffect.createRuntimeShaderEffect(shader, "contenido"), desenfoque)
             .also { ultimo = it }
     }
 
     private companion object {
-        const val DISPERSION = 0.12f
+        const val DISPERSION = 0.14f
         const val GROSOR_FILO_DP = 1.5f
     }
 }
 
 /**
- * El vidrio, sobre lo de detrás ya desenfocado ("contenido"). Dentro de la forma (un rectángulo redondeado), en la
- * franja del borde ([banda]) la imagen se curva hacia dentro como en una lente, y el rojo y el azul se separan un
- * poco; luego el tinte, un filo de luz que viene de arriba a la izquierda (y su reflejo, más débil, abajo a la
- * derecha) y el brillo donde se pulsa. Fuera de la forma, transparente con el borde suavizado.
+ * El vidrio, sobre lo de detrás ya desenfocado ("contenido"):
+ * 1. Lente: en la franja del borde ([banda]) la imagen se curva hacia dentro con el perfil de una lente redonda (casi
+ *    nada en el interior, mucho en el filo), separando un poco el rojo y el azul. Al pulsar, se hunde más.
+ * 2. Vibrancia: lo de detrás, más saturado, como el vidrio de iOS.
+ * 3. Tinte adaptativo: al menos [fuerza], y más donde haga falta para que la luminancia real (WCAG) quede del lado
+ *    bueno de [limite] ([sentido] 1: al menos; -1: como mucho), que es lo que necesita el texto para leerse. Se mezcla
+ *    en sRGB, que conserva el color del tinte, y la cantidad justa se busca por bisección.
+ * 4. Grosor (luz por dentro arriba, sombra abajo), un brillo amplio arriba, el filo de luz que viene de arriba a la
+ *    izquierda (con su reflejo abajo a la derecha) y el brillo donde se pulsa.
+ * Fuera de la forma, transparente con el borde suavizado. [borde] (0–1) apaga la lente y el filo.
  */
 private const val AGSL_VIDRIO = """
 uniform shader contenido;
@@ -374,14 +424,32 @@ uniform float radio;
 uniform float banda;
 uniform float refraccion;
 uniform float dispersion;
-uniform float4 tinte;
+uniform float3 tinte;
+uniform float fuerza;
+uniform float saturacion;
+uniform float limite;
+uniform float sentido;
 uniform float brillo;
+uniform float brilloSuperior;
 uniform float grosorFilo;
+uniform float borde;
 uniform float3 toque;
+
+const float3 PESOS = float3(0.2126, 0.7152, 0.0722);
 
 float forma(float2 p, float2 mitad, float r) {
     float2 q = abs(p) - mitad + float2(r);
     return length(max(q, float2(0.0))) + min(max(q.x, q.y), 0.0) - r;
+}
+
+float3 lineal(float3 c) {
+    float3 bajo = c / 12.92;
+    float3 alto = pow((c + 0.055) / 1.055, float3(2.4));
+    return mix(alto, bajo, step(c, float3(0.04045)));
+}
+
+float luz(float3 c) {
+    return dot(lineal(clamp(c, 0.0, 1.0)), PESOS);
 }
 
 half4 main(float2 coord) {
@@ -399,27 +467,47 @@ half4 main(float2 coord) {
     n = largo > 0.0001 ? n / largo : float2(0.0);
 
     float t = clamp(1.0 + d / banda, 0.0, 1.0);
-    float lente = t * t * t;
-    float2 desvio = -n * lente * refraccion;
+    float lente = (1.0 - sqrt(max(1.0 - t * t, 0.0))) * borde;
+    float2 desvio = -n * lente * refraccion * (1.0 + 0.35 * toque.z);
 
-    float4 centro = float4(contenido.eval(coord + desvio));
-    float rojo = float(contenido.eval(coord + desvio * (1.0 + dispersion)).r);
-    float azul = float(contenido.eval(coord + desvio * (1.0 - dispersion)).b);
-    float3 color = float3(rojo, centro.g, azul);
-    color = mix(color, tinte.rgb, tinte.a);
+    float3 c = float3(
+        float(contenido.eval(coord + desvio * (1.0 + dispersion)).r),
+        float(contenido.eval(coord + desvio).g),
+        float(contenido.eval(coord + desvio * (1.0 - dispersion)).b));
+    float gris = dot(c, PESOS);
+    c = clamp(mix(float3(gris), c, saturacion), 0.0, 1.0);
+
+    float3 color = mix(c, tinte, fuerza);
+    if (sentido * (limite - luz(color)) > 0.0) {
+        float bajo = fuerza;
+        float alto = 1.0;
+        for (int i = 0; i < 7; i++) {
+            float medio = 0.5 * (bajo + alto);
+            if (sentido * (limite - luz(mix(c, tinte, medio))) > 0.0) {
+                bajo = medio;
+            } else {
+                alto = medio;
+            }
+        }
+        color = mix(c, tinte, alto);
+    }
+
+    color += brillo * 0.30 * lente * clamp(-n.y, 0.0, 1.0);
+    color *= 1.0 - 0.10 * lente * clamp(n.y, 0.0, 1.0);
+    float altura = (coord.y - origen.y) / tamano.y;
+    color += brilloSuperior * (1.0 - smoothstep(0.0, 0.6, altura));
 
     float2 luz = normalize(float2(-0.45, -1.0));
-    float filo = 1.0 - smoothstep(0.0, grosorFilo, -d);
+    float filo = (1.0 - smoothstep(0.0, grosorFilo, -d)) * borde;
     float cara = clamp(dot(n, luz), 0.0, 1.0);
     float contra = clamp(-dot(n, luz), 0.0, 1.0);
     color += brillo * filo * (0.35 + 0.65 * cara + 0.45 * contra);
-    color += brillo * 0.10 * lente;
 
     float alcance = max(mitad.x, mitad.y) * 1.3;
     color += toque.z * 0.16 * (1.0 - smoothstep(0.0, alcance, length(coord - toque.xy)));
 
     float alfa = 1.0 - smoothstep(-0.75, 0.75, d);
-    float3 salida = min(color, float3(1.0)) * alfa;
+    float3 salida = clamp(color, 0.0, 1.0) * alfa;
     return half4(half3(salida), half(alfa));
 }
 """

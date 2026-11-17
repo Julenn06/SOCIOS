@@ -17,9 +17,7 @@ import androidx.annotation.StringRes
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.coordinatorlayout.widget.CoordinatorLayout
-import androidx.core.content.ContextCompat
 import androidx.core.content.pm.ShortcutManagerCompat
-import androidx.core.graphics.ColorUtils
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.isVisible
@@ -42,8 +40,10 @@ import com.julen.socios.util.AnimationExtensions
 import com.julen.socios.util.DateUtils
 import com.julen.socios.util.HapticUtils
 import com.julen.socios.util.nombreVisible
+import com.julen.socios.vidrio.DebajoDeLaBarra
 import com.julen.socios.vidrio.EstiloVidrio
 import com.julen.socios.vidrio.Vidrio
+import com.julen.socios.vidrio.VidrioPuesto
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
@@ -62,6 +62,9 @@ class MainActivity : AppCompatActivity() {
 
     private var dialogoDestinoExport: AlertDialog? = null
     private var dialogoEliminar: AlertDialog? = null
+
+    /** El vidrio de la barra, si lo hay: su borde se enciende al pasar contenido por debajo. */
+    private var vidrioBarra: VidrioPuesto? = null
 
     // --- EXPORT & IMPORT LAUNCHERS ---
     // El resultado vuelve al ViewModel, que guarda la petición pendiente en su SavedStateHandle.
@@ -99,11 +102,8 @@ class MainActivity : AppCompatActivity() {
             insets
         }
         // El contenido pasa por debajo de la barra (para verse a través de su vidrio) y empieza justo debajo de ella.
-        binding.appBar.addOnLayoutChangeListener { barra, _, _, _, _, _, _, _, _ ->
-            if (binding.nestedScrollView.paddingTop != barra.height) {
-                binding.nestedScrollView.updatePadding(top = barra.height)
-            }
-        }
+        (binding.fuenteVidrio.layoutParams as CoordinatorLayout.LayoutParams).behavior =
+            DebajoDeLaBarra(binding.nestedScrollView)
         ponerVidrio()
         // Si se cambia el contraste en los ajustes con la app abierta, la pantalla se rehace con o sin vidrio.
         Vidrio.recrearAlCambiarContraste(this)
@@ -201,14 +201,11 @@ class MainActivity : AppCompatActivity() {
         // El contenido pasa por debajo de la barra: un toque en una zona de la barra sin botón (sus márgenes, la
         // franja de la barra de estado) no debe llegar a lo que hay debajo. Lo que sí toca un botón le llega antes.
         binding.appBar.setOnTouchListener { _, _ -> true }
-        if (!Vidrio.aplicar(binding.appBar, EstiloVidrio.BARRA)) return
+        vidrioBarra = Vidrio.aplicar(binding.appBar, EstiloVidrio.BARRA)?.apply { mostrarBorde(0f) } ?: return
+        // El selector de semana flota sobre la barra en su propia cápsula, como los controles de iOS 26: así la barra
+        // solo tiene que dejar leer el título y puede ser mucho más transparente.
+        Vidrio.aplicar(binding.tarjetaSemana, EstiloVidrio.CAPSULA)
         Vidrio.aplicar(binding.fabAddSocio, EstiloVidrio.BOTON)
-        // Sobre el vidrio, el selector de semana deja de ser una tarjeta opaca: un velo claro con el filo de luz,
-        // sin un segundo vidrio dentro del primero.
-        binding.tarjetaSemana.setCardBackgroundColor(
-            ColorUtils.setAlphaComponent(ContextCompat.getColor(this, R.color.surface_card), ALFA_VELO_SEMANA)
-        )
-        binding.tarjetaSemana.setStrokeColor(ContextCompat.getColorStateList(this, R.color.vidrio_filo_tarjeta))
     }
 
     /** Lo cierra sin que su listener tome el cierre por una cancelación del usuario. */
@@ -359,7 +356,10 @@ class MainActivity : AppCompatActivity() {
         binding.fabAddSocio.setOnClickListener { openAddEditDialog(null) }
         binding.containerEmptyState.setOnClickListener { openAddEditDialog(null) }
         // Se encoge al bajar por la lista y vuelve a mostrar su texto al subir.
+        val recorridoBorde = BORDE_BARRA_DP * resources.displayMetrics.density
         binding.nestedScrollView.setOnScrollChangeListener { _, _, scrollY, _, oldScrollY ->
+            // El borde de la barra aparece a medida que el contenido pasa por debajo; arriba del todo, ni se nota.
+            vidrioBarra?.mostrarBorde(scrollY / recorridoBorde)
             val dy = scrollY - oldScrollY
             if (dy > 12 && binding.fabAddSocio.isExtended) {
                 binding.fabAddSocio.shrink()
@@ -491,7 +491,7 @@ class MainActivity : AppCompatActivity() {
         /** A partir de esta letra del sistema, "Gestión de Socios" no cabe junto a los tres iconos de la barra. */
         private const val ESCALA_LETRA_TITULO_CORTO = 1.3f
 
-        /** Opacidad (0–255) del velo del selector de semana sobre la barra de vidrio. */
-        private const val ALFA_VELO_SEMANA = 115
+        /** Lo que hay que bajar para que el borde de la barra se vea del todo. */
+        private const val BORDE_BARRA_DP = 24f
     }
 }

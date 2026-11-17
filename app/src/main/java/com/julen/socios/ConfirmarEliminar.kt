@@ -7,6 +7,7 @@ import androidx.core.content.ContextCompat
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.julen.socios.model.Socio
 import com.julen.socios.util.nombreVisible
+import com.julen.socios.vidrio.mostrarConVidrio
 
 /** Pide confirmación antes de borrar un socio; después aún se puede deshacer desde el aviso. */
 fun confirmarEliminarSocio(context: Context, socio: Socio, alConfirmar: () -> Unit): AlertDialog {
@@ -20,7 +21,7 @@ fun confirmarEliminarSocio(context: Context, socio: Socio, alConfirmar: () -> Un
         .setMessage(R.string.eliminar_socio_mensaje)
         .setPositiveButton(R.string.action_delete) { _, _ -> alConfirmar() }
         .setNegativeButton(R.string.action_cancel, null)
-        .show()
+        .mostrarConVidrio()
     dialogo.getButton(DialogInterface.BUTTON_POSITIVE).setTextColor(ContextCompat.getColor(context, R.color.red_text))
     return dialogo
 }

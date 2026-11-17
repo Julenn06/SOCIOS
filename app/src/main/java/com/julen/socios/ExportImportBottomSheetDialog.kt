@@ -18,6 +18,7 @@ import com.julen.socios.util.AnimationExtensions
 import com.julen.socios.util.DateUtils
 import com.julen.socios.util.HapticUtils
 import com.julen.socios.util.Movimiento
+import com.julen.socios.vidrio.mostrarConVidrio
 
 /** Copias y exportación: exporta a PDF, CSV o JSON lo que se elija, o importa una copia. */
 class ExportImportBottomSheetDialog :
@@ -213,7 +214,7 @@ class ExportImportBottomSheetDialog :
             }
             .setPositiveButton(R.string.action_accept, null)
             .setOnDismissListener { dialogoSemanas = null }
-            .show()
+            .mostrarConVidrio()
     }
 
     /** Los años con algo apuntado, del más reciente al más antiguo. */
@@ -237,7 +238,7 @@ class ExportImportBottomSheetDialog :
                 dialogo.dismiss()
             }
             .setOnDismissListener { dialogoSemanas = null }
-            .show()
+            .mostrarConVidrio()
     }
 
     private fun alcanceSeleccionado(): AlcanceExport = when (alcance) {

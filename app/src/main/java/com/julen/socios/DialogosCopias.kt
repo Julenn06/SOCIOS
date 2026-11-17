@@ -6,6 +6,7 @@ import androidx.appcompat.app.AlertDialog
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.julen.socios.databinding.DialogoDestinoExportBinding
 import com.julen.socios.export.ExportFormat
+import com.julen.socios.vidrio.mostrarConVidrio
 
 /**
  * Pregunta si compartir la exportación en [formato] con otra app o guardarla en un archivo. [alCerrar] se
@@ -32,5 +33,5 @@ fun preguntarDestinoExport(
         .setView(vista.root)
         .setNegativeButton(R.string.action_cancel, null)
         .setOnDismissListener { alCerrar() }
-        .show()
+        .mostrarConVidrio()
 }
