@@ -1,9 +1,8 @@
 package com.julen.socios.util
 
-import android.animation.Animator
-import android.animation.AnimatorListenerAdapter
 import android.animation.ValueAnimator
 import android.widget.TextView
+import androidx.core.animation.doOnEnd
 import androidx.interpolator.view.animation.FastOutSlowInInterpolator
 import com.julen.socios.R
 import kotlin.math.abs
@@ -46,15 +45,13 @@ object NumberAnimators {
                 val current = (anim.animatedValue as Float).toDouble()
                 textView.text = texto(current)
             }
-            addListener(object : AnimatorListenerAdapter() {
-                override fun onAnimationEnd(animation: Animator) {
-                    // Cancelado porque llega otro importe: el nuevo animador sigue desde aquí.
-                    if (textView.getTag(R.id.tag_numeric_animator) !== animation) return
-                    // Terminar siempre en el valor exacto, sin el error de redondeo del Float.
-                    textView.text = texto(newValue)
-                    textView.setTag(R.id.tag_numeric_animator, null)
-                }
-            })
+            doOnEnd { animation ->
+                // Cancelado porque llega otro importe: el nuevo animador sigue desde aquí.
+                if (textView.getTag(R.id.tag_numeric_animator) !== animation) return@doOnEnd
+                // Terminar siempre en el valor exacto, sin el error de redondeo del Float.
+                textView.text = texto(newValue)
+                textView.setTag(R.id.tag_numeric_animator, null)
+            }
         }
 
         textView.setTag(R.id.tag_numeric_animator, animator)

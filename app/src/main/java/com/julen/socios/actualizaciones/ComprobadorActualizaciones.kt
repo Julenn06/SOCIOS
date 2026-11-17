@@ -6,7 +6,7 @@ import java.io.IOException
 import java.net.HttpURLConnection
 import java.net.URL
 import java.time.Clock
-import java.util.concurrent.TimeUnit
+import kotlin.time.Duration.Companion.days
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -82,7 +82,7 @@ class ComprobadorActualizaciones(
     }
 
     companion object {
-        val INTERVALO = TimeUnit.DAYS.toMillis(1)
+        val INTERVALO = 1.days.inWholeMilliseconds
     }
 }
 

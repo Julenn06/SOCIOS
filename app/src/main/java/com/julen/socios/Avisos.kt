@@ -15,6 +15,7 @@ import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import androidx.core.content.ContextCompat
 import androidx.core.content.getSystemService
+import androidx.core.view.isGone
 import androidx.core.view.isVisible
 import androidx.dynamicanimation.animation.SpringForce
 import com.google.android.material.snackbar.BaseTransientBottomBar
@@ -135,7 +136,7 @@ object Avisos {
         // Que no recorte la sombra de la tarjeta ni la tarjeta al deslizarla.
         capa.clipChildren = false
         capa.clipToPadding = false
-        capa.getChildAt(0).visibility = View.GONE
+        capa.getChildAt(0).isGone = true
 
         val aviso = ItemAvisoBinding.inflate(LayoutInflater.from(vista.context), capa, false)
         ponerDebajoConLetraGrande(aviso.btnAccionAviso, aviso.columnaAviso)

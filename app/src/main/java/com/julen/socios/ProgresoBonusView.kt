@@ -1,7 +1,5 @@
 package com.julen.socios
 
-import android.animation.Animator
-import android.animation.AnimatorListenerAdapter
 import android.animation.ValueAnimator
 import android.content.Context
 import android.graphics.Canvas
@@ -16,6 +14,7 @@ import android.util.AttributeSet
 import android.view.View
 import android.view.animation.LinearInterpolator
 import android.view.animation.OvershootInterpolator
+import androidx.core.animation.doOnEnd
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.ColorUtils
 import androidx.core.graphics.withClip
@@ -174,14 +173,12 @@ class ProgresoBonusView @JvmOverloads constructor(
                 mostrado = valor
                 invalidate()
             }
-            addListener(object : AnimatorListenerAdapter() {
-                override fun onAnimationEnd(animation: Animator) {
-                    if (animation !== animacion) return
-                    mostrado = objetivo
-                    invalidate()
-                    if (sube) empezarEfecto()
-                }
-            })
+            doOnEnd { animation ->
+                if (animation !== animacion) return@doOnEnd
+                mostrado = objetivo
+                invalidate()
+                if (sube) empezarEfecto()
+            }
             start()
         }
     }
@@ -201,12 +198,10 @@ class ProgresoBonusView @JvmOverloads constructor(
                 efecto = it.animatedValue as Float
                 invalidate()
             }
-            addListener(object : AnimatorListenerAdapter() {
-                override fun onAnimationEnd(animation: Animator) {
-                    efecto = null
-                    invalidate()
-                }
-            })
+            doOnEnd {
+                efecto = null
+                invalidate()
+            }
             start()
         }
     }

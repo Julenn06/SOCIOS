@@ -1,9 +1,8 @@
 package com.julen.socios.data.local
 
 import androidx.room.Dao
-import androidx.room.Insert
-import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import androidx.room.Upsert
 import kotlinx.coroutines.flow.Flow
 
 @Dao
@@ -20,10 +19,10 @@ interface BonoRegaloDao {
     @Query("SELECT semanaKey FROM bonos_regalo WHERE activo = 1")
     fun getSemanaKeysFlow(): Flow<List<String>>
 
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    @Upsert
     suspend fun saveBonoRegalo(bono: BonoRegaloEntity)
 
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    @Upsert
     suspend fun saveBonosRegalo(bonos: List<BonoRegaloEntity>)
 
     @Query("DELETE FROM bonos_regalo WHERE semanaKey = :semanaKey")

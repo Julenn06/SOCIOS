@@ -5,6 +5,8 @@ import android.view.View
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import androidx.appcompat.app.AlertDialog
+import androidx.core.view.isInvisible
+import androidx.core.view.isVisible
 import androidx.fragment.app.activityViewModels
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.julen.socios.databinding.BottomSheetExportImportBinding
@@ -125,11 +127,11 @@ class ExportImportBottomSheetDialog :
         sale.animate().cancel()
         // Delante el que entra, para que reciba los toques aunque el otro aún se esté desvaneciendo.
         entra.bringToFront()
-        entra.visibility = View.VISIBLE
+        entra.isVisible = true
         if (!animar) {
             entra.alpha = 1f
             entra.translationX = 0f
-            sale.visibility = View.INVISIBLE
+            sale.isInvisible = true
             return
         }
         val desplazamiento = DESPLAZAMIENTO_DP * resources.displayMetrics.density * (if (importar) 1 else -1)
@@ -139,7 +141,7 @@ class ExportImportBottomSheetDialog :
         entra.animate().alpha(1f).translationX(0f).setDuration(Movimiento.MEDIA_MS).setInterpolator(curva).start()
         sale.animate().alpha(0f).translationX(-desplazamiento).setDuration(Movimiento.MEDIA_MS).setInterpolator(curva)
             .withEndAction {
-                sale.visibility = View.INVISIBLE
+                sale.isInvisible = true
                 sale.alpha = 1f
                 sale.translationX = 0f
             }.start()

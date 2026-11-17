@@ -1,10 +1,9 @@
 package com.julen.socios.data.local
 
 import androidx.room.Dao
-import androidx.room.Insert
-import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
+import androidx.room.Upsert
 import kotlinx.coroutines.flow.Flow
 
 @Dao
@@ -31,10 +30,10 @@ interface SocioDao {
     @Query("SELECT id FROM socios")
     suspend fun getAllIds(): List<String>
 
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    @Upsert
     suspend fun insertSocio(socio: SocioEntity)
 
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    @Upsert
     suspend fun insertSocios(socios: List<SocioEntity>)
 
     @Update

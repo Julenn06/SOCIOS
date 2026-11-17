@@ -104,7 +104,7 @@ class DescargadorGitHub(context: Context) : DescargadorActualizaciones {
             if (descargados != apk.tamano) {
                 throw DescargaDanadaException("Descarga incompleta: $descargados de ${apk.tamano} bytes")
             }
-            val hash = sha256.digest().joinToString("") { "%02x".format(it) }
+            val hash = sha256.digest().toHexString()
             if (apk.sha256 != null && hash != apk.sha256) {
                 throw DescargaDanadaException("El SHA-256 de la descarga no coincide con el publicado")
             }

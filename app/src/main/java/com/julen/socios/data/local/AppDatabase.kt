@@ -19,7 +19,7 @@ abstract class AppDatabase : RoomDatabase() {
         const val NOMBRE = "socios_database"
 
         fun crear(context: Context): AppDatabase =
-            Room.databaseBuilder(context.applicationContext, AppDatabase::class.java, NOMBRE)
+            Room.databaseBuilder<AppDatabase>(context.applicationContext, NOMBRE)
                 .addMigrations(Migracion3a4(), Migracion4a5, Migracion5a6, Migracion6a7, Migracion7a8)
                 .fallbackToDestructiveMigrationOnDowngrade(dropAllTables = true)
                 .build()

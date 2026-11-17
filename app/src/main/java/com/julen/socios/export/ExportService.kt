@@ -17,7 +17,7 @@ import java.time.Clock
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.util.Locale
-import java.util.concurrent.TimeUnit
+import kotlin.time.Duration.Companion.days
 
 /** Lectura y escritura de archivos de exportación/importación. Interfaz para poder sustituirla en tests. */
 interface ExportService {
@@ -94,7 +94,7 @@ class ExportadorArchivos(
 
     /** Los archivos compartidos solo hacen falta mientras la otra app los lee: no se acumulan en la caché. */
     private fun borrarArchivosAntiguos(directorio: File) {
-        val limite = clock.millis() - TimeUnit.DAYS.toMillis(1)
+        val limite = clock.millis() - 1.days.inWholeMilliseconds
         directorio.listFiles()?.filter { it.lastModified() < limite }?.forEach { it.delete() }
     }
 
