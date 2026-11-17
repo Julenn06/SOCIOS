@@ -20,6 +20,7 @@ guardan y se suman en céntimos enteros (`util/Centimos`); las copias JSON y CSV
 | `data` | Repositorios, Room (`data/local`, con migraciones) y formato de copias de seguridad (`data/backup`). |
 | `export` | Generación del PDF y lectura/escritura de archivos (Storage Access Framework y FileProvider). |
 | `util` | Cálculos (`CalculoComisiones`), semanas ISO (`DateUtils`), formato de importes, textos de los avisos (`UiText`) y movimiento (`Movimiento`: la curva, las duraciones y los muelles de todas las animaciones). |
+| `vidrio` | Vidrio líquido (Android 12+): `FuenteVidrio` (lo que se ve a través), `VidrioDrawable` (desenfoque y, desde Android 13, refracción con un shader AGSL), los estilos de la barra, el botón y los avisos, y `VidrioVentana` para los paneles. Solo en lo que flota sobre el contenido; con más contraste en los ajustes o en Android 11 o anterior, todo se ve opaco como siempre. |
 | raíz | `SociosApp` (dependencias), `MainActivity` y `MainViewModel`, los paneles inferiores (todos heredan de `PanelInferior`), los avisos (`Avisos`), los adapters y las vistas propias (gráfico, barra del bonus). |
 
 Las semanas se identifican con su clave ISO-8601 (`2026-W01` va del 29-dic-2025 al 4-ene-2026).
@@ -37,7 +38,8 @@ Las semanas se identifican con su clave ISO-8601 (`2026-W01` va del 29-dic-2025 
 
 `.claude/skills/` trae skills de agente para trabajar en el proyecto, solo las que encajan con una app de Views/XML
 (diseño Material, Android, corrutinas, Room, build y R8, tests, rendimiento, seguridad, depuración y revisión), más
-`find-docs` (consulta la documentación actual de cada librería con Context7) y `kotlin-patterns` (Kotlin idiomático).
+`find-docs` (consulta la documentación actual de cada librería con Context7), `kotlin-patterns` (Kotlin idiomático) y
+`liquid-glass-android` (propia del proyecto: dónde y cómo se usa el vidrio).
 `skills-lock.json` guarda de dónde sale cada una; se actualizan con `npx skills update -p`.
 
 Los esquemas de Room se exportan a `app/schemas/`. Al cambiar una entidad hay que subir la versión de
