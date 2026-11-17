@@ -10,7 +10,6 @@ import androidx.biometric.BiometricManager.Authenticators.DEVICE_CREDENTIAL
 import androidx.core.content.edit
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
 
 /**
  * El bloqueo de la app con la huella, la cara o el PIN del móvil: si está puesto y cuándo hay que volver a pedirlo.
@@ -34,10 +33,9 @@ class Bloqueo(
     var turno: Long = System.nanoTime()
         private set
 
-    private val _estado = MutableStateFlow(leerActivo())
-
     /** [bloqueada], para quien tenga que esperar a que se desbloquee (lo que no debe abrirse encima del bloqueo). */
-    val estado: StateFlow<Boolean> = _estado.asStateFlow()
+    val estado: StateFlow<Boolean>
+        field = MutableStateFlow(leerActivo())
 
     var activo: Boolean
         get() = leerActivo()
@@ -55,7 +53,7 @@ class Bloqueo(
         // En Android 9 o anterior el PIN se pide en otra pantalla, que deja la app en segundo plano: lo que se tarde
         // en escribirlo no cuenta como tiempo fuera.
         fueraDesde = null
-        _estado.value = bloqueada
+        estado.value = bloqueada
     }
 
     /** La app deja de verse (no al girar la pantalla ni al cambiar de tema, que solo la recrean). */
@@ -71,7 +69,7 @@ class Bloqueo(
             desbloqueada = false
             turno = System.nanoTime()
         }
-        _estado.value = bloqueada
+        estado.value = bloqueada
     }
 
     companion object {

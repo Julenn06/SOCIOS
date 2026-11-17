@@ -48,7 +48,6 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filterNotNull
@@ -208,10 +207,9 @@ class MainViewModel(
         .stateIn(viewModelScope, SharingStarted.Eagerly, exportDestino.leer())
 
     private var lecturaPendiente: ResultadoLectura? = null
-    private val _importPendiente = MutableStateFlow<ImportPreview?>(null)
-
     /** Importación leída y validada, a la espera de que el usuario la confirme. */
-    val importPendiente: StateFlow<ImportPreview?> = _importPendiente.asStateFlow()
+    val importPendiente: StateFlow<ImportPreview?>
+        field = MutableStateFlow<ImportPreview?>(null)
 
     // --- Navegación y filtros ---
 
@@ -365,7 +363,7 @@ class MainViewModel(
             return
         }
         lecturaPendiente = lectura
-        _importPendiente.value = backupRepository.previsualizar(lectura)
+        importPendiente.value = backupRepository.previsualizar(lectura)
     }
 
     fun confirmarImport() {
@@ -379,7 +377,7 @@ class MainViewModel(
 
     fun cancelarImport() {
         lecturaPendiente = null
-        _importPendiente.value = null
+        importPendiente.value = null
     }
 
     // --- Utilidades ---

@@ -19,7 +19,6 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 
@@ -58,16 +57,16 @@ class ActualizacionesViewModel(
     /** Versión nueva encontrada al abrir la app, para avisar de ella una vez. */
     val nuevaVersion: Flow<VersionPublicada> = avisos.receiveAsFlow()
 
-    private val _estadoVersion = MutableStateFlow<EstadoVersion>(EstadoVersion.SinComprobar)
-    val estadoVersion: StateFlow<EstadoVersion> = _estadoVersion.asStateFlow()
+    val estadoVersion: StateFlow<EstadoVersion>
+        field = MutableStateFlow<EstadoVersion>(EstadoVersion.SinComprobar)
 
     val versionInstalada: String get() = comprobador.versionInstalada
 
     /** Cuándo se consultó GitHub por última vez (0 si nunca). */
     val ultimaComprobacion: Long get() = comprobador.ultimaComprobacion
 
-    private val _descarga = MutableStateFlow<Descarga>(Descarga.Inactiva)
-    val descarga: StateFlow<Descarga> = _descarga.asStateFlow()
+    val descarga: StateFlow<Descarga>
+        field = MutableStateFlow<Descarga>(Descarga.Inactiva)
 
     private var trabajoDescarga: Job? = null
 
@@ -75,17 +74,17 @@ class ActualizacionesViewModel(
         viewModelScope.launch { descargador.limpiar() }
         viewModelScope.launch {
             comprobador.comprobarSiToca()?.let {
-                _estadoVersion.value = EstadoVersion.Disponible(it)
+                estadoVersion.value = EstadoVersion.Disponible(it)
                 avisos.send(it)
             }
         }
     }
 
     fun buscarActualizaciones() {
-        if (_estadoVersion.value == EstadoVersion.Buscando) return
-        _estadoVersion.value = EstadoVersion.Buscando
+        if (estadoVersion.value == EstadoVersion.Buscando) return
+        estadoVersion.value = EstadoVersion.Buscando
         viewModelScope.launch {
-            _estadoVersion.value = try {
+            estadoVersion.value = try {
                 val resultado = comprobador.comprobar()
                 when {
                     resultado.hayNueva -> EstadoVersion.Disponible(resultado.publicada)
@@ -103,17 +102,17 @@ class ActualizacionesViewModel(
     /** Descarga el APK de [publicada], salvo que ya se esté descargando o esté descargado. */
     fun descargar(publicada: VersionPublicada) {
         val apk = publicada.apk ?: return
-        when (val actual = _descarga.value) {
+        when (val actual = descarga.value) {
             is Descarga.EnCurso -> return
             is Descarga.Completada -> if (actual.publicada.version == publicada.version && actual.apk.exists()) return
             else -> Unit
         }
         trabajoDescarga = viewModelScope.launch {
             val progreso = MutableStateFlow(Progreso(0, apk.tamano))
-            _descarga.value = Descarga.EnCurso(publicada, progreso.value)
+            descarga.value = Descarga.EnCurso(publicada, progreso.value)
             // El progreso llega desde el hilo de la descarga; se publica desde aquí para que, al cancelar,
             // no pueda llegar tarde y pisar el estado.
-            val seguimiento = launch { progreso.collect { _descarga.value = Descarga.EnCurso(publicada, it) } }
+            val seguimiento = launch { progreso.collect { descarga.value = Descarga.EnCurso(publicada, it) } }
             val resultado = try {
                 Descarga.Completada(publicada, descargador.descargar(apk, publicada.version) { progreso.value = it })
             } catch (e: CancellationException) {
@@ -125,13 +124,13 @@ class ActualizacionesViewModel(
             } finally {
                 seguimiento.cancel()
             }
-            _descarga.value = resultado
+            descarga.value = resultado
         }
     }
 
     fun cancelarDescarga() {
         trabajoDescarga?.cancel()
-        _descarga.value = Descarga.Inactiva
+        descarga.value = Descarga.Inactiva
     }
 
     companion object {
