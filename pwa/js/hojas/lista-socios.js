@@ -12,8 +12,7 @@ const normalizar = (t) => t.normalize('NFD').replace(/\p{Mn}+/gu, '').toLowerCas
 /** Los socios con su texto ya preparado para buscar, del más reciente al más antiguo. */
 function indexar(socios) {
   return socios
-    .slice()
-    .sort((a, b) => (a.semanaKey < b.semanaKey ? 1 : a.semanaKey > b.semanaKey ? -1 : a.dia - b.dia || b.timestamp - a.timestamp))
+    .toSorted((a, b) => (a.semanaKey < b.semanaKey ? 1 : a.semanaKey > b.semanaKey ? -1 : a.dia - b.dia || b.timestamp - a.timestamp))
     .map((s) => [s, normalizar(`${s.nombreSocio} ${s.notas}`)]);
 }
 
@@ -39,7 +38,7 @@ export function abrirListaSocios(modo) {
         : { placa: 'degradado-ambar', iconoPlaca: 'pendientes', titulo: 'Pendientes anteriores', subtitulo: 'Socios sin conseguir de semanas pasadas' })));
       let campo = null;
       if (buscando) {
-        campo = crearCampo({ etiqueta: 'Nombre, notas o cuota', iconoCampo: 'search', tipo: 'buscar', capitalizar: 'words', limpiar: true });
+        campo = crearCampo({ etiqueta: 'Nombre, notas o cuota', iconoCampo: 'search', tipo: 'buscar', limpiar: true, autofocus: true });
         campo.el.style.marginTop = '18px';
         campo.el.querySelector('.campo').style.borderRadius = '16px';
         s.append(campo.el);
@@ -94,9 +93,8 @@ export function abrirListaSocios(modo) {
         vacio.querySelector('span').innerHTML = buscando ? `Ningún socio coincide con «${esc(texto)}»` : 'No te queda ningún pendiente de semanas anteriores';
       };
       campo?.input.addEventListener('input', pintar);
-      campo?.input.addEventListener('keydown', (e) => e.key === 'Enter' && campo.input.blur());
+      campo?.input.addEventListener('keydown', (e) => e.key === 'Enter' && !e.isComposing && campo.input.blur());
       pintar();
-      if (campo) setTimeout(() => campo.foco(), 320);
       const dejar = estado.suscribir(pintar);
       panel.el.querySelector('[data-cerrar]').addEventListener('click', () => panel.cancelar());
       return () => {

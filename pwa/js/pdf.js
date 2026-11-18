@@ -61,11 +61,7 @@ export async function generarPdf(datos, alcance, ahora = new Date()) {
   }
   const activos = new Map(datos.bonosRegalo.filter((b) => b.activo).map((b) => [b.semanaKey, b]));
   const historico = calcularResumenHistoricoGlobal(datos.socios, activos, new Map(datos.cobros.map((c) => [c.semanaKey, c])));
-  const sociosPorSemana = new Map();
-  for (const s of datos.socios) {
-    if (!sociosPorSemana.has(s.semanaKey)) sociosPorSemana.set(s.semanaKey, []);
-    sociosPorSemana.get(s.semanaKey).push(s);
-  }
+  const sociosPorSemana = Map.groupBy(datos.socios, (s) => s.semanaKey);
 
   let numeroPagina = 1;
   let y = MARGEN;
@@ -316,7 +312,7 @@ export async function generarPdf(datos, alcance, ahora = new Date()) {
   y += 24;
   cabeceraTabla();
   for (const semana of historico.semanas) {
-    const socios = (sociosPorSemana.get(semana.semanaKey) ?? []).slice().sort((a, b) => a.dia - b.dia || a.timestamp - b.timestamp);
+    const socios = (sociosPorSemana.get(semana.semanaKey) ?? []).toSorted((a, b) => a.dia - b.dia || a.timestamp - b.timestamp);
     asegurar(ALTO_SEMANA + ALTO_FILA, cabeceraTabla);
     banda(semana);
     if (!socios.length) {

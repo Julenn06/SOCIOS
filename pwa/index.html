@@ -5,8 +5,21 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
   <title>Gestión de Socios</title>
   <meta name="description" content="Registra los socios conseguidos cada semana y calcula la ganancia: base, bonus, IRPF y neto.">
-  <meta name="theme-color" content="#F2F4F0">
+  <meta name="theme-color" media="(prefers-color-scheme: light)" content="#F2F4F0">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#0B100E">
   <meta name="color-scheme" content="light dark">
+  <script>
+    // El tema elegido en "Más" antes del primer dibujo, para que no parpadee (ajustes/Tema.kt). Sin JavaScript, o con
+    // "Sistema", el <meta> se queda en "light dark" y la app sigue al sistema.
+    try {
+      var tema = JSON.parse(localStorage.getItem('socios.tema'));
+      var forzado = tema === 'OSCURO' ? 'dark' : tema === 'CLARO' ? 'light' : null;
+      if (forzado) {
+        document.querySelector('meta[name="color-scheme"]').content = forzado;
+        document.querySelectorAll('meta[name="theme-color"]').forEach(function (m) { m.content = forzado === 'dark' ? '#0B100E' : '#F2F4F0'; });
+      }
+    } catch (e) {}
+  </script>
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -18,16 +31,6 @@
   <link rel="preload" href="fonts/geist_medium.ttf" as="font" type="font/ttf" crossorigin>
   <link rel="preload" href="fonts/geist_regular.ttf" as="font" type="font/ttf" crossorigin>
   <link rel="stylesheet" href="css/app.css">
-  <script>
-    // El tema antes del primer dibujo, para que no parpadee (ajustes/Tema.kt).
-    (function () {
-      var tema = 'SISTEMA';
-      try { tema = JSON.parse(localStorage.getItem('socios.tema')) || 'SISTEMA'; } catch (e) {}
-      var oscuro = tema === 'OSCURO' || (tema === 'SISTEMA' && matchMedia('(prefers-color-scheme: dark)').matches);
-      document.documentElement.setAttribute('data-theme', oscuro ? 'dark' : 'light');
-      document.querySelector('meta[name="theme-color"]').setAttribute('content', oscuro ? '#0B100E' : '#F2F4F0');
-    })();
-  </script>
 </head>
 <body>
   <div id="app">

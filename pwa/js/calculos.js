@@ -111,11 +111,7 @@ export function calcularResumenSemana(socios, bono = null, porcentajeIrpf = IRPF
 
 /** Cada semana por separado (su tramo, su bono y lo cobrado) y luego la suma. */
 export function calcularResumenHistoricoGlobal(socios, bonos = new Map(), cobros = new Map()) {
-  const porSemana = new Map();
-  for (const s of socios) {
-    if (!porSemana.has(s.semanaKey)) porSemana.set(s.semanaKey, []);
-    porSemana.get(s.semanaKey).push(s);
-  }
+  const porSemana = Map.groupBy(socios, (s) => s.semanaKey);
   const claves = new Set(porSemana.keys());
   for (const [k, b] of bonos) if (b.activo) claves.add(k);
   for (const k of cobros.keys()) claves.add(k);

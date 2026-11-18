@@ -14,7 +14,8 @@ export function confirmarEliminar(socio, alConfirmar, alCerrar = null) {
     icono: 'delete',
     titulo: `¿Eliminar a ${estado.nombreVisible(socio)}?`,
     mensaje: 'Se quitará de la lista y de las cuentas de la semana. Justo después podrás deshacerlo.',
-    acciones: [{ texto: 'Cancelar' }, { texto: 'Eliminar', rojo: true, alPulsar: alConfirmar }],
+    // El foco empieza en la acción segura: un Enter o un toque de más no borra nada.
+    acciones: [{ texto: 'Cancelar', segura: true }, { texto: 'Eliminar', rojo: true, alPulsar: alConfirmar }],
     alCerrar
   });
 }

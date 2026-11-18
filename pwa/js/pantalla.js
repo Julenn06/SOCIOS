@@ -186,7 +186,7 @@ function configurarCabecera() {
   });
   // Doble toque en el neto: ajustarlo a lo cobrado. Un toque solo no hace nada, para no abrirlo sin querer.
   // Con el clic y no con pointerup: si el panel se abriera al levantar el dedo, el clic de ese mismo toque caería
-  // en su velo y lo cerraría al momento.
+  // fuera de él y lo cerraría al momento.
   const neto = $('netoCabecera');
   let ultimo = 0, x = 0, y = 0;
   neto.addEventListener('click', (e) => {
@@ -323,7 +323,7 @@ function mostrarLista(ui) {
   else if (anterior[0] === ui.semanaKey && anterior[1] !== ui.diaFiltro) modo = 'cascada';
   const filas = ui.diaFiltro == null
     ? agrupadasPorDia(ui.sociosFiltrados)
-    : sinAgrupar(ui.sociosFiltrados.slice().sort((a, b) => a.timestamp - b.timestamp));
+    : sinAgrupar(ui.sociosFiltrados.toSorted((a, b) => a.timestamp - b.timestamp));
   lista.mostrar(filas, activas() ? modo : 'nada');
   const vacia = ui.sociosFiltrados.length === 0;
   $('vacio').classList.toggle('oculto', !vacia);

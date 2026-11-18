@@ -9,11 +9,7 @@ import { haptica } from './movimiento.js';
 
 /** Las filas agrupadas por día (de lunes a viernes), cada día con su cabecera y sus socios por orden de alta. */
 export function agrupadasPorDia(socios) {
-  const porDia = new Map();
-  for (const s of socios) {
-    if (!porDia.has(s.dia)) porDia.set(s.dia, []);
-    porDia.get(s.dia).push(s);
-  }
+  const porDia = Map.groupBy(socios, (s) => s.dia);
   const filas = [];
   for (const dia of [...porDia.keys()].sort((a, b) => a - b)) {
     const delDia = porDia.get(dia);
@@ -26,7 +22,7 @@ export function agrupadasPorDia(socios) {
       hechos: hechos.length,
       ganancia: Centimos.suma(hechos, (s) => calcularBaseX2(s.colaboracion))
     });
-    delDia.slice().sort((a, b) => a.timestamp - b.timestamp).forEach((s) => filas.push({ id: s.id, socio: s }));
+    delDia.toSorted((a, b) => a.timestamp - b.timestamp).forEach((s) => filas.push({ id: s.id, socio: s }));
   }
   return filas;
 }

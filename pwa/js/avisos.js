@@ -3,6 +3,7 @@
 import { icono } from './iconos.js';
 import { esc } from './formato.js';
 import { activas, CORTA_MS, escalarSuave, haptica, latido, MEDIA_MS } from './movimiento.js';
+import { hayPanelAbierto } from './paneles.js';
 
 const TIPOS = {
   EXITO: { duracion: 2500, icono: 'check_circle', tono: 'verde' },
@@ -17,14 +18,43 @@ const TIEMPO_DETALLE_MS = 1000;
 const MARGEN_SALIDA_MS = 400;
 
 let capa = null;
+let anuncio = null;
 let visible = null;
 
+/**
+ * Los avisos van siempre en el mismo sitio: una región con nombre que es un popover manual. Así se ven también
+ * encima de un panel abierto (los paneles son <dialog> en la capa superior, donde z-index no cuenta) y no se
+ * cierran al tocar otra cosa.
+ */
 function crearCapa() {
   capa = document.createElement('div');
   capa.className = 'capa-avisos';
-  capa.setAttribute('role', 'status');
-  capa.setAttribute('aria-live', 'polite');
+  capa.setAttribute('popover', 'manual');
+  capa.setAttribute('role', 'region');
+  capa.setAttribute('aria-label', 'Avisos');
+  // Para los navegadores sin ariaNotify(): una región en vivo que ya existe antes de escribir en ella.
+  anuncio = document.createElement('div');
+  anuncio.className = 'sr';
+  anuncio.setAttribute('aria-live', 'polite');
+  capa.append(anuncio);
   document.body.append(capa);
+}
+
+/** Pone la capa encima de todo lo que haya en la capa superior (un panel abierto después que ella, por ejemplo). */
+function traerDelante() {
+  if (capa.matches(':popover-open')) capa.hidePopover();
+  capa.showPopover();
+}
+
+/** Lee el aviso a quien use un lector de pantalla: solo su texto, y si tiene un botón, que hay acciones. */
+function anunciar(titulo, detalle, conAccion) {
+  const texto = [titulo, detalle].filter(Boolean).join('. ') + (conAccion ? '. Acciones disponibles' : '');
+  if (typeof document.ariaNotify === 'function') {
+    document.ariaNotify(texto);
+    return;
+  }
+  anuncio.textContent = '';
+  requestAnimationFrame(() => (anuncio.textContent = texto));
 }
 
 /** Encima del botón de "Nuevo socio" en la pantalla principal; abajo del todo si hay un panel abierto. */
@@ -39,14 +69,16 @@ function colocar(enPanel) {
  */
 export function mostrarAviso(titulo, tipo = 'INFO', detalle = null, accion = null, alPulsarAccion = null) {
   if (!capa) crearCapa();
-  const enPanel = document.querySelector('.hoja.abierta, .dialogo.abierto') != null;
+  const enPanel = hayPanelAbierto();
   const t = TIPOS[tipo] ?? TIPOS.INFO;
   const duracion = t.duracion + (detalle ? TIEMPO_DETALLE_MS : 0);
   const reutilizable = visible && !visible.cerrando && visible.enPanel === enPanel && performance.now() < visible.fin - MARGEN_SALIDA_MS;
   const actual = reutilizable ? visible : crear(enPanel);
   colocar(enPanel);
+  traerDelante();
   actual.fin = performance.now() + duracion;
   pintar(actual, titulo, detalle, t, accion, alPulsarAccion);
+  anunciar(titulo, detalle, !!(accion && alPulsarAccion));
   if (tipo === 'ERROR') haptica.rechazar();
   if (reutilizable) {
     latido(actual.placa);
@@ -96,6 +128,7 @@ function crear(enPanel) {
     cerrar(aviso);
   });
   permitirDeslizar(aviso);
+  pausarConFoco(aviso);
   capa.append(el);
   if (activas()) el.classList.add('entrando');
   visible = aviso;
@@ -138,13 +171,43 @@ function cerrar(aviso) {
   aviso.cerrando = true;
   clearTimeout(aviso.temporizador);
   if (visible === aviso) visible = null;
-  const quitar = () => aviso.el.remove();
+  // Si el foco estaba en el aviso (se llegó con el teclado), vuelve a donde estaba antes.
+  if (aviso.el.contains(document.activeElement)) aviso.focoPrevio?.focus?.({ preventScroll: true });
+  const quitar = () => {
+    if (!aviso.el.isConnected) return;
+    aviso.el.remove();
+    if (!capa.querySelector('.aviso') && capa.matches(':popover-open')) capa.hidePopover();
+  };
   if (!activas()) return quitar();
   if (aviso.deslizada) return quitar();
   aviso.el.classList.remove('entrando');
   aviso.el.classList.add('saliendo');
   aviso.el.addEventListener('animationend', quitar, { once: true });
   setTimeout(quitar, 400);
+}
+
+/**
+ * Mientras el foco está en el aviso (con el teclado o un lector de pantalla), no se va solo: su tiempo y su barra se
+ * paran y siguen al salir el foco. El aviso nunca se lleva el foco al aparecer.
+ */
+function pausarConFoco(aviso) {
+  let restante = 0;
+  aviso.el.addEventListener('focusin', (e) => {
+    if (aviso.cerrando || restante) return;
+    if (!aviso.el.contains(e.relatedTarget)) aviso.focoPrevio = e.relatedTarget;
+    restante = Math.max(0, aviso.fin - performance.now());
+    clearTimeout(aviso.temporizador);
+    aviso.animacionBarra?.pause();
+  });
+  aviso.el.addEventListener('focusout', (e) => {
+    if (aviso.cerrando || aviso.el.contains(e.relatedTarget) || !restante) return;
+    const queda = Math.max(restante, 1500);
+    restante = 0;
+    aviso.fin = performance.now() + queda;
+    aviso.animacionBarra?.play();
+    clearTimeout(aviso.temporizador);
+    aviso.temporizador = setTimeout(() => cerrar(aviso), queda);
+  });
 }
 
 /** Arrastrarla a un lado: si se suelta lejos o se lanza con fuerza, sale y se cierra; si no, vuelve. */

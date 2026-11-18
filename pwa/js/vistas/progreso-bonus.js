@@ -85,7 +85,7 @@ export class ProgresoBonus {
     }
     const sube = objetivo > desde;
     // El rebote no puede cruzar un hito sin alcanzarlo de verdad.
-    const bajoObjetivo = [...this.hitos].reverse().find((h) => h <= objetivo);
+    const bajoObjetivo = this.hitos.findLast((h) => h <= objetivo);
     const sobreObjetivo = this.hitos.find((h) => h > objetivo);
     const minimo = Math.min(bajoObjetivo ?? this.inicio, desde);
     const maximo = Math.max(sobreObjetivo != null ? sobreObjetivo - 0.05 : this.fin, desde);
