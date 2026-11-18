@@ -1,0 +1,8 @@
+{
+  "version": "1.0.1",
+  "tamano": 1578835,
+  "novedades": [
+    "El doble toque en el neto abre bien el ajuste a lo cobrado (antes se cerraba solo)",
+    "Tocar fuera de un panel ya no lo cierra nada más abrirlo"
+  ]
+}

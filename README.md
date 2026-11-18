@@ -11,6 +11,9 @@ lo cobrado de verdad, ese pasa a ser el neto de la semana y la diferencia con el
 (devoluciones de primera o segunda cuota u otros descuentos); si se cobra de más, sale en positivo. Los importes se
 guardan y se suman en céntimos enteros (`util/Centimos`); las copias JSON y CSV siguen en euros.
 
+La misma app existe como página web instalable (PWA) en `pwa/`, publicada en https://socios.jfl06studio.com: ver
+[pwa/README.md](pwa/README.md).
+
 ## Estructura
 
 | Paquete | Contenido |

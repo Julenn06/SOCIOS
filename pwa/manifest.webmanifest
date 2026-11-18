@@ -1,0 +1,29 @@
+{
+  "id": "./",
+  "name": "Gestión de Socios",
+  "short_name": "Socios",
+  "description": "Registra los socios conseguidos cada semana y calcula la ganancia: base, bonus, IRPF y neto.",
+  "lang": "es-ES",
+  "dir": "ltr",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#F2F4F0",
+  "theme_color": "#F2F4F0",
+  "categories": ["finance", "productivity"],
+  "icons": [
+    { "src": "icons/icono-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icono-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icons/maskable-192.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable" },
+    { "src": "icons/maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "shortcuts": [
+    {
+      "name": "Añadir un socio",
+      "short_name": "Nuevo socio",
+      "url": "./?accion=nuevo-socio",
+      "icons": [{ "src": "icons/atajo-nuevo-socio.png", "sizes": "96x96", "type": "image/png" }]
+    }
+  ]
+}

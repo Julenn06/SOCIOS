@@ -1,0 +1,60 @@
+name: Publicar la web
+
+# La PWA (carpeta pwa/) se publica en https://socios.jfl06studio.com. Hostinger despliega la rama `web` en cada push,
+# y esa rama solo lleva lo público de pwa/: este workflow la pone al día con cada push a main que toque pwa/.
+# Para que los móviles que ya tienen la app reciban los cambios, antes hay que subir la versión
+# (node pwa/herramientas/version.mjs X.Y.Z "novedad"). Ver pwa/README.md.
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'pwa/**'
+      - '.github/workflows/web.yml'
+  workflow_dispatch:
+
+# Una publicación detrás de otra, sin pisarse; la última siempre llega.
+concurrency:
+  group: web
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  publicar:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Descargar el código
+        uses: actions/checkout@v7
+
+      - name: Comprobar que el service worker guarda todos los archivos
+        run: node pwa/herramientas/version.mjs --comprobar
+
+      - name: Actualizar la rama web
+        env:
+          TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          remoto="https://x-access-token:${TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+          # Se conserva la historia de la rama (Hostinger hace pull de ella), solo cambia su contenido.
+          if git ls-remote --exit-code --heads "$remoto" web > /dev/null; then
+            git clone --quiet --branch web --depth 1 "$remoto" web
+          else
+            git init --quiet -b web web
+            git -C web remote add origin "$remoto"
+          fi
+          find web -mindepth 1 -maxdepth 1 ! -name .git -exec rm -rf {} +
+          cd pwa
+          cp -r index.html manifest.webmanifest sw.js version.json .htaccess css js fonts img icons vendor ../web/
+          cd ../web
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          if git diff --cached --quiet; then
+            echo "La web ya estaba al día"
+            exit 0
+          fi
+          git commit --quiet -m "web: pwa de ${GITHUB_SHA::7}"
+          git push --quiet origin web
