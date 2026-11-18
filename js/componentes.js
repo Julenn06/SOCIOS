@@ -26,32 +26,39 @@ export function html(texto) {
  * Un campo con borde, icono y etiqueta que flota al escribir. [tipo]: 'decimal', 'texto', 'area' o 'buscar'.
  * Devuelve { el, input, ayuda, valor(), poner(v), error(t), foco() }.
  */
-export function crearCampo({ etiqueta, iconoCampo, tipo = 'texto', maxLength = null, capitalizar = 'sentences', ayuda = false, limpiar = false, grande = false }) {
+export function crearCampo({ etiqueta, iconoCampo, tipo = 'texto', maxLength = null, capitalizar = 'sentences', ayuda = false, limpiar = false, grande = false, autofocus = false }) {
   const id = `c${Math.random().toString(36).slice(2, 9)}`;
+  // La búsqueda no lleva corrector ni mayúsculas: se escriben trozos de nombres o una cuota, no frases.
+  const extras = tipo === 'buscar'
+    ? ' enterkeyhint="search" autocorrect="off" spellcheck="false"'
+    : tipo === 'decimal' ? ' enterkeyhint="done"' : '';
   const control = tipo === 'area'
-    ? `<textarea id="${id}" rows="1" autocapitalize="${capitalizar}"${maxLength ? ` maxlength="${maxLength}"` : ''}></textarea>`
-    : `<input id="${id}" type="${tipo === 'buscar' ? 'search' : 'text'}" ${tipo === 'decimal' ? 'inputmode="decimal" autocomplete="off"' : `autocapitalize="${capitalizar}" autocomplete="off"`}${maxLength ? ` maxlength="${maxLength}"` : ''}${tipo === 'buscar' ? ' enterkeyhint="search"' : tipo === 'decimal' ? ' enterkeyhint="done"' : ''}>`;
-  const envoltura = html(`
-    <div>
+    ? `<textarea id="${id}" rows="1" autocapitalize="${capitalizar}" aria-describedby="${id}-ayuda"${maxLength ? ` maxlength="${maxLength}"` : ''}></textarea>`
+    : `<input id="${id}" type="${tipo === 'buscar' ? 'search' : 'text'}" ${tipo === 'decimal' ? 'inputmode="decimal" autocomplete="off"' : `autocapitalize="${tipo === 'buscar' ? 'none' : capitalizar}" autocomplete="off"`} aria-describedby="${id}-ayuda"${maxLength ? ` maxlength="${maxLength}"` : ''}${extras}${autofocus ? ' autofocus' : ''}>`;
+  const caja0 = `
       <div class="campo${grande ? ' grande' : ''}">
         <span class="campo-icono icono" data-icono="${iconoCampo}"></span>
         ${control}
         <label for="${id}">${esc(etiqueta)}</label>
         ${limpiar ? `<button class="limpiar oculto" type="button" aria-label="Borrar el texto"><span class="icono" data-icono="close"></span></button>` : ''}
-      </div>
-      ${ayuda ? '<div class="ayuda-campo"></div>' : '<div class="ayuda-campo oculto"></div>'}
+      </div>`;
+  const envoltura = html(`
+    <div>
+      ${tipo === 'buscar' ? `<search>${caja0}</search>` : caja0}
+      <div class="ayuda-campo${ayuda ? '' : ' oculto'}" id="${id}-ayuda" aria-live="polite"></div>
     </div>`);
   const caja = envoltura.querySelector('.campo');
   const input = envoltura.querySelector('input, textarea');
   const textoAyuda = envoltura.querySelector('.ayuda-campo');
   const botonLimpiar = envoltura.querySelector('.limpiar');
   let ayudaNormal = '';
+  // Las notas crecen hasta tres líneas con field-sizing (CSS); solo donde no existe se calcula a mano.
+  const crecerAMano = tipo === 'area' && !CSS.supports('field-sizing', 'content');
   const actualizar = () => {
     caja.classList.toggle('lleno', input.value !== '');
     botonLimpiar?.classList.toggle('oculto', input.value === '');
-    if (tipo === 'area') {
+    if (crecerAMano) {
       input.style.height = 'auto';
-      // Hasta tres líneas; a partir de ahí, se desplaza.
       input.style.height = `${Math.min(input.scrollHeight, 3 * 21.6 + 32)}px`;
     }
   };
@@ -71,6 +78,8 @@ export function crearCampo({ etiqueta, iconoCampo, tipo = 'texto', maxLength = n
     },
     error(t) {
       caja.classList.toggle('error', !!t);
+      if (t) input.setAttribute('aria-invalid', 'true');
+      else input.removeAttribute('aria-invalid');
       textoAyuda.classList.toggle('error', !!t);
       textoAyuda.textContent = t || ayudaNormal;
       textoAyuda.classList.toggle('oculto', !t && !ayudaNormal);

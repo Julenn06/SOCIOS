@@ -1,9 +1,26 @@
 // Ayudas comunes de las vistas dibujadas a mano: colores del tema, lienzos nítidos y texto con Geist.
 
+// Las variables del tema valen light-dark(claro, oscuro): su texto no es un color. Se resuelven pintándolas en un
+// elemento de prueba, una vez por variable y tema (las vistas animadas piden colores en cada fotograma).
+let prueba = null;
+const resueltos = new Map();
+document.addEventListener('socios:tema', () => resueltos.clear());
+matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => resueltos.clear());
+
 /** El color de una variable CSS del tema como [r, g, b, a]. */
 export function color(nombre) {
-  const v = getComputedStyle(document.documentElement).getPropertyValue(nombre).trim();
-  return parsear(v);
+  let c = resueltos.get(nombre);
+  if (!c) {
+    if (!prueba) {
+      prueba = document.createElement('span');
+      prueba.hidden = true;
+      document.body.append(prueba);
+    }
+    prueba.style.color = `var(${nombre})`;
+    c = parsear(getComputedStyle(prueba).color);
+    resueltos.set(nombre, c);
+  }
+  return c;
 }
 
 export function parsear(v) {

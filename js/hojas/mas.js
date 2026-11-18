@@ -22,7 +22,7 @@ export function abrirMas() {
             <div class="fila">
               <div class="icono-app"><img src="icons/icono-placa.png" alt=""></div>
               <div class="crece" style="margin-left:16px">
-                <div class="nombre-app">Gestión de Socios</div>
+                <h2 class="nombre-app" style="margin:0">Gestión de Socios</h2>
                 <span class="pastilla-cabecera" style="margin-top:6px">Versión ${esc(actualizaciones.versionInstalada)}</span>
               </div>
             </div>
@@ -165,7 +165,7 @@ export function abrirActualizacion(publicada) {
       const contenido = html(`
         <div class="panel-actualizacion">
           <canvas class="animacion-descarga" aria-hidden="true"></canvas>
-          <div class="titulo-descarga" aria-live="polite" data-id="titulo"></div>
+          <h2 class="titulo-descarga" style="margin:0" aria-live="polite" data-id="titulo"></h2>
           <span class="pastilla versiones-descarga" data-id="versiones"></span>
           <div class="detalle-descarga" data-id="detalle"></div>
           <div class="tarjeta novedades oculto" data-id="novedades"><div class="titulo-fila">Novedades</div><div class="descripcion-fila" data-id="textoNovedades"></div></div>

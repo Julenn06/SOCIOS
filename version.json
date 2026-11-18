@@ -1,8 +1,9 @@
 {
-  "version": "1.0.1",
-  "tamano": 1578835,
+  "version": "1.0.2",
+  "tamano": 1588227,
   "novedades": [
-    "El doble toque en el neto abre bien el ajuste a lo cobrado (antes se cerraba solo)",
-    "Tocar fuera de un panel ya no lo cierra nada más abrirlo"
+    "Paneles, diálogos y bloqueo con el diálogo nativo del navegador: atrás y Esc los cierran como en Android",
+    "Los avisos se ven también encima de un panel abierto",
+    "El tema sigue al sistema con color-scheme y light-dark()"
   ]
 }

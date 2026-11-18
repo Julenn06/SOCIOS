@@ -12,23 +12,39 @@ export const TEMAS = [
 ];
 
 const oscuroSistema = matchMedia('(prefers-color-scheme: dark)');
-export const temaGuardado = () => prefs.leer('tema', 'SISTEMA');
+export const temaGuardado = () => prefs.leer('tema', null) ?? 'SISTEMA';
 
+/** Si se ve en oscuro: el tema forzado o, con "Sistema", el del dispositivo. */
+export const esOscuro = (tema = temaGuardado()) => tema === 'OSCURO' || (tema === 'SISTEMA' && oscuroSistema.matches);
+let oscuroPintado = esOscuro();
+
+/**
+ * Refleja el tema en el <meta name="color-scheme"> (la hoja de estilos sigue a ese <meta>: con "light dark", al
+ * sistema) y en el color de la barra del navegador; las vistas dibujadas a mano se repintan.
+ */
 export function aplicarTema(tema = temaGuardado()) {
-  const oscuro = tema === 'OSCURO' || (tema === 'SISTEMA' && oscuroSistema.matches);
-  const raiz = document.documentElement;
-  const antes = raiz.getAttribute('data-theme');
-  raiz.setAttribute('data-theme', oscuro ? 'dark' : 'light');
-  document.querySelector('meta[name="theme-color"]')?.setAttribute('content', oscuro ? '#0B100E' : '#F2F4F0');
-  if (antes !== raiz.getAttribute('data-theme')) document.dispatchEvent(new Event('socios:tema'));
+  const forzado = tema === 'OSCURO' ? 'dark' : tema === 'CLARO' ? 'light' : null;
+  document.querySelector('meta[name="color-scheme"]').content = forzado ?? 'light dark';
+  document.querySelectorAll('meta[name="theme-color"]').forEach((m) => {
+    const delSistema = m.media.includes('dark') ? '#0B100E' : '#F2F4F0';
+    m.content = forzado ? (forzado === 'dark' ? '#0B100E' : '#F2F4F0') : delSistema;
+  });
+  const oscuro = esOscuro(tema);
+  if (oscuro !== oscuroPintado) {
+    oscuroPintado = oscuro;
+    document.dispatchEvent(new Event('socios:tema'));
+  }
 }
 
+/** "Sistema" no se guarda: así la app vuelve a seguir al dispositivo. */
 export function elegirTema(tema) {
-  prefs.guardar('tema', tema);
+  prefs.guardar('tema', tema === 'SISTEMA' ? null : tema);
   aplicarTema(tema);
 }
 
 oscuroSistema.addEventListener('change', () => aplicarTema());
+// Cambiado en otra pestaña o en la app instalada.
+addEventListener('storage', (e) => e.key === 'socios.tema' && aplicarTema());
 
 // --- Bloqueo ---
 
@@ -168,7 +184,8 @@ export const actualizaciones = {
   },
 
   async consultar() {
-    const r = await fetch(`version.json?t=${Date.now()}`, { cache: 'no-store' });
+    // Con una conexión que no responde, "Buscando…" no se queda colgado: a los 15 s pasa a "No se ha podido comprobar".
+    const r = await fetch(`version.json?t=${Date.now()}`, { cache: 'no-store', signal: AbortSignal.timeout(15_000) });
     if (!r.ok) throw new Error(`HTTP ${r.status}`);
     const publicada = await r.json();
     if (!publicada?.version) throw new Error('version.json sin versión');
@@ -223,6 +240,8 @@ export const actualizaciones = {
           registro.addEventListener('updatefound', () => vigilar(registro.installing), { once: true });
           setTimeout(() => rechazar(new Error('Tiempo agotado')), 120_000);
         });
+        // Si no llega a esperarse (no había versión nueva), que su tiempo agotado no quede como error suelto.
+        instalado.catch(() => {});
         await registro.update();
         if (!registro.installing && !registro.waiting) throw new Error('No hay ninguna versión nueva en el servidor');
         if (!registro.waiting) await instalado;

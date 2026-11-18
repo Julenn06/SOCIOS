@@ -11,37 +11,38 @@
 /* ---------- Colores ---------- */
 
 :root {
-  color-scheme: light;
-  --primary: #0E7A55;
-  --on-primary: #FFFFFF;
-  --primary-container: #D8EEE3;
-  --on-primary-container: #073324;
-  --primary-inverse: #5FD3A5;
-  --accent-blue: #1F6F7A;
-  --orange-pending: #B45A0A;
-  --bg: #F2F4F0;
-  --surface-card: #FFFFFF;
-  --surface-muted: #F6F7F4;
-  --text-main: #111814;
-  --text-sub: #57625C;
-  --divider: #E3E7E1;
-  --stroke: #CDD4CC;
-  --handle: #D2D8D0;
-  --blue-text: #17535C;
-  --blue-text-soft: #1F6470;
-  --blue-container: #E2EFEE;
-  --green-text: #0B5A3E;
-  --green-text-soft: #11744F;
-  --green-container: #E1F1E8;
-  --red-text: #B4282C;
-  --red-container: #FBE9E8;
-  --orange-text: #9C4708;
-  --orange-container: #FCEFE2;
-  --amber-text: #8F5D00;
-  --amber-container: #FBF3DC;
-  --amber-stroke: #EED9A0;
-  --grafico-barra: #0E7A55;
-  --grafico-barra-suave: #9CCCB5;
+  /* Claro u oscuro según el sistema, salvo que la app fuerce uno (<meta name="color-scheme">, ver abajo). */
+  color-scheme: light dark;
+  --primary: light-dark(#0E7A55, #5CCB9E);
+  --on-primary: light-dark(#FFFFFF, #03261A);
+  --primary-container: light-dark(#D8EEE3, #11382A);
+  --on-primary-container: light-dark(#073324, #CBEEDB);
+  --primary-inverse: light-dark(#5FD3A5, #0E7A55);
+  --accent-blue: light-dark(#1F6F7A, #6FBFC9);
+  --orange-pending: light-dark(#B45A0A, #F29A4A);
+  --bg: light-dark(#F2F4F0, #0B100E);
+  --surface-card: light-dark(#FFFFFF, #151C19);
+  --surface-muted: light-dark(#F6F7F4, #111714);
+  --text-main: light-dark(#111814, #E6ECE8);
+  --text-sub: light-dark(#57625C, #97A39C);
+  --divider: light-dark(#E3E7E1, #243029);
+  --stroke: light-dark(#CDD4CC, #33413A);
+  --handle: light-dark(#D2D8D0, #3A4741);
+  --blue-text: light-dark(#17535C, #9FD6DC);
+  --blue-text-soft: light-dark(#1F6470, #8FCDD4);
+  --blue-container: light-dark(#E2EFEE, #143236);
+  --green-text: light-dark(#0B5A3E, #8EE0B5);
+  --green-text-soft: light-dark(#11744F, #6BD39F);
+  --green-container: light-dark(#E1F1E8, #12301F);
+  --red-text: light-dark(#B4282C, #F4A6A3);
+  --red-container: light-dark(#FBE9E8, #3A1617);
+  --orange-text: light-dark(#9C4708, #F7B57A);
+  --orange-container: light-dark(#FCEFE2, #3A2412);
+  --amber-text: light-dark(#8F5D00, #F2CB6B);
+  --amber-container: light-dark(#FBF3DC, #352B10);
+  --amber-stroke: light-dark(#EED9A0, #574614);
+  --grafico-barra: light-dark(#0E7A55, #36A57B);
+  --grafico-barra-suave: light-dark(#9CCCB5, #2B5C49);
   /* Iguales en los dos temas */
   --header-start: #155E46;
   --header-end: #0A2D22;
@@ -61,13 +62,15 @@
   --pendiente-start: #A85F12;
   --pendiente-end: #8A470B;
   /* Vidrio líquido */
-  --vidrio-barra: 242, 244, 240;
-  --vidrio-boton: 11, 103, 72;
-  --vidrio-aviso: 255, 255, 255;
-  --vidrio-panel: rgba(255, 255, 255, 0.78);
-  --vidrio-filo: rgba(255, 255, 255, 0.55);
-  --vidrio-luz: 0.42;
-  --sombra-tarjeta: 0 1px 2px rgba(17, 24, 20, 0.04);
+  --vidrio-barra: light-dark(rgb(242 244 240), rgb(11 16 14));
+  --vidrio-boton: light-dark(rgb(11 103 72), rgb(92 203 158));
+  --vidrio-aviso: light-dark(rgb(255 255 255), rgb(21 28 25));
+  --vidrio-panel: light-dark(rgba(255, 255, 255, 0.78), rgba(21, 28, 25, 0.8));
+  --vidrio-filo: light-dark(rgba(255, 255, 255, 0.55), rgba(255, 255, 255, 0.122));
+  --vidrio-luz: light-dark(rgb(255 255 255 / 0.42), rgb(255 255 255 / 0.16));
+  --vidrio-luz-media: light-dark(rgb(255 255 255 / 0.21), rgb(255 255 255 / 0.08));
+  --sombra-color: light-dark(rgb(17 24 20 / 0.04), transparent);
+  --sombra-tarjeta: 0 1px 2px var(--sombra-color);
   --scrim: rgba(0, 0, 0, 0.12);
   --scrim-opaco: rgba(0, 0, 0, 0.32);
 
@@ -83,46 +86,10 @@
 }
 
 /* El tema lo resuelve el script del principio de index.html (Sistema, Claro u Oscuro). */
-:root[data-theme="dark"] {
-  color-scheme: dark;
-  --primary: #5CCB9E;
-  --on-primary: #03261A;
-  --primary-container: #11382A;
-  --on-primary-container: #CBEEDB;
-  --primary-inverse: #0E7A55;
-  --accent-blue: #6FBFC9;
-  --orange-pending: #F29A4A;
-  --bg: #0B100E;
-  --surface-card: #151C19;
-  --surface-muted: #111714;
-  --text-main: #E6ECE8;
-  --text-sub: #97A39C;
-  --divider: #243029;
-  --stroke: #33413A;
-  --handle: #3A4741;
-  --blue-text: #9FD6DC;
-  --blue-text-soft: #8FCDD4;
-  --blue-container: #143236;
-  --green-text: #8EE0B5;
-  --green-text-soft: #6BD39F;
-  --green-container: #12301F;
-  --red-text: #F4A6A3;
-  --red-container: #3A1617;
-  --orange-text: #F7B57A;
-  --orange-container: #3A2412;
-  --amber-text: #F2CB6B;
-  --amber-container: #352B10;
-  --amber-stroke: #574614;
-  --grafico-barra: #36A57B;
-  --grafico-barra-suave: #2B5C49;
-  --vidrio-barra: 11, 16, 14;
-  --vidrio-boton: 92, 203, 158;
-  --vidrio-aviso: 21, 28, 25;
-  --vidrio-panel: rgba(21, 28, 25, 0.8);
-  --vidrio-filo: rgba(255, 255, 255, 0.122);
-  --vidrio-luz: 0.16;
-  --sombra-tarjeta: none;
-}
+
+/* El tema elegido en "Más" (Claro u Oscuro) se refleja en el <meta>; con "Sistema", vale "light dark". */
+:root:has(> head > meta[name="color-scheme"][content="dark"]) { color-scheme: dark; }
+:root:has(> head > meta[name="color-scheme"][content="light"]) { color-scheme: light; }
 
 /* ---------- Base ---------- */
 
@@ -370,7 +337,13 @@ button.tarjeta:not(.fila-formato):not(.tarjeta-interruptor) { display: block; }
   flex: 1 1 0; min-width: 0; border: 0; background: transparent; color: var(--text-main);
   font: inherit; font-size: 16px; padding: 16px 12px 16px 8px; outline: none; resize: none;
 }
-.campo textarea { line-height: 1.35; }
+/* Las notas crecen con lo escrito, de una a tres líneas (32 px son su relleno de arriba y de abajo). */
+.campo textarea {
+  line-height: 1.35;
+  field-sizing: content;
+  min-block-size: calc(1lh + 32px);
+  max-block-size: calc(3lh + 32px);
+}
 .campo label {
   position: absolute; left: 44px; top: 50%; transform: translateY(-50%); transform-origin: left center;
   color: var(--text-sub); font-size: 16px; pointer-events: none; white-space: nowrap;
@@ -579,25 +552,25 @@ button.tarjeta:not(.fila-formato):not(.tarjeta-interruptor) { display: block; }
 
 @supports ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
   :root:not(.sin-vidrio) .barra {
-    background: rgba(var(--vidrio-barra), 0.6);
+    background: color-mix(in srgb, var(--vidrio-barra) 60%, transparent);
     -webkit-backdrop-filter: blur(16px) saturate(1.6);
     backdrop-filter: blur(16px) saturate(1.6);
     box-shadow: 0 1px 0 rgba(127, 140, 132, calc(var(--borde-barra, 0) * 0.35));
   }
   :root:not(.sin-vidrio) .tarjeta-semana {
-    background: rgba(var(--vidrio-aviso), 0.62);
+    background: color-mix(in srgb, var(--vidrio-aviso) 62%, transparent);
     border-color: transparent;
     -webkit-backdrop-filter: blur(12px) saturate(1.6);
     backdrop-filter: blur(12px) saturate(1.6);
     box-shadow:
-      inset 0 1px 0 rgba(255, 255, 255, var(--vidrio-luz)),
-      inset 1px 0 0 rgba(255, 255, 255, calc(var(--vidrio-luz) * 0.5)),
+      inset 0 1px 0 var(--vidrio-luz),
+      inset 1px 0 0 var(--vidrio-luz-media),
       inset 0 -1px 0 rgba(0, 0, 0, 0.06),
       0 0 0 1px rgba(127, 140, 132, 0.12);
     background-image: linear-gradient(to bottom, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0) 50%);
   }
   :root:not(.sin-vidrio) .fab {
-    background: rgba(var(--vidrio-boton), 0.9);
+    background: color-mix(in srgb, var(--vidrio-boton) 90%, transparent);
     -webkit-backdrop-filter: blur(6px) saturate(1.3);
     backdrop-filter: blur(6px) saturate(1.3);
     box-shadow:
@@ -608,20 +581,27 @@ button.tarjeta:not(.fila-formato):not(.tarjeta-interruptor) { display: block; }
     background-image: linear-gradient(to bottom, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0) 55%);
   }
   :root:not(.sin-vidrio) .aviso.flotante .tarjeta-aviso {
-    background: rgba(var(--vidrio-aviso), 0.74);
+    background: color-mix(in srgb, var(--vidrio-aviso) 74%, transparent);
     border-color: transparent;
     -webkit-backdrop-filter: blur(14px) saturate(1.6);
     backdrop-filter: blur(14px) saturate(1.6);
     box-shadow:
-      inset 0 1px 0 rgba(255, 255, 255, var(--vidrio-luz)),
-      inset 1px 0 0 rgba(255, 255, 255, calc(var(--vidrio-luz) * 0.5)),
+      inset 0 1px 0 var(--vidrio-luz),
+      inset 1px 0 0 var(--vidrio-luz-media),
       0 0 0 1px rgba(127, 140, 132, 0.14),
       0 6px 16px -4px rgba(0, 0, 0, 0.22);
   }
-  :root:not(.sin-vidrio) .velo {
-    background: var(--scrim);
+  /* Lo de detrás de un panel o un diálogo, desenfocado y apenas oscurecido (VidrioVentana). */
+  :root:not(.sin-vidrio) :is(dialog.hoja, dialog.dialogo)[open]:where(:not([data-closing]))::backdrop {
+    background-color: var(--scrim);
     -webkit-backdrop-filter: blur(24px);
     backdrop-filter: blur(24px);
+
+    @starting-style {
+      background-color: transparent;
+      -webkit-backdrop-filter: blur(0);
+      backdrop-filter: blur(0);
+    }
   }
   :root:not(.sin-vidrio) .hoja, :root:not(.sin-vidrio) .dialogo {
     background: var(--vidrio-panel);
@@ -633,29 +613,59 @@ button.tarjeta:not(.fila-formato):not(.tarjeta-interruptor) { display: block; }
 
 /* ---------- Paneles inferiores (PanelInferior) ---------- */
 
-.velo {
-  position: fixed; inset: 0; z-index: 40; background: var(--scrim-opaco);
-  opacity: 0; transition: opacity 250ms linear;
+/*
+ * Paneles y diálogos son <dialog> abiertos con showModal(): la capa superior, el fondo inerte y el cierre con Esc o
+ * con el gesto de atrás los pone el navegador. La entrada se anima con @starting-style; la salida, llevándolos a su
+ * estado cerrado con [data-closing] antes de cerrarlos (también donde display y overlay aún no se transicionan).
+ */
+:is(dialog.hoja, dialog.dialogo):modal {
+  overscroll-behavior: contain; /* el desplazamiento dentro no arrastra la página de detrás */
 }
-.velo.visible { opacity: 1; }
+:is(dialog.hoja, dialog.dialogo)::backdrop {
+  background-color: transparent;
+  overflow: hidden; /* sin esto, ::backdrop no es un contenedor de scroll e ignora overscroll-behavior */
+  overscroll-behavior: contain;
+  transition-property: background-color, backdrop-filter, -webkit-backdrop-filter, display, overlay;
+  transition-duration: 250ms;
+  transition-timing-function: linear;
+  transition-behavior: allow-discrete;
+}
+:is(dialog.hoja, dialog.dialogo)[open]:where(:not([data-closing]))::backdrop {
+  background-color: var(--scrim-opaco);
 
-.hoja {
-  position: fixed; z-index: 41; left: 0; right: 0; bottom: 0; margin: 0 auto; width: 100%; max-width: 640px;
-  max-height: calc(100% - var(--seguro-arriba));
+  @starting-style {
+    background-color: transparent;
+  }
+}
+
+dialog.hoja {
+  position: fixed; inset: auto 0 0 0; margin: 0 auto; padding: 0; border: 0;
+  width: 100%; max-width: 640px; height: auto;
+  max-height: calc(100dvh - var(--seguro-arriba));
+  overflow: hidden;
   background: var(--surface-card); color: var(--text-main);
   border-radius: 28px 28px 0 0;
   box-shadow: 0 -2px 12px rgba(0, 0, 0, 0.1);
-  display: flex; flex-direction: column;
+  flex-direction: column;
   transform: translateY(100%);
-  transition: transform 300ms var(--curva), border-radius 200ms linear;
-  will-change: transform;
+  transition-property: transform, border-radius, display, overlay;
+  transition-duration: 300ms, 200ms, 300ms, 300ms;
+  transition-timing-function: var(--curva), linear, linear, linear;
+  transition-behavior: allow-discrete;
   touch-action: pan-y;
   --fondo-campo: var(--surface-card);
 }
-.hoja.completa { height: calc(100% - var(--seguro-arriba)); }
-.hoja.abierta { transform: none; }
-.hoja.arrastrando { transition: none; }
-.hoja.arriba { border-radius: 0; }
+dialog.hoja[open] { display: flex; }
+dialog.hoja[open]:where(:not([data-closing])) {
+  transform: none;
+
+  @starting-style {
+    transform: translateY(100%);
+  }
+}
+dialog.hoja.completa { height: calc(100dvh - var(--seguro-arriba)); }
+dialog.hoja.arrastrando { transition-property: border-radius, display, overlay; }
+dialog.hoja.arriba { border-radius: 0; }
 .hoja-scroll {
   flex: 1 1 auto; overflow-y: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch;
   padding: 12px 20px calc(24px + var(--seguro-abajo));
@@ -681,18 +691,39 @@ button.tarjeta:not(.fila-formato):not(.tarjeta-interruptor) { display: block; }
 
 /* ---------- Diálogos (MaterialAlertDialog) ---------- */
 
-.dialogo {
-  position: fixed; z-index: 61; left: 50%; top: 50%; width: calc(100% - 48px); max-width: 560px; min-width: 280px;
-  max-height: calc(100% - 48px - var(--seguro-arriba) - var(--seguro-abajo));
+dialog.dialogo {
+  position: fixed; inset: 0; margin: auto; padding: 0; border: 0;
+  width: calc(100% - 48px); max-width: 560px; min-width: 280px; height: fit-content;
+  max-height: calc(100dvh - 48px - var(--seguro-arriba) - var(--seguro-abajo));
+  overflow: hidden;
   background: var(--surface-card); color: var(--text-main); border-radius: 28px;
   box-shadow: 0 8px 28px rgba(0, 0, 0, 0.24);
-  display: flex; flex-direction: column;
-  transform: translate(-50%, -50%) scale(0.9); opacity: 0;
-  transition: transform 250ms var(--curva), opacity 150ms linear;
+  flex-direction: column;
+  opacity: 0;
+  transition-property: transform, opacity, display, overlay;
+  transition-duration: 250ms, 150ms, 250ms, 250ms;
+  transition-timing-function: var(--curva), linear, linear, linear;
+  transition-behavior: allow-discrete;
   --fondo-campo: var(--surface-card);
 }
-.dialogo.abierto { transform: translate(-50%, -50%); opacity: 1; }
-.dialogo .velo-dialogo { display: none; }
+dialog.dialogo[open] { display: flex; }
+dialog.dialogo[open]:where(:not([data-closing])) {
+  opacity: 1;
+
+  @starting-style {
+    opacity: 0;
+  }
+}
+@media (prefers-reduced-motion: no-preference) {
+  dialog.dialogo { transform: scale(0.9); }
+  dialog.dialogo[open]:where(:not([data-closing])) {
+    transform: none;
+
+    @starting-style {
+      transform: scale(0.9);
+    }
+  }
+}
 .dialogo-cabecera { padding: 24px 24px 0; }
 .dialogo-icono { display: flex; justify-content: center; margin-bottom: 16px; }
 .dialogo-icono .icono { width: 24px; height: 24px; color: var(--red-text); }
@@ -724,11 +755,14 @@ button.tarjeta:not(.fila-formato):not(.tarjeta-interruptor) { display: block; }
 
 /* ---------- Avisos (Avisos.kt) ---------- */
 
+/* Un popover manual: se quitan el centrado, el borde y el fondo que le pone el navegador. */
 .capa-avisos {
-  position: fixed; z-index: 80; left: 0; right: 0; pointer-events: none;
+  position: fixed; inset: auto 0 auto 0; margin: 0; border: 0; background: transparent; color: inherit;
+  width: auto; height: auto; max-width: none; overflow: visible; pointer-events: none;
   padding: 8px calc(4px + 8px + var(--seguro-der)) 8px calc(4px + 8px + var(--seguro-izq));
-  display: flex; justify-content: center;
+  justify-content: center;
 }
+.capa-avisos:popover-open { display: flex; }
 .aviso { width: 100%; max-width: 600px; pointer-events: auto; touch-action: pan-y; }
 .aviso.entrando { animation: avisoEntra 250ms var(--curva-fosi) both; }
 .aviso.saliendo { animation: avisoSale 250ms var(--curva-fosi) both; }
@@ -928,10 +962,14 @@ button.tarjeta:not(.fila-formato):not(.tarjeta-interruptor) { display: block; }
 
 /* ---------- Bloqueo ---------- */
 
-.pantalla-bloqueo {
-  position: fixed; inset: 0; z-index: 100; background: var(--bg);
-  display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 32px; text-align: center;
+dialog.pantalla-bloqueo {
+  position: fixed; inset: 0; margin: 0; border: 0; width: 100%; height: 100%; max-width: none; max-height: none;
+  background: var(--bg); color: var(--text-main);
+  flex-direction: column; align-items: center; justify-content: center; padding: 32px; text-align: center;
+  overscroll-behavior: contain;
 }
+dialog.pantalla-bloqueo[open] { display: flex; }
+dialog.pantalla-bloqueo::backdrop { background: var(--bg); }
 .pantalla-bloqueo .logo { width: 88px; height: 88px; }
 .pantalla-bloqueo .candado { width: 28px; height: 28px; margin-top: 28px; color: var(--text-sub); }
 .pantalla-bloqueo h2 { margin: 12px 0 0; font-size: 20px; font-weight: 600; }
@@ -945,5 +983,5 @@ html.cargando body > #app { visibility: hidden; }
   *, *::before, *::after { animation-duration: 1ms !important; transition-duration: 1ms !important; }
 }
 @media (prefers-contrast: more) {
-  .barra, .tarjeta-semana, .fab, .aviso .tarjeta-aviso, .hoja, .dialogo, .velo { -webkit-backdrop-filter: none !important; backdrop-filter: none !important; }
+  .barra, .tarjeta-semana, .fab, .aviso .tarjeta-aviso, .hoja, .dialogo, .hoja::backdrop, .dialogo::backdrop { -webkit-backdrop-filter: none !important; backdrop-filter: none !important; }
 }

@@ -158,7 +158,7 @@ export function abrirCobro(ui) {
         campo.error(null);
         actualizar();
       });
-      campo.input.addEventListener('keydown', (e) => e.key === 'Enter' && campo.input.blur());
+      campo.input.addEventListener('keydown', (e) => e.key === 'Enter' && !e.isComposing && campo.input.blur());
       actualizar();
       const dejar = estado.suscribir(actualizar);
 

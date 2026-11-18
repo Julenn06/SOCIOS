@@ -1,5 +1,10 @@
 // PantallaBloqueo.kt: tapa toda la app (también los paneles abiertos) hasta que el usuario se identifica con la
 // huella, la cara o el PIN del dispositivo.
+//
+// Es un <dialog> modal: queda encima de cualquier panel (la capa superior se apila por orden de apertura) y deja el
+// resto de la página inerte. closedby="none" y el cancel interceptado impiden quitarlo con Esc o con atrás; como
+// el navegador puede cerrar un modal igualmente tras varios intentos sin interacción, si se cierra estando aún
+// bloqueada, se vuelve a abrir.
 import { bloqueo, disponibilidadBloqueo, identificar } from './ajustes.js';
 import { html } from './componentes.js';
 
@@ -14,28 +19,36 @@ export function vigilarBloqueo() {
 }
 
 function mostrar() {
-  if (pantalla) return;
+  if (pantalla) {
+    // Ya estaba: que siga siendo lo de más arriba aunque se haya abierto algo después.
+    if (pantalla.open) pantalla.close();
+    return;
+  }
   pantalla = html(`
-    <div class="pantalla-bloqueo" role="dialog" aria-modal="true" aria-labelledby="tituloBloqueo">
+    <dialog class="pantalla-bloqueo" closedby="none" aria-labelledby="tituloBloqueo" aria-describedby="detalleBloqueo">
       <img class="logo" src="icons/redondo.png" alt="">
       <span class="icono candado" data-icono="lock"></span>
       <h2 id="tituloBloqueo">Socios está bloqueada</h2>
-      <p>Desbloquéala con la huella, la cara o el PIN del móvil para ver tus cuentas.</p>
-      <button class="boton relleno" type="button"><span class="icono" data-icono="lock"></span>Desbloquear</button>
-    </div>`);
+      <p id="detalleBloqueo">Desbloquéala con la huella, la cara o el PIN del móvil para ver tus cuentas.</p>
+      <button class="boton relleno" type="button" autofocus><span class="icono" data-icono="lock"></span>Desbloquear</button>
+    </dialog>`);
   pantalla.querySelector('button').addEventListener('click', pedir);
-  // Lo de debajo (la pantalla y los paneles abiertos) no se puede tocar ni enfocar mientras tanto.
-  for (const el of document.body.children) el.inert = true;
+  pantalla.addEventListener('cancel', (e) => e.preventDefault());
+  pantalla.addEventListener('close', () => {
+    if (pantalla && bloqueo.bloqueada) pantalla.showModal();
+  });
   document.body.append(pantalla);
+  pantalla.showModal();
   // El cuadro de la huella sale solo una vez por bloqueo; si se cancela, queda el botón.
   setTimeout(pedir, 300);
 }
 
 function quitar() {
   if (!pantalla) return;
-  pantalla.remove();
+  const el = pantalla;
   pantalla = null;
-  for (const el of document.body.children) el.inert = false;
+  el.close();
+  el.remove();
 }
 
 async function pedir() {
