@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="es" class="cargando">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
+  <title>Gestión de Socios</title>
+  <meta name="description" content="Registra los socios conseguidos cada semana y calcula la ganancia: base, bonus, IRPF y neto.">
+  <meta name="theme-color" content="#F2F4F0">
+  <meta name="color-scheme" content="light dark">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Socios">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" type="image/png" href="icons/favicon-64.png">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <link rel="preload" href="fonts/geist_semibold.ttf" as="font" type="font/ttf" crossorigin>
+  <link rel="preload" href="fonts/geist_medium.ttf" as="font" type="font/ttf" crossorigin>
+  <link rel="preload" href="fonts/geist_regular.ttf" as="font" type="font/ttf" crossorigin>
+  <link rel="stylesheet" href="css/app.css">
+  <script>
+    // El tema antes del primer dibujo, para que no parpadee (ajustes/Tema.kt).
+    (function () {
+      var tema = 'SISTEMA';
+      try { tema = JSON.parse(localStorage.getItem('socios.tema')) || 'SISTEMA'; } catch (e) {}
+      var oscuro = tema === 'OSCURO' || (tema === 'SISTEMA' && matchMedia('(prefers-color-scheme: dark)').matches);
+      document.documentElement.setAttribute('data-theme', oscuro ? 'dark' : 'light');
+      document.querySelector('meta[name="theme-color"]').setAttribute('content', oscuro ? '#0B100E' : '#F2F4F0');
+    })();
+  </script>
+</head>
+<body>
+  <div id="app">
+    <header class="barra" id="barra">
+      <div class="barra-superior">
+        <h1 id="tituloBarra">Gestión de Socios</h1>
+        <button class="icono-toque" type="button" id="btnBuscar" aria-label="Buscar socio" title="Buscar socio"><span class="icono" data-icono="search"></span></button>
+        <button class="icono-toque" type="button" id="btnHistorico" aria-label="Histórico acumulado" title="Histórico acumulado"><span class="icono" data-icono="history"></span></button>
+        <button class="icono-toque" type="button" id="btnMas" aria-label="Más opciones" title="Más opciones"><span class="icono" data-icono="more_vert"></span></button>
+      </div>
+      <!-- Selector de semana: "Hoy" a la izquierda en semanas futuras y a la derecha en pasadas -->
+      <div class="fila-semana" id="filaSemana">
+        <div class="hoy-envoltura izq" id="hoyIzq" style="width:0"><button class="boton-hoy" type="button" tabindex="-1"><span class="icono" data-icono="today"></span>Hoy</button></div>
+        <div class="tarjeta-semana" id="tarjetaSemana">
+          <button class="boton-icono" type="button" id="btnSemanaAnterior" aria-label="Semana anterior"><span class="icono" data-icono="chevron_left"></span></button>
+          <div class="centro" aria-live="polite">
+            <div class="rango-semana" id="rangoSemana"></div>
+            <div class="subtitulo-semana" id="subtituloSemana">
+              <span class="punto-semana" id="puntoSemana"></span>
+              <span class="texto-subtitulo-semana" id="textoSubtituloSemana"></span>
+            </div>
+            <canvas class="franja-semana" id="franjaSemana" aria-hidden="true"></canvas>
+          </div>
+          <button class="boton-icono" type="button" id="btnSemanaSiguiente" aria-label="Semana siguiente"><span class="icono" data-icono="chevron_right"></span></button>
+        </div>
+        <div class="hoy-envoltura der" id="hoyDer" style="width:0"><button class="boton-hoy" type="button" tabindex="-1"><span class="icono" data-icono="today"></span>Hoy</button></div>
+      </div>
+    </header>
+
+    <main class="contenido" id="contenido">
+      <!-- Resumen de la semana -->
+      <section class="hero">
+        <div class="hero-interior">
+          <!-- El neto: con un doble toque se ajusta a lo cobrado de verdad -->
+          <div class="neto-cabecera" id="netoCabecera" role="button" tabindex="0">
+            <div class="etiqueta-neto" id="etiquetaNeto">Neto de la semana</div>
+            <div class="cifra-neto cifra-grande" id="cifraNeto">0 €</div>
+          </div>
+          <div class="cajas">
+            <div class="caja">
+              <span class="caja-etiqueta" style="color:var(--header-label-base)">Base ×2</span>
+              <span class="caja-importe" id="importeBase">0 €</span>
+            </div>
+            <div class="caja tocable" id="cajaBonus" role="button" tabindex="0">
+              <span class="caja-etiqueta" style="color:var(--header-label-bonus)"><span id="etiquetaBonus">Bonus</span><span class="icono" data-icono="edit_pequeno"></span></span>
+              <span class="caja-importe" id="importeBonus" style="color:var(--header-bonus)">0 €</span>
+            </div>
+            <div class="caja">
+              <span class="caja-etiqueta" id="etiquetaIrpf" style="color:var(--header-label-irpf)">IRPF 21,48 %</span>
+              <span class="caja-importe" id="importeIrpf" style="color:var(--header-irpf)">0 €</span>
+            </div>
+          </div>
+          <!-- Solo con el neto ajustado a lo cobrado: cuánto se ha descontado de lo calculado -->
+          <div class="fila-cobro oculto" id="filaCobro" role="button" tabindex="0">
+            <span class="icono" data-icono="cobro"></span>
+            <span class="etiqueta dos-lineas" id="etiquetaCobro">Te han descontado</span>
+            <span class="valor cifra" id="valorCobro"></span>
+            <span class="icono lapiz" data-icono="edit_pequeno"></span>
+          </div>
+        </div>
+      </section>
+
+      <!-- Aviso de pendientes de semanas anteriores -->
+      <div class="aviso-pendientes oculto" id="avisoPendientes" role="button" tabindex="0">
+        <span class="icono" data-icono="pendientes"></span>
+        <span class="texto" id="textoPendientes"></span>
+        <button class="icono-toque" type="button" id="btnOcultarPendientes" aria-label="Ocultar el aviso de pendientes"><span class="icono" data-icono="close"></span></button>
+      </div>
+
+      <!-- Progreso del bonus por tramos -->
+      <section class="tarjeta tarjeta-bonus">
+        <div class="fila">
+          <div class="tile-ambar degradado-ambar"><span class="icono" data-icono="trophy"></span></div>
+          <div class="titulo-fila crece" id="tituloBonus">Bonus de la semana: +0 €</div>
+          <div class="pastilla pastilla-bonus" id="pastillaBonus"><span id="contadorBonus">0 / 5</span></div>
+        </div>
+        <canvas class="progreso-bonus" id="progresoBonus" aria-hidden="true"></canvas>
+      </section>
+
+      <!-- Filtro por día -->
+      <div class="seccion">Filtrar por día</div>
+      <div class="grupo-opciones" id="filtroDias" role="radiogroup" aria-label="Filtrar por día"></div>
+
+      <!-- Encabezado de la lista -->
+      <div class="fila encabezado-lista">
+        <h2 id="tituloLista">Socios de la semana</h2>
+        <span class="pastilla" id="resumenLista">0 de 0 hechos</span>
+      </div>
+
+      <!-- Estado vacío -->
+      <button class="vacio oculto pulsar" type="button" id="vacio">
+        <svg class="borde-discontinuo" aria-hidden="true"><rect x="0.75" y="0.75" rx="22" ry="22" style="width:calc(100% - 1.5px);height:calc(100% - 1.5px)" fill="none" stroke="var(--stroke)" stroke-width="1.5" stroke-dasharray="7 5"/></svg>
+        <span class="placa tono-primario"><span class="icono" data-icono="group"></span></span>
+        <span class="columna-textos">
+          <span class="titulo-fila">Aún no hay socios aquí</span>
+          <span class="descripcion-fila">Toca aquí para registrar el primero.</span>
+        </span>
+        <span class="icono mas" data-icono="add"></span>
+      </button>
+
+      <div class="lista-socios" id="listaSocios"></div>
+    </main>
+
+    <button class="fab" type="button" id="fab" aria-label="Nuevo socio"><span class="icono" data-icono="add"></span><span class="texto-fab">Nuevo socio</span></button>
+  </div>
+
+  <noscript><p style="padding:24px">Gestión de Socios necesita JavaScript.</p></noscript>
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>
