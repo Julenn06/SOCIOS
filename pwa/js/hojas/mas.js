@@ -139,7 +139,7 @@ export function abrirMas() {
           SIN_COMPROBAR: ['system_update', '¿Hay una versión nueva?', actualizaciones.ultimaComprobacion > 0 ? comprobado() : 'Todavía no se ha comprobado'],
           BUSCANDO: ['system_update', 'Buscando actualizaciones…', 'Consultando el servidor'],
           AL_DIA: ['check_circle', 'Tienes la última versión', comprobado()],
-          DISPONIBLE: ['new_releases', `Versión ${e.publicada?.version} disponible`, 'Lista para instalar desde aquí'],
+          DISPONIBLE: ['new_releases', 'Actualización disponible', 'Lista para instalar desde aquí'],
           ERROR: ['error', 'No se ha podido comprobar', 'Revisa la conexión a internet']
         }[e.tipo];
         $('placa').innerHTML = buscando ? '<span class="girando"></span>' : `<span class="icono">${icono(ic)}</span>`;
@@ -186,7 +186,6 @@ export function abrirActualizacion(publicada) {
         <div class="panel-actualizacion">
           <canvas class="animacion-descarga" aria-hidden="true"></canvas>
           <h2 class="titulo-descarga" style="margin:0" aria-live="polite" data-id="titulo"></h2>
-          <span class="pastilla versiones-descarga" data-id="versiones"></span>
           <div class="detalle-descarga" data-id="detalle"></div>
           <div class="tarjeta novedades oculto" data-id="novedades"><div class="titulo-fila">Novedades</div><div class="descripcion-fila" data-id="textoNovedades"></div></div>
           <button class="boton relleno ancho pequeno oculto" type="button" data-id="principal" style="margin-top:16px"></button>
@@ -200,10 +199,7 @@ export function abrirActualizacion(publicada) {
       let mostrado = null;
       let instalando = false;
 
-      const version = publicada.version;
-      $('titulo').textContent = `Descargando la versión ${version}`;
-      $('versiones').textContent = `${actualizaciones.versionInstalada} → ${version}`;
-      $('versiones').setAttribute('aria-label', `De la versión ${actualizaciones.versionInstalada} a la ${version}`);
+      $('titulo').textContent = 'Descargando la actualización';
       const novedades = publicada.novedades ?? [];
       $('novedades').classList.toggle('oculto', !novedades.length);
       $('textoNovedades').textContent = novedades.map((n) => `•  ${n}`).join('\n');
@@ -230,7 +226,7 @@ export function abrirActualizacion(publicada) {
         $('detalle').textContent = `${tamano(total * f)} de ${tamano(total)}`;
       };
       animacion.alCompletar = () => {
-        $('titulo').textContent = `Versión ${version} descargada`;
+        $('titulo').textContent = 'Actualización descargada';
         $('detalle').textContent = 'Abriendo la versión nueva…';
         botonesFinales('Instalar', instalar);
       };
@@ -247,7 +243,7 @@ export function abrirActualizacion(publicada) {
             $('recargar').classList.add('oculto');
             $('secundario').textContent = 'Cancelar';
             $('secundario').onclick = () => actualizaciones.cancelar();
-            $('titulo').textContent = `Descargando la versión ${version}`;
+            $('titulo').textContent = 'Descargando la actualización';
           }
           animacion.mostrarProgreso(d.progreso, anterior == null);
         } else if (d.tipo === 'COMPLETADA') {

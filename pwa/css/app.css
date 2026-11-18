@@ -955,7 +955,6 @@ dialog.dialogo[open]:where(:not([data-closing])) {
 .panel-actualizacion { display: flex; flex-direction: column; align-items: center; }
 .animacion-descarga { width: 208px; height: 208px; display: block; }
 .titulo-descarga { width: 100%; text-align: center; font-size: 20px; font-weight: 600; color: var(--text-main); }
-.versiones-descarga { margin-top: 10px; padding: 5px 14px; font-size: 13px; }
 .detalle-descarga { width: 100%; margin-top: 12px; min-height: 2.6em; text-align: center; font-size: 14px; color: var(--text-sub); }
 .novedades { width: 100%; margin-top: 16px; padding: 14px; text-align: left; }
 .novedades .descripcion-fila { margin-top: 6px; line-height: calc(1.3em + 4px); white-space: pre-line; }
