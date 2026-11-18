@@ -72,6 +72,7 @@ Así que publicar es: subir la versión con el comando de arriba, hacer commit y
 | `js/avisos.js`, `js/paneles.js`, `js/movimiento.js` | `Avisos`, `PanelInferior` y diálogos, `Movimiento` y `NumberAnimators` |
 | `js/ajustes.js`, `js/pantalla-bloqueo.js` | Tema, `Bloqueo` (con WebAuthn) y actualizaciones (service worker) |
 | `js/instalacion.js` | Solo en la web: el botón "Instalar la app" de "Más" |
+| `js/almacenamiento.js` | Solo en la web: pedir que el navegador no borre los datos ("Datos protegidos" en "Más") |
 | `test/` | Los tests de la lógica (`node --test "pwa/test/*.test.mjs"`) |
 
 ## Diferencias inevitables con la app
@@ -85,6 +86,13 @@ Así que publicar es: subir la versión con el comando de arriba, hacer commit y
 - **Exportar → Guardar:** donde el navegador no deja elegir carpeta, el archivo va a Descargas.
 - **Instalar la app:** solo existe en la web. "Más" lo ofrece cuando el navegador puede instalarla (Chrome, Edge) y aún
   no está instalada; la confirmación es siempre el cuadro del propio navegador.
+- **Datos protegidos:** sin pedirlo, el navegador puede borrar los datos de una web si le falta espacio (y Safari, tras
+  7 días sin abrirla si no está en la pantalla de inicio). La app pide almacenamiento permanente al abrirse
+  (`navigator.storage.persist()`); Chrome lo concede sin preguntar si está instalada o se usa a menudo. "Más → Datos"
+  dice si lo están, y tocando se vuelve a pedir.
+- **Compartir una copia con la app:** instalada en Android, "Compartir → Gestión de Socios" desde WhatsApp, Archivos o
+  Drive abre directamente la revisión de "Importar" (`share_target` del manifest; el service worker recibe el archivo en
+  `/compartir` y lo deja en la caché `compartido-socios` hasta que la app lo recoge).
 - **Varias ventanas:** si está abierta a la vez instalada y en una pestaña (o en dos pestañas), lo que se guarda en una
   aparece en las demás al momento.
 - La vibración solo existe en los navegadores que la permiten (Chrome en Android sí; Safari no).

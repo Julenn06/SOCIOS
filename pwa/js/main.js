@@ -5,6 +5,11 @@ import { mostrarAviso } from './avisos.js';
 import { iniciarPantalla, nuevoSocio } from './pantalla.js';
 import { vigilarBloqueo } from './pantalla-bloqueo.js';
 import { abrirActualizacion } from './hojas/mas.js';
+import { importarArchivo } from './hojas/copias.js';
+import { protegerDatos } from './almacenamiento.js';
+
+/** Donde el service worker deja la copia compartida con la app hasta que la página la recoge (ver sw.js). */
+const CACHE_COMPARTIDO = 'compartido-socios';
 // Al arrancar: el aviso de que se puede instalar llega pronto y hay que guardarlo para el botón de "Más".
 import './instalacion.js';
 
@@ -24,28 +29,50 @@ async function arrancar() {
   await Promise.race([document.fonts?.ready, new Promise((r) => setTimeout(r, 600))]);
   document.documentElement.classList.remove('cargando');
 
-  // Atajo "Nuevo socio" del icono de la app (manifest): solo al abrirla con él.
+  // Atajo "Nuevo socio" del icono de la app y copias compartidas con ella (manifest): después del bloqueo, para que
+  // ningún panel se abra encima de la pantalla que tapa los datos.
   const url = new URL(location.href);
-  if (url.searchParams.get('accion') === 'nuevo-socio') {
-    history.replaceState(history.state, '', url.pathname);
-    nuevoSocio();
-  }
+  const accion = url.searchParams.get('accion');
+  if (accion) history.replaceState(history.state, '', url.pathname);
+  if (accion === 'nuevo-socio') cuandoDesbloqueada(nuevoSocio);
+  else if (accion === 'importar') cuandoDesbloqueada(importarCompartido);
 
   registrarServiceWorker();
   avisarVersionNueva();
+  // Sin pedir nada en Chrome y Safari; Firefox sí pregunta, una vez. Ver almacenamiento.js.
+  protegerDatos();
+}
+
+/** Ahora si no está bloqueada; si lo está, en cuanto se desbloquee. */
+function cuandoDesbloqueada(hacer) {
+  if (!bloqueo.bloqueada) return hacer();
+  const dejar = bloqueo.alCambiar((bloqueada) => {
+    if (bloqueada) return;
+    dejar();
+    hacer();
+  });
+}
+
+/** La copia que se ha compartido con la app (Compartir → Gestión de Socios): la guarda el service worker. */
+async function importarCompartido() {
+  try {
+    const cache = await caches.open(CACHE_COMPARTIDO);
+    const respuesta = await cache.match('compartido');
+    await caches.delete(CACHE_COMPARTIDO);
+    if (!respuesta) return mostrarAviso('No ha llegado ningún archivo', 'ERROR', 'Vuelve a compartirlo con la app');
+    const nombre = decodeURIComponent(respuesta.headers.get('X-Nombre') ?? '');
+    importarArchivo(new File([await respuesta.blob()], nombre));
+  } catch (e) {
+    console.error(e);
+    mostrarAviso('No se ha podido abrir el archivo', 'ERROR', 'Prueba desde Más → Copias → Importar');
+  }
 }
 
 /** Versión nueva al abrir la app (como mucho una vez al día): un aviso que dura más, cuando ya no está bloqueada. */
 async function avisarVersionNueva() {
   const publicada = await actualizaciones.comprobarSiToca();
   if (!publicada) return;
-  const avisar = () => mostrarAviso('Actualización disponible', 'NOVEDAD', 'Hay una versión nueva de la app', 'Actualizar', () => abrirActualizacion(publicada));
-  if (!bloqueo.bloqueada) return avisar();
-  const dejar = bloqueo.alCambiar((bloqueada) => {
-    if (bloqueada) return;
-    dejar();
-    avisar();
-  });
+  cuandoDesbloqueada(() => mostrarAviso('Actualización disponible', 'NOVEDAD', 'Hay una versión nueva de la app', 'Actualizar', () => abrirActualizacion(publicada)));
 }
 
 function registrarServiceWorker() {

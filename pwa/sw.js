@@ -1,6 +1,6 @@
 // Service worker: guarda la app entera para que funcione sin conexión. Una versión nueva se descarga entera antes de
 // usarse (contando lo que lleva, para la animación de "Actualizar") y solo se activa cuando la app lo pide.
-const VERSION = '1.0.6';
+const VERSION = '1.0.7';
 const CACHE = `socios-${VERSION}`;
 const ARCHIVOS = [
   './',
@@ -23,6 +23,7 @@ const ARCHIVOS = [
   'js/lienzo.js',
   'js/ajustes.js',
   'js/instalacion.js',
+  'js/almacenamiento.js',
   'js/copias.js',
   'js/pdf.js',
   'js/pantalla.js',
@@ -97,10 +98,32 @@ self.addEventListener('message', (evento) => {
   if (evento.data?.tipo === 'activar') self.skipWaiting();
 });
 
+// Una copia compartida con la app (share_target del manifest): Android la envía aquí como formulario. Se guarda
+// aparte (el nombre no empieza por "socios-", así que actualizar no la borra) y la app la recoge al abrirse.
+async function recibirCompartido(peticion) {
+  const destino = new URL('./?accion=importar', self.registration.scope).href;
+  try {
+    const archivo = (await peticion.formData()).get('copia');
+    if (archivo instanceof File) {
+      const cache = await caches.open('compartido-socios');
+      await cache.put('compartido', new Response(archivo, {
+        headers: { 'Content-Type': archivo.type || 'application/octet-stream', 'X-Nombre': encodeURIComponent(archivo.name) }
+      }));
+    }
+  } catch (e) {
+    console.error('No se ha podido recibir el archivo compartido:', e);
+  }
+  return Response.redirect(destino, 303);
+}
+
 self.addEventListener('fetch', (evento) => {
   const peticion = evento.request;
-  if (peticion.method !== 'GET') return;
   const url = new URL(peticion.url);
+  if (peticion.method === 'POST' && url.origin === location.origin && url.pathname.endsWith('/compartir')) {
+    evento.respondWith(recibirCompartido(peticion));
+    return;
+  }
+  if (peticion.method !== 'GET') return;
   if (url.origin !== location.origin) return;
   // La versión publicada siempre se pregunta al servidor.
   if (url.pathname.endsWith('/version.json')) return;

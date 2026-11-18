@@ -313,19 +313,29 @@ function elegirArchivo(formato) {
   input.addEventListener('change', () => {
     const archivo = input.files?.[0];
     input.remove();
-    if (!archivo) return;
-    estado.lanzar('No se ha podido importar', async () => {
-      const texto = await leerTexto(archivo);
-      const lectura = formato === 'JSON' ? leerJson(texto) : leerCsv(texto);
-      const d = lectura.datos;
-      if (!d.socios.length && !d.bonosRegalo.length && !d.cobros.length) {
-        mostrarAviso('El archivo no tiene datos', 'ERROR', `No hay socios ni datos válidos en este ${formato}`);
-        return;
-      }
-      abrirRevision({ ...lectura, nombreArchivo: archivo.name || null });
-    });
+    if (archivo) importarArchivo(archivo, formato);
   });
   input.click();
+}
+
+/**
+ * Lee una copia y abre el resumen de lo que entra. Sin formato (un archivo compartido con la app), se deduce del
+ * nombre y, si no lo dice, del contenido: las copias JSON empiezan por { o [.
+ */
+export function importarArchivo(archivo, formato = null) {
+  estado.lanzar('No se ha podido importar', async () => {
+    const texto = await leerTexto(archivo);
+    formato ??= /.csv$/i.test(archivo.name ?? '') ? 'CSV'
+      : /.json$/i.test(archivo.name ?? '') ? 'JSON'
+      : /^﻿?s*[[{]/.test(texto) ? 'JSON' : 'CSV';
+    const lectura = formato === 'JSON' ? leerJson(texto) : leerCsv(texto);
+    const d = lectura.datos;
+    if (!d.socios.length && !d.bonosRegalo.length && !d.cobros.length) {
+      mostrarAviso('El archivo no tiene datos', 'ERROR', `No hay socios ni datos válidos en este ${formato}`);
+      return;
+    }
+    abrirRevision({ ...lectura, nombreArchivo: archivo.name || null });
+  });
 }
 
 /** Lo que hará la importación, para confirmarlo antes. */
