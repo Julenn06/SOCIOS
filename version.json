@@ -1,9 +1,7 @@
 {
-  "version": "1.0.2",
-  "tamano": 1588227,
+  "version": "1.0.3",
+  "tamano": 1588099,
   "novedades": [
-    "Paneles, diálogos y bloqueo con el diálogo nativo del navegador: atrás y Esc los cierran como en Android",
-    "Los avisos se ven también encima de un panel abierto",
-    "El tema sigue al sistema con color-scheme y light-dark()"
+    "El panel Más ya no muestra el número de versión"
   ]
 }
