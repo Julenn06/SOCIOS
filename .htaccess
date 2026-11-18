@@ -4,10 +4,15 @@ RewriteEngine On
 # HTTPS siempre: el service worker y el bloqueo con huella solo funcionan con él.
 RewriteCond %{HTTPS} !=on
 RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+# Un archivo compartido con la app lo recoge el service worker. Si aún no estaba activo, la petición llega aquí: se
+# vuelve a la app, que avisa de que no ha llegado nada.
+RewriteCond %{REQUEST_METHOD} POST
+RewriteRule ^compartir$ /?accion=importar [L,R=303]
 
 AddType application/manifest+json .webmanifest
 AddType text/javascript .js
 AddType font/ttf .ttf
+AddType font/woff2 .woff2
 AddDefaultCharset utf-8
 
 <IfModule mod_headers.c>

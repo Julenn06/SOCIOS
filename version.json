@@ -1,7 +1,8 @@
 {
-  "version": "1.0.6",
-  "tamano": 1726821,
+  "version": "1.0.7",
+  "tamano": 1732822,
   "novedades": [
-    "Los campos cortan la raya del borde donde va la etiqueta, como en la app"
+    "Tus datos, protegidos para que el navegador no los borre",
+    "Comparte una copia con la app para importarla"
   ]
 }
