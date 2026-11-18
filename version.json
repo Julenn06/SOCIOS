@@ -1,9 +1,7 @@
 {
-  "version": "1.0.4",
-  "tamano": 1726686,
+  "version": "1.0.5",
+  "tamano": 1726197,
   "novedades": [
-    "Lo que guardas en una ventana aparece al momento en las demás",
-    "Botón para instalar la app en Más",
-    "Fuentes más ligeras y cabeceras de seguridad"
+    "Los avisos dicen \"Actualización disponible\", sin el número de versión"
   ]
 }

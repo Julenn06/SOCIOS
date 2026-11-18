@@ -5,7 +5,6 @@ import { mostrarAviso } from './avisos.js';
 import { iniciarPantalla, nuevoSocio } from './pantalla.js';
 import { vigilarBloqueo } from './pantalla-bloqueo.js';
 import { abrirActualizacion } from './hojas/mas.js';
-import { VERSION } from './version.js';
 // Al arrancar: el aviso de que se puede instalar llega pronto y hay que guardarlo para el botón de "Más".
 import './instalacion.js';
 
@@ -40,7 +39,7 @@ async function arrancar() {
 async function avisarVersionNueva() {
   const publicada = await actualizaciones.comprobarSiToca();
   if (!publicada) return;
-  const avisar = () => mostrarAviso(`Versión ${publicada.version} disponible`, 'NOVEDAD', `Ahora tienes la ${VERSION}`, 'Actualizar', () => abrirActualizacion(publicada));
+  const avisar = () => mostrarAviso('Actualización disponible', 'NOVEDAD', 'Hay una versión nueva de la app', 'Actualizar', () => abrirActualizacion(publicada));
   if (!bloqueo.bloqueada) return avisar();
   const dejar = bloqueo.alCambiar((bloqueada) => {
     if (bloqueada) return;
