@@ -1,0 +1,2 @@
+# El hash del script en línea de pwa/index.html (Content-Security-Policy del .htaccess) depende de sus bytes exactos.
+pwa/index.html text eol=lf

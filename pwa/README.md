@@ -18,7 +18,7 @@ npx serve pwa          # o: python -m http.server -d pwa 8000
 ## Tests
 
 ```bash
-node --test pwa/test/
+node --test "pwa/test/*.test.mjs"
 ```
 
 Sin dependencias (el `node:test` de Node 22 o más). Comprueban las cuentas (céntimos, IRPF, tramos del bonus, neto
@@ -72,7 +72,7 @@ Así que publicar es: subir la versión con el comando de arriba, hacer commit y
 | `js/avisos.js`, `js/paneles.js`, `js/movimiento.js` | `Avisos`, `PanelInferior` y diálogos, `Movimiento` y `NumberAnimators` |
 | `js/ajustes.js`, `js/pantalla-bloqueo.js` | Tema, `Bloqueo` (con WebAuthn) y actualizaciones (service worker) |
 | `js/instalacion.js` | Solo en la web: el botón "Instalar la app" de "Más" |
-| `test/` | Los tests de la lógica (`node --test pwa/test/`) |
+| `test/` | Los tests de la lógica (`node --test "pwa/test/*.test.mjs"`) |
 
 ## Diferencias inevitables con la app
 

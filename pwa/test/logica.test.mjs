@@ -1,6 +1,6 @@
 // Tests de la lógica de la PWA, con los mismos casos que los tests unitarios de la app Android (CalculoComisionesTest,
 // CentimosTest, DateUtilsTest, NumberExtensionsTest, EscalaGraficoTest, BackupJsonTest y BackupCsvTest).
-// Sin dependencias: node --test pwa/test/
+// Sin dependencias: node --test "pwa/test/*.test.mjs"
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import * as F from '../js/formato.js';

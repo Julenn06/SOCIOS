@@ -36,7 +36,7 @@ jobs:
 
       # Si fallan las cuentas (céntimos, IRPF, bonus, semanas) o las copias, la web no se publica.
       - name: Tests de la lógica
-        run: node --test pwa/test/
+        run: node --test "pwa/test/*.test.mjs"
 
       - name: Comprobar que el service worker guarda todos los archivos y la cabecera de seguridad
         run: node pwa/herramientas/version.mjs --comprobar
