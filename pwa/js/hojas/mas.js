@@ -23,7 +23,6 @@ export function abrirMas() {
               <div class="icono-app"><img src="icons/icono-placa.png" alt=""></div>
               <div class="crece" style="margin-left:16px">
                 <h2 class="nombre-app" style="margin:0">Gestión de Socios</h2>
-                <span class="pastilla-cabecera" style="margin-top:6px">Versión ${esc(actualizaciones.versionInstalada)}</span>
               </div>
             </div>
             <div class="divisor-cabecera"></div>
