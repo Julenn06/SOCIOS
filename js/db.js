@@ -37,6 +37,11 @@ export async function cargar() {
   db = await abrir();
   // Que el navegador no la borre por falta de espacio sin preguntar.
   navigator.storage?.persist?.().catch(() => {});
+  return leerTodoGuardado();
+}
+
+/** Todo lo guardado, otra vez (lo ha cambiado otra ventana). */
+export async function leerTodoGuardado() {
   const [socios, bonos, cobros] = await Promise.all([leerTodo('socios'), leerTodo('bonos'), leerTodo('cobros')]);
   return { socios, bonos, cobros };
 }

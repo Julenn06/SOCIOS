@@ -1,7 +1,9 @@
 {
-  "version": "1.0.3",
-  "tamano": 1588099,
+  "version": "1.0.4",
+  "tamano": 1726686,
   "novedades": [
-    "El panel Más ya no muestra el número de versión"
+    "Lo que guardas en una ventana aparece al momento en las demás",
+    "Botón para instalar la app en Más",
+    "Fuentes más ligeras y cabeceras de seguridad"
   ]
 }
