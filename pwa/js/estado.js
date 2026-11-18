@@ -49,11 +49,44 @@ export const alEvento = (f) => (oyentesEventos.add(f), () => oyentesEventos.dele
 const enviar = (evento) => oyentesEventos.forEach((f) => f(evento));
 const aviso = (titulo, tipo, detalle = null) => enviar({ tipo: 'mensaje', titulo, tipoAviso: tipo, detalle });
 
-export async function iniciar() {
-  const datos = await db.cargar();
+/** Lo guardado pasa a la memoria de esta ventana. */
+function poner(datos) {
+  socios.clear();
+  bonos.clear();
+  cobros.clear();
   datos.socios.forEach((s) => socios.set(s.id, s));
   datos.bonos.forEach((b) => bonos.set(b.semanaKey, b));
   datos.cobros.forEach((c) => cobros.set(c.semanaKey, c));
+}
+
+// La app puede estar abierta en varios sitios a la vez (instalada y en una pestaña, o en dos pestañas). Cada una tiene
+// los datos en memoria: cuando una guarda algo, avisa a las demás por este canal y ellas los vuelven a leer.
+let canal = null;
+let releyendo = null;
+
+async function guardar(cambios) {
+  await db.escribir(cambios);
+  canal?.postMessage('cambio');
+}
+
+function releer() {
+  // Varios avisos seguidos (una importación grande) se juntan en una sola lectura.
+  releyendo ??= new Promise((r) => setTimeout(r, 50)).then(async () => {
+    releyendo = null;
+    poner(await db.leerTodoGuardado());
+    avisar();
+  });
+  return releyendo;
+}
+
+export async function iniciar() {
+  poner(await db.cargar());
+  if ('BroadcastChannel' in self) {
+    canal = new BroadcastChannel('socios-datos');
+    canal.onmessage = () => releer();
+  }
+  // Las preferencias (pendientes ocultos, última cuota) también pueden cambiar en otra ventana.
+  addEventListener('storage', (ev) => ev.key?.startsWith('socios.') && avisar());
   // La semana actual cambia sola cada lunes aunque la app siga abierta.
   setInterval(comprobarSemanaActual, 60_000);
   document.addEventListener('visibilitychange', () => document.visibilityState === 'visible' && comprobarSemanaActual());
@@ -206,7 +239,7 @@ export const setSocioHecho = (id, hecho) => lanzar(null, async () => {
   const s = socios.get(id);
   if (!s) return;
   const nuevo = { ...s, hecho };
-  await db.escribir([{ almacen: 'socios', poner: nuevo }]);
+  await guardar([{ almacen: 'socios', poner: nuevo }]);
   socios.set(id, nuevo);
   avisar();
   if (hecho) aviso('Marcado como conseguido', 'EXITO');
@@ -215,7 +248,7 @@ export const setSocioHecho = (id, hecho) => lanzar(null, async () => {
 
 /** [semanaOriginal]: la del socio editado, para avisar si se ha movido de semana. */
 export const guardarSocio = (socio, esNuevo, semanaOriginal = null) => lanzar(null, async () => {
-  await db.escribir([{ almacen: 'socios', poner: socio }]);
+  await guardar([{ almacen: 'socios', poner: socio }]);
   socios.set(socio.id, socio);
   avisar();
   if (esNuevo) {
@@ -229,7 +262,7 @@ export const guardarSocio = (socio, esNuevo, semanaOriginal = null) => lanzar(nu
 });
 
 export const eliminarSocio = (socio) => lanzar(null, async () => {
-  await db.escribir([{ almacen: 'socios', borrar: socio.id }]);
+  await guardar([{ almacen: 'socios', borrar: socio.id }]);
   socios.delete(socio.id);
   avisar();
   enviar({ tipo: 'socioEliminado', socio });
@@ -237,14 +270,14 @@ export const eliminarSocio = (socio) => lanzar(null, async () => {
 
 /** Vuelve a guardar un socio recién borrado, con el mismo id y fecha de alta. */
 export const restaurarSocio = (socio) => lanzar(null, async () => {
-  await db.escribir([{ almacen: 'socios', poner: socio }]);
+  await guardar([{ almacen: 'socios', poner: socio }]);
   socios.set(socio.id, socio);
   avisar();
   aviso('Socio recuperado', 'EXITO', nombreVisible(socio));
 });
 
 export const guardarBono = (bono) => lanzar(null, async () => {
-  await db.escribir([{ almacen: 'bonos', poner: bono }]);
+  await guardar([{ almacen: 'bonos', poner: bono }]);
   bonos.set(bono.semanaKey, bono);
   avisar();
   const importe = eurosCompacto(bono.monto);
@@ -252,7 +285,7 @@ export const guardarBono = (bono) => lanzar(null, async () => {
 });
 
 export const eliminarBono = (semanaKey) => lanzar(null, async () => {
-  await db.escribir([{ almacen: 'bonos', borrar: semanaKey }]);
+  await guardar([{ almacen: 'bonos', borrar: semanaKey }]);
   bonos.delete(semanaKey);
   avisar();
   aviso('Bonus automático', 'INFO', 'Vuelve a calcularse con los socios hechos');
@@ -261,14 +294,14 @@ export const eliminarBono = (semanaKey) => lanzar(null, async () => {
 /** Lo cobrado de verdad: pasa a ser el neto de la semana. */
 export const guardarCobro = (semanaKey, netoCobrado, nota) => lanzar(null, async () => {
   const cobro = { semanaKey, netoCobrado: redondearCentimos(netoCobrado), nota: nota.trim() };
-  await db.escribir([{ almacen: 'cobros', poner: cobro }]);
+  await guardar([{ almacen: 'cobros', poner: cobro }]);
   cobros.set(semanaKey, cobro);
   avisar();
   aviso('Cobro apuntado', 'EXITO', `${moneda(cobro.netoCobrado)} como neto de la semana`);
 });
 
 export const eliminarCobro = (semanaKey) => lanzar(null, async () => {
-  await db.escribir([{ almacen: 'cobros', borrar: semanaKey }]);
+  await guardar([{ almacen: 'cobros', borrar: semanaKey }]);
   cobros.delete(semanaKey);
   avisar();
   aviso('Cobro quitado', 'INFO', 'La semana vuelve al neto calculado');
@@ -297,7 +330,7 @@ export async function importar(datos) {
     ...datos.bonosRegalo.map((b) => ({ almacen: 'bonos', poner: b })),
     ...datos.cobros.map((c) => ({ almacen: 'cobros', poner: c }))
   ];
-  if (cambios.length) await db.escribir(cambios);
+  if (cambios.length) await guardar(cambios);
   datos.socios.forEach((s) => socios.set(s.id, s));
   datos.bonosRegalo.forEach((b) => bonos.set(b.semanaKey, b));
   datos.cobros.forEach((c) => cobros.set(c.semanaKey, c));

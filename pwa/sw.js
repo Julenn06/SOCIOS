@@ -1,6 +1,6 @@
 // Service worker: guarda la app entera para que funcione sin conexión. Una versión nueva se descarga entera antes de
 // usarse (contando lo que lleva, para la animación de "Actualizar") y solo se activa cuando la app lo pide.
-const VERSION = '1.0.3';
+const VERSION = '1.0.4';
 const CACHE = `socios-${VERSION}`;
 const ARCHIVOS = [
   './',
@@ -22,6 +22,7 @@ const ARCHIVOS = [
   'js/iconos.js',
   'js/lienzo.js',
   'js/ajustes.js',
+  'js/instalacion.js',
   'js/copias.js',
   'js/pdf.js',
   'js/pantalla.js',
@@ -38,6 +39,11 @@ const ARCHIVOS = [
   'js/vistas/muestra-tema.js',
   'js/vistas/animacion-descarga.js',
   'vendor/jspdf.umd.min.js',
+  'fonts/geist_regular.woff2',
+  'fonts/geist_medium.woff2',
+  'fonts/geist_semibold.woff2',
+  'fonts/geist_bold.woff2',
+  // Las TTF solo las usa el informe PDF (jsPDF no lee WOFF2): también se guardan, para exportar sin conexión.
   'fonts/geist_regular.ttf',
   'fonts/geist_medium.ttf',
   'fonts/geist_semibold.ttf',
@@ -64,9 +70,10 @@ self.addEventListener('install', (evento) => {
     const cache = await caches.open(CACHE);
     let hechos = 0;
     let bytes = 0;
-    // Uno a uno y sin la caché HTTP: todo de la versión nueva, y la animación ve cómo avanza.
+    // Uno a uno, para que la animación vea cómo avanza. Con no-cache, cada archivo se le pregunta al servidor: si no ha
+    // cambiado desde la versión anterior, contesta "304, sin cambios" y no se vuelve a descargar.
     for (const archivo of ARCHIVOS) {
-      const respuesta = await fetch(new Request(archivo, { cache: 'reload' }));
+      const respuesta = await fetch(new Request(archivo, { cache: 'no-cache' }));
       if (!respuesta.ok) throw new Error(`${archivo}: ${respuesta.status}`);
       const cuerpo = await respuesta.clone().arrayBuffer();
       bytes += cuerpo.byteLength;

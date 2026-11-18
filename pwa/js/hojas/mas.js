@@ -6,7 +6,8 @@ import { momentoRelativo } from '../fechas.js';
 import { esc, numero } from '../formato.js';
 import { icono } from '../iconos.js';
 import { haptica, muellePulsar } from '../movimiento.js';
-import { html, marcar, tarjetaElegible } from '../componentes.js';
+import { filaFormato, html, marcar, tarjetaElegible } from '../componentes.js';
+import { alCambiarInstalacion, instalar, sePuedeInstalar } from '../instalacion.js';
 import { MuestraTema } from '../vistas/muestra-tema.js';
 import { AnimacionDescarga } from '../vistas/animacion-descarga.js';
 import { abrirCopias } from './copias.js';
@@ -39,6 +40,25 @@ export function abrirMas() {
       s.append(cabecera);
       const botonVersion = cabecera.querySelector('[data-id="boton"]');
       muellePulsar(botonVersion);
+
+      // Solo en la web y solo si el navegador puede instalarla (ver instalacion.js).
+      const seccionApp = html('<div class="seccion">App</div>');
+      const tarjetaInstalar = filaFormato({
+        iconoPlaca: 'import', tono: 'azul', titulo: 'Instalar la app', detalle: 'En la pantalla de inicio, sin la barra del navegador',
+        alPulsar: async () => {
+          // Directamente desde el toque: la instalación necesita que la haya pedido el usuario.
+          const resultado = await instalar();
+          if (resultado === 'instalada') mostrarAviso('App instalada', 'EXITO', 'Ya la tienes en la pantalla de inicio');
+          else if (resultado === 'error') mostrarAviso('No se ha podido instalar', 'ERROR', 'Prueba desde el menú del navegador');
+        }
+      });
+      const mostrarInstalar = () => {
+        seccionApp.hidden = !sePuedeInstalar();
+        tarjetaInstalar.hidden = !sePuedeInstalar();
+      };
+      mostrarInstalar();
+      const dejarInstalar = alCambiarInstalacion(mostrarInstalar);
+      s.append(seccionApp, tarjetaInstalar);
 
       s.append(html('<div class="seccion">Datos</div>'));
       const copias = html(`
@@ -147,6 +167,7 @@ export function abrirMas() {
       return () => {
         dejar();
         dejarBloqueo();
+        dejarInstalar();
       };
     }
   });

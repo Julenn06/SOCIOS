@@ -6,6 +6,8 @@ import { iniciarPantalla, nuevoSocio } from './pantalla.js';
 import { vigilarBloqueo } from './pantalla-bloqueo.js';
 import { abrirActualizacion } from './hojas/mas.js';
 import { VERSION } from './version.js';
+// Al arrancar: el aviso de que se puede instalar llega pronto y hay que guardarlo para el botón de "Más".
+import './instalacion.js';
 
 async function arrancar() {
   aplicarTema();

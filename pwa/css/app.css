@@ -3,10 +3,10 @@
  * Colores: app/src/main/res/values/colors.xml y values-night/colors.xml. Estilos: values/styles.xml.
  */
 
-@font-face { font-family: 'Geist'; src: url('../fonts/geist_regular.ttf') format('truetype'); font-weight: 400; font-display: block; }
-@font-face { font-family: 'Geist'; src: url('../fonts/geist_medium.ttf') format('truetype'); font-weight: 500; font-display: block; }
-@font-face { font-family: 'Geist'; src: url('../fonts/geist_semibold.ttf') format('truetype'); font-weight: 600; font-display: block; }
-@font-face { font-family: 'Geist'; src: url('../fonts/geist_bold.ttf') format('truetype'); font-weight: 700; font-display: block; }
+@font-face { font-family: 'Geist'; src: url('../fonts/geist_regular.woff2') format('woff2'); font-weight: 400; font-display: block; }
+@font-face { font-family: 'Geist'; src: url('../fonts/geist_medium.woff2') format('woff2'); font-weight: 500; font-display: block; }
+@font-face { font-family: 'Geist'; src: url('../fonts/geist_semibold.woff2') format('woff2'); font-weight: 600; font-display: block; }
+@font-face { font-family: 'Geist'; src: url('../fonts/geist_bold.woff2') format('woff2'); font-weight: 700; font-display: block; }
 
 /* ---------- Colores ---------- */
 
@@ -139,7 +139,7 @@ button:disabled { cursor: default; }
 :focus { outline: none; }
 :focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
 
-.oculto { display: none !important; }
+.oculto, [hidden] { display: none !important; }
 .invisible { visibility: hidden !important; }
 .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 

@@ -29,7 +29,16 @@ jobs:
       - name: Descargar el código
         uses: actions/checkout@v7
 
-      - name: Comprobar que el service worker guarda todos los archivos
+      - name: Preparar Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
+
+      # Si fallan las cuentas (céntimos, IRPF, bonus, semanas) o las copias, la web no se publica.
+      - name: Tests de la lógica
+        run: node --test pwa/test/
+
+      - name: Comprobar que el service worker guarda todos los archivos y la cabecera de seguridad
         run: node pwa/herramientas/version.mjs --comprobar
 
       - name: Actualizar la rama web

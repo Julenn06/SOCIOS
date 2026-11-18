@@ -2,6 +2,7 @@
 // la descarga y comprueba que el service worker guarda todos los archivos.
 //   node pwa/herramientas/version.mjs 1.1.0 "Novedad uno" "Novedad dos"
 //   node pwa/herramientas/version.mjs --comprobar      (solo comprueba la lista y el tamaño)
+import { createHash } from 'node:crypto';
 import { existsSync, readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
 import { dirname, join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -31,6 +32,18 @@ if (faltan.length || sobran.length) {
   if (sobran.length) console.error('No existen:', sobran.join(', '));
   process.exit(1);
 }
+// La Content-Security-Policy del .htaccess solo deja ejecutar los scripts en línea de index.html cuyo hash lleva: si
+// se cambia uno sin cambiar su hash, la página no aplicaría el tema al abrirse.
+const indice = readFileSync(join(pwa, 'index.html'), 'utf8');
+const htaccess = readFileSync(join(pwa, '.htaccess'), 'utf8');
+const sinHash = [...indice.matchAll(/<script>([\s\S]*?)<\/script>/g)]
+  .map((m) => `'sha256-${createHash('sha256').update(m[1]).digest('base64')}'`)
+  .filter((hash) => !htaccess.includes(hash));
+if (sinHash.length) {
+  console.error(`El script en línea de index.html ha cambiado: pon ${sinHash.join(' ')} en el script-src del .htaccess`);
+  process.exit(1);
+}
+
 const tamano = lista.filter((f) => f !== './').reduce((t, f) => t + statSync(join(pwa, f)).size, 0) + statSync(join(pwa, 'index.html')).size;
 console.log(`${lista.length} archivos, ${(tamano / 1024 / 1024).toFixed(2)} MB`);
 

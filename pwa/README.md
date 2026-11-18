@@ -15,6 +15,17 @@ Cualquier servidor estático vale; el service worker y el bloqueo con huella nec
 npx serve pwa          # o: python -m http.server -d pwa 8000
 ```
 
+## Tests
+
+```bash
+node --test pwa/test/
+```
+
+Sin dependencias (el `node:test` de Node 22 o más). Comprueban las cuentas (céntimos, IRPF, tramos del bonus, neto
+cobrado), las semanas ISO, los textos de importes y fechas, y que las copias JSON y CSV tienen el formato de la app
+Android y se vuelven a leer igual, con los mismos casos que sus tests unitarios. El workflow que publica la web los pasa
+antes: si alguno falla, no se publica nada.
+
 ## Pasar los datos desde la app Android
 
 Las copias JSON y CSV tienen el mismo formato (versión 5) en las dos: en la app, **Más → Copias y exportación →
@@ -34,8 +45,15 @@ descarga la versión nueva con la animación de la app y se recarga con ella.
 Está publicada en **https://socios.jfl06studio.com** (un sitio propio en Hostinger, aparte de jfl06studio.com) y se
 publica sola: cada push a `main` que toca `pwa/` lanza el workflow `Publicar la web` (`.github/workflows/web.yml`), que
 copia solo lo público (`index.html`, `manifest.webmanifest`, `sw.js`, `version.json`, `.htaccess`, `css/`, `js/`,
-`fonts/`, `img/`, `icons/`, `vendor/`) a la rama `web`, y Hostinger despliega esa rama en cuanto cambia. El `.htaccess`
-fuerza HTTPS y marca `sw.js`, `version.json` y el código como `no-cache`.
+`fonts/`, `img/`, `icons/`, `vendor/`) a la rama `web`, y Hostinger despliega esa rama en cuanto cambia.
+
+El `.htaccess` fuerza HTTPS, marca `sw.js`, `version.json` y el código como `no-cache` (al actualizar, el service
+worker solo descarga lo que ha cambiado) y pone las cabeceras de seguridad: una `Content-Security-Policy` que solo deja
+ejecutar código del propio sitio, más `Permissions-Policy`, `Cross-Origin-Opener-Policy` y HSTS. El script del tema de
+`index.html` va en línea y la política lo permite por su hash: si se cambia ese script, `version.mjs --comprobar` (que
+también corre el workflow) dice qué hash poner en el `.htaccess`.
+
+La interfaz usa las fuentes Geist en WOFF2; las TTF solo las usa el informe PDF (jsPDF no lee WOFF2).
 
 Así que publicar es: subir la versión con el comando de arriba, hacer commit y push a `main`.
 
@@ -53,6 +71,8 @@ Así que publicar es: subir la versión con el comando de arriba, hacer commit y
 | `js/vistas/*` | Las vistas dibujadas a mano (barra del bonus, franja de días, gráfico, miniaturas del tema, descarga) |
 | `js/avisos.js`, `js/paneles.js`, `js/movimiento.js` | `Avisos`, `PanelInferior` y diálogos, `Movimiento` y `NumberAnimators` |
 | `js/ajustes.js`, `js/pantalla-bloqueo.js` | Tema, `Bloqueo` (con WebAuthn) y actualizaciones (service worker) |
+| `js/instalacion.js` | Solo en la web: el botón "Instalar la app" de "Más" |
+| `test/` | Los tests de la lógica (`node --test pwa/test/`) |
 
 ## Diferencias inevitables con la app
 
@@ -63,4 +83,8 @@ Así que publicar es: subir la versión con el comando de arriba, hacer commit y
 - **Actualizar:** en lugar de descargar e instalar un APK, el service worker descarga la versión nueva y la página se
   recarga con ella. Tus socios y ajustes se conservan.
 - **Exportar → Guardar:** donde el navegador no deja elegir carpeta, el archivo va a Descargas.
+- **Instalar la app:** solo existe en la web. "Más" lo ofrece cuando el navegador puede instalarla (Chrome, Edge) y aún
+  no está instalada; la confirmación es siempre el cuadro del propio navegador.
+- **Varias ventanas:** si está abierta a la vez instalada y en una pestaña (o en dos pestañas), lo que se guarda en una
+  aparece en las demás al momento.
 - La vibración solo existe en los navegadores que la permiten (Chrome en Android sí; Safari no).
