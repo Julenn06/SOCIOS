@@ -1,7 +1,7 @@
 {
-  "version": "1.0.5",
-  "tamano": 1726197,
+  "version": "1.0.6",
+  "tamano": 1726821,
   "novedades": [
-    "Los avisos dicen \"Actualización disponible\", sin el número de versión"
+    "Los campos cortan la raya del borde donde va la etiqueta, como en la app"
   ]
 }

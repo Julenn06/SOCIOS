@@ -323,15 +323,29 @@ button.tarjeta:not(.fila-formato):not(.tarjeta-interruptor) { display: block; }
 .interruptor.encendido:active::before { left: 20px; }
 .contenedor-interruptor { flex: none; display: inline-flex; align-items: center; justify-content: center; min-height: 48px; padding: 0 4px; }
 
-/* Campos (TextInputLayout OutlinedBox con esquinas de 14). */
+/* Campos (TextInputLayout OutlinedBox con esquinas de 14). El borde es un <fieldset> decorativo: su <legend> lleva el
+   texto de la etiqueta (invisible) y abre en la raya de arriba un hueco de su ancho cuando la etiqueta sube, como el
+   borde con muesca de Android. Así no hace falta tapar la raya con un parche, que se vería sobre el vidrio. */
 .campo {
   position: relative; display: flex; align-items: center; min-height: 56px;
-  border: 1px solid var(--stroke); border-radius: 14px; background: transparent;
+  padding: 1px; border-radius: 14px; background: transparent;
+}
+.campo-borde {
+  position: absolute; inset: -5px 0 0; margin: 0; padding: 0 10px; min-width: 0; pointer-events: none;
+  border: 1px solid var(--stroke); border-radius: 14px; text-align: left;
   transition: border-color 150ms linear;
 }
-.campo:focus-within { border-color: var(--primary); border-width: 2px; }
-.campo:focus-within .campo-icono { margin-left: 11px; }
-.campo.error { border-color: var(--red-text); border-width: 2px; }
+.campo-borde legend {
+  float: unset; display: block; width: auto; max-width: 0.01px; height: 11px; padding: 0; overflow: hidden;
+  visibility: hidden; font-size: 12px; white-space: nowrap;
+  transition: max-width 50ms linear;
+}
+.campo-borde legend span { display: inline-block; padding: 0 4px; opacity: 0; visibility: visible; }
+.campo.lleno .campo-borde legend, .campo:focus-within .campo-borde legend {
+  max-width: 100%; transition: max-width 100ms linear 50ms;
+}
+.campo:focus-within .campo-borde { border-color: var(--primary); border-width: 2px; }
+.campo.error .campo-borde { border-color: var(--red-text); border-width: 2px; }
 .campo-icono { width: 24px; height: 24px; margin: 0 4px 0 12px; color: var(--text-sub); flex: none; }
 .campo input, .campo textarea {
   flex: 1 1 0; min-width: 0; border: 0; background: transparent; color: var(--text-main);
@@ -345,19 +359,16 @@ button.tarjeta:not(.fila-formato):not(.tarjeta-interruptor) { display: block; }
   max-block-size: calc(3lh + 32px);
 }
 .campo label {
-  position: absolute; left: 44px; top: 50%; transform: translateY(-50%); transform-origin: left center;
+  position: absolute; left: 45px; top: 50%; transform: translateY(-50%); transform-origin: left center;
   color: var(--text-sub); font-size: 16px; pointer-events: none; white-space: nowrap;
   transition: top 150ms var(--curva-fosi), transform 150ms var(--curva-fosi), color 150ms linear, left 150ms var(--curva-fosi);
   padding: 0 4px; background: transparent;
 }
 .campo.lleno label, .campo:focus-within label {
-  top: 0; left: 12px; transform: translateY(-50%) scale(0.75); color: var(--text-sub);
+  top: 1px; left: 13px; transform: translateY(-50%) scale(0.75); color: var(--text-sub);
 }
 .campo:focus-within label { color: var(--primary); }
 .campo.error label { color: var(--red-text); }
-.campo.lleno label::before, .campo:focus-within label::before {
-  content: ''; position: absolute; inset: 40% -2px 0 -2px; background: var(--fondo-campo, var(--surface-card)); z-index: -1;
-}
 .campo .limpiar { width: 48px; height: 48px; color: var(--text-sub); flex: none; display: inline-flex; align-items: center; justify-content: center; }
 .campo .limpiar .icono { width: 22px; height: 22px; }
 .ayuda-campo { margin: 4px 16px 0; font-size: 12px; color: var(--text-sub); min-height: 0; }
@@ -607,8 +618,6 @@ button.tarjeta:not(.fila-formato):not(.tarjeta-interruptor) { display: block; }
     background: var(--vidrio-panel);
     box-shadow: 0 0 0 1px var(--vidrio-filo) inset, 0 -2px 12px rgba(0, 0, 0, 0.06);
   }
-  :root:not(.sin-vidrio) .hoja .campo label::before,
-  :root:not(.sin-vidrio) .dialogo .campo label::before { display: none; }
 }
 
 /* ---------- Paneles inferiores (PanelInferior) ---------- */
@@ -653,7 +662,6 @@ dialog.hoja {
   transition-timing-function: var(--curva), linear, linear, linear;
   transition-behavior: allow-discrete;
   touch-action: pan-y;
-  --fondo-campo: var(--surface-card);
 }
 dialog.hoja[open] { display: flex; }
 dialog.hoja[open]:where(:not([data-closing])) {
@@ -704,7 +712,6 @@ dialog.dialogo {
   transition-duration: 250ms, 150ms, 250ms, 250ms;
   transition-timing-function: var(--curva), linear, linear, linear;
   transition-behavior: allow-discrete;
-  --fondo-campo: var(--surface-card);
 }
 dialog.dialogo[open] { display: flex; }
 dialog.dialogo[open]:where(:not([data-closing])) {

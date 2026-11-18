@@ -40,6 +40,7 @@ export function crearCampo({ etiqueta, iconoCampo, tipo = 'texto', maxLength = n
         <span class="campo-icono icono" data-icono="${iconoCampo}"></span>
         ${control}
         <label for="${id}">${esc(etiqueta)}</label>
+        <fieldset class="campo-borde" aria-hidden="true"><legend><span>${esc(etiqueta)}</span></legend></fieldset>
         ${limpiar ? `<button class="limpiar oculto" type="button" aria-label="Borrar el texto"><span class="icono" data-icono="close"></span></button>` : ''}
       </div>`;
   const envoltura = html(`
