@@ -193,9 +193,12 @@ export const actualizaciones = {
     return publicada;
   },
 
-  /** Al abrir la app, como mucho una vez al día: devuelve la versión nueva si la hay. */
-  async comprobarSiToca() {
-    if (!navigator.onLine || Date.now() - this.ultimaComprobacion < 24 * 3600_000) return null;
+  /**
+   * Al abrir la app y al volver a ella: devuelve la versión nueva si la hay. [cada]: no vuelve a preguntar si lo hizo
+   * hace menos de eso (version.json pesa unos bytes, pero no hace falta pedirlo en cada cambio de app).
+   */
+  async comprobarSiToca(cada = 0) {
+    if (!navigator.onLine || this.estado.tipo === 'BUSCANDO' || Date.now() - this.ultimaComprobacion < cada) return null;
     try {
       const publicada = await this.consultar();
       if (compararVersiones(publicada.version, VERSION) > 0) {

@@ -57,8 +57,11 @@ node pwa/herramientas/version.mjs 1.1.0 "Novedad uno" "Novedad dos"
 
 Cambia el número en `js/version.js`, `sw.js` y `version.json`, calcula lo que ocupa la descarga y comprueba que el
 service worker guarda todos los archivos (si se añade uno nuevo, hay que ponerlo en la lista `ARCHIVOS` de `sw.js`;
-`--comprobar` solo revisa). Al abrirse, la app mira `version.json` como mucho una vez al día y avisa; "Actualizar"
-descarga la versión nueva con la animación de la app y se recarga con ella.
+`--comprobar` solo revisa). Al abrir la app y al volver a ella (como mucho cada 30 minutos), mira `version.json`;
+si hay una versión nueva, sale una pantalla entera con sus novedades (`js/pantalla-novedad.js`): "Actualizar ahora"
+descarga la versión nueva con la animación de la app y se recarga con ella, y "Más tarde" la quita hasta la próxima
+vez que se abra la app (para entonces el service worker ya suele haberla puesto sola). Si hay un panel abierto o la
+app está bloqueada, espera a que se cierre.
 
 Está publicada en **https://socios.jfl06studio.com** (un sitio propio en Hostinger, aparte de jfl06studio.com) y se
 publica sola: cada push a `main` que toca `pwa/` lanza el workflow `Publicar la web` (`.github/workflows/web.yml`), que
@@ -107,6 +110,7 @@ importa para que todo vaya fluido:
 | `js/vistas/*` | Las vistas dibujadas a mano (barra del bonus, franja de días, gráfico, miniaturas del tema, descarga) |
 | `js/avisos.js`, `js/paneles.js`, `js/movimiento.js` | `Avisos`, `PanelInferior` y diálogos, `Movimiento` y `NumberAnimators` |
 | `js/ajustes.js`, `js/pantalla-bloqueo.js` | Tema, `Bloqueo` (con WebAuthn) y actualizaciones (service worker) |
+| `js/pantalla-novedad.js` | Solo en la web: la pantalla de "Hay una actualización" |
 | `js/instalacion.js` | Solo en la web: el botón "Instalar la app" de "Más" |
 | `js/nube.js`, `js/pantalla-cuenta.js` | Solo en la web: la cuenta, la sincronización y la pantalla de iniciar sesión o registrarse |
 | `test/` | Los tests de la lógica (`node --test "pwa/test/*.test.mjs"`) |
