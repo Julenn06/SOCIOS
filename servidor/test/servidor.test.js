@@ -78,6 +78,37 @@ test('registrarse, entrar con el nombre escrito de cualquier forma y sincronizar
   assert.equal((await pedir('POST', '/api/sesion', { nombre: 'julen', contrasena: 'una contraseña' }, { ip: '10.0.2.4' })).estado, 401)
 })
 
+test('cambiar el nombre y la contraseña, y restablecerla con la contraseña de registro', async () => {
+  const reg = await pedir('POST', '/api/registro', { claveRegistro: 'clave de prueba', nombre: 'Aitor', contrasena: 'primera-1234' }, { ip: '10.0.6.1' })
+  const otro = await pedir('POST', '/api/sesion', { nombre: 'aitor', contrasena: 'primera-1234' }, { ip: '10.0.6.2' })
+  await pedir('POST', '/api/registro', { claveRegistro: 'clave de prueba', nombre: 'Maite', contrasena: 'de-maite-123' }, { ip: '10.0.6.1' })
+  const t = reg.cuerpo.token
+
+  // El nombre: libre sí, el de otra cuenta no; el mismo con otras mayúsculas también vale.
+  assert.equal((await pedir('POST', '/api/cuenta/nombre', { nombre: 'MAITE' }, { token: t })).estado, 409)
+  assert.equal((await pedir('POST', '/api/cuenta/nombre', { nombre: 'x' }, { token: t })).estado, 400)
+  assert.equal((await pedir('POST', '/api/cuenta/nombre', { nombre: 'AITOR' }, { token: t })).cuerpo.nombre, 'AITOR')
+  const cambio = await pedir('POST', '/api/cuenta/nombre', { nombre: ' Aitor Pérez ' }, { token: t })
+  assert.equal(cambio.cuerpo.nombre, 'Aitor Pérez')
+  assert.equal((await pedir('POST', '/api/sesion', { nombre: 'aitor perez', contrasena: 'primera-1234' }, { ip: '10.0.6.3' })).estado, 200)
+  assert.equal((await pedir('POST', '/api/sesion', { nombre: 'aitor', contrasena: 'primera-1234' }, { ip: '10.0.6.3' })).estado, 401)
+
+  // La contraseña: con la actual mal, no; bien, sí, y las demás sesiones se cierran.
+  assert.equal((await pedir('POST', '/api/cuenta/contrasena', { actual: 'no-es-esta', nueva: 'segunda-1234' }, { token: t, ip: '10.0.6.4' })).estado, 403)
+  assert.equal((await pedir('POST', '/api/cuenta/contrasena', { actual: 'primera-1234', nueva: 'corta' }, { token: t, ip: '10.0.6.4' })).estado, 400)
+  assert.equal((await pedir('POST', '/api/cuenta/contrasena', { actual: 'primera-1234', nueva: 'segunda-1234' }, { token: t, ip: '10.0.6.4' })).estado, 204)
+  assert.equal((await pedir('GET', '/api/cuenta', undefined, { token: otro.cuerpo.token })).estado, 401)
+  assert.equal((await pedir('GET', '/api/cuenta', undefined, { token: t })).estado, 200)
+  assert.equal((await pedir('POST', '/api/sesion', { nombre: 'aitor pérez', contrasena: 'segunda-1234' }, { ip: '10.0.6.5' })).estado, 200)
+
+  // Restablecerla sin recordar la actual: solo con la contraseña de registro buena.
+  assert.equal((await pedir('POST', '/api/cuenta/contrasena', { claveRegistro: 'mala', nueva: 'tercera-1234' }, { token: t, ip: '10.0.6.6' })).estado, 403)
+  assert.equal((await pedir('POST', '/api/cuenta/contrasena', { claveRegistro: 'clave de prueba', nueva: 'tercera-1234' }, { token: t, ip: '10.0.6.6' })).estado, 204)
+  assert.equal((await pedir('POST', '/api/sesion', { nombre: 'Aitor Perez', contrasena: 'tercera-1234' }, { ip: '10.0.6.7' })).estado, 200)
+  // Sin sesión no se puede.
+  assert.equal((await pedir('POST', '/api/cuenta/contrasena', { claveRegistro: 'clave de prueba', nueva: 'cuarta-1234' })).estado, 401)
+})
+
 test('tras muchos fallos con una cuenta, espera aunque cambie de IP', async () => {
   await pedir('POST', '/api/registro', { claveRegistro: 'clave de prueba', nombre: 'Miren', contrasena: 'la buena 123' }, { ip: '10.0.3.1' })
   for (let i = 0; i < 10; i++) await pedir('POST', '/api/sesion', { nombre: 'miren', contrasena: 'fallo' }, { ip: `10.0.4.${i}` })

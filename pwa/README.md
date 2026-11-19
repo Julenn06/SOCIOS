@@ -37,7 +37,9 @@ La web sigue funcionando sin conexión: cada cambio queda anotado como pendiente
 la misma transacción que el dato) y se sube al volver la red. Se sincroniza al abrirla, al poco de cada cambio, al
 volver a ella y cada 30 s mientras se ve; si algo cambia en dos sitios, gana el cambio más reciente. Con los datos viajan
 el tema, la última cuota y los pendientes ocultos; el bloqueo con huella es de cada dispositivo. "Más → Cuenta" dice
-cuándo se sincronizó y permite cerrar sesión (los datos se quitan del dispositivo y siguen en la cuenta).
+cuándo se sincronizó y permite cerrar sesión (los datos se quitan del dispositivo y siguen en la cuenta). En
+"Más → Cuenta → Nombre y contraseña" (`js/hojas/cuenta.js`) se cambian el nombre y la contraseña; si no se recuerda la
+actual, se restablece con la contraseña de registro. Al cambiarla, los demás dispositivos tienen que volver a entrar.
 
 **La app Android no usa la cuenta**: para pasar sus datos a la web, las copias (abajo). Al entrar en la cuenta, lo que
 ya hubiera en ese navegador sube a ella.

@@ -30,6 +30,8 @@ import { crearAlmacenMysql } from './almacen-mysql.js'
  *   DELETE /api/sesion                                                          (cerrar sesión)
  *   GET    /api/cuenta                                                          → { nombre, creado }
  *   DELETE /api/cuenta               { contrasena }                             (borra la cuenta y sus datos)
+ *   POST   /api/cuenta/nombre        { nombre }                                 → { nombre }
+ *   POST   /api/cuenta/contrasena    { actual | claveRegistro, nueva }          → 204 (cierra las demás sesiones)
  *   POST   /api/sincronizar          { desde, cambios }                         → { rev, mas, cambios } (ver sincronizacion.js)
  *
  * Variables de entorno:
@@ -218,6 +220,38 @@ const rutas = {
       throw new ErrorPeticion(403, 'credenciales', 'La contraseña no es correcta')
     }
     await almacen.borrarUsuario(u.id)
+    return [204]
+  },
+
+  'POST /api/cuenta/nombre': async ({ req, almacen }) => {
+    const s = await sesionDe(almacen, req)
+    const nombre = validarNombre((await leerJson(req, MAX_CUERPO_CUENTA)).nombre)
+    if (!(await almacen.cambiarNombre(s.usuarioId, nombre, claveNombre(nombre)))) {
+      throw new ErrorPeticion(409, 'nombre_ocupado', 'Ya hay una cuenta con ese nombre. Elige otro')
+    }
+    return { nombre }
+  },
+
+  // Con la contraseña actual o, si no se recuerda, con la de registro (restablecerla). Hace falta la sesión abierta.
+  // Las demás sesiones se cierran: si alguien conocía la contraseña antigua, se queda fuera.
+  'POST /api/cuenta/contrasena': async ({ req, ip, almacen }) => {
+    const s = await sesionDe(almacen, req)
+    const cuerpo = await leerJson(req, MAX_CUERPO_CUENTA)
+    const nueva = validarContrasena(cuerpo.nueva)
+    if (accesoPorIp.pasado(ip)) throw demasiados()
+    const u = await almacen.usuario(s.usuarioId)
+    if (!u) throw new ErrorPeticion(401, 'sin_sesion', 'Inicia sesión')
+    if (cuerpo.claveRegistro !== undefined) {
+      if (!esClaveRegistro(cuerpo.claveRegistro, env.CLAVE_REGISTRO)) {
+        accesoPorIp.contar(ip)
+        throw new ErrorPeticion(403, 'clave_registro', 'La contraseña de registro no es correcta')
+      }
+    } else if (!(await comprobarContrasena(String(cuerpo.actual ?? ''), u.contrasena))) {
+      accesoPorIp.contar(ip)
+      throw new ErrorPeticion(403, 'credenciales', 'La contraseña actual no es correcta')
+    }
+    await almacen.cambiarContrasena(u.id, await cifrarContrasena(nueva))
+    await almacen.cerrarOtrasSesiones(u.id, s.hash)
     return [204]
   },
 

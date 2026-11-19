@@ -38,6 +38,19 @@ export async function crearAlmacenMysql(env) {
       }
     },
     tocarAcceso: (id, t) => ejecutar('UPDATE usuarios SET ultimoAcceso = ? WHERE id = ?', [t, id]),
+    /** Falso si otra cuenta ya usa ese nombre (el índice único de nombreClave). */
+    async cambiarNombre(id, nombre, nombreClave) {
+      try {
+        await ejecutar('UPDATE usuarios SET nombre = ?, nombreClave = ? WHERE id = ?', [nombre, nombreClave, id])
+        return true
+      } catch (e) {
+        if (e.code === 'ER_DUP_ENTRY') return false
+        throw e
+      }
+    },
+    cambiarContrasena: (id, contrasena) => ejecutar('UPDATE usuarios SET contrasena = ? WHERE id = ?', [contrasena, id]),
+    cerrarOtrasSesiones: (usuarioId, hashActual) =>
+      ejecutar('DELETE FROM sesiones WHERE usuarioId = ? AND tokenHash <> ?', [usuarioId, hashActual]),
     // Las sesiones y los datos se borran con la cuenta (ON DELETE CASCADE).
     borrarUsuario: (id) => ejecutar('DELETE FROM usuarios WHERE id = ?', [id]),
     crearSesion: (s) =>

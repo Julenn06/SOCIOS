@@ -30,6 +30,8 @@ Node 22 con `http` y `mysql2`, sin más dependencias, como el servidor de Marea.
 | `DELETE /api/sesion` | cerrar sesión |
 | `GET /api/cuenta` | `{ nombre, creado }` |
 | `DELETE /api/cuenta` | `{ contrasena }`: borra la cuenta y todos sus datos |
+| `POST /api/cuenta/nombre` | `{ nombre }` → `{ nombre }` (409 si lo usa otra cuenta) |
+| `POST /api/cuenta/contrasena` | `{ actual, nueva }` o, para restablecerla, `{ claveRegistro, nueva }`; cierra las demás sesiones |
 | `POST /api/sincronizar` | `{ desde, cambios }` → `{ rev, mas, cambios }` |
 
 ## Variables de entorno (hPanel → socios-api.jfl06studio.com → Node.js)
