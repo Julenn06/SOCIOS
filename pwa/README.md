@@ -26,6 +26,22 @@ cobrado), las semanas ISO, los textos de importes y fechas, y que las copias JSO
 Android y se vuelven a leer igual, con los mismos casos que sus tests unitarios. El workflow que publica la web los pasa
 antes: si alguno falla, no se publica nada.
 
+## Cuenta y sincronización (solo la web)
+
+Al abrir la web sale **Iniciar sesión** o **Registrarse**. Registrarse pide primero la contraseña de registro y, si
+es correcta, "¿Cómo te llamas?" y una contraseña; para entrar, el nombre vale escrito de cualquier forma. Con la sesión
+iniciada, los datos se guardan también en la cuenta (servidor en `servidor/`, https://socios-api.jfl06studio.com) y son
+los mismos en todos los dispositivos donde se abra la web.
+
+La web sigue funcionando sin conexión: cada cambio queda anotado como pendiente en IndexedDB (almacén `pendientes`, en
+la misma transacción que el dato) y se sube al volver la red. Se sincroniza al abrirla, al poco de cada cambio, al
+volver a ella y cada 30 s mientras se ve; si algo cambia en dos sitios, gana el cambio más reciente. Con los datos viajan
+el tema, la última cuota y los pendientes ocultos; el bloqueo con huella es de cada dispositivo. "Más → Cuenta" dice
+cuándo se sincronizó y permite cerrar sesión (los datos se quitan del dispositivo y siguen en la cuenta).
+
+**La app Android no usa la cuenta**: para pasar sus datos a la web, las copias (abajo). Al entrar en la cuenta, lo que
+ya hubiera en ese navegador sube a ella.
+
 ## Pasar los datos desde la app Android
 
 Las copias JSON y CSV tienen el mismo formato (versión 5) en las dos: en la app, **Más → Copias y exportación →
@@ -72,6 +88,7 @@ Así que publicar es: subir la versión con el comando de arriba, hacer commit y
 | `js/avisos.js`, `js/paneles.js`, `js/movimiento.js` | `Avisos`, `PanelInferior` y diálogos, `Movimiento` y `NumberAnimators` |
 | `js/ajustes.js`, `js/pantalla-bloqueo.js` | Tema, `Bloqueo` (con WebAuthn) y actualizaciones (service worker) |
 | `js/instalacion.js` | Solo en la web: el botón "Instalar la app" de "Más" |
+| `js/nube.js`, `js/pantalla-cuenta.js` | Solo en la web: la cuenta, la sincronización y la pantalla de iniciar sesión o registrarse |
 | `js/almacenamiento.js` | Solo en la web: pedir que el navegador no borre los datos ("Datos protegidos" en "Más") |
 | `test/` | Los tests de la lógica (`node --test "pwa/test/*.test.mjs"`) |
 

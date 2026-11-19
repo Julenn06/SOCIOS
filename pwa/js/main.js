@@ -7,6 +7,8 @@ import { vigilarBloqueo } from './pantalla-bloqueo.js';
 import { abrirActualizacion } from './hojas/mas.js';
 import { importarArchivo } from './hojas/copias.js';
 import { protegerDatos } from './almacenamiento.js';
+import * as nube from './nube.js';
+import { mostrarPantallaCuenta, quitarPantallaCuenta } from './pantalla-cuenta.js';
 
 /** Donde el service worker deja la copia compartida con la app hasta que la página la recoge (ver sw.js). */
 const CACHE_COMPARTIDO = 'compartido-socios';
@@ -25,6 +27,7 @@ async function arrancar() {
   }
   iniciarPantalla();
   vigilarBloqueo();
+  vigilarCuenta();
   // Sin parpadeo: se ve cuando ya tiene los datos y las fuentes.
   await Promise.race([document.fonts?.ready, new Promise((r) => setTimeout(r, 600))]);
   document.documentElement.classList.remove('cargando');
@@ -41,6 +44,30 @@ async function arrancar() {
   avisarVersionNueva();
   // Sin pedir nada en Chrome y Safari; Firefox sí pregunta, una vez. Ver almacenamiento.js.
   protegerDatos();
+}
+
+/**
+ * La cuenta (nube.js): sin sesión, la pantalla de iniciar sesión o registrarse tapa la app; con ella, los datos se
+ * sincronizan solos con los demás dispositivos.
+ */
+function vigilarCuenta() {
+  nube.alRecibirCambios(async () => {
+    // Puede haber llegado el tema elegido en otro dispositivo.
+    aplicarTema();
+    await estado.recargar();
+  });
+  nube.alEntrarOSalir(async (dentro) => {
+    await estado.recargar();
+    if (dentro) quitarPantallaCuenta();
+    else mostrarPantallaCuenta();
+  });
+  // Si se cierra la sesión en otra pestaña, en esta también.
+  addEventListener('storage', (ev) => {
+    if (ev.key === 'socios.sesion' && !ev.newValue) location.reload();
+  });
+  if (!nube.cuenta.sesion) return mostrarPantallaCuenta();
+  nube.vigilar();
+  nube.sincronizar();
 }
 
 /** Ahora si no está bloqueada; si lo está, en cuanto se desbloquee. */
