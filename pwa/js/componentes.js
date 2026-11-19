@@ -1,6 +1,7 @@
 // Piezas comunes de los paneles: campos (TextInputLayout), filas con placa (item_formato), opciones (cuotas, días),
 // tarjetas elegibles e interruptores en tarjeta.
 import { icono } from './iconos.js';
+import { ICONOS_WEB } from './iconos-web.js';
 import { esc, eurosCompacto, parseImporte, importeInput } from './formato.js';
 import { desplegar, haptica, muellePulsar, pulsar } from './movimiento.js';
 import { IMPORTE_MAXIMO, redondearCentimos } from './calculos.js';
@@ -26,18 +27,21 @@ export function html(texto) {
  * Un campo con borde, icono y etiqueta que flota al escribir. [tipo]: 'decimal', 'texto', 'area' o 'buscar'.
  * Devuelve { el, input, ayuda, valor(), poner(v), error(t), foco() }.
  */
-export function crearCampo({ etiqueta, iconoCampo, tipo = 'texto', maxLength = null, capitalizar = 'sentences', ayuda = false, limpiar = false, grande = false, autofocus = false, autocompletar = null }) {
-  const id = `c${Math.random().toString(36).slice(2, 9)}`;
+export function crearCampo({ etiqueta, iconoCampo, tipo = 'texto', maxLength = null, capitalizar = 'sentences', ayuda = false, limpiar = false, grande = false, autofocus = false, autocompletar = null, nombre = null, requerido = false }) {
+  // Con [nombre], el campo tiene un id y un name fijos: los gestores de contraseñas los necesitan para guardar y
+  // rellenar (con uno al azar en cada apertura no lo reconocerían).
+  const id = nombre ?? `c${Math.random().toString(36).slice(2, 9)}`;
+  const atributos = `${nombre ? ` name="${nombre}"` : ''}${requerido ? ' required' : ''}`;
   // La búsqueda no lleva corrector ni mayúsculas: se escriben trozos de nombres o una cuota, no frases.
   const extras = tipo === 'buscar'
     ? ' enterkeyhint="search" autocorrect="off" spellcheck="false"'
     : tipo === 'decimal' ? ' enterkeyhint="done"' : '';
   // Contraseñas: con su autocompletado, para que el gestor de contraseñas del móvil las guarde y las rellene.
   const control = tipo === 'contrasena'
-    ? `<input id="${id}" type="password" autocomplete="${autocompletar ?? 'current-password'}" autocapitalize="none" spellcheck="false" aria-describedby="${id}-ayuda"${maxLength ? ` maxlength="${maxLength}"` : ''}${autofocus ? ' autofocus' : ''}>`
+    ? `<input id="${id}"${atributos} type="password" autocomplete="${autocompletar ?? 'current-password'}" autocapitalize="none" autocorrect="off" spellcheck="false" aria-describedby="${id}-ayuda"${maxLength ? ` maxlength="${maxLength}"` : ''}${autofocus ? ' autofocus' : ''}>`
     : tipo === 'area'
     ? `<textarea id="${id}" rows="1" autocapitalize="${capitalizar}" aria-describedby="${id}-ayuda"${maxLength ? ` maxlength="${maxLength}"` : ''}></textarea>`
-    : `<input id="${id}" type="${tipo === 'buscar' ? 'search' : 'text'}" ${tipo === 'decimal' ? 'inputmode="decimal" autocomplete="off"' : `autocapitalize="${tipo === 'buscar' ? 'none' : capitalizar}" autocomplete="${autocompletar ?? 'off'}"`} aria-describedby="${id}-ayuda"${maxLength ? ` maxlength="${maxLength}"` : ''}${extras}${autofocus ? ' autofocus' : ''}>`;
+    : `<input id="${id}"${atributos} type="${tipo === 'buscar' ? 'search' : 'text'}" ${tipo === 'decimal' ? 'inputmode="decimal" autocomplete="off"' : `autocapitalize="${tipo === 'buscar' ? 'none' : capitalizar}" autocomplete="${autocompletar ?? 'off'}"`} aria-describedby="${id}-ayuda"${maxLength ? ` maxlength="${maxLength}"` : ''}${extras}${autofocus ? ' autofocus' : ''}>`;
   const caja0 = `
       <div class="campo${grande ? ' grande' : ''}">
         <span class="campo-icono icono" data-icono="${iconoCampo}"></span>
@@ -45,6 +49,7 @@ export function crearCampo({ etiqueta, iconoCampo, tipo = 'texto', maxLength = n
         <label for="${id}">${esc(etiqueta)}</label>
         <fieldset class="campo-borde" aria-hidden="true"><legend><span>${esc(etiqueta)}</span></legend></fieldset>
         ${limpiar ? `<button class="limpiar oculto" type="button" aria-label="Borrar el texto"><span class="icono" data-icono="close"></span></button>` : ''}
+        ${tipo === 'contrasena' ? `<button class="ver-contrasena" type="button" aria-label="Mostrar la contraseña" aria-pressed="false" aria-controls="${id}"><span class="icono">${ICONOS_WEB.ojo}</span></button>` : ''}
       </div>`;
   const envoltura = html(`
     <div>
@@ -67,6 +72,22 @@ export function crearCampo({ etiqueta, iconoCampo, tipo = 'texto', maxLength = n
     }
   };
   input.addEventListener('input', actualizar);
+  // El ojo de las contraseñas: muestra lo escrito para comprobarlo y lo vuelve a ocultar. El cursor se queda donde estaba.
+  const botonVer = envoltura.querySelector('.ver-contrasena');
+  const verContrasena = (ver) => {
+    if (!botonVer) return;
+    const [inicio, fin] = [input.selectionStart, input.selectionEnd];
+    input.type = ver ? 'text' : 'password';
+    botonVer.setAttribute('aria-pressed', String(ver));
+    botonVer.querySelector('.icono').innerHTML = ver ? ICONOS_WEB.ojoTachado : ICONOS_WEB.ojo;
+    if (document.activeElement === input) input.setSelectionRange(inicio, fin);
+  };
+  botonVer?.addEventListener('pointerdown', (e) => e.preventDefault());
+  botonVer?.addEventListener('click', () => {
+    haptica.click();
+    verContrasena(input.type === 'password');
+    input.focus();
+  });
   botonLimpiar?.addEventListener('click', () => {
     input.value = '';
     input.dispatchEvent(new Event('input'));
@@ -94,6 +115,10 @@ export function crearCampo({ etiqueta, iconoCampo, tipo = 'texto', maxLength = n
         textoAyuda.textContent = t;
         textoAyuda.classList.toggle('oculto', !t);
       }
+    },
+    /** Vuelve a ocultar la contraseña (al enviar: así el navegador la reconoce para guardarla). */
+    ocultar() {
+      verContrasena(false);
     },
     foco() {
       input.focus({ preventScroll: false });

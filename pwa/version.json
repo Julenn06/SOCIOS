@@ -1,8 +1,7 @@
 {
-  "version": "1.0.8",
-  "tamano": 1765289,
+  "version": "1.0.9",
+  "tamano": 1769424,
   "novedades": [
-    "Cuenta: inicia sesión o regístrate y tus socios estarán en todos los dispositivos donde abras la web",
-    "Funciona sin conexión: lo que cambies se sube al volver la red"
+    "Botón para ver u ocultar la contraseña"
   ]
 }
