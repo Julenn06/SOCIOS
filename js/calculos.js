@@ -38,7 +38,16 @@ export const Centimos = {
 
 export const redondearCentimos = (importe) => Centimos.aEuros(Centimos.de(importe));
 
-export const calcularBaseX2 = (colaboracion) => colaboracion * 2;
+/**
+ * Lo más que cuenta la cuota de un socio: una mayor cuenta como esta, así que un socio aporta como mucho 60 € de base.
+ * La cuota se guarda y se muestra tal cual; solo se limita al calcular (CalculoComisiones.CUOTA_MAXIMA en la app).
+ */
+export const CUOTA_MAXIMA = 30;
+
+/** La cuota que cuenta para las cuentas: la del socio, como mucho CUOTA_MAXIMA. */
+export const cuotaComputable = (colaboracion) => Math.min(colaboracion, CUOTA_MAXIMA);
+
+export const calcularBaseX2 = (colaboracion) => cuotaComputable(colaboracion) * 2;
 
 /** < 5: 0 €; 5–6: 50 €; 7–9: 100 €; 10: 140 €; y 50 € más cada 3 socios (13 → 190 €, 16 → 240 €…). */
 export function calcularBonusSemanal(hechos) {
@@ -76,7 +85,7 @@ export function tramosHasta(hasta) {
  */
 export function calcularResumenSemana(socios, bono = null, porcentajeIrpf = IRPF, cobro = null) {
   const hechos = socios.filter((s) => s.hecho);
-  const sumaCuotas = hechos.reduce((t, s) => t + Centimos.de(s.colaboracion), 0);
+  const sumaCuotas = hechos.reduce((t, s) => t + Centimos.de(cuotaComputable(s.colaboracion)), 0);
   const baseX2 = sumaCuotas * 2;
   const bonusAuto = Centimos.de(calcularBonusSemanal(hechos.length));
   const aplicado = bono && bono.activo ? bono : null;

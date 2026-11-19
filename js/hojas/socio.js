@@ -1,7 +1,7 @@
 // AddSocioBottomSheetDialog.kt, AccionesSocioBottomSheetDialog.kt y ConfirmarEliminar.kt.
 import * as estado from '../estado.js';
 import { abrirHoja, dialogo } from '../paneles.js';
-import { calcularBaseX2, CUOTAS } from '../calculos.js';
+import { calcularBaseX2, cuotaComputable, CUOTAS } from '../calculos.js';
 import { DIAS, diaPorId, getSemanaKey, rangoCorto, rangoCortoConAnio, rangoSemanaTexto, semanaKeyDesplazada, semanasEntre } from '../fechas.js';
 import { esc, eurosCompacto, semanaRelativa, sinSimbolos } from '../formato.js';
 import { activas, animarMoneda, desplegar, haptica, latido, LARGA_MS, muellePulsar } from '../movimiento.js';
@@ -161,7 +161,13 @@ function construirFormulario(panel, socioAEditar, semanaInicial, diaInicial) {
   function actualizarVistaPrevia() {
     const cuota = cuotas.elegido() ?? 0;
     animarMoneda($('ganancia'), calcularBaseX2(cuota), '+');
-    $('detalle').textContent = esHecho ? `Cuota de ${eurosCompacto(cuota)} × 2` : 'No suma hasta que esté conseguido';
+    // Una cuota de más de 30 € cuenta como una de 30 (CUOTA_MAXIMA en calculos.js).
+    const computable = cuotaComputable(cuota);
+    $('detalle').textContent = !esHecho
+      ? 'No suma hasta que esté conseguido'
+      : computable < cuota
+        ? `Cuota de ${eurosCompacto(cuota)}, cuenta ${eurosCompacto(computable)} × 2`
+        : `Cuota de ${eurosCompacto(cuota)} × 2`;
     const badge = esHecho ? '✓ Conseguido' : '⏳ Pendiente';
     $('badge').textContent = badge;
     $('badge').setAttribute('aria-label', sinSimbolos(badge));
