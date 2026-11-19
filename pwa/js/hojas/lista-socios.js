@@ -7,6 +7,10 @@ import { crearCampo, html } from '../componentes.js';
 import { ListaSocios, sinAgrupar } from '../filas.js';
 import { abrirAccionesSocio, abrirFormularioSocio, confirmarEliminar } from './socio.js';
 
+/** Búsqueda: filas que se pintan al momento y las que se añaden en cada tanda después. */
+const PRIMERAS_FILAS = 24;
+const FILAS_POR_TANDA = 30;
+
 const normalizar = (t) => t.normalize('NFD').replace(/\p{Mn}+/gu, '').toLowerCase().replace(/\s+/g, ' ').trim();
 
 /** Los socios con su texto ya preparado para buscar, del más reciente al más antiguo. */
@@ -71,6 +75,22 @@ export function abrirListaSocios(modo) {
 
       let indice = null;
       let sociosIndexados = null;
+      // Una búsqueda de una letra puede dar cientos de socios: se pintan primero los que caben en pantalla y el resto
+      // por tandas en los fotogramas siguientes, para que cada tecla se vea al momento. Una tecla nueva cancela las
+      // tandas pendientes de la anterior.
+      let turno = 0;
+      const mostrarPocoAPoco = (filas) => {
+        const mio = ++turno;
+        let hasta = Math.min(filas.length, PRIMERAS_FILAS);
+        lista.mostrar(filas.slice(0, hasta), 'normal');
+        const siguiente = () => {
+          if (mio !== turno || hasta >= filas.length || !contenedor.isConnected) return;
+          hasta = Math.min(filas.length, hasta + FILAS_POR_TANDA);
+          lista.mostrar(filas.slice(0, hasta), 'normal');
+          requestAnimationFrame(() => setTimeout(siguiente, 0));
+        };
+        if (hasta < filas.length) requestAnimationFrame(() => setTimeout(siguiente, 0));
+      };
       const pintar = () => {
         let socios;
         const texto = campo ? campo.valor().trim() : '';
@@ -84,7 +104,7 @@ export function abrirListaSocios(modo) {
         } else {
           socios = estado.pendientesAnteriores();
         }
-        lista.mostrar(sinAgrupar(socios), 'normal');
+        mostrarPocoAPoco(sinAgrupar(socios));
         const hayConsulta = !buscando || texto !== '';
         resultados.classList.toggle('oculto', !(buscando && socios.length));
         resultados.textContent = TEXTOS.resultados(socios.length);

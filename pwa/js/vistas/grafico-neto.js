@@ -3,7 +3,7 @@
 // negativo en rojo; escala fija a la derecha, línea discontinua con la media y marcas de año.
 import { escalaPara, Centimos, redondearCentimos } from '../calculos.js';
 import { eurosCompacto } from '../formato.js';
-import { color, conAlfa, css, fuente, metricas, preparar, rectRedondo, alCambiarTamano } from '../lienzo.js';
+import { color, conAlfa, css, fuente, metricas, preparar, rectRedondo, alCambiarTamano, medida } from '../lienzo.js';
 import { animarValor, haptica, LARGA_MS } from '../movimiento.js';
 
 const HUECO_MIN = 30;
@@ -81,7 +81,7 @@ export class GraficoNeto {
   }
 
   get anchoArea() {
-    return this.canvas.clientWidth - (this.anchoEscala ?? 0);
+    return medida(this.canvas).ancho - (this.anchoEscala ?? 0);
   }
 
   get hueco() {
@@ -112,8 +112,8 @@ export class GraficoNeto {
   }
 
   dibujar() {
-    const w = this.canvas.clientWidth;
-    const h = this.canvas.clientHeight;
+    const w = medida(this.canvas).ancho;
+    const h = medida(this.canvas).alto;
     if (!w) return;
     const ctx = preparar(this.canvas, w, h);
     if (!this.columnas.length) return;

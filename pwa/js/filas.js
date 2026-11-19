@@ -7,6 +7,9 @@ import { icono } from './iconos.js';
 import { nombreVisible } from './estado.js';
 import { haptica } from './movimiento.js';
 
+/** Cuántas filas animan su entrada como mucho: más abajo ya no se ven entrar. */
+const FILAS_ANIMADAS = 20;
+
 /** Las filas agrupadas por día (de lunes a viernes), cada día con su cabecera y sus socios por orden de alta. */
 export function agrupadasPorDia(socios) {
   const porDia = Map.groupBy(socios, (s) => s.dia);
@@ -64,6 +67,7 @@ export class ListaSocios {
     }
     let anterior = null;
     let orden = 0;
+    const cascada = [];
     for (const fila of filas) {
       let nodo = this.nodos.get(fila.id);
       const nuevo = !nodo;
@@ -80,15 +84,23 @@ export class ListaSocios {
       anterior = nodo;
       if (modo === 'cascada') {
         nodo.classList.remove('entra', 'aparece');
-        void nodo.offsetWidth;
-        nodo.style.animationDelay = `${orden * 50}ms`;
-        nodo.classList.add('entra');
+        cascada.push([nodo, orden]);
       } else if (modo === 'normal' && nuevo) {
         nodo.classList.remove('entra');
         nodo.style.animationDelay = '';
-        nodo.classList.add('aparece');
+        // Solo las primeras: las de más abajo no se ven entrar (en una búsqueda pueden ser cientos).
+        if (orden < FILAS_ANIMADAS) nodo.classList.add('aparece');
       }
       orden++;
+    }
+    if (cascada.length) {
+      // Para que la animación vuelva a empezar hay que recalcular una vez, no una por fila.
+      void this.contenedor.offsetWidth;
+      for (const [nodo, i] of cascada) {
+        if (i >= FILAS_ANIMADAS) continue;
+        nodo.style.animationDelay = `${i * 50}ms`;
+        nodo.classList.add('entra');
+      }
     }
   }
 

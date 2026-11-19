@@ -75,6 +75,24 @@ Así que publicar es: subir la versión con el comando de arriba, hacer commit y
 
 `herramientas/iconos.mjs` vuelve a generar `js/iconos.js` desde los iconos de la app Android.
 
+## Rendimiento
+
+Medido en el emulador (Chrome 149) con los 533 socios reales, contando fotogramas y con perfiles del navegador. Lo que
+importa para que todo vaya fluido:
+
+- **Nada de leer medidas del diseño en una animación** (`clientWidth`, `scrollWidth`, `getBoundingClientRect`): con
+  algo cambiando en la misma pantalla, obligan a recalcular el diseño en cada fotograma. Los importes que se encogen
+  para caber (`autoajustar` en `componentes.js`) miden el texto con `measureText` y el ancho con un ResizeObserver; los
+  lienzos usan `medida()` de `lienzo.js`, **redondeada** como `clientWidth` (con decimales el lienzo no casa con los
+  píxeles de la pantalla y la animación pierde fotogramas).
+- **El fondo de los paneles aparece por opacidad**, ya desenfocado: animar el radio del desenfoque obliga a recalcularlo
+  sobre toda la pantalla en cada fotograma.
+- **Listas largas por tandas**: la búsqueda pinta primero 24 filas y luego 30 por fotograma; solo las primeras 20
+  animan su entrada. `content-visibility: auto` se probó y se quitó: con las 70 semanas del histórico, el trabajo pasaba
+  a hacerse al desplazar y lo volvía a trompicones.
+- Los iconos se interpretan una vez y se clonan; los paneles cerrados se quitan del documento cuando el navegador está
+  libre; lo que el servidor devuelve igual que se subió no relee ni repinta la pantalla.
+
 ## Estructura
 
 | Archivo | Equivale a |

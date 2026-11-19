@@ -301,6 +301,9 @@ function mostrarFilaCobro(r, cobro) {
 function mostrarFiltro(ui) {
   const boton = (id, nombre, leido, n) => {
     const b = filtro.boton(id);
+    // Solo si ha cambiado el número: así no se rehacen los botones (y sus estilos) en cada cambio de la pantalla.
+    if (b.dataset.n === String(n)) return;
+    b.dataset.n = String(n);
     b.firstElementChild.innerHTML = `<span style="display:flex;flex-direction:column;align-items:center">${nombre}<span style="font-size:0.9em">${n}</span></span>`;
     b.setAttribute('aria-label', `${leido}, ${n} ${n === 1 ? 'socio' : 'socios'}`);
   };
@@ -349,10 +352,16 @@ function configurarScroll() {
   document.fonts?.ready.then(medir);
   medir();
   let ultimoY = scrollY;
+  let borde = null;
   addEventListener('scroll', () => {
     const y = scrollY;
-    // El borde de la barra aparece a medida que el contenido pasa por debajo.
-    barra.style.setProperty('--borde-barra', String(Math.min(1, y / 24)));
+    // El borde de la barra aparece a medida que el contenido pasa por debajo. Solo se escribe si cambia: cada
+    // escritura obliga a recalcular los estilos de la barra, y al desplazar hay un evento por fotograma.
+    const nuevoBorde = Math.round(Math.min(1, y / 24) * 100) / 100;
+    if (nuevoBorde !== borde) {
+      borde = nuevoBorde;
+      barra.style.setProperty('--borde-barra', String(nuevoBorde));
+    }
     const dy = y - ultimoY;
     ultimoY = y;
     if (dy > 12 && !fab.classList.contains('encogido')) {
