@@ -9,7 +9,6 @@ import { icono } from '../iconos.js';
 import { haptica, muellePulsar } from '../movimiento.js';
 import { filaFormato, html, marcar, tarjetaElegible } from '../componentes.js';
 import { alCambiarInstalacion, instalar, sePuedeInstalar } from '../instalacion.js';
-import { alCambiarProteccion, estadoDatos, protegerDatos, sePuedeProteger } from '../almacenamiento.js';
 import { MuestraTema } from '../vistas/muestra-tema.js';
 import { AnimacionDescarga } from '../vistas/animacion-descarga.js';
 import { abrirCopias } from './copias.js';
@@ -124,40 +123,6 @@ export function abrirMas() {
       muellePulsar(tarjetaBloqueo);
       s.append(copias, tarjetaBloqueo);
 
-      // Solo en la web: si el navegador puede borrar los datos para hacer sitio (ver almacenamiento.js).
-      const tarjetaDatos = html(`
-        <button class="tarjeta tocable fila-formato" type="button" style="margin-top:10px" hidden>
-          <span class="placa" data-id="placa"><span class="icono" data-id="icono"></span></span>
-          <span class="columna-textos"><span class="titulo-fila" data-id="titulo"></span><span class="descripcion-fila" data-id="detalle"></span></span>
-        </button>`);
-      const $datos = (id) => tarjetaDatos.querySelector(`[data-id="${id}"]`);
-      let datosProtegidos = false;
-      const pintarDatos = async () => {
-        if (!sePuedeProteger) return;
-        const { protegidos, ocupado } = await estadoDatos();
-        datosProtegidos = protegidos;
-        const ocupan = ocupado != null ? ` · la app ocupa ${tamano(ocupado)}` : '';
-        $datos('placa').className = `placa ${protegidos ? 'tono-verde' : 'tono-ambar'}`;
-        $datos('icono').innerHTML = icono(protegidos ? 'check_circle' : 'info');
-        $datos('titulo').textContent = protegidos ? 'Datos protegidos' : 'Datos sin proteger';
-        $datos('detalle').textContent = protegidos
-          ? `El navegador no los borrará para hacer sitio${ocupan}`
-          : 'El navegador podría borrarlos si le falta espacio. Toca para protegerlos';
-        tarjetaDatos.disabled = protegidos;
-        tarjetaDatos.classList.toggle('tocable', !protegidos);
-        tarjetaDatos.hidden = false;
-      };
-      tarjetaDatos.addEventListener('click', async () => {
-        if (datosProtegidos) return;
-        haptica.click();
-        if (await protegerDatos()) mostrarAviso('Datos protegidos', 'EXITO', 'El navegador ya no los borrará para hacer sitio');
-        else mostrarAviso('El navegador no lo permite todavía', 'INFO', sePuedeInstalar() ? 'Instala la app y vuelve a intentarlo' : 'Lo concede cuando usas la app a menudo');
-      });
-      muellePulsar(tarjetaDatos);
-      pintarDatos();
-      const dejarDatos = alCambiarProteccion(pintarDatos);
-      s.append(tarjetaDatos);
-
       s.append(html('<div class="seccion">Tema</div>'));
       const temas = html('<div class="temas"></div>');
       const actual = temaGuardado();
@@ -245,7 +210,6 @@ export function abrirMas() {
         dejar();
         dejarBloqueo();
         dejarInstalar();
-        dejarDatos();
         dejarCuenta();
       };
     }

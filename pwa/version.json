@@ -1,7 +1,7 @@
 {
-  "version": "1.0.9",
-  "tamano": 1769424,
+  "version": "1.0.10",
+  "tamano": 1766784,
   "novedades": [
-    "Botón para ver u ocultar la contraseña"
+    "Al iniciar sesión tus datos aparecen antes"
   ]
 }
