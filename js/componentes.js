@@ -26,15 +26,18 @@ export function html(texto) {
  * Un campo con borde, icono y etiqueta que flota al escribir. [tipo]: 'decimal', 'texto', 'area' o 'buscar'.
  * Devuelve { el, input, ayuda, valor(), poner(v), error(t), foco() }.
  */
-export function crearCampo({ etiqueta, iconoCampo, tipo = 'texto', maxLength = null, capitalizar = 'sentences', ayuda = false, limpiar = false, grande = false, autofocus = false }) {
+export function crearCampo({ etiqueta, iconoCampo, tipo = 'texto', maxLength = null, capitalizar = 'sentences', ayuda = false, limpiar = false, grande = false, autofocus = false, autocompletar = null }) {
   const id = `c${Math.random().toString(36).slice(2, 9)}`;
   // La búsqueda no lleva corrector ni mayúsculas: se escriben trozos de nombres o una cuota, no frases.
   const extras = tipo === 'buscar'
     ? ' enterkeyhint="search" autocorrect="off" spellcheck="false"'
     : tipo === 'decimal' ? ' enterkeyhint="done"' : '';
-  const control = tipo === 'area'
+  // Contraseñas: con su autocompletado, para que el gestor de contraseñas del móvil las guarde y las rellene.
+  const control = tipo === 'contrasena'
+    ? `<input id="${id}" type="password" autocomplete="${autocompletar ?? 'current-password'}" autocapitalize="none" spellcheck="false" aria-describedby="${id}-ayuda"${maxLength ? ` maxlength="${maxLength}"` : ''}${autofocus ? ' autofocus' : ''}>`
+    : tipo === 'area'
     ? `<textarea id="${id}" rows="1" autocapitalize="${capitalizar}" aria-describedby="${id}-ayuda"${maxLength ? ` maxlength="${maxLength}"` : ''}></textarea>`
-    : `<input id="${id}" type="${tipo === 'buscar' ? 'search' : 'text'}" ${tipo === 'decimal' ? 'inputmode="decimal" autocomplete="off"' : `autocapitalize="${tipo === 'buscar' ? 'none' : capitalizar}" autocomplete="off"`} aria-describedby="${id}-ayuda"${maxLength ? ` maxlength="${maxLength}"` : ''}${extras}${autofocus ? ' autofocus' : ''}>`;
+    : `<input id="${id}" type="${tipo === 'buscar' ? 'search' : 'text'}" ${tipo === 'decimal' ? 'inputmode="decimal" autocomplete="off"' : `autocapitalize="${tipo === 'buscar' ? 'none' : capitalizar}" autocomplete="${autocompletar ?? 'off'}"`} aria-describedby="${id}-ayuda"${maxLength ? ` maxlength="${maxLength}"` : ''}${extras}${autofocus ? ' autofocus' : ''}>`;
   const caja0 = `
       <div class="campo${grande ? ' grande' : ''}">
         <span class="campo-icono icono" data-icono="${iconoCampo}"></span>

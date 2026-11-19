@@ -1,5 +1,6 @@
 // MasBottomSheetDialog.kt y ActualizacionBottomSheetDialog.kt: versión y actualizaciones, copias, bloqueo y tema.
-import { abrirHoja } from '../paneles.js';
+import { abrirHoja, dialogo } from '../paneles.js';
+import { cuenta, ErrorCuenta, pendientesDeSubir, salir, sincronizar } from '../nube.js';
 import { mostrarAviso } from '../avisos.js';
 import { actualizaciones, bloqueo, crearLlave, disponibilidadBloqueo, elegirTema, guardarBloqueo, identificar, TEMAS, temaGuardado } from '../ajustes.js';
 import { momentoRelativo } from '../fechas.js';
@@ -41,6 +42,47 @@ export function abrirMas() {
       s.append(cabecera);
       const botonVersion = cabecera.querySelector('[data-id="boton"]');
       muellePulsar(botonVersion);
+
+      // --- Cuenta: con quién se ha entrado y cómo va la sincronización (ver nube.js) ---
+      s.append(html('<div class="seccion">Cuenta</div>'));
+      const tarjetaCuenta = html(`
+        <button class="tarjeta tocable fila-formato" type="button">
+          <span class="placa tono-primario" data-id="placa"></span>
+          <span class="columna-textos"><span class="titulo-fila" data-id="titulo"></span><span class="descripcion-fila" data-id="detalle" aria-live="polite"></span></span>
+          <span class="icono flecha" data-icono="refresh"></span>
+        </button>`);
+      const $cuenta = (id) => tarjetaCuenta.querySelector(`[data-id="${id}"]`);
+      const pintarCuenta = () => {
+        $cuenta('titulo').textContent = cuenta.sesion?.nombre ?? 'Sin sesión';
+        const ultima = cuenta.ultima ? `Sincronizado ${momentoRelativo(cuenta.ultima)}` : 'Aún sin sincronizar';
+        const textos = {
+          SINCRONIZANDO: 'Sincronizando…',
+          AL_DIA: ultima,
+          SIN_CONEXION: 'Sin conexión: lo que cambies se subirá al volver',
+          ERROR: cuenta.mensaje ?? 'No se ha podido sincronizar',
+          INACTIVA: 'Inicia sesión para sincronizar'
+        };
+        $cuenta('detalle').textContent = textos[cuenta.estado] ?? ultima;
+        const sincronizando = cuenta.estado === 'SINCRONIZANDO';
+        $cuenta('placa').innerHTML = sincronizando
+          ? '<span class="girando"></span>'
+          : `<span class="icono">${icono(cuenta.estado === 'ERROR' || cuenta.estado === 'SIN_CONEXION' ? 'error' : 'person')}</span>`;
+        $cuenta('placa').className = `placa ${cuenta.estado === 'ERROR' ? 'tono-rojo' : cuenta.estado === 'SIN_CONEXION' ? 'tono-ambar' : 'tono-primario'}`;
+      };
+      tarjetaCuenta.addEventListener('click', () => {
+        haptica.click();
+        sincronizar();
+      });
+      tarjetaCuenta.setAttribute('aria-label', 'Sincronizar ahora');
+      muellePulsar(tarjetaCuenta);
+      const tarjetaSalir = filaFormato({
+        iconoPlaca: 'close', tono: 'rojo', titulo: 'Cerrar sesión', detalle: 'Tus datos se quedan en la cuenta y se quitan de este dispositivo', tituloRojo: true, flecha: false,
+        alPulsar: () => confirmarSalir(panel)
+      });
+      tarjetaSalir.style.marginTop = '10px';
+      pintarCuenta();
+      const dejarCuenta = cuenta.suscribir(pintarCuenta);
+      s.append(tarjetaCuenta, tarjetaSalir);
 
       // Solo en la web y solo si el navegador puede instalarla (ver instalacion.js).
       const seccionApp = html('<div class="seccion">App</div>');
@@ -204,8 +246,43 @@ export function abrirMas() {
         dejarBloqueo();
         dejarInstalar();
         dejarDatos();
+        dejarCuenta();
       };
     }
+  });
+}
+
+/** Cerrar sesión: antes se sube lo pendiente; si no se puede, se pregunta si salir igualmente. */
+function confirmarSalir(panel) {
+  dialogo({
+    icono: 'close',
+    titulo: '¿Cerrar sesión?',
+    mensaje: 'Tus socios se quedan guardados en tu cuenta y se quitan de este dispositivo. Para volver a verlos, inicia sesión otra vez.',
+    acciones: [
+      { texto: 'Cancelar', segura: true },
+      {
+        texto: 'Cerrar sesión',
+        rojo: true,
+        alPulsar: async () => {
+          panel.cerrar();
+          try {
+            await salir();
+          } catch (e) {
+            if (!(e instanceof ErrorCuenta) || e.codigo !== 'pendientes') throw e;
+            const n = await pendientesDeSubir();
+            dialogo({
+              icono: 'error',
+              titulo: 'Hay cambios sin subir',
+              mensaje: `${n === 1 ? 'Un cambio no se ha podido' : `${n} cambios no se han podido`} subir a tu cuenta (¿sin conexión?). Si cierras sesión ahora, se perderán.`,
+              acciones: [
+                { texto: 'Cancelar', segura: true },
+                { texto: 'Cerrar igualmente', rojo: true, alPulsar: () => salir({ forzar: true }) }
+              ]
+            });
+          }
+        }
+      }
+    ]
   });
 }
 

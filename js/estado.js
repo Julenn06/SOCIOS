@@ -79,6 +79,12 @@ function releer() {
   return releyendo;
 }
 
+/** Los datos han cambiado sin pasar por esta ventana (llegan de la cuenta, o se ha cerrado sesión): a releerlos. */
+export async function recargar() {
+  await releer();
+  canal?.postMessage('cambio');
+}
+
 export async function iniciar() {
   poner(await db.cargar());
   if ('BroadcastChannel' in self) {

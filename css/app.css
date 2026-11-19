@@ -982,6 +982,30 @@ dialog.pantalla-bloqueo::backdrop { background: var(--bg); }
 .pantalla-bloqueo p { margin: 8px 0 0; max-width: 320px; font-size: 14px; color: var(--text-sub); }
 .pantalla-bloqueo .boton { margin-top: 28px; min-height: 52px; padding: 0 28px; border-radius: 26px; font-size: 14px; }
 
+/* ---------- Pantalla de la cuenta (pantalla-cuenta.js): iniciar sesión o registrarse ---------- */
+dialog.pantalla-cuenta {
+  position: fixed; inset: 0; margin: 0; border: 0; width: 100%; height: 100%; max-width: none; max-height: none;
+  background: var(--bg); color: var(--text-main); padding: 0; overflow-y: auto; overscroll-behavior: contain;
+}
+dialog.pantalla-cuenta[open] { display: block; }
+dialog.pantalla-cuenta::backdrop { background: var(--bg); }
+.cuenta-columna {
+  box-sizing: border-box; width: 100%; max-width: 420px; min-height: 100%; margin: 0 auto;
+  padding: max(40px, env(safe-area-inset-top)) 20px max(32px, env(safe-area-inset-bottom));
+  display: flex; flex-direction: column; justify-content: center;
+}
+.cuenta-columna .logo { width: 80px; height: 80px; align-self: center; }
+.cuenta-columna h1 { margin: 14px 0 0; font-size: 24px; font-weight: 600; text-align: center; letter-spacing: -0.01em; }
+.cuenta-lema { margin: 6px auto 0; max-width: 300px; font-size: 14px; color: var(--text-sub); text-align: center; text-wrap: balance; }
+.cuenta-modos { margin-top: 28px; }
+.cuenta-formulario { display: flex; flex-direction: column; gap: 14px; margin-top: 20px; }
+.cuenta-explicacion { margin: 0 0 2px; font-size: 14px; color: var(--text-sub); }
+.cuenta-error { margin: 0; font-size: 13px; color: var(--red-text); }
+.cuenta-formulario .boton.relleno { margin-top: 6px; min-height: 52px; border-radius: 26px; font-size: 15px; }
+.cuenta-formulario .boton.texto { margin-top: -4px; }
+/* El círculo de "un momento" toma el color del texto del botón, también en el tema oscuro. */
+.boton .girando { border-color: color-mix(in srgb, currentColor 25%, transparent); border-top-color: currentColor; }
+
 /* Arranque: nada se ve hasta tener los datos de la semana (como el primer fotograma de la app). */
 html.cargando body > #app { visibility: hidden; }
 
