@@ -12,6 +12,7 @@ import { alCambiarInstalacion, instalar, sePuedeInstalar } from '../instalacion.
 import { MuestraTema } from '../vistas/muestra-tema.js';
 import { AnimacionDescarga } from '../vistas/animacion-descarga.js';
 import { abrirCopias } from './copias.js';
+import { abrirAjustesCuenta } from './cuenta.js';
 
 export function abrirMas() {
   return abrirHoja({
@@ -79,9 +80,18 @@ export function abrirMas() {
         alPulsar: () => confirmarSalir(panel)
       });
       tarjetaSalir.style.marginTop = '10px';
+      // Entre sincronizar y cerrar sesión: cambiar el nombre y la contraseña, o restablecerla.
+      const tarjetaNombreContrasena = filaFormato({
+        iconoPlaca: 'edit', tono: 'azul', titulo: 'Nombre y contraseña', detalle: 'Cámbialos o restablece la contraseña',
+        alPulsar: () => {
+          panel.cerrar();
+          abrirAjustesCuenta();
+        }
+      });
+      tarjetaNombreContrasena.style.marginTop = '10px';
       pintarCuenta();
       const dejarCuenta = cuenta.suscribir(pintarCuenta);
-      s.append(tarjetaCuenta, tarjetaSalir);
+      s.append(tarjetaCuenta, tarjetaNombreContrasena, tarjetaSalir);
 
       // Solo en la web y solo si el navegador puede instalarla (ver instalacion.js).
       const seccionApp = html('<div class="seccion">App</div>');

@@ -1,7 +1,7 @@
 {
-  "version": "1.0.13",
-  "tamano": 1769025,
+  "version": "1.0.14",
+  "tamano": 1777340,
   "novedades": [
-    "Mantener pulsado un socio ya no hace nada: tócalo para editarlo o eliminarlo"
+    "Cambia tu nombre y tu contraseña en Más → Cuenta, o restablécela si no la recuerdas"
   ]
 }

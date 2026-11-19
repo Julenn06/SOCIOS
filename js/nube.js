@@ -186,6 +186,23 @@ export async function salir({ forzar = false } = {}) {
   await olvidarSesion();
 }
 
+/** Cambia el nombre de la cuenta (con el que se entra). Devuelve cómo ha quedado. */
+export async function cambiarNombre(nombre) {
+  const { nombre: nuevo } = await pedir('POST', '/api/cuenta/nombre', { nombre });
+  db.prefs.guardar('sesion', { ...cuenta.sesion, nombre: nuevo });
+  db.prefs.guardar('cuentaNombre', nuevo);
+  cambiarEstado(cuenta.estado, cuenta.mensaje);
+  return nuevo;
+}
+
+/**
+ * Cambia la contraseña con la actual o, si no se recuerda, con la contraseña de registro (restablecerla). Las
+ * sesiones de los demás dispositivos se cierran: tendrán que entrar con la nueva.
+ */
+export async function cambiarContrasena({ actual, claveRegistro, nueva }) {
+  await pedir('POST', '/api/cuenta/contrasena', claveRegistro !== undefined ? { claveRegistro, nueva } : { actual, nueva });
+}
+
 /** Borra la cuenta y todos sus datos, en el servidor y aquí. */
 export async function borrarCuenta(contrasena) {
   await pedir('DELETE', '/api/cuenta', { contrasena });
