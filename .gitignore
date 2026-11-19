@@ -13,3 +13,6 @@ local.properties
 
 # Configuración local de Android Studio
 .idea/
+
+# Servidor (servidor/): las dependencias se instalan con npm ci
+node_modules/

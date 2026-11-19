@@ -1,0 +1,66 @@
+name: Publicar el servidor
+
+# El servidor de la cuenta de la web (carpeta servidor/) corre en https://socios-api.jfl06studio.com, un sitio Node.js
+# de Hostinger que despliega la rama `api` en cada push. Este workflow pasa sus tests y pone esa rama al día con cada
+# push a main que toque servidor/. Ver servidor/README.md.
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'servidor/**'
+      - '.github/workflows/api.yml'
+  workflow_dispatch:
+
+concurrency:
+  group: api
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  publicar:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Descargar el código
+        uses: actions/checkout@v7
+
+      - name: Preparar Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22
+
+      # Si fallan las cuentas o la sincronización, el servidor no se publica.
+      - name: Tests del servidor
+        working-directory: servidor
+        run: |
+          npm ci
+          npm test
+
+      - name: Actualizar la rama api
+        env:
+          TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          remoto="https://x-access-token:${TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+          if git ls-remote --exit-code --heads "$remoto" api > /dev/null; then
+            git clone --quiet --branch api --depth 1 "$remoto" api
+          else
+            git init --quiet -b api api
+            git -C api remote add origin "$remoto"
+          fi
+          find api -mindepth 1 -maxdepth 1 ! -name .git -exec rm -rf {} +
+          cd servidor
+          cp -r package.json package-lock.json server.js cuentas.js sincronizacion.js almacen-memoria.js almacen-mysql.js migraciones ../api/
+          cd ../api
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          if git diff --cached --quiet; then
+            echo "El servidor ya estaba al día"
+            exit 0
+          fi
+          git commit --quiet -m "api: servidor de ${GITHUB_SHA::7}"
+          git push --quiet origin api
