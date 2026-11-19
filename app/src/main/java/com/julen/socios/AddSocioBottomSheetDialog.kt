@@ -225,7 +225,12 @@ class AddSocioBottomSheetDialog :
         val cuota = cuotas.elegido() ?: 0.0
         NumberAnimators.animateCurrency(binding.tvPreviewBaseX2, CalculoComisiones.calcularBaseX2(cuota), prefix = "+")
         binding.tvPreviewDetalle.text = if (esHecho) {
-            getString(R.string.preview_detalle, cuota.toEurosCompacto())
+            val computable = CalculoComisiones.cuotaComputable(cuota)
+            if (computable < cuota) {
+                getString(R.string.preview_detalle_tope, cuota.toEurosCompacto(), computable.toEurosCompacto())
+            } else {
+                getString(R.string.preview_detalle, cuota.toEurosCompacto())
+            }
         } else {
             getString(R.string.preview_detalle_pendiente)
         }

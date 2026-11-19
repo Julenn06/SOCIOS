@@ -12,10 +12,19 @@ object CalculoComisiones {
     const val IRPF = 21.48
 
     /**
-     * Retorna la ganancia base (colaboración x2).
+     * Lo más que cuenta la cuota de un socio: una mayor cuenta como esta, así que un socio aporta como mucho 60 € de
+     * base. La cuota se guarda y se muestra tal cual; solo se limita al calcular.
+     */
+    const val CUOTA_MAXIMA = 30.0
+
+    /** La cuota que cuenta para las cuentas: la del socio, como mucho [CUOTA_MAXIMA]. */
+    fun cuotaComputable(colaboracion: Double): Double = minOf(colaboracion, CUOTA_MAXIMA)
+
+    /**
+     * Retorna la ganancia base (colaboración x2), con la cuota limitada a [CUOTA_MAXIMA].
      */
     fun calcularBaseX2(colaboracion: Double): Double {
-        return colaboracion * 2.0
+        return cuotaComputable(colaboracion) * 2.0
     }
 
     /**
@@ -159,7 +168,7 @@ object CalculoComisiones {
         val countHechos = hechos.size
 
         // Todas las cuentas en céntimos enteros: sumar euros con decimales arrastra restos (ver [Centimos]).
-        val sumaCuotas = hechos.sumOf { Centimos.de(it.colaboracion) }
+        val sumaCuotas = hechos.sumOf { Centimos.de(cuotaComputable(it.colaboracion)) }
         val baseX2 = sumaCuotas * 2
         val bonusAuto = Centimos.de(calcularBonusSemanal(countHechos))
 

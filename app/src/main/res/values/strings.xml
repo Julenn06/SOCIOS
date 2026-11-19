@@ -160,6 +160,8 @@
     <string name="action_guardar_cambios">Guardar cambios</string>
     <string name="add_subtitulo_semana">Semana del %s</string>
     <string name="preview_detalle">Cuota de %s × 2</string>
+    <!-- Una cuota de más de 30 € cuenta como una de 30 (CalculoComisiones.CUOTA_MAXIMA). -->
+    <string name="preview_detalle_tope">Cuota de %1$s, cuenta %2$s × 2</string>
     <string name="preview_detalle_pendiente">No suma hasta que esté conseguido</string>
     <string name="estado_conseguido">Conseguido</string>
     <string name="estado_conseguido_detalle">Suma a la semana</string>

@@ -89,6 +89,18 @@ test('textos de las semanas', () => {
   assert.equal(D.rangoCortoConAnio('2026-W42'), '12–16 oct 2026');
 });
 
+test('una cuota de más de 30 € cuenta como una de 30 (60 € de base como mucho)', () => {
+  assert.equal(C.calcularBaseX2(50), 60);
+  assert.equal(C.calcularBaseX2(30.01), 60);
+  assert.equal(C.calcularBaseX2(20), 40);
+  // En la semana: 50, 30, 20, 45 y 25 € cuentan como 30, 30, 20, 30 y 25.
+  const r = C.calcularResumenSemana([50, 30, 20, 45, 25].map((c) => ({ colaboracion: c, hecho: true, dia: 1, semanaKey: '2026-W42' })));
+  assert.equal(r.gananciasBaseX2, 270);
+  assert.equal(r.totalBruto, 320);
+  assert.equal(r.retencionIrpf, 68.74);
+  assert.equal(r.netoCalculado, 251.26);
+});
+
 test('tramos del bonus', () => {
   assert.deepEqual([0, 4, 5, 6, 7, 9, 10, 12, 13, 16].map(C.calcularBonusSemanal), [0, 0, 50, 50, 100, 100, 140, 140, 190, 240]);
   assert.deepEqual(C.siguienteMetaBonus(0), [5, 50]);

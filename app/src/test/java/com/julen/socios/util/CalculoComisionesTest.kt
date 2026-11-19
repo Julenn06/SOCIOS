@@ -22,6 +22,22 @@ class CalculoComisionesTest {
     }
 
     @Test
+    fun unaCuotaDeMasDe30CuentaComo30() {
+        assertEquals(60.0, CalculoComisiones.calcularBaseX2(50.0), 0.0)
+        assertEquals(60.0, CalculoComisiones.calcularBaseX2(30.01), 0.0)
+        assertEquals(59.98, CalculoComisiones.calcularBaseX2(29.99), 1e-9)
+        // En la semana: 50, 30, 20, 45 y 25 € cuentan como 30, 30, 20, 30 y 25.
+        val semana = listOf(50.0, 30.0, 20.0, 45.0, 25.0).map {
+            Socio(colaboracion = it, hecho = true, dia = DiaSemana.LUNES, semanaKey = "2026-W42")
+        }
+        val r = CalculoComisiones.calcularResumenSemana(semana)
+        assertEquals(270.0, r.gananciasBaseX2, 0.0)
+        assertEquals(320.0, r.totalBruto, 0.0)
+        assertEquals(68.74, r.retencionIrpf, 0.0)
+        assertEquals(251.26, r.netoCalculado, 0.0)
+    }
+
+    @Test
     fun tramosDeBonus() {
         assertEquals(0.0, CalculoComisiones.calcularBonusSemanal(0), 0.0)
         assertEquals(0.0, CalculoComisiones.calcularBonusSemanal(4), 0.0)
