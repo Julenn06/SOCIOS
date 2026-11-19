@@ -155,9 +155,17 @@ async function empezarSesion({ token, nombre }) {
   db.prefs.guardar('cuentaNombre', nombre);
   db.prefs.guardar('sesion', { token, nombre });
   cambiarEstado('SINCRONIZANDO');
-  await alCambiarSesion(true);
   vigilar();
-  await sincronizar();
+  // Si este navegador ya tiene datos, se ven al momento y se sincroniza detrás. Si no, primero se bajan y después se
+  // quita la pantalla de entrar: la app aparece ya con todo, sin pasar por vacía. (sincronizar() no lanza errores:
+  // sin conexión se entra igual y se sincroniza al volver la red.)
+  if ((await db.leerPendientes()).length > 0) {
+    await alCambiarSesion(true);
+    await sincronizar();
+  } else {
+    await sincronizar();
+    await alCambiarSesion(true);
+  }
 }
 
 /** Cuántos cambios de este dispositivo faltan por subir. */
@@ -248,10 +256,13 @@ async function ciclo() {
 async function unaVuelta() {
   const pendientes = (await db.leerPendientes()).slice(0, POR_ENVIO);
   const cambios = { socios: [], bonosRegalo: [], cobros: [], ajustes: [] };
+  // Con muchos pendientes (al entrar con datos ya guardados), todo de una vez: leerlos uno a uno serían cientos de
+  // transacciones seguidas.
+  const leer = pendientes.length > 20 ? lectorDeTodo(await db.leerTodoGuardado()) : (almacen, clave) => db.leer(almacen, clave);
   for (const p of pendientes) {
     const tabla = TABLA_DE_ALMACEN[p.almacen];
     if (!tabla) continue;
-    const registro = await db.leer(p.almacen, p.clave);
+    const registro = await leer(p.almacen, p.clave);
     cambios[tabla].push(registro
       ? { ...TABLAS[tabla].aServidor(registro), modificado: p.modificado }
       : { [TABLAS[tabla].clave]: p.clave, borrado: true, modificado: p.modificado });
@@ -281,6 +292,12 @@ async function unaVuelta() {
   db.prefs.guardar('rev', respuesta.rev);
   const quedan = (await db.leerPendientes()).length > 0 && pendientes.length === POR_ENVIO;
   return { hayMas: respuesta.mas || quedan, aplicados: aplicados + ajustesAplicados };
+}
+
+/** Busca en lo leído de una vez ({ socios, bonos, cobros }) por almacén y clave. */
+function lectorDeTodo(todo) {
+  const mapas = Object.fromEntries(Object.entries(db.CLAVES).map(([almacen, clave]) => [almacen, new Map(todo[almacen].map((r) => [r[clave], r]))]));
+  return async (almacen, clave) => mapas[almacen].get(clave);
 }
 
 /** Los ajustes que llegan, y fuera de pendientes los que se acaban de subir sin volver a cambiar. */

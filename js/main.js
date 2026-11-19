@@ -6,7 +6,6 @@ import { iniciarPantalla, nuevoSocio } from './pantalla.js';
 import { vigilarBloqueo } from './pantalla-bloqueo.js';
 import { abrirActualizacion } from './hojas/mas.js';
 import { importarArchivo } from './hojas/copias.js';
-import { protegerDatos } from './almacenamiento.js';
 import * as nube from './nube.js';
 import { mostrarPantallaCuenta, quitarPantallaCuenta } from './pantalla-cuenta.js';
 
@@ -42,8 +41,6 @@ async function arrancar() {
 
   registrarServiceWorker();
   avisarVersionNueva();
-  // Sin pedir nada en Chrome y Safari; Firefox sí pregunta, una vez. Ver almacenamiento.js.
-  protegerDatos();
 }
 
 /**

@@ -69,9 +69,9 @@ async function guardar(cambios) {
   canal?.postMessage('cambio');
 }
 
-function releer() {
-  // Varios avisos seguidos (una importación grande) se juntan en una sola lectura.
-  releyendo ??= new Promise((r) => setTimeout(r, 50)).then(async () => {
+function releer(espera = 50) {
+  // Varios avisos seguidos de otra ventana (una importación grande) se juntan en una sola lectura.
+  releyendo ??= new Promise((r) => setTimeout(r, espera)).then(async () => {
     releyendo = null;
     poner(await db.leerTodoGuardado());
     avisar();
@@ -81,7 +81,8 @@ function releer() {
 
 /** Los datos han cambiado sin pasar por esta ventana (llegan de la cuenta, o se ha cerrado sesión): a releerlos. */
 export async function recargar() {
-  await releer();
+  // Sin esperar: es esta ventana la que sabe que han cambiado (llegan de la cuenta), no hay avisos que juntar.
+  await releer(0);
   canal?.postMessage('cambio');
 }
 
