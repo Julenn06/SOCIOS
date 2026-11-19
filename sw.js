@@ -1,6 +1,6 @@
 // Service worker: guarda la app entera para que funcione sin conexión. Una versión nueva se descarga entera antes de
 // usarse (contando lo que lleva, para la animación de "Actualizar") y solo se activa cuando la app lo pide.
-const VERSION = '1.0.8';
+const VERSION = '1.0.9';
 const CACHE = `socios-${VERSION}`;
 const ARCHIVOS = [
   './',
@@ -20,6 +20,7 @@ const ARCHIVOS = [
   'js/componentes.js',
   'js/filas.js',
   'js/iconos.js',
+  'js/iconos-web.js',
   'js/lienzo.js',
   'js/ajustes.js',
   'js/instalacion.js',

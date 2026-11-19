@@ -64,6 +64,7 @@ function formulario(contenedor, { explicacion = null, campos, boton, enviar, ext
     e.preventDefault();
     if (ocupado) return;
     campos.forEach((c) => c.error(null));
+    campos.forEach((c) => c.ocultar());
     error.classList.add('oculto');
     ocupado = true;
     enviarBoton.disabled = true;
@@ -99,8 +100,8 @@ function formulario(contenedor, { explicacion = null, campos, boton, enviar, ext
 }
 
 function formularioEntrar(contenedor) {
-  const nombre = crearCampo({ etiqueta: 'Tu nombre', iconoCampo: 'person', capitalizar: 'words', autocompletar: 'username', maxLength: 40 });
-  const contrasena = crearCampo({ etiqueta: 'Contraseña', iconoCampo: 'lock', tipo: 'contrasena', autocompletar: 'current-password', maxLength: 200 });
+  const nombre = crearCampo({ etiqueta: 'Tu nombre', iconoCampo: 'person', capitalizar: 'words', autocompletar: 'username', maxLength: 40, nombre: 'usuario', requerido: true });
+  const contrasena = crearCampo({ etiqueta: 'Contraseña', iconoCampo: 'lock', tipo: 'contrasena', autocompletar: 'current-password', maxLength: 200, nombre: 'contrasena', requerido: true });
   formulario(contenedor, {
     campos: [nombre, contrasena],
     boton: 'Entrar',
@@ -113,7 +114,7 @@ function formularioEntrar(contenedor) {
 }
 
 function formularioClaveRegistro(contenedor) {
-  const clave = crearCampo({ etiqueta: 'Contraseña de registro', iconoCampo: 'lock', tipo: 'contrasena', autocompletar: 'off', maxLength: 200 });
+  const clave = crearCampo({ etiqueta: 'Contraseña de registro', iconoCampo: 'lock', tipo: 'contrasena', autocompletar: 'off', maxLength: 200, nombre: 'clave-registro', requerido: true });
   formulario(contenedor, {
     explicacion: 'Para crear una cuenta necesitas la contraseña de registro.',
     campos: [clave],
@@ -132,11 +133,10 @@ function formularioClaveRegistro(contenedor) {
 }
 
 function formularioRegistro(contenedor, claveRegistro) {
-  const nombre = crearCampo({ etiqueta: '¿Cómo te llamas?', iconoCampo: 'person', capitalizar: 'words', autocompletar: 'username', maxLength: 40, ayuda: true });
-  nombre.ayuda('Con este nombre entrarás. Da igual cómo lo escribas luego: con mayúsculas, minúsculas o sin tildes');
-  const contrasena = crearCampo({ etiqueta: 'Contraseña', iconoCampo: 'lock', tipo: 'contrasena', autocompletar: 'new-password', maxLength: 200, ayuda: true });
+  const nombre = crearCampo({ etiqueta: '¿Cómo te llamas?', iconoCampo: 'person', capitalizar: 'words', autocompletar: 'username', maxLength: 40, nombre: 'nuevo-usuario', requerido: true });
+  const contrasena = crearCampo({ etiqueta: 'Contraseña', iconoCampo: 'lock', tipo: 'contrasena', autocompletar: 'new-password', maxLength: 200, ayuda: true, nombre: 'nueva-contrasena', requerido: true });
   contrasena.ayuda('Al menos 8 caracteres');
-  const repetir = crearCampo({ etiqueta: 'Repite la contraseña', iconoCampo: 'lock', tipo: 'contrasena', autocompletar: 'new-password', maxLength: 200 });
+  const repetir = crearCampo({ etiqueta: 'Repite la contraseña', iconoCampo: 'lock', tipo: 'contrasena', autocompletar: 'new-password', maxLength: 200, nombre: 'repetir-contrasena', requerido: true });
   const atras = html('<button class="boton texto ancho" type="button">Atrás</button>');
   atras.addEventListener('click', () => formularioClaveRegistro(contenedor));
   formulario(contenedor, {
