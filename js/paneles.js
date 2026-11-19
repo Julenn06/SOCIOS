@@ -75,7 +75,9 @@ function abrirModal(el, alCerrar) {
     if (i >= 0) pila.splice(i, 1);
     alCerrar?.(cancelado);
     el.removeAttribute('data-closing');
-    el.remove();
+    // Fuera del documento cuando el navegador esté libre: quitar un panel lleno cuesta, y no debe tocar al fotograma
+    // con el que acaba de cerrarse.
+    (window.requestIdleCallback ?? ((f) => setTimeout(f, 1)))(() => el.remove(), { timeout: 500 });
   });
   if (sinClosedBy) {
     let pulsoFuera = false;

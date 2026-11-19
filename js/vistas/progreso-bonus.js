@@ -2,7 +2,7 @@
 // que se alcanza da un salto y, al terminar, un brillo recorre lo conseguido mientras el siguiente hito late.
 import { calcularBonusSemanal, siguienteMetaBonus, tramosHasta } from '../calculos.js';
 import { eurosCompacto } from '../formato.js';
-import { color, conAlfa, css, fuente, metricas, mezclar, preparar, rectRedondo, alCambiarTamano } from '../lienzo.js';
+import { color, conAlfa, css, fuente, metricas, mezclar, preparar, rectRedondo, alCambiarTamano, medida } from '../lienzo.js';
 import { activas, curva, overshoot } from '../movimiento.js';
 
 const TRAMO_FIJO_MAX = 10;
@@ -145,8 +145,8 @@ export class ProgresoBonus {
 
   /** Devuelve true si algún hito sigue saltando. */
   dibujar(ahora = performance.now()) {
-    const ancho = this.canvas.clientWidth;
-    const alto = this.canvas.clientHeight;
+    const ancho = medida(this.canvas).ancho;
+    const alto = medida(this.canvas).alto;
     if (!ancho) return false;
     const ctx = preparar(this.canvas, ancho, alto);
     const principal = color('--primary');

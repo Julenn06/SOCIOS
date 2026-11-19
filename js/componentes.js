@@ -6,10 +6,21 @@ import { esc, eurosCompacto, parseImporte, importeInput } from './formato.js';
 import { desplegar, haptica, muellePulsar, pulsar } from './movimiento.js';
 import { IMPORTE_MAXIMO, redondearCentimos } from './calculos.js';
 
-/** Rellena los <span data-icono="..."> de [raiz] con su SVG. */
+/**
+ * Rellena los <span data-icono="..."> de [raiz] con su SVG. Cada icono se interpreta una sola vez y después se clona:
+ * interpretar el texto del SVG en cada panel que se abre costaba más que copiar el ya hecho.
+ */
+const iconosHechos = new Map();
 export function pintarIconos(raiz) {
   raiz.querySelectorAll('[data-icono]').forEach((el) => {
-    el.innerHTML = icono(el.dataset.icono);
+    const nombre = el.dataset.icono;
+    let molde = iconosHechos.get(nombre);
+    if (!molde) {
+      molde = document.createElement('template');
+      molde.innerHTML = icono(nombre);
+      iconosHechos.set(nombre, molde);
+    }
+    el.replaceChildren(molde.content.cloneNode(true));
     el.removeAttribute('data-icono');
   });
 }
@@ -296,29 +307,53 @@ export function tarjetaInterruptor({ iconoPlaca, tono, titulo, detalle, encendid
 /**
  * El texto encoge lo justo para caber en una línea, de [max] a [min] px (autoSizeTextType="uniform"): "+10.044,14 €"
  * no debe cortarse. Se vuelve a ajustar cuando cambia el texto o el ancho.
+ *
+ * Sin tocar el diseño de la página: el ancho disponible lo da un ResizeObserver y el del texto se calcula con
+ * measureText de un lienzo. Antes se leían clientWidth y scrollWidth tras cada cambio, y como los importes cuentan
+ * hasta su valor (un texto nuevo en cada fotograma), el navegador tenía que recalcular el diseño en cada fotograma.
  */
+const medidorTexto = document.createElement('canvas').getContext('2d');
+
 export function autoajustar(el, max, min) {
   el.style.whiteSpace = 'nowrap';
   el.style.overflow = 'hidden';
-  let pendiente = false;
+  let disponible = 0;
+  let estilo = null;
+  let ultimo = null;
   const ajustar = () => {
-    pendiente = false;
-    el.style.fontSize = `${max}px`;
-    const disponible = el.clientWidth;
-    const necesario = el.scrollWidth;
-    if (disponible > 0 && necesario > disponible) {
-      el.style.fontSize = `${Math.max(min, Math.floor((max * disponible) / necesario * 2) / 2)}px`;
+    if (!disponible || !el.isConnected) return;
+    // La fuente, el peso y el espaciado se leen una vez (no cambian con el texto ni con el tema).
+    if (!estilo) {
+      const cs = getComputedStyle(el);
+      estilo = {
+        fuente: `${cs.fontStyle} ${cs.fontWeight} ${max}px ${cs.fontFamily}`,
+        // En em: el letter-spacing calculado está en px para el tamaño de ahora.
+        espaciado: (parseFloat(cs.letterSpacing) || 0) / (parseFloat(cs.fontSize) || max),
+        tabulares: /tnum|tabular-nums/.test(cs.fontFeatureSettings + cs.fontVariantNumeric)
+      };
+    }
+    let texto = el.textContent;
+    // Con cifras tabulares todas miden lo mismo que el 0.
+    if (estilo.tabulares) texto = texto.replace(/d/g, '0');
+    medidorTexto.font = estilo.fuente;
+    const necesario = (medidorTexto.measureText(texto).width + estilo.espaciado * max * [...texto].length) * 1.02;
+    const tamano = necesario > disponible ? Math.max(min, Math.floor(((max * disponible) / necesario) * 2) / 2) : max;
+    if (tamano !== ultimo) {
+      ultimo = tamano;
+      el.style.fontSize = `${tamano}px`;
     }
   };
-  const pedir = () => {
-    if (pendiente) return;
-    pendiente = true;
-    requestAnimationFrame(ajustar);
-  };
-  new MutationObserver(pedir).observe(el, { childList: true, characterData: true, subtree: true });
-  new ResizeObserver(pedir).observe(el);
-  document.fonts?.ready.then(pedir);
-  pedir();
+  // El texto cambia: en el mismo fotograma (es solo una cuenta, no hace falta esperar al siguiente).
+  new MutationObserver(ajustar).observe(el, { childList: true, characterData: true, subtree: true });
+  new ResizeObserver(([entrada]) => {
+    disponible = entrada.contentBoxSize?.[0]?.inlineSize ?? entrada.contentRect.width;
+    ajustar();
+  }).observe(el);
+  // Hasta que carga Geist se mediría con otra fuente.
+  document.fonts?.ready.then(() => {
+    estilo = null;
+    ajustar();
+  });
 }
 
 export { pulsar, muellePulsar };

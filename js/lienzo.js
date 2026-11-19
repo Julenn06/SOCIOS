@@ -89,6 +89,30 @@ export function rectRedondo(ctx, x, y, w, h, radios) {
 }
 
 /** Vuelve a dibujar [vista] cuando cambia su tamaño o el tema. */
+/**
+ * El tamaño en pantalla de un lienzo, en px de CSS, sin leer clientWidth en cada dibujo: esa lectura obliga al
+ * navegador a recalcular el diseño si ha cambiado algo (un importe que cuenta, por ejemplo) y, en una animación, eso
+ * pasa en cada fotograma. Lo mantiene al día un único ResizeObserver; la primera vez se lee una sola vez.
+ */
+const medidas = new WeakMap();
+const tamanoDe = (e) => {
+  const caja = e.contentBoxSize?.[0];
+  // Redondeado como clientWidth: con decimales, el lienzo no casa con los píxeles de la pantalla.
+  return caja ? { ancho: Math.round(caja.inlineSize), alto: Math.round(caja.blockSize) } : { ancho: Math.round(e.contentRect.width), alto: Math.round(e.contentRect.height) };
+};
+const vigilante = new ResizeObserver((entradas) => {
+  for (const e of entradas) medidas.set(e.target, tamanoDe(e));
+});
+export function medida(canvas) {
+  let m = medidas.get(canvas);
+  if (!m) {
+    m = { ancho: canvas.clientWidth, alto: canvas.clientHeight };
+    medidas.set(canvas, m);
+    vigilante.observe(canvas);
+  }
+  return m;
+}
+
 export function alCambiarTamano(el, dibujar) {
   const ro = new ResizeObserver(() => dibujar());
   ro.observe(el);

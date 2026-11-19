@@ -1,7 +1,7 @@
 // AnimacionDescargaView.kt y EstallidoDescarga.kt: un anillo con degradado que avanza con un destello en la punta,
 // un halo que respira y una flecha que baja; al terminar, el centro se rellena con un rebote, se dibuja la marca de
 // verificación y salen ondas y partículas. Si falla, se vuelve rojo y tiembla.
-import { color, conAlfa, css, fuente, mezclar, preparar } from '../lienzo.js';
+import { color, conAlfa, css, fuente, mezclar, preparar, medida } from '../lienzo.js';
 import { activas, fastOutSlowIn, frenar, haptica, overshoot } from '../movimiento.js';
 
 const VUELTA_RAPIDA_MS = 1100;
@@ -91,7 +91,7 @@ export class AnimacionDescarga {
   }
 
   lado() {
-    return Math.min(this.canvas.clientWidth, this.canvas.clientHeight) || 208;
+    return Math.min(medida(this.canvas).ancho, medida(this.canvas).alto) || 208;
   }
 
   pedir() {
@@ -114,8 +114,8 @@ export class AnimacionDescarga {
     this.ultimo = ahora;
     this.reloj += dt;
 
-    const w = this.canvas.clientWidth;
-    const h = this.canvas.clientHeight;
+    const w = medida(this.canvas).ancho;
+    const h = medida(this.canvas).alto;
     const ctx = preparar(this.canvas, w, h);
     const lado = Math.min(w, h);
     this.cx = w / 2;

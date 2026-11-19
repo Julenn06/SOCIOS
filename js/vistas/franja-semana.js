@@ -1,6 +1,6 @@
 // FranjaSemanaView.kt: los cinco días laborables bajo la fecha del selector. En la semana actual, los días pasados en
 // verde suave y hoy en verde, más largo; en las pasadas, todos en verde suave; en las futuras, todos vacíos.
-import { color, conAlfa, css, mezclar, preparar, rectRedondo, alCambiarTamano } from '../lienzo.js';
+import { color, conAlfa, css, mezclar, preparar, rectRedondo, alCambiarTamano, medida } from '../lienzo.js';
 import { activas, animarValor, LARGA_MS } from '../movimiento.js';
 
 const DIAS = 5;
@@ -45,8 +45,8 @@ export class FranjaSemana {
   }
 
   dibujar() {
-    const w = this.canvas.clientWidth;
-    const h = this.canvas.clientHeight;
+    const w = medida(this.canvas).ancho;
+    const h = medida(this.canvas).alto;
     if (!w) return;
     const ctx = preparar(this.canvas, w, h);
     const principal = color('--primary');

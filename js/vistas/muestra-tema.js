@@ -1,6 +1,6 @@
 // MuestraTemaView.kt: miniatura de la pantalla principal en un tema (claro, oscuro o, para "Sistema", partida en
 // diagonal). Usa siempre los colores de ese tema, no los del que tenga la app.
-import { preparar, rectRedondo, alCambiarTamano } from '../lienzo.js';
+import { preparar, rectRedondo, alCambiarTamano, medida } from '../lienzo.js';
 
 const CLARO = { fondo: '#F2F4F0', tarjeta: '#FFFFFF', linea: '#CDD4CC', acento: '#0E7A55' };
 const OSCURO = { fondo: '#0B100E', tarjeta: '#151C19', linea: '#33413A', acento: '#5CCB9E' };
@@ -14,8 +14,8 @@ export class MuestraTema {
   }
 
   dibujar() {
-    const w = this.canvas.clientWidth;
-    const h = this.canvas.clientHeight;
+    const w = medida(this.canvas).ancho;
+    const h = medida(this.canvas).alto;
     if (!w) return;
     const ctx = preparar(this.canvas, w, h);
     ctx.save();

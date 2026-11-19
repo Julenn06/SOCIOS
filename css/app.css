@@ -608,15 +608,21 @@ button.tarjeta:not(.fila-formato):not(.tarjeta-interruptor) { display: block; }
       0 6px 16px -4px rgba(0, 0, 0, 0.22);
   }
   /* Lo de detrás de un panel o un diálogo, desenfocado y apenas oscurecido (VidrioVentana). */
-  :root:not(.sin-vidrio) :is(dialog.hoja, dialog.dialogo)[open]:where(:not([data-closing]))::backdrop {
+  /* El fondo ya desenfocado aparece y se va por opacidad. Animar el radio del desenfoque (de 0 a 24 px) obligaba a
+     recalcularlo sobre toda la pantalla en cada fotograma; con la opacidad, el radio no cambia y la animación la hace
+     el compositor. El aspecto final es el mismo. */
+  :root:not(.sin-vidrio) :is(dialog.hoja, dialog.dialogo)::backdrop {
     background-color: var(--scrim);
     -webkit-backdrop-filter: blur(24px);
     backdrop-filter: blur(24px);
+    opacity: 0;
+    transition-property: opacity, display, overlay;
+  }
+  :root:not(.sin-vidrio) :is(dialog.hoja, dialog.dialogo)[open]:where(:not([data-closing]))::backdrop {
+    opacity: 1;
 
     @starting-style {
-      background-color: transparent;
-      -webkit-backdrop-filter: blur(0);
-      backdrop-filter: blur(0);
+      opacity: 0;
     }
   }
   :root:not(.sin-vidrio) .hoja, :root:not(.sin-vidrio) .dialogo {

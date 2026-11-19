@@ -115,6 +115,7 @@ export function aplicarRemoto(registros, enviados) {
     const lectura = pendientes.getAll();
     lectura.onsuccess = () => {
       const actuales = new Map(lectura.result.map((p) => [p.id, p]));
+      const subidos = new Map(enviados.map((e) => [e.id, e.modificado]));
       for (const e of enviados) {
         if (actuales.get(e.id)?.modificado === e.modificado) {
           pendientes.delete(e.id);
@@ -123,6 +124,9 @@ export function aplicarRemoto(registros, enviados) {
       }
       for (const r of registros) {
         const id = idPendiente(r.almacen, r.clave);
+        // El servidor devuelve también lo que se le acaba de subir: es lo mismo que ya hay aquí. Sin escribirlo ni
+        // contarlo, para no releer los datos y repintar la pantalla después de cada cambio propio.
+        if (subidos.get(id) === r.modificado) continue;
         const p = actuales.get(id);
         if (p && p.modificado > r.modificado) continue;
         if (p) pendientes.delete(id);

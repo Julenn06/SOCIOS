@@ -306,6 +306,8 @@ function aplicarAjustes(recibidos, enviados) {
   for (const [clave, modificado] of Object.entries(enviados)) if (actuales[clave] === modificado) delete actuales[clave];
   let aplicados = 0;
   for (const r of recibidos) {
+    // Lo que se acaba de subir vuelve igual: ni se escribe ni cuenta como cambio.
+    if (enviados[r.clave] === r.modificado) continue;
     if (!AJUSTES[r.clave] || (actuales[r.clave] ?? 0) > r.modificado) continue;
     delete actuales[r.clave];
     db.prefs.guardar(r.clave, r.borrado ? null : AJUSTES[r.clave].deServidor(r.valor), { remoto: true });
