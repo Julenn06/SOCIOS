@@ -78,3 +78,22 @@
 
 - Implement the agreed scope, verify it and summarize the files changed, checks performed and any outstanding issues.
 
+## 8. Publishing (default, no need to ask)
+
+Every finished and verified change to the repository is published without asking first (explicit instruction from
+the user, 2026-11-19). Only destructive operations still need confirmation (deleting branches or data, force-push,
+rewriting history).
+
+- **Android app** (`app/`, `gradle/`, build files): commit and push to `main`, then push the next tag `vX.Y.Z`
+  (patch for fixes and small adjustments, minor for new features). The "Build and Release" workflow runs the tests
+  and publishes the GitHub Release with the signed APK, which the app offers as an update. Push `main` first and the
+  tag afterwards. Wait for the workflow and confirm the release and its APK exist. The release notes are the
+  `feat`/`fix`/`perf` commit titles that touch the app since the previous tag: write them for the user, in Spanish.
+- **Web PWA** (`pwa/`): bump the version with `node pwa/herramientas/version.mjs X.Y.Z "novedad"`, commit and push to
+  `main`. The "Publicar la web" workflow runs the tests and Hostinger deploys https://socios.jfl06studio.com. Confirm
+  the published `version.json`.
+- **Web server** (`servidor/`): commit and push to `main`. The "Publicar el servidor" workflow runs the tests and
+  Hostinger deploys https://socios-api.jfl06studio.com. Confirm `/api/salud`.
+- The Android app and the web are separate products: the app does not use the web server. A change requested for
+  both is published in both.
+

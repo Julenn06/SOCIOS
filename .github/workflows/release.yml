@@ -198,7 +198,8 @@ jobs:
           fetch-depth: 0
 
       # Las novedades: los commits feat/fix/perf desde la versión anterior, sin el prefijo. La app las enseña en
-      # el panel de actualizar (lee las líneas que empiezan por "- ").
+      # el panel de actualizar (lee las líneas que empiezan por "- "). Solo los que tocan la app Android: la web
+      # (pwa/) y su servidor (servidor/) se publican aparte y sus cambios no son novedades de la app.
       - name: Write release notes
         env:
           TAG: ${{ env.VERSION_TAG }}
@@ -207,7 +208,7 @@ jobs:
           anterior=$(git describe --tags --abbrev=0 --match 'v*' "$GITHUB_SHA^" 2>/dev/null || true)
           if [ -n "$anterior" ]; then rango="$anterior..$GITHUB_SHA"; else rango="-n 20 $GITHUB_SHA"; fi
           # shellcheck disable=SC2086
-          git log --no-merges --format=%s $rango \
+          git log --no-merges --format=%s $rango -- app gradle build.gradle.kts settings.gradle.kts gradle.properties \
             | grep -E '^(feat|fix|perf)(\([^)]*\))?!?: ' \
             | sed -E 's/^[a-z]+(\([^)]*\))?!?: *//' \
             | awk '{ print "- " toupper(substr($0, 1, 1)) substr($0, 2) }' > novedades.txt || true
