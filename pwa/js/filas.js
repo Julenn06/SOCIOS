@@ -48,9 +48,9 @@ const mezclaHex = (a, b, f) => {
  * y tocarlo llama a [alAbrir] en lugar de editarlo.
  */
 export class ListaSocios {
-  constructor(contenedor, { alCambiarHecho, alEditar, alEliminar, alAcciones, mostrarSemana = false, alAbrir = null }) {
+  constructor(contenedor, { alCambiarHecho, alEditar, mostrarSemana = false, alAbrir = null }) {
     this.contenedor = contenedor;
-    this.op = { alCambiarHecho, alEditar, alEliminar, alAcciones, mostrarSemana, alAbrir };
+    this.op = { alCambiarHecho, alEditar, mostrarSemana, alAbrir };
     this.nodos = new Map();
     this.datos = new Map();
   }
@@ -145,29 +145,18 @@ export class ListaSocios {
       interruptor.setAttribute('aria-checked', String(hecho));
       this.op.alCambiarHecho(s, hecho);
     });
-    // Tocar la tarjeta la edita (o abre su semana); mantenerla pulsada abre editar y eliminar.
-    let temporizador = 0;
-    let largo = false;
+    // Tocar la tarjeta abre el panel del socio (o su semana, en la búsqueda); ahí se edita o se elimina. Mantenerla
+    // pulsada no hace nada: es la única forma, para no borrar ni abrir nada sin querer.
     let x0 = 0, y0 = 0;
     el.addEventListener('pointerdown', (e) => {
       if (e.target.closest('.contenedor-interruptor')) return;
-      largo = false;
       x0 = e.clientX;
       y0 = e.clientY;
       el.classList.add('pulsado');
       el.style.transform = 'scale(0.97)';
       el.style.transitionDuration = '120ms';
-      clearTimeout(temporizador);
-      temporizador = setTimeout(() => {
-        largo = true;
-        haptica.confirmar();
-        soltar();
-        const s = actual();
-        if (s) this.op.alAcciones(s);
-      }, 500);
     });
     const soltar = () => {
-      clearTimeout(temporizador);
       el.style.transform = '';
       el.style.transitionDuration = '';
     };
@@ -177,9 +166,10 @@ export class ListaSocios {
     el.addEventListener('pointerup', soltar);
     el.addEventListener('pointercancel', soltar);
     el.addEventListener('pointerleave', soltar);
+    // Sin el menú del navegador al mantener pulsado.
     el.addEventListener('contextmenu', (e) => e.preventDefault());
     el.addEventListener('click', (e) => {
-      if (largo || e.target.closest('.contenedor-interruptor')) return;
+      if (e.target.closest('.contenedor-interruptor')) return;
       const s = actual();
       if (!s) return;
       haptica.click();
@@ -187,16 +177,10 @@ export class ListaSocios {
     });
     el.addEventListener('keydown', (e) => {
       if (e.target !== el) return;
+      // Con el teclado, igual que un toque.
       if (e.key === 'Enter' || e.key === ' ') {
         e.preventDefault();
         el.click();
-      } else if (e.key === 'Delete') {
-        const s = actual();
-        if (s) this.op.alEliminar(s);
-      } else if (e.key === 'ContextMenu' || (e.key === 'F10' && e.shiftKey)) {
-        e.preventDefault();
-        const s = actual();
-        if (s) this.op.alAcciones(s);
       }
     });
     return el;

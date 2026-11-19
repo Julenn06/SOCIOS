@@ -1,12 +1,11 @@
-// AddSocioBottomSheetDialog.kt, AccionesSocioBottomSheetDialog.kt y ConfirmarEliminar.kt.
+// AddSocioBottomSheetDialog.kt y ConfirmarEliminar.kt.
 import * as estado from '../estado.js';
 import { abrirHoja, dialogo } from '../paneles.js';
 import { calcularBaseX2, cuotaComputable, CUOTAS } from '../calculos.js';
-import { DIAS, diaPorId, getSemanaKey, rangoCorto, rangoCortoConAnio, rangoSemanaTexto, semanaKeyDesplazada, semanasEntre } from '../fechas.js';
-import { esc, eurosCompacto, semanaRelativa, sinSimbolos } from '../formato.js';
+import { DIAS, getSemanaKey, rangoCorto, rangoCortoConAnio, rangoSemanaTexto, semanaKeyDesplazada, semanasEntre } from '../fechas.js';
+import { eurosCompacto, semanaRelativa, sinSimbolos } from '../formato.js';
 import { activas, animarMoneda, desplegar, haptica, latido, LARGA_MS, muellePulsar } from '../movimiento.js';
-import { crearCampo, filaFormato, grupoOpciones, html, marcar, opcionesImporte, tarjetaElegible } from '../componentes.js';
-import { degradadoSocio } from '../filas.js';
+import { crearCampo, grupoOpciones, html, marcar, opcionesImporte, tarjetaElegible } from '../componentes.js';
 
 /** Pide confirmación antes de borrar un socio; después aún se puede deshacer desde el aviso. */
 export function confirmarEliminar(socio, alConfirmar, alCerrar = null) {
@@ -295,45 +294,4 @@ function construirFormulario(panel, socioAEditar, semanaInicial, diaInicial) {
     }, () => (dialogoEliminar = null));
   });
   return () => dialogoEliminar?.cerrar();
-}
-
-/** Al mantener pulsado un socio: quién es y qué se puede hacer con él. */
-export function abrirAccionesSocio(socio, { alEditar, alEliminar }) {
-  return abrirHoja({
-    tag: 'AccionesSocio',
-    construir: (panel) => {
-      const base = calcularBaseX2(socio.colaboracion);
-      const dia = diaPorId(socio.dia).completo;
-      panel.scroll.append(html(`
-        <div class="fila" style="align-items:center">
-          <div class="placa-acciones" style="background:${degradadoSocio(socio.hecho)}">
-            <span class="cuota cifra">${esc(eurosCompacto(socio.colaboracion))}</span>
-            <span class="base">${esc(eurosCompacto(base))} base</span>
-          </div>
-          <div class="columna-textos">
-            <h2 class="titulo-panel dos-lineas">${esc(estado.nombreVisible(socio))}</h2>
-            <div class="subtitulo-panel">${esc(`${dia} · ${rangoCorto(socio.semanaKey)}`)}</div>
-            <span class="pastilla" style="margin-top:8px;align-self:flex-start;padding:3px 10px;${socio.hecho ? '' : 'background:var(--orange-container);color:var(--orange-pending)'}">${socio.hecho ? `Suma ${esc(eurosCompacto(base))}` : 'Pendiente'}</span>
-          </div>
-        </div>`));
-      if (socio.notas.trim()) panel.scroll.append(html(`<div class="nota-socio">${esc(socio.notas)}</div>`));
-      panel.scroll.append(html('<div class="seccion" style="margin-top:22px">Qué quieres hacer</div>'));
-      panel.scroll.append(filaFormato({
-        iconoPlaca: 'edit', tono: 'verde', titulo: 'Editar socio', detalle: 'Cuota, semana, día, estado o notas',
-        alPulsar: () => {
-          panel.cerrar();
-          alEditar(socio);
-        }
-      }));
-      const eliminar = filaFormato({
-        iconoPlaca: 'delete', tono: 'rojo', titulo: 'Eliminar socio', detalle: 'Te pedirá confirmación y podrás deshacerlo', tituloRojo: true,
-        alPulsar: () => {
-          panel.cerrar();
-          alEliminar(socio);
-        }
-      });
-      eliminar.style.marginTop = '10px';
-      panel.scroll.append(eliminar);
-    }
-  });
 }

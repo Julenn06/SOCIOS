@@ -5,7 +5,6 @@ import { abrirHoja, cabeceraPanel } from '../paneles.js';
 import { esc, parseImporte, TEXTOS } from '../formato.js';
 import { crearCampo, html } from '../componentes.js';
 import { ListaSocios, sinAgrupar } from '../filas.js';
-import { abrirAccionesSocio, abrirFormularioSocio, confirmarEliminar } from './socio.js';
 
 /** Búsqueda: filas que se pintan al momento y las que se añaden en cada tanda después. */
 const PRIMERAS_FILAS = 24;
@@ -49,23 +48,14 @@ export function abrirListaSocios(modo) {
       }
       const ayuda = html(`<div class="ayuda-lista">${buscando
         ? 'Escribe un nombre, una palabra de las notas o una cuota (por ejemplo, 20). Toca un resultado para ir a su semana.'
-        : 'Márcalos como conseguidos con el interruptor, edítalos o bórralos. Toca uno para ir a su semana.'}</div>`);
+        : 'Márcalos como conseguidos con el interruptor. Toca uno para ir a su semana.'}</div>`);
       const resultados = html('<div class="resultados-lista oculto"></div>');
       const vacio = html(`<div class="vacio-lista oculto"><svg class="borde-discontinuo" aria-hidden="true"><rect x="0.75" y="0.75" rx="22" ry="22" style="width:calc(100% - 1.5px);height:calc(100% - 1.5px)" fill="none" stroke="var(--stroke)" stroke-width="1.5" stroke-dasharray="7 5"/></svg><span></span></div>`);
       const contenedor = html('<div class="lista-busqueda"></div>');
       s.append(ayuda, resultados, vacio, contenedor);
 
-      let dialogoEliminar = null;
-      const editar = (socio) => abrirFormularioSocio({ socio });
-      const eliminar = (socio) => {
-        if (dialogoEliminar) return;
-        dialogoEliminar = confirmarEliminar(socio, () => estado.eliminarSocio(socio), () => (dialogoEliminar = null));
-      };
       const lista = new ListaSocios(contenedor, {
         alCambiarHecho: (socio, hecho) => estado.setSocioHecho(socio.id, hecho),
-        alEditar: editar,
-        alEliminar: eliminar,
-        alAcciones: (socio) => abrirAccionesSocio(socio, { alEditar: editar, alEliminar: eliminar }),
         mostrarSemana: true,
         alAbrir: (socio) => {
           estado.irASemana(socio.semanaKey);
@@ -117,10 +107,7 @@ export function abrirListaSocios(modo) {
       pintar();
       const dejar = estado.suscribir(pintar);
       panel.el.querySelector('[data-cerrar]').addEventListener('click', () => panel.cancelar());
-      return () => {
-        dejar();
-        dialogoEliminar?.cerrar();
-      };
+      return dejar;
     }
   });
 }

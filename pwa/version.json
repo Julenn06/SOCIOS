@@ -1,7 +1,7 @@
 {
-  "version": "1.0.12",
-  "tamano": 1773707,
+  "version": "1.0.13",
+  "tamano": 1769301,
   "novedades": [
-    "Un socio cuenta como mucho 60 € de base: una cuota de más de 30 € cuenta como una de 30"
+    "Mantener pulsado un socio ya no hace nada: tócalo para editarlo o eliminarlo"
   ]
 }

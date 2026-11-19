@@ -13,7 +13,7 @@ import { autoajustar, grupoOpciones, pintarIconos } from './componentes.js';
 import { agrupadasPorDia, ListaSocios, sinAgrupar } from './filas.js';
 import { ProgresoBonus } from './vistas/progreso-bonus.js';
 import { FranjaSemana } from './vistas/franja-semana.js';
-import { abrirAccionesSocio, abrirFormularioSocio, confirmarEliminar } from './hojas/socio.js';
+import { abrirFormularioSocio } from './hojas/socio.js';
 import { abrirBonus, abrirCobro } from './hojas/ajustes-semana.js';
 import { abrirListaSocios } from './hojas/lista-socios.js';
 import { abrirHistorico } from './hojas/historico.js';
@@ -23,7 +23,6 @@ const $ = (id) => document.getElementById(id);
 const curvaCss = 'cubic-bezier(0.32, 0.72, 0, 1)';
 
 let franja, progreso, lista, filtro;
-let dialogoEliminar = null;
 
 export function iniciarPantalla() {
   pintarIconos(document.body);
@@ -36,9 +35,7 @@ export function iniciarPantalla() {
 
   lista = new ListaSocios($('listaSocios'), {
     alCambiarHecho: (s, hecho) => estado.setSocioHecho(s.id, hecho),
-    alEditar: editar,
-    alEliminar: eliminar,
-    alAcciones: (s) => abrirAccionesSocio(s, { alEditar: editar, alEliminar: eliminar })
+    alEditar: editar
   });
 
   filtro = grupoOpciones(
@@ -86,12 +83,6 @@ export function nuevoSocio() {
 }
 
 const editar = (socio) => abrirFormularioSocio({ socio });
-
-/** Pide confirmación antes de borrar; después aún se puede deshacer desde el aviso. */
-function eliminar(socio) {
-  if (dialogoEliminar) return;
-  dialogoEliminar = confirmarEliminar(socio, () => estado.eliminarSocio(socio), () => (dialogoEliminar = null));
-}
 
 function render() {
   const ui = estado.ui();
