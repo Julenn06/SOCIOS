@@ -1,7 +1,7 @@
 {
-  "version": "1.0.14",
-  "tamano": 1777340,
+  "version": "1.0.15",
+  "tamano": 1785562,
   "novedades": [
-    "Cambia tu nombre y tu contraseña en Más → Cuenta, o restablécela si no la recuerdas"
+    "Cuando hay una versión nueva, sale una pantalla para actualizar en el momento o dejarlo para luego"
   ]
 }

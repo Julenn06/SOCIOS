@@ -4,7 +4,7 @@ import { aplicarTema, actualizaciones, bloqueo } from './ajustes.js';
 import { mostrarAviso } from './avisos.js';
 import { iniciarPantalla, nuevoSocio } from './pantalla.js';
 import { vigilarBloqueo } from './pantalla-bloqueo.js';
-import { abrirActualizacion } from './hojas/mas.js';
+import { mostrarNovedad } from './pantalla-novedad.js';
 import { importarArchivo } from './hojas/copias.js';
 import * as nube from './nube.js';
 import { mostrarPantallaCuenta, quitarPantallaCuenta } from './pantalla-cuenta.js';
@@ -40,7 +40,7 @@ async function arrancar() {
   else if (accion === 'importar') cuandoDesbloqueada(importarCompartido);
 
   registrarServiceWorker();
-  avisarVersionNueva();
+  vigilarVersionNueva();
 }
 
 /**
@@ -92,11 +92,19 @@ async function importarCompartido() {
   }
 }
 
-/** Versión nueva al abrir la app (como mucho una vez al día): un aviso que dura más, cuando ya no está bloqueada. */
-async function avisarVersionNueva() {
-  const publicada = await actualizaciones.comprobarSiToca();
-  if (!publicada) return;
-  cuandoDesbloqueada(() => mostrarAviso('Actualización disponible', 'NOVEDAD', 'Hay una versión nueva de la app', 'Actualizar', () => abrirActualizacion(publicada)));
+/**
+ * Versión nueva: al abrir la app y al volver a ella (desde la pantalla de inicio o desde las apps recientes, donde la
+ * página sigue viva días), una pantalla entera con las novedades (pantalla-novedad.js).
+ */
+function vigilarVersionNueva() {
+  const mirar = async (cada) => {
+    const publicada = await actualizaciones.comprobarSiToca(cada);
+    if (publicada) mostrarNovedad(publicada);
+  };
+  mirar(0);
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') mirar(30 * 60_000);
+  });
 }
 
 function registrarServiceWorker() {
