@@ -24,6 +24,17 @@ export function crearAlmacenMemoria() {
       usuarios.set(u.id, { ...u, rev: 0 })
       return true
     },
+    async cambiarNombre(id, nombre, nombreClave) {
+      if ([...usuarios.values()].some((x) => x.nombreClave === nombreClave && x.id !== id)) return false
+      Object.assign(usuarios.get(id), { nombre, nombreClave })
+      return true
+    },
+    async cambiarContrasena(id, contrasena) {
+      usuarios.get(id).contrasena = contrasena
+    },
+    async cerrarOtrasSesiones(usuarioId, hashActual) {
+      for (const [h, s] of sesiones) if (s.usuarioId === usuarioId && h !== hashActual) sesiones.delete(h)
+    },
     async tocarAcceso(id, t) {
       if (usuarios.has(id)) usuarios.get(id).ultimoAcceso = t
     },
