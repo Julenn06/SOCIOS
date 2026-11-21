@@ -36,8 +36,11 @@ if (faltan.length || sobran.length) {
 // se cambia uno sin cambiar su hash, la página no aplicaría el tema al abrirse.
 const indice = readFileSync(join(pwa, 'index.html'), 'utf8');
 const htaccess = readFileSync(join(pwa, '.htaccess'), 'utf8');
-const sinHash = [...indice.matchAll(/<script>([\s\S]*?)<\/script>/g)]
-  .map((m) => `'sha256-${createHash('sha256').update(m[1]).digest('base64')}'`)
+// Todo script en línea, se escriba como se escriba (<SCRIPT>, con atributos, "</script >"); los que cargan un archivo
+// (src=) no llevan hash.
+const sinHash = [...indice.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script\s*>/gi)]
+  .filter((m) => !/\bsrc\s*=/i.test(m[1]))
+  .map((m) => `'sha256-${createHash('sha256').update(m[2]).digest('base64')}'`)
   .filter((hash) => !htaccess.includes(hash));
 if (sinHash.length) {
   console.error(`El script en línea de index.html ha cambiado: pon ${sinHash.join(' ')} en el script-src del .htaccess`);
