@@ -5,6 +5,7 @@ import { agruparPorPeriodo, calcularResumenHistoricoGlobal, escalaPara, evolucio
 import { diaPorId, MESES, MESES_CORTOS, rangoCortoConAnio } from './fechas.js';
 import { descontadoConSigno, eurosCompacto, moneda, porcentaje, TEXTOS } from './formato.js';
 import { nombreVisible } from './estado.js';
+import { urlScriptConfiable } from './confianza.js';
 
 const ANCHO = 595, ALTO = 842, MARGEN = 32, MARGEN_PIE = 52, ALTO_SEMANA = 26, ALTO_FILA = 20;
 const MAX_BARRAS_SEMANAS = 26, MAX_BARRAS_MESES = 36;
@@ -32,7 +33,8 @@ async function cargarJsPdf() {
   if (!window.jspdf) {
     await new Promise((resolver, rechazar) => {
       const s = document.createElement('script');
-      s.src = new URL('../vendor/jspdf.umd.min.js', import.meta.url).href;
+      // Con Trusted Types, la URL de un script tiene que pasar por la política (confianza.js).
+      s.src = urlScriptConfiable(new URL('../vendor/jspdf.umd.min.js', import.meta.url).href);
       s.onload = resolver;
       s.onerror = () => rechazar(new Error('No se ha podido cargar el generador de PDF'));
       document.head.append(s);

@@ -6,6 +6,7 @@ import { eurosCompacto, esc } from './formato.js';
 import { icono } from './iconos.js';
 import { nombreVisible } from './estado.js';
 import { haptica } from './movimiento.js';
+import { htmlConfiable } from './confianza.js';
 
 /** Cuántas filas animan su entrada como mucho: más abajo ya no se ven entrar. */
 const FILAS_ANIMADAS = 20;
@@ -108,7 +109,7 @@ export class ListaSocios {
     const el = document.createElement('div');
     el.className = 'cabecera-dia';
     el.tabIndex = 0;
-    el.innerHTML = '<span class="nombre" aria-hidden="true"></span><span class="detalle" aria-hidden="true"></span>';
+    el.innerHTML = htmlConfiable('<span class="nombre" aria-hidden="true"></span><span class="detalle" aria-hidden="true"></span>');
     return el;
   }
 
@@ -125,14 +126,14 @@ export class ListaSocios {
     el.className = 'socio';
     el.tabIndex = 0;
     el.setAttribute('role', 'button');
-    el.innerHTML = `
+    el.innerHTML = htmlConfiable(`
       <div class="placa-importe"><span class="cuota cifra"></span><span class="base"></span></div>
       <div class="datos">
         <div class="titulo-fila nombre una-linea"></div>
         <div class="linea-estado"><span class="dia"></span><span class="separador" aria-hidden="true">·</span><span class="estado"></span></div>
         <div class="notas dos-lineas oculto"></div>
       </div>
-      <div class="contenedor-interruptor"><button class="interruptor" type="button" role="switch" aria-label="Conseguido"></button></div>`;
+      <div class="contenedor-interruptor"><button class="interruptor" type="button" role="switch" aria-label="Conseguido"></button></div>`);
     const interruptor = el.querySelector('.interruptor');
     const actual = () => this.datos.get(el.dataset.id)?.socio;
     interruptor.addEventListener('click', (e) => {

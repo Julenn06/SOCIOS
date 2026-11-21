@@ -6,6 +6,7 @@ import { crearCampo, html } from '../componentes.js';
 import { mostrarAviso } from '../avisos.js';
 import { haptica } from '../movimiento.js';
 import { cambiarContrasena, cambiarNombre, cuenta } from '../nube.js';
+import { htmlConfiable } from '../confianza.js';
 
 export function abrirAjustesCuenta() {
   return abrirHoja({
@@ -39,7 +40,7 @@ function formulario({ campos, boton, extra = [], enviar }) {
     error.classList.add('oculto');
     ocupado = true;
     enviarBoton.disabled = true;
-    enviarBoton.innerHTML = '<span class="girando" aria-hidden="true"></span>';
+    enviarBoton.innerHTML = htmlConfiable('<span class="girando" aria-hidden="true"></span>');
     enviarBoton.setAttribute('aria-label', 'Un momento');
     try {
       await enviar({

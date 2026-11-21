@@ -59,7 +59,7 @@ function preguntarDestino(formato, alcance, datos) {
   const archivo = crearArchivo(formato, alcance, datos);
   archivo.catch(() => {});
   const fallo = (titulo, e) => mostrarAviso(titulo, 'ERROR', estado.motivoDeError(e));
-  const cuerpo = html('<div style="padding:8px 20px 0"></div>');
+  const cuerpo = html('<div class="relleno-copias"></div>');
   let capa = null;
   const compartir = filaFormato({
     iconoPlaca: 'share', tono: 'azul', titulo: 'Compartir con otra app', detalle: 'WhatsApp, correo, Drive…',
@@ -155,8 +155,8 @@ export function abrirCopias() {
           <button class="tarjeta elegible alcance" type="button" role="radio">
             <span class="icono marca" data-icono="check_circle"></span>
             <span class="icono" data-icono="${a.icono}"></span>
-            <span class="nombre dos-lineas" style="display:block">${a.nombre}</span>
-            <span class="detalle dos-lineas" style="display:block"></span>
+            <span class="bloque nombre dos-lineas">${a.nombre}</span>
+            <span class="bloque detalle dos-lineas"></span>
           </button>`);
         t.addEventListener('click', () => {
           haptica.click();
@@ -379,10 +379,10 @@ function abrirRevision(lectura) {
       const hasta = p.ultima ? mesConAnio(p.ultima) : desde;
       const rango = desde ? (desde === hasta ? desde : `${desde} – ${hasta}`) : null;
       s.append(html(`
-        <section class="hero panel" style="margin-top:20px">
+        <section class="arriba-20 hero panel">
           <div class="hero-interior">
             <div class="etiqueta-neto">Vas a importar</div>
-            <div style="margin-top:2px;font-size:40px;font-weight:600;letter-spacing:-0.02em;color:#fff;white-space:nowrap;line-height:1.2">${esc(total)}</div>
+            <div class="cifra-copia">${esc(total)}</div>
             <div class="pastillas">
               ${p.semanas > 0 ? `<span class="pastilla-cabecera">${esc(TEXTOS.semanas(p.semanas))}</span>` : ''}
               ${rango ? `<span class="pastilla-cabecera">${esc(rango)}</span>` : ''}
@@ -404,28 +404,28 @@ function abrirRevision(lectura) {
         tarjeta.append(html(`
           <div class="fila-import">
             <span class="placa p40 tono-${tono}"><span class="icono" data-icono="${ic}"></span></span>
-            <span class="columna-textos" style="margin-left:12px"><span class="titulo">${esc(titulo)}</span><span class="detalle">${esc(detalle)}</span></span>
+            <span class="izquierda-12 columna-textos"><span class="titulo">${esc(titulo)}</span><span class="detalle">${esc(detalle)}</span></span>
             <span class="cantidad">${cantidad(n)}</span>
           </div>`));
       });
       s.append(tarjeta);
       if (p.descartados > 0) {
         s.append(html(`
-          <div class="tarjeta" style="margin-top:12px;background:var(--amber-container);border-color:var(--amber-stroke)">
-            <div class="fila" style="padding:14px">
-              <span class="icono" data-icono="error" style="color:var(--amber-text)"></span>
-              <span class="columna-textos" style="margin:0 0 0 12px">
-                <span style="font-size:14.5px;font-weight:600;color:var(--amber-text)">${esc(TEXTOS.descartados(p.descartados))}</span>
-                <span style="margin-top:1px;font-size:12.5px;color:var(--text-sub)">Les faltan datos o tienen valores imposibles, así que no se importan.</span>
+          <div class="arriba-12 tarjeta-ambar tarjeta">
+            <div class="relleno-14 fila">
+              <span class="color-ambar icono" data-icono="error"></span>
+              <span class="solo-izquierda-12 columna-textos">
+                <span class="titulo-aviso-ambar">${esc(TEXTOS.descartados(p.descartados))}</span>
+                <span class="detalle-aviso">Les faltan datos o tienen valores imposibles, así que no se importan.</span>
               </span>
             </div>
           </div>`));
       }
       s.append(html('<div class="nota-import"><span class="icono" data-icono="info"></span><span>Lo que ya tienes en la app y no viene en el archivo se queda como está.</span></div>'));
       const botones = html(`
-        <div class="botones" style="margin-top:20px">
+        <div class="arriba-20 botones">
           <button class="boton tonal" type="button" data-id="cancelar">Cancelar</button>
-          <button class="boton relleno" type="button" data-id="importar" style="flex-grow:1.6"><span class="icono" data-icono="import"></span>Importar</button>
+          <button class="crece-16 boton relleno" type="button" data-id="importar"><span class="icono" data-icono="import"></span>Importar</button>
         </div>`);
       s.append(botones);
       botones.querySelectorAll('.boton').forEach(muellePulsar);

@@ -7,6 +7,8 @@
 import { comprobarClaveRegistro, cuenta, entrar, ErrorCuenta, registrarse } from './nube.js';
 import { crearCampo, grupoOpciones, html } from './componentes.js';
 import { haptica } from './movimiento.js';
+import { mostrarAviso } from './avisos.js';
+import { htmlConfiable } from './confianza.js';
 
 let pantalla = null;
 
@@ -68,7 +70,7 @@ function formulario(contenedor, { explicacion = null, campos, boton, enviar, ext
     error.classList.add('oculto');
     ocupado = true;
     enviarBoton.disabled = true;
-    enviarBoton.innerHTML = '<span class="girando" aria-hidden="true"></span>';
+    enviarBoton.innerHTML = htmlConfiable('<span class="girando" aria-hidden="true"></span>');
     enviarBoton.setAttribute('aria-label', 'Un momento');
     try {
       await enviar({
@@ -108,7 +110,15 @@ function formularioEntrar(contenedor) {
     async enviar({ enCampo }) {
       if (!nombre.valor().trim()) enCampo(nombre, 'Escribe tu nombre');
       if (!contrasena.valor()) enCampo(contrasena, 'Escribe tu contraseña');
-      await entrar(nombre.valor(), contrasena.valor());
+      const { fallos } = await entrar(nombre.valor(), contrasena.valor());
+      // Alguien ha probado contraseñas con esta cuenta desde la última vez: que se sepa.
+      if (fallos > 0) {
+        mostrarAviso(
+          fallos === 1 ? 'Ha habido un intento fallido de entrar en tu cuenta' : `Ha habido ${fallos} intentos fallidos de entrar en tu cuenta`,
+          'ERROR',
+          'Si no has sido tú, cambia la contraseña en Más → Cuenta'
+        );
+      }
     }
   });
 }

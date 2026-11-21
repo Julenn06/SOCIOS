@@ -4,9 +4,14 @@
 // Los dos son <dialog> nativos abiertos con showModal(): el navegador pone el resto de la página inerte, contiene el
 // foco (y lo devuelve al cerrar), los pinta en la capa superior y los cierra con Esc y con el gesto o botón de atrás
 // del móvil. closedby="any" añade cerrarlos tocando fuera. Lo de detrás se desenfoca en su ::backdrop.
-import { icono } from './iconos.js';
+import { icono as iconoApp } from './iconos.js';
+import { ICONOS_WEB } from './iconos-web.js';
+
+// Los de la app y, si no está, los que solo tiene la web.
+const icono = (nombre) => iconoApp(nombre) || ICONOS_WEB[nombre] || '';
 import { esc } from './formato.js';
 import { activas, haptica } from './movimiento.js';
+import { htmlConfiable } from './confianza.js';
 
 /** Paneles y diálogos abiertos, de abajo arriba. */
 const pila = [];
@@ -112,7 +117,7 @@ export function abrirHoja({ tag, completa = false, clase = '', construir, alCanc
   const hoja = document.createElement('dialog');
   hoja.className = `hoja ${completa ? 'completa' : ''} ${clase}`;
   hoja.setAttribute('closedby', 'any');
-  hoja.innerHTML = `<div class="hoja-scroll${conBarra ? ' sin-abajo' : ''}"><div class="asa" aria-hidden="true"></div></div>`;
+  hoja.innerHTML = htmlConfiable(`<div class="hoja-scroll${conBarra ? ' sin-abajo' : ''}"><div class="asa" aria-hidden="true"></div></div>`);
   const scroll = hoja.querySelector('.hoja-scroll');
 
   let alCerrarContenido = null;
@@ -238,14 +243,14 @@ export function dialogo({ icono: nombreIcono = null, titulo, mensaje = null, cue
   el.setAttribute('closedby', 'any');
   const idTitulo = `titulo-${++siguienteId}`;
   el.setAttribute('aria-labelledby', idTitulo);
-  el.innerHTML = `
+  el.innerHTML = htmlConfiable(`
     <div class="dialogo-cabecera${nombreIcono ? ' centrado' : ''}">
       ${nombreIcono ? `<div class="dialogo-icono"><span class="icono">${icono(nombreIcono)}</span></div>` : ''}
       <h2 class="dialogo-titulo" id="${idTitulo}">${esc(titulo)}</h2>
     </div>
     ${mensaje ? `<div class="dialogo-mensaje" id="${idTitulo}-mensaje">${esc(mensaje)}</div>` : ''}
     <div class="dialogo-cuerpo"></div>
-    <div class="dialogo-acciones${acciones.length ? '' : ' oculto'}"></div>`;
+    <div class="dialogo-acciones${acciones.length ? '' : ' oculto'}"></div>`);
   if (mensaje) el.setAttribute('aria-describedby', `${idTitulo}-mensaje`);
   if (cuerpo) el.querySelector('.dialogo-cuerpo').append(cuerpo);
   else el.querySelector('.dialogo-cuerpo').remove();
@@ -281,7 +286,7 @@ export function dialogoLista({ titulo, opciones, marcadas, multiple, alCambiar, 
     item.setAttribute('role', multiple ? 'checkbox' : 'radio');
     item.setAttribute('aria-checked', String(!!marcadas[i]));
     if (marcadas[i] && !lista.querySelector('[autofocus]')) item.autofocus = true;
-    item.innerHTML = `<span class="${multiple ? 'casilla' : 'radio'}"></span><span>${esc(texto)}</span>`;
+    item.innerHTML = htmlConfiable(`<span class="${multiple ? 'casilla' : 'radio'}"></span><span>${esc(texto)}</span>`);
     item.addEventListener('click', () => {
       if (multiple) {
         marcadas[i] = !marcadas[i];

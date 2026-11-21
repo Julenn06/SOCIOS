@@ -74,6 +74,17 @@ ejecutar código del propio sitio, más `Permissions-Policy`, `Cross-Origin-Open
 `index.html` va en línea y la política lo permite por su hash: si se cambia ese script, `version.mjs --comprobar` (que
 también corre el workflow) dice qué hash poner en el `.htaccess`.
 
+Dos reglas que impone esa política (desde la 1.0.16):
+
+- **Nada de `style=""` en el HTML** (`style-src 'self'`, sin `'unsafe-inline'`): lo puntual va en las clases de
+  utilidad de `css/app.css` ("Utilidades") y lo calculado, con `el.style` desde el código.
+- **Trusted Types** (`require-trusted-types-for 'script'`): no se puede asignar una cadena a `innerHTML` ni registrar un
+  script por URL sin pasar por la política `socios` de `js/confianza.js`. Para crear HTML, `html()` de
+  `componentes.js` o `htmlConfiable()`; lo que escribe el usuario, siempre escapado con `esc()`.
+
+La sesión de la cuenta no se guarda en el navegador: va en una cookie `HttpOnly` del servidor que el código no puede leer
+(ver `servidor/README.md`).
+
 La interfaz usa las fuentes Geist en WOFF2; las TTF solo las usa el informe PDF (jsPDF no lee WOFF2).
 
 Así que publicar es: subir la versión con el comando de arriba, hacer commit y push a `main`.

@@ -5,6 +5,7 @@ import { ICONOS_WEB } from './iconos-web.js';
 import { esc, eurosCompacto, parseImporte, importeInput } from './formato.js';
 import { desplegar, haptica, muellePulsar, pulsar } from './movimiento.js';
 import { IMPORTE_MAXIMO, redondearCentimos } from './calculos.js';
+import { htmlConfiable } from './confianza.js';
 
 /**
  * Rellena los <span data-icono="..."> de [raiz] con su SVG. Cada icono se interpreta una sola vez y después se clona:
@@ -17,7 +18,7 @@ export function pintarIconos(raiz) {
     let molde = iconosHechos.get(nombre);
     if (!molde) {
       molde = document.createElement('template');
-      molde.innerHTML = icono(nombre);
+      molde.innerHTML = htmlConfiable(icono(nombre) || ICONOS_WEB[nombre] || '');
       iconosHechos.set(nombre, molde);
     }
     el.replaceChildren(molde.content.cloneNode(true));
@@ -28,7 +29,7 @@ export function pintarIconos(raiz) {
 /** Crea un elemento desde HTML. */
 export function html(texto) {
   const t = document.createElement('template');
-  t.innerHTML = texto.trim();
+  t.innerHTML = htmlConfiable(texto.trim());
   const el = t.content.firstElementChild;
   pintarIconos(el);
   return el;
@@ -90,7 +91,7 @@ export function crearCampo({ etiqueta, iconoCampo, tipo = 'texto', maxLength = n
     const [inicio, fin] = [input.selectionStart, input.selectionEnd];
     input.type = ver ? 'text' : 'password';
     botonVer.setAttribute('aria-pressed', String(ver));
-    botonVer.querySelector('.icono').innerHTML = ver ? ICONOS_WEB.ojoTachado : ICONOS_WEB.ojo;
+    botonVer.querySelector('.icono').innerHTML = htmlConfiable(ver ? ICONOS_WEB.ojoTachado : ICONOS_WEB.ojo);
     if (document.activeElement === input) input.setSelectionRange(inicio, fin);
   };
   botonVer?.addEventListener('pointerdown', (e) => e.preventDefault());
@@ -145,7 +146,7 @@ export function filaFormato({ iconoPlaca, tono, titulo, detalle, alPulsar, titul
     <button class="tarjeta tocable fila-formato" type="button">
       <span class="placa tono-${tono}"><span class="icono" data-icono="${iconoPlaca}"></span></span>
       <span class="columna-textos">
-        <span class="titulo-fila"${tituloRojo ? ' style="color:var(--red-text)"' : ''}>${esc(titulo)}</span>
+        <span class="titulo-fila${tituloRojo ? ' texto-rojo' : ''}">${esc(titulo)}</span>
         <span class="descripcion-fila">${esc(detalle)}</span>
       </span>
       ${flecha ? '<span class="icono flecha" data-icono="chevron_right"></span>' : ''}
@@ -265,13 +266,17 @@ export function opcionesImporte(importes, campo, alElegir = () => {}) {
 export function tarjetaInterruptor({ iconoPlaca, tono, titulo, detalle, encendido = false, opciones = null, alCambiar = () => {}, tamanoPlaca = 44 }) {
   const el = html(`
     <div class="tarjeta tarjeta-interruptor" role="switch" tabindex="0" aria-checked="${encendido}" aria-label="${esc(titulo)}">
-      <span class="placa tono-${tono}" style="width:${tamanoPlaca}px;height:${tamanoPlaca}px"><span class="icono" data-icono="${iconoPlaca}" style="width:${tamanoPlaca > 44 ? 24 : 22}px;height:${tamanoPlaca > 44 ? 24 : 22}px"></span></span>
+      <span class="placa tono-${tono}"><span class="icono" data-icono="${iconoPlaca}"></span></span>
       <span class="columna-textos">
         <span class="titulo-fila">${esc(titulo)}</span>
         <span class="descripcion-fila">${esc(detalle)}</span>
       </span>
       <span class="interruptor${encendido ? ' encendido' : ''}" aria-hidden="true"></span>
     </div>`);
+  const placa = el.querySelector('.placa');
+  placa.style.width = placa.style.height = `${tamanoPlaca}px`;
+  const iconoPlacaEl = placa.querySelector('.icono');
+  iconoPlacaEl.style.width = iconoPlacaEl.style.height = `${tamanoPlaca > 44 ? 24 : 22}px`;
   const interruptor = el.querySelector('.interruptor');
   const api = {
     el,

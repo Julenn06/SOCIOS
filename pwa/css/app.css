@@ -962,6 +962,25 @@ dialog.dialogo[open]:where(:not([data-closing])) {
 .novedades { width: 100%; margin-top: 16px; padding: 14px; text-align: left; }
 .novedades .descripcion-fila { margin-top: 6px; line-height: calc(1.3em + 4px); white-space: pre-line; }
 
+/* ---------- Dispositivos y actividad (hojas/seguridad.js) ---------- */
+
+.lista-seguridad { padding: 4px 14px; }
+.fila-seguridad { display: flex; align-items: center; gap: 12px; padding: 12px 0; }
+.fila-seguridad + .fila-seguridad { border-top: 1px solid var(--divider); }
+.fila-seguridad .columna-textos { flex: 1; min-width: 0; margin: 0; }
+.fila-seguridad .titulo-fila { overflow-wrap: anywhere; }
+.fila-seguridad .placa.pequena { width: 36px; height: 36px; border-radius: 12px; }
+.fila-seguridad .placa.pequena .icono { width: 20px; height: 20px; }
+.fila-seguridad.aviso-fallo .titulo-fila { color: var(--red-text); }
+.boton-cerrar-sesion.boton.texto { flex: none; padding: 0 14px; color: var(--red-text); }
+.boton-cerrar-otras { margin-top: 12px; }
+.estado-seguridad {
+  display: flex; align-items: center; justify-content: center; gap: 10px; min-height: 64px; padding: 8px 0;
+  font-size: 14px; color: var(--text-sub); text-align: center;
+}
+.estado-seguridad .girando { border-color: color-mix(in srgb, var(--primary) 25%, transparent); border-top-color: var(--primary); }
+.error-seguridad { flex-direction: column; gap: 2px; }
+
 /* ---------- Versión nueva (pantalla-novedad.js): pantalla entera ---------- */
 
 dialog.pantalla-novedad {
@@ -1047,6 +1066,68 @@ dialog.pantalla-cuenta::backdrop { background: var(--bg); }
 .cuenta-formulario .boton.texto { margin-top: -4px; }
 /* El círculo de "un momento" toma el color del texto del botón, también en el tema oscuro. */
 .boton .girando { border-color: color-mix(in srgb, currentColor 25%, transparent); border-top-color: currentColor; }
+
+/* ---------- Utilidades: lo que antes iba en style="" ----------
+   La CSP (.htaccess) no deja estilos en el HTML (style-src sin 'unsafe-inline'): una nota o un nombre con HTML
+   colado no podría ni siquiera cambiar cómo se ve la página. Lo puntual va en estas clases, con !important para que
+   manden igual que mandaba el style; lo que se calcula, con el.style desde el código. */
+.arriba-1 { margin-top: 1px !important; }
+.arriba-4 { margin-top: 4px !important; }
+.arriba-6 { margin-top: 6px !important; }
+.arriba-8 { margin-top: 8px !important; }
+.arriba-10 { margin-top: 10px !important; }
+.arriba-12 { margin-top: 12px !important; }
+.arriba-14 { margin-top: 14px !important; }
+.arriba-16 { margin-top: 16px !important; }
+.arriba-18 { margin-top: 18px !important; }
+.arriba-20 { margin-top: 20px !important; }
+.arriba-22 { margin-top: 22px !important; }
+.izquierda-8 { margin-left: 8px !important; }
+.izquierda-12 { margin-left: 12px !important; }
+.izquierda-16 { margin-left: 16px !important; }
+.sin-margen { margin: 0 !important; }
+.solo-izquierda-12 { margin: 0 0 0 12px !important; }
+.margen-lateral-12 { margin: 0 12px !important; }
+.relleno-14 { padding: 14px !important; }
+.relleno-16 { padding: 16px !important; }
+.relleno-24 { padding: 24px !important; }
+.relleno-lateral-4 { padding: 0 4px !important; }
+.relleno-copias { padding: 8px 20px 0 !important; }
+.bloque { display: block !important; }
+.columna-centrada { display: flex !important; flex-direction: column !important; align-items: center !important; }
+.crece-14 { flex-grow: 1.4 !important; }
+.crece-16 { flex-grow: 1.6 !important; }
+.lado-48 { width: 48px !important; height: 48px !important; }
+.letra-09 { font-size: 0.9em !important; }
+.letra-14 { font-size: 14px !important; }
+.letra-24 { font-size: 24px !important; }
+.texto-rojo { color: var(--red-text) !important; }
+.color-ambar { color: var(--amber-text) !important; }
+.color-verde { color: var(--green-text) !important; }
+.color-azul-suave { color: var(--blue-text-soft) !important; }
+.color-etiqueta-base { color: var(--header-label-base) !important; }
+.color-etiqueta-bonus { color: var(--header-label-bonus) !important; }
+.color-etiqueta-irpf { color: var(--header-label-irpf) !important; }
+.color-bonus { color: var(--header-bonus) !important; }
+.color-irpf { color: var(--header-irpf) !important; }
+.fondo-sub { background: var(--text-sub) !important; }
+.fondo-primario { background: var(--primary) !important; }
+.tarjeta-ambar { background: var(--amber-container) !important; border-color: var(--amber-stroke) !important; }
+.titulo-aviso-ambar { font-size: 14.5px !important; font-weight: 600 !important; color: var(--amber-text) !important; }
+.detalle-aviso { margin-top: 1px !important; font-size: 12.5px !important; color: var(--text-sub) !important; }
+.titulo-blanco { font-size: 15px !important; font-weight: 600 !important; color: #fff !important; }
+.detalle-neto { margin-top: 1px !important; font-size: 12px !important; color: var(--header-label-neto) !important; }
+.cifra-copia {
+  margin-top: 2px !important; font-size: 40px !important; font-weight: 600 !important; letter-spacing: -0.02em !important;
+  color: #fff !important; white-space: nowrap !important; line-height: 1.2 !important;
+}
+/* Valores de partida que luego cambia el código con el.style (por eso sin !important). */
+.hoy-envoltura { width: 0; }
+.hero-socio .fondo.ambar { opacity: 0; }
+/* El borde discontinuo de los vacíos, medio trazo hacia dentro. */
+svg.borde-discontinuo rect { width: calc(100% - 1.5px); height: calc(100% - 1.5px); }
+/* Si no se pueden abrir los datos al arrancar (main.js). */
+.error-arranque { padding: 24px; font-family: Geist, system-ui; }
 
 /* Arranque: nada se ve hasta tener los datos de la semana (como el primer fotograma de la app). */
 html.cargando body > #app { visibility: hidden; }
