@@ -1,5 +1,5 @@
 [versions]
-agp = "9.5.1"
+agp = "9.5.2"
 # Versión de Kotlin de todo el proyecto. AGP trae su propio Kotlin (2.2.10 en AGP 9.5), pero el plugin de
 # serialización pone este en el classpath de Gradle y, al ser más nuevo, es el que compila la app. Se sube a mano
 # (Dependabot no lo propone): comprobar que KSP y Room siguen funcionando.
