@@ -13,6 +13,7 @@ import { mostrarPantallaCuenta, quitarPantallaCuenta } from './pantalla-cuenta.j
 const CACHE_COMPARTIDO = 'compartido-socios';
 // Al arrancar: el aviso de que se puede instalar llega pronto y hay que guardarlo para el botón de "Más".
 import './instalacion.js';
+import { urlScriptConfiable } from './confianza.js';
 
 async function arrancar() {
   aplicarTema();
@@ -21,7 +22,10 @@ async function arrancar() {
   } catch (e) {
     console.error(e);
     document.documentElement.classList.remove('cargando');
-    document.body.innerHTML = `<p style="padding:24px;font-family:Geist,system-ui">No se han podido abrir tus datos en este navegador (${e?.name ?? 'Error'}). Prueba a cerrar las otras pestañas de la app o a salir del modo privado.</p>`;
+    const aviso = document.createElement('p');
+    aviso.className = 'error-arranque';
+    aviso.textContent = `No se han podido abrir tus datos en este navegador (${e?.name ?? 'Error'}). Prueba a cerrar las otras pestañas de la app o a salir del modo privado.`;
+    document.body.replaceChildren(aviso);
     return;
   }
   iniciarPantalla();
@@ -109,7 +113,7 @@ function vigilarVersionNueva() {
 
 function registrarServiceWorker() {
   if (!('serviceWorker' in navigator) || location.protocol === 'file:') return;
-  navigator.serviceWorker.register('sw.js').catch((e) => console.warn('Sin funcionamiento sin conexión:', e));
+  navigator.serviceWorker.register(urlScriptConfiable('sw.js')).catch((e) => console.warn('Sin funcionamiento sin conexión:', e));
 }
 
 arrancar();

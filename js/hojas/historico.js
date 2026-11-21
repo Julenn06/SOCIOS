@@ -25,25 +25,25 @@ export function abrirHistorico() {
       const s = panel.scroll;
       s.append(html(cabeceraPanel({ placa: 'degradado-cabecera', iconoPlaca: 'history', titulo: 'Histórico', subtitulo: 'Lo acumulado en todas tus semanas' })));
       const totales = html(`
-        <section class="hero panel" style="margin-top:20px">
+        <section class="arriba-20 hero panel">
           <div class="hero-interior">
             <div class="etiqueta-neto">Cobrado en total</div>
             <div class="neto-total" data-id="neto">0 €</div>
             <div class="pastillas"><span class="pastilla-cabecera" data-id="semanas"></span><span class="pastilla-cabecera" data-id="media"></span></div>
-            <div class="cajas" style="margin-top:18px">
-              <div class="caja"><span class="caja-etiqueta" style="color:var(--header-label-base)">Base ×2</span><span class="caja-importe" data-id="base"></span></div>
-              <div class="caja"><span class="caja-etiqueta" style="color:var(--header-label-bonus)">Bonus</span><span class="caja-importe" data-id="bonus" style="color:var(--header-bonus)"></span></div>
-              <div class="caja"><span class="caja-etiqueta" style="color:var(--header-label-irpf)">IRPF retenido</span><span class="caja-importe" data-id="irpf" style="color:var(--header-irpf)"></span></div>
+            <div class="arriba-18 cajas">
+              <div class="caja"><span class="color-etiqueta-base caja-etiqueta">Base ×2</span><span class="caja-importe" data-id="base"></span></div>
+              <div class="caja"><span class="color-etiqueta-bonus caja-etiqueta">Bonus</span><span class="color-bonus caja-importe" data-id="bonus"></span></div>
+              <div class="caja"><span class="color-etiqueta-irpf caja-etiqueta">IRPF retenido</span><span class="color-irpf caja-importe" data-id="irpf"></span></div>
             </div>
           </div>
         </section>`);
       const mejor = html(`
         <div class="tarjeta mejor-semana oculto">
           <div class="fila-mejor" role="button" tabindex="0">
-            <span class="tile-ambar degradado-ambar" style="width:48px;height:48px"><span class="icono" data-icono="trophy"></span></span>
+            <span class="lado-48 tile-ambar degradado-ambar"><span class="icono" data-icono="trophy"></span></span>
             <span class="columna-textos">
               <span class="etiqueta">Tu mejor semana</span>
-              <span class="titulo-fila" data-id="mejorRango" style="margin-top:1px"></span>
+              <span class="arriba-1 titulo-fila" data-id="mejorRango"></span>
               <span class="descripcion-fila" data-id="mejorDetalle"></span>
             </span>
             <span class="neto" data-id="mejorNeto"></span>
@@ -61,7 +61,7 @@ export function abrirHistorico() {
       agrupacion.marcar('SEMANA');
       const tarjetaGrafico = html(`
         <div class="tarjeta tarjeta-grafico">
-          <div class="fila" style="padding:0 4px">
+          <div class="relleno-lateral-4 fila">
             <span class="titulo">Evolución del neto</span>
             <span class="leyenda-media oculto" data-id="media"><svg viewBox="0 0 18 8" aria-hidden="true"><line x1="0" y1="4" x2="18" y2="4" stroke="currentColor" stroke-width="1.5" stroke-dasharray="5 3"/></svg><span></span></span>
           </div>
@@ -158,14 +158,15 @@ export function abrirHistorico() {
       function crearFila(f) {
         const el = html(`
           <div class="tarjeta fila-historico${f.semanaKey ? ' abrible' : ''}"${f.semanaKey ? ' role="button" tabindex="0"' : ''}>
-            <span class="placa ${f.destacada ? 'tono-verde' : 'tono-azul'}"><span class="etiqueta-placa" style="color:var(${f.destacada ? '--green-text' : '--blue-text-soft'})">${esc(f.etiqueta)}</span></span>
+            <span class="placa ${f.destacada ? 'tono-verde' : 'tono-azul'}"><span class="etiqueta-placa ${f.destacada ? 'color-verde' : 'color-azul-suave'}">${esc(f.etiqueta)}</span></span>
             <span class="columna-textos">
               <span class="fila"><span class="titulo-fila crece una-linea">${esc(f.titulo)}</span><span class="neto">${esc(moneda(f.neto, 2, f.neto > 0 ? '+' : ''))}</span></span>
               <span class="descripcion-fila" aria-label="${esc(sinSimbolos(f.detalle))}">${esc(f.detalle)}</span>
-              <span class="fila" style="margin-top:8px"><span class="barra-proporcion"><div style="width:${(f.proporcion * 100).toFixed(1)}%"></div></span><span class="irpf">IRPF ${esc(moneda(f.irpf, 2, '-'))}</span></span>
+              <span class="arriba-8 fila"><span class="barra-proporcion"><div></div></span><span class="irpf">IRPF ${esc(moneda(f.irpf, 2, '-'))}</span></span>
             </span>
             ${f.semanaKey ? '<span class="icono flecha" data-icono="chevron_right"></span>' : ''}
           </div>`);
+        el.querySelector('.barra-proporcion > div').style.width = `${(f.proporcion * 100).toFixed(1)}%`;
         if (f.semanaKey) {
           el.addEventListener('click', () => {
             estado.irASemana(f.semanaKey);

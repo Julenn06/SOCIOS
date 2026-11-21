@@ -1,7 +1,9 @@
 {
-  "version": "1.0.15",
-  "tamano": 1785562,
+  "version": "1.0.16",
+  "tamano": 1804683,
   "novedades": [
-    "Cuando hay una versión nueva, sale una pantalla para actualizar en el momento o dejarlo para luego"
+    "Tu sesión ya no se guarda en el navegador: va protegida en el servidor",
+    "Nuevo en Más → Cuenta: mira en qué dispositivos está abierta tu cuenta, ciérrala en los que quieras y revisa la actividad reciente",
+    "Si alguien falla la contraseña de tu cuenta, te avisa la próxima vez que entres"
   ]
 }

@@ -70,7 +70,11 @@ const AJUSTES = {
 
 const oyentes = new Set();
 export const cuenta = {
-  /** { token, nombre } o null. */
+  /**
+   * { nombre, cookie: true } o null. La sesión en sí va en una cookie HttpOnly del servidor, que este código no puede
+   * leer (si se colara un script, no podría llevársela). Las sesiones abiertas antes de la 1.0.16 traen aún { token },
+   * que pasa a la cookie en la primera sincronización (pasarACookie).
+   */
   get sesion() {
     return db.prefs.leer('sesion', null);
   },
@@ -104,7 +108,9 @@ async function pedir(metodo, ruta, cuerpo, token = cuenta.sesion?.token) {
       headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
       body: cuerpo === undefined ? undefined : JSON.stringify(cuerpo),
       signal: AbortSignal.timeout(TIEMPO_MAX_MS),
-      cache: 'no-store'
+      cache: 'no-store',
+      // Con la cookie de la sesión (el servidor es del mismo sitio: SameSite=Strict la deja pasar).
+      credentials: 'include'
     });
   } catch {
     throw new ErrorCuenta('Sin conexión con el servidor. Comprueba internet y vuelve a probar', 'sin_conexion');
@@ -120,7 +126,25 @@ async function pedir(metodo, ruta, cuerpo, token = cuenta.sesion?.token) {
   return datos;
 }
 
-const dispositivo = () => (matchMedia('(display-mode: standalone)').matches ? 'Web instalada' : 'Navegador');
+/** Cómo se ve este dispositivo en la lista de sesiones abiertas: "Chrome en Android (instalada)". */
+export function dispositivo() {
+  const ua = navigator.userAgent;
+  const navegador = /Edg(e|A|iOS)?\//.test(ua) ? 'Edge'
+    : /SamsungBrowser/.test(ua) ? 'Samsung Internet'
+      : /OPR\/|Opera/.test(ua) ? 'Opera'
+        : /Firefox|FxiOS/.test(ua) ? 'Firefox'
+          : /Chrome|CriOS/.test(ua) ? 'Chrome'
+            : /Safari/.test(ua) ? 'Safari' : 'Navegador';
+  const sistema = /Android/.test(ua) ? 'Android'
+    : /iPhone/.test(ua) ? 'iPhone'
+      : /iPad/.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1) ? 'iPad'
+        : /Windows/.test(ua) ? 'Windows'
+          : /CrOS/.test(ua) ? 'ChromeOS'
+            : /Macintosh|Mac OS X/.test(ua) ? 'Mac'
+              : /Linux/.test(ua) ? 'Linux' : '';
+  const instalada = matchMedia('(display-mode: standalone)').matches;
+  return `${navegador}${sistema ? ` en ${sistema}` : ''}${instalada ? ' (instalada)' : ''}`;
+}
 
 // --- Entrar, registrarse y salir ---
 
@@ -128,18 +152,38 @@ const dispositivo = () => (matchMedia('(display-mode: standalone)').matches ? 'W
 export const comprobarClaveRegistro = (claveRegistro) => pedir('POST', '/api/registro/comprobar', { claveRegistro }, null);
 
 export async function registrarse(claveRegistro, nombre, contrasena) {
-  await empezarSesion(await pedir('POST', '/api/registro', { claveRegistro, nombre, contrasena, dispositivo: dispositivo() }, null));
+  await empezarSesion(await pedir('POST', '/api/registro', { claveRegistro, nombre, contrasena, dispositivo: dispositivo(), modo: 'cookie' }, null));
 }
 
+/** Devuelve cuántas veces se ha fallado la contraseña de la cuenta desde la última vez que se entró. */
 export async function entrar(nombre, contrasena) {
-  await empezarSesion(await pedir('POST', '/api/sesion', { nombre, contrasena, dispositivo: dispositivo() }, null));
+  const respuesta = await pedir('POST', '/api/sesion', { nombre, contrasena, dispositivo: dispositivo(), modo: 'cookie' }, null);
+  await empezarSesion(respuesta);
+  return { fallos: respuesta.fallos ?? 0 };
 }
+
+/** Una sesión de antes de la 1.0.16 (con el token aquí): el servidor la pasa a la cookie y aquí se olvida el token. */
+async function pasarACookie() {
+  const sesion = cuenta.sesion;
+  if (!sesion?.token) return;
+  await pedir('POST', '/api/sesion/cookie', undefined, sesion.token);
+  db.prefs.guardar('sesion', { nombre: sesion.nombre, cookie: true });
+}
+
+// --- Dispositivos y actividad (Más → Cuenta → Dispositivos y actividad) ---
+
+/** [{ id, dispositivo, creado, visto, actual }], el más reciente primero. */
+export const listarSesiones = async () => (await pedir('GET', '/api/sesiones')).sesiones;
+export const cerrarSesionDe = (id) => pedir('POST', '/api/sesiones/cerrar', { id });
+export const cerrarSesionesOtras = () => pedir('POST', '/api/sesiones/cerrar', { otras: true });
+/** [{ tipo, momento, dispositivo }], lo más reciente primero. */
+export const leerActividad = async () => (await pedir('GET', '/api/actividad')).actividad;
 
 let alCambiarSesion = () => {};
 /** main.js: qué hacer al entrar o salir (enseñar u ocultar la pantalla de la cuenta, recargar los datos). */
 export const alEntrarOSalir = (f) => (alCambiarSesion = f);
 
-async function empezarSesion({ token, nombre }) {
+async function empezarSesion({ nombre }) {
   // Si en este dispositivo había datos de otra cuenta, no se mezclan con los de esta.
   const anterior = db.prefs.leer('cuentaNombre', null);
   if (anterior != null && claveNombre(anterior) !== claveNombre(nombre)) {
@@ -153,7 +197,7 @@ async function empezarSesion({ token, nombre }) {
   db.prefs.guardar('ajustesPendientes', { ...ajustes, ...db.prefs.leer('ajustesPendientes', {}) });
   db.prefs.guardar('rev', 0);
   db.prefs.guardar('cuentaNombre', nombre);
-  db.prefs.guardar('sesion', { token, nombre });
+  db.prefs.guardar('sesion', { nombre, cookie: true });
   cambiarEstado('SINCRONIZANDO');
   vigilar();
   // Si este navegador ya tiene datos, se ven al momento y se sincroniza detrás. Si no, primero se bajan y después se
@@ -247,6 +291,7 @@ export function sincronizar() {
 async function ciclo() {
   cambiarEstado('SINCRONIZANDO');
   try {
+    await pasarACookie();
     let recibidos = 0;
     for (let vuelta = 0; vuelta < 50; vuelta++) {
       const { hayMas, aplicados } = await unaVuelta();

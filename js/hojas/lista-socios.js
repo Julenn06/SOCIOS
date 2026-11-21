@@ -5,6 +5,7 @@ import { abrirHoja, cabeceraPanel } from '../paneles.js';
 import { esc, parseImporte, TEXTOS } from '../formato.js';
 import { crearCampo, html } from '../componentes.js';
 import { ListaSocios, sinAgrupar } from '../filas.js';
+import { htmlConfiable } from '../confianza.js';
 
 /** Búsqueda: filas que se pintan al momento y las que se añaden en cada tanda después. */
 const PRIMERAS_FILAS = 24;
@@ -50,7 +51,7 @@ export function abrirListaSocios(modo) {
         ? 'Escribe un nombre, una palabra de las notas o una cuota (por ejemplo, 20). Toca un resultado para ir a su semana.'
         : 'Márcalos como conseguidos con el interruptor. Toca uno para ir a su semana.'}</div>`);
       const resultados = html('<div class="resultados-lista oculto"></div>');
-      const vacio = html(`<div class="vacio-lista oculto"><svg class="borde-discontinuo" aria-hidden="true"><rect x="0.75" y="0.75" rx="22" ry="22" style="width:calc(100% - 1.5px);height:calc(100% - 1.5px)" fill="none" stroke="var(--stroke)" stroke-width="1.5" stroke-dasharray="7 5"/></svg><span></span></div>`);
+      const vacio = html(`<div class="vacio-lista oculto"><svg class="borde-discontinuo" aria-hidden="true"><rect x="0.75" y="0.75" rx="22" ry="22" fill="none" stroke="var(--stroke)" stroke-width="1.5" stroke-dasharray="7 5"/></svg><span></span></div>`);
       const contenedor = html('<div class="lista-busqueda"></div>');
       s.append(ayuda, resultados, vacio, contenedor);
 
@@ -100,7 +101,7 @@ export function abrirListaSocios(modo) {
         resultados.textContent = TEXTOS.resultados(socios.length);
         ayuda.classList.toggle('oculto', !(socios.length === 0 || !buscando));
         vacio.classList.toggle('oculto', !(hayConsulta && socios.length === 0));
-        vacio.querySelector('span').innerHTML = buscando ? `Ningún socio coincide con «${esc(texto)}»` : 'No te queda ningún pendiente de semanas anteriores';
+        vacio.querySelector('span').innerHTML = htmlConfiable(buscando ? `Ningún socio coincide con «${esc(texto)}»` : 'No te queda ningún pendiente de semanas anteriores');
       };
       campo?.input.addEventListener('input', pintar);
       campo?.input.addEventListener('keydown', (e) => e.key === 'Enter' && !e.isComposing && campo.input.blur());

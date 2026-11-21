@@ -43,7 +43,7 @@
       </div>
       <!-- Selector de semana: "Hoy" a la izquierda en semanas futuras y a la derecha en pasadas -->
       <div class="fila-semana" id="filaSemana">
-        <div class="hoy-envoltura izq" id="hoyIzq" style="width:0"><button class="boton-hoy" type="button" tabindex="-1"><span class="icono" data-icono="today"></span>Hoy</button></div>
+        <div class="hoy-envoltura izq" id="hoyIzq"><button class="boton-hoy" type="button" tabindex="-1"><span class="icono" data-icono="today"></span>Hoy</button></div>
         <div class="tarjeta-semana" id="tarjetaSemana">
           <button class="boton-icono" type="button" id="btnSemanaAnterior" aria-label="Semana anterior"><span class="icono" data-icono="chevron_left"></span></button>
           <div class="centro" aria-live="polite">
@@ -56,7 +56,7 @@
           </div>
           <button class="boton-icono" type="button" id="btnSemanaSiguiente" aria-label="Semana siguiente"><span class="icono" data-icono="chevron_right"></span></button>
         </div>
-        <div class="hoy-envoltura der" id="hoyDer" style="width:0"><button class="boton-hoy" type="button" tabindex="-1"><span class="icono" data-icono="today"></span>Hoy</button></div>
+        <div class="hoy-envoltura der" id="hoyDer"><button class="boton-hoy" type="button" tabindex="-1"><span class="icono" data-icono="today"></span>Hoy</button></div>
       </div>
     </header>
 
@@ -71,16 +71,16 @@
           </div>
           <div class="cajas">
             <div class="caja">
-              <span class="caja-etiqueta" style="color:var(--header-label-base)">Base ×2</span>
+              <span class="color-etiqueta-base caja-etiqueta">Base ×2</span>
               <span class="caja-importe" id="importeBase">0 €</span>
             </div>
             <div class="caja tocable" id="cajaBonus" role="button" tabindex="0">
-              <span class="caja-etiqueta" style="color:var(--header-label-bonus)"><span id="etiquetaBonus">Bonus</span><span class="icono" data-icono="edit_pequeno"></span></span>
-              <span class="caja-importe" id="importeBonus" style="color:var(--header-bonus)">0 €</span>
+              <span class="color-etiqueta-bonus caja-etiqueta"><span id="etiquetaBonus">Bonus</span><span class="icono" data-icono="edit_pequeno"></span></span>
+              <span class="color-bonus caja-importe" id="importeBonus">0 €</span>
             </div>
             <div class="caja">
-              <span class="caja-etiqueta" id="etiquetaIrpf" style="color:var(--header-label-irpf)">IRPF 21,48 %</span>
-              <span class="caja-importe" id="importeIrpf" style="color:var(--header-irpf)">0 €</span>
+              <span class="color-etiqueta-irpf caja-etiqueta" id="etiquetaIrpf">IRPF 21,48 %</span>
+              <span class="color-irpf caja-importe" id="importeIrpf">0 €</span>
             </div>
           </div>
           <!-- Solo con el neto ajustado a lo cobrado: cuánto se ha descontado de lo calculado -->
@@ -122,7 +122,7 @@
 
       <!-- Estado vacío -->
       <button class="vacio oculto pulsar" type="button" id="vacio">
-        <svg class="borde-discontinuo" aria-hidden="true"><rect x="0.75" y="0.75" rx="22" ry="22" style="width:calc(100% - 1.5px);height:calc(100% - 1.5px)" fill="none" stroke="var(--stroke)" stroke-width="1.5" stroke-dasharray="7 5"/></svg>
+        <svg class="borde-discontinuo" aria-hidden="true"><rect x="0.75" y="0.75" rx="22" ry="22" fill="none" stroke="var(--stroke)" stroke-width="1.5" stroke-dasharray="7 5"/></svg>
         <span class="placa tono-primario"><span class="icono" data-icono="group"></span></span>
         <span class="columna-textos">
           <span class="titulo-fila">Aún no hay socios aquí</span>
@@ -137,7 +137,7 @@
     <button class="fab" type="button" id="fab" aria-label="Nuevo socio"><span class="icono" data-icono="add"></span><span class="texto-fab">Nuevo socio</span></button>
   </div>
 
-  <noscript><p style="padding:24px">Gestión de Socios necesita JavaScript.</p></noscript>
+  <noscript><p class="relleno-24">Gestión de Socios necesita JavaScript.</p></noscript>
   <script type="module" src="js/main.js"></script>
 </body>
 </html>

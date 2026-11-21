@@ -18,6 +18,7 @@ import { abrirBonus, abrirCobro } from './hojas/ajustes-semana.js';
 import { abrirListaSocios } from './hojas/lista-socios.js';
 import { abrirHistorico } from './hojas/historico.js';
 import { abrirMas } from './hojas/mas.js';
+import { htmlConfiable } from './confianza.js';
 
 const $ = (id) => document.getElementById(id);
 const curvaCss = 'cubic-bezier(0.32, 0.72, 0, 1)';
@@ -295,7 +296,7 @@ function mostrarFiltro(ui) {
     // Solo si ha cambiado el número: así no se rehacen los botones (y sus estilos) en cada cambio de la pantalla.
     if (b.dataset.n === String(n)) return;
     b.dataset.n = String(n);
-    b.firstElementChild.innerHTML = `<span style="display:flex;flex-direction:column;align-items:center">${nombre}<span style="font-size:0.9em">${n}</span></span>`;
+    b.firstElementChild.innerHTML = htmlConfiable(`<span class="columna-centrada">${nombre}<span class="letra-09">${n}</span></span>`);
     b.setAttribute('aria-label', `${leido}, ${n} ${n === 1 ? 'socio' : 'socios'}`);
   };
   boton(0, 'Todos', 'Todos los días', ui.todosSociosSemana.length);

@@ -59,7 +59,7 @@ export function abrirBonus(semanaKey, bonoActual) {
       const botones = html(`
         <div class="botones">
           <button class="boton contorno${tieneBono ? '' : ' oculto'}" type="button" data-id="restablecer">Restablecer</button>
-          <button class="boton relleno" type="button" data-id="guardar" style="flex-grow:1.4"><span class="icono" data-icono="check"></span>Guardar</button>
+          <button class="crece-14 boton relleno" type="button" data-id="guardar"><span class="icono" data-icono="check"></span>Guardar</button>
         </div>`);
       s.append(botones);
       botones.querySelectorAll('.boton').forEach(muellePulsar);
@@ -119,13 +119,13 @@ export function abrirCobro(ui) {
       const campo = crearCampo({ etiqueta: 'Neto cobrado (€)', iconoCampo: 'euro', tipo: 'decimal', maxLength: 9, ayuda: true, grande: true });
       config.append(campo.el);
       const vista = html(`
-        <div class="tarjeta" style="margin-top:14px;padding:16px">
-          <div class="fila"><span class="punto-calculo" style="background:var(--text-sub)"></span><span class="etiqueta-calculo">Neto calculado</span><span class="importe-calculo" data-id="calculado"></span></div>
-          <div class="fila" style="margin-top:12px"><span class="punto-calculo" style="background:var(--primary)"></span><span class="etiqueta-calculo">Has cobrado</span><span class="importe-calculo" data-id="cobrado">–</span></div>
+        <div class="arriba-14 relleno-16 tarjeta">
+          <div class="fila"><span class="fondo-sub punto-calculo"></span><span class="etiqueta-calculo">Neto calculado</span><span class="importe-calculo" data-id="calculado"></span></div>
+          <div class="arriba-12 fila"><span class="fondo-primario punto-calculo"></span><span class="etiqueta-calculo">Has cobrado</span><span class="importe-calculo" data-id="cobrado">–</span></div>
           <div class="placa-diferencia oculto" data-id="diferencia"><span class="etiqueta" data-id="etiquetaDiferencia"></span><span class="valor cifra" data-id="valorDiferencia"></span></div>
         </div>`);
       config.append(vista);
-      const guardar = html('<button class="boton relleno ancho" type="button" style="margin-top:22px"><span class="icono" data-icono="check"></span>Guardar</button>');
+      const guardar = html('<button class="arriba-22 boton relleno ancho" type="button"><span class="icono" data-icono="check"></span>Guardar</button>');
       s.append(guardar);
       muellePulsar(guardar);
 

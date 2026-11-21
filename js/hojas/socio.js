@@ -40,8 +40,8 @@ function construirFormulario(panel, socioAEditar, semanaInicial, diaInicial) {
   s.append(html(`
     <div class="fila">
       <div class="crece">
-        <h2 class="titulo-panel" style="font-size:24px">${socioAEditar ? 'Editar socio' : 'Nuevo socio'}</h2>
-        <div class="subtitulo-panel" style="font-size:14px" data-id="subtitulo"></div>
+        <h2 class="letra-24 titulo-panel">${socioAEditar ? 'Editar socio' : 'Nuevo socio'}</h2>
+        <div class="letra-14 subtitulo-panel" data-id="subtitulo"></div>
       </div>
       <button class="boton-icono cerrar" type="button" data-cerrar aria-label="Cerrar"><span class="icono" data-icono="close"></span></button>
     </div>`));
@@ -49,14 +49,14 @@ function construirFormulario(panel, socioAEditar, semanaInicial, diaInicial) {
   // Cabecera con la ganancia: verde si está conseguido, ámbar si está pendiente.
   const hero = html(`
     <div class="hero-socio">
-      <div class="fondo verde"></div><div class="fondo ambar" style="opacity:0"></div><div class="luz"></div>
+      <div class="fondo verde"></div><div class="fondo ambar"></div><div class="luz"></div>
       <div class="interior">
         <div class="crece">
           <div class="etiqueta">Ganancia de este socio</div>
           <div class="ganancia" data-id="ganancia">+0,00 €</div>
           <div class="detalle" data-id="detalle"></div>
         </div>
-        <span class="pastilla-clara" data-id="badge" style="margin-left:8px"></span>
+        <span class="izquierda-8 pastilla-clara" data-id="badge"></span>
       </div>
     </div>`);
   s.append(hero);
@@ -107,7 +107,7 @@ function construirFormulario(panel, socioAEditar, semanaInicial, diaInicial) {
 
   // Nombre y notas, plegados porque son opcionales.
   const tarjetaDetalles = html(`
-    <div class="tarjeta" style="margin-top:20px">
+    <div class="arriba-20 tarjeta">
       <div class="fila-detalles" role="button" tabindex="0" data-id="filaDetalles">
         <span class="placa p40 tono-azul"><span class="icono" data-icono="person"></span></span>
         <span class="columna-textos">
@@ -131,7 +131,7 @@ function construirFormulario(panel, socioAEditar, semanaInicial, diaInicial) {
       ${socioAEditar
         ? '<button class="boton contorno rojo" type="button" data-id="eliminar"><span class="icono" data-icono="delete"></span>Eliminar</button>'
         : '<button class="boton tonal" type="button" data-id="otro"><span class="icono" data-icono="add"></span>Guardar y otro</button>'}
-      <button class="boton relleno" type="button" data-id="guardar" style="flex-grow:1.6"><span class="icono" data-icono="check"></span>${socioAEditar ? 'Guardar cambios' : 'Guardar socio'}</button>
+      <button class="crece-16 boton relleno" type="button" data-id="guardar"><span class="icono" data-icono="check"></span>${socioAEditar ? 'Guardar cambios' : 'Guardar socio'}</button>
     </div>`);
   panel.ponerBarra(barra);
   barra.querySelectorAll('.boton').forEach(muellePulsar);

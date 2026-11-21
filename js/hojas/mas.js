@@ -13,6 +13,8 @@ import { MuestraTema } from '../vistas/muestra-tema.js';
 import { AnimacionDescarga } from '../vistas/animacion-descarga.js';
 import { abrirCopias } from './copias.js';
 import { abrirAjustesCuenta } from './cuenta.js';
+import { abrirSeguridad } from './seguridad.js';
+import { htmlConfiable } from '../confianza.js';
 
 export function abrirMas() {
   return abrirHoja({
@@ -24,16 +26,16 @@ export function abrirMas() {
           <div class="hero-interior">
             <div class="fila">
               <div class="icono-app"><img src="icons/icono-placa.png" alt=""></div>
-              <div class="crece" style="margin-left:16px">
-                <h2 class="nombre-app" style="margin:0">Gestión de Socios</h2>
+              <div class="izquierda-16 crece">
+                <h2 class="sin-margen nombre-app">Gestión de Socios</h2>
               </div>
             </div>
             <div class="divisor-cabecera"></div>
             <div class="fila" aria-live="polite">
               <span class="placa-version" data-id="placa"></span>
-              <span class="columna-textos" style="margin:0 12px">
-                <span style="font-size:15px;font-weight:600;color:#fff" data-id="titulo"></span>
-                <span style="margin-top:1px;font-size:12px;color:var(--header-label-neto)" data-id="detalle"></span>
+              <span class="margen-lateral-12 columna-textos">
+                <span class="titulo-blanco" data-id="titulo"></span>
+                <span class="detalle-neto" data-id="detalle"></span>
               </span>
               <button class="boton-version" type="button" data-id="boton"></button>
             </div>
@@ -64,9 +66,9 @@ export function abrirMas() {
         };
         $cuenta('detalle').textContent = textos[cuenta.estado] ?? ultima;
         const sincronizando = cuenta.estado === 'SINCRONIZANDO';
-        $cuenta('placa').innerHTML = sincronizando
+        $cuenta('placa').innerHTML = htmlConfiable(sincronizando
           ? '<span class="girando"></span>'
-          : `<span class="icono">${icono(cuenta.estado === 'ERROR' || cuenta.estado === 'SIN_CONEXION' ? 'error' : 'person')}</span>`;
+          : `<span class="icono">${icono(cuenta.estado === 'ERROR' || cuenta.estado === 'SIN_CONEXION' ? 'error' : 'person')}</span>`);
         $cuenta('placa').className = `placa ${cuenta.estado === 'ERROR' ? 'tono-rojo' : cuenta.estado === 'SIN_CONEXION' ? 'tono-ambar' : 'tono-primario'}`;
       };
       tarjetaCuenta.addEventListener('click', () => {
@@ -89,9 +91,18 @@ export function abrirMas() {
         }
       });
       tarjetaNombreContrasena.style.marginTop = '10px';
+      // Dónde está abierta la cuenta (cerrar la sesión de un dispositivo) y lo último que ha pasado con ella.
+      const tarjetaSeguridad = filaFormato({
+        iconoPlaca: 'escudo', tono: 'verde', titulo: 'Dispositivos y actividad', detalle: 'Dónde está abierta tu cuenta y qué ha pasado con ella',
+        alPulsar: () => {
+          panel.cerrar();
+          abrirSeguridad();
+        }
+      });
+      tarjetaSeguridad.style.marginTop = '10px';
       pintarCuenta();
       const dejarCuenta = cuenta.suscribir(pintarCuenta);
-      s.append(tarjetaCuenta, tarjetaNombreContrasena, tarjetaSalir);
+      s.append(tarjetaCuenta, tarjetaNombreContrasena, tarjetaSeguridad, tarjetaSalir);
 
       // Solo en la web y solo si el navegador puede instalarla (ver instalacion.js).
       const seccionApp = html('<div class="seccion">App</div>');
@@ -125,7 +136,7 @@ export function abrirMas() {
       });
       muellePulsar(copias);
       const tarjetaBloqueo = html(`
-        <button class="tarjeta tocable tarjeta-interruptor" type="button" role="switch" style="margin-top:10px">
+        <button class="arriba-10 tarjeta tocable tarjeta-interruptor" type="button" role="switch">
           <span class="placa tono-azul"><span class="icono" data-icono="lock"></span></span>
           <span class="columna-textos"><span class="titulo-fila">Bloquear la app</span><span class="descripcion-fila">Pide la huella, la cara o el PIN del móvil al abrirla</span></span>
           <span class="interruptor" aria-hidden="true"></span>
@@ -194,12 +205,12 @@ export function abrirMas() {
           DISPONIBLE: ['new_releases', 'Actualización disponible', 'Lista para instalar desde aquí'],
           ERROR: ['error', 'No se ha podido comprobar', 'Revisa la conexión a internet']
         }[e.tipo];
-        $('placa').innerHTML = buscando ? '<span class="girando"></span>' : `<span class="icono">${icono(ic)}</span>`;
+        $('placa').innerHTML = htmlConfiable(buscando ? '<span class="girando"></span>' : `<span class="icono">${icono(ic)}</span>`);
         $('titulo').textContent = titulo;
         $('detalle').textContent = detalle;
         const disponible = e.tipo === 'DISPONIBLE';
         const texto = { SIN_COMPROBAR: 'Buscar', AL_DIA: 'Buscar', BUSCANDO: 'Buscando…', ERROR: 'Reintentar', DISPONIBLE: 'Actualizar' }[e.tipo];
-        botonVersion.innerHTML = `<span class="icono">${icono(disponible ? 'system_update' : 'refresh')}</span>${texto}`;
+        botonVersion.innerHTML = htmlConfiable(`<span class="icono">${icono(disponible ? 'system_update' : 'refresh')}</span>${texto}`);
         botonVersion.disabled = buscando;
         botonVersion.style.opacity = buscando ? '0.6' : '1';
         botonVersion.classList.toggle('destacado', disponible);
@@ -272,12 +283,12 @@ export function abrirActualizacion(publicada) {
       const contenido = html(`
         <div class="panel-actualizacion">
           <canvas class="animacion-descarga" aria-hidden="true"></canvas>
-          <h2 class="titulo-descarga" style="margin:0" aria-live="polite" data-id="titulo"></h2>
+          <h2 class="sin-margen titulo-descarga" aria-live="polite" data-id="titulo"></h2>
           <div class="detalle-descarga" data-id="detalle"></div>
           <div class="tarjeta novedades oculto" data-id="novedades"><div class="titulo-fila">Novedades</div><div class="descripcion-fila" data-id="textoNovedades"></div></div>
-          <button class="boton relleno ancho pequeno oculto" type="button" data-id="principal" style="margin-top:16px"></button>
-          <button class="boton contorno ancho pequeno oculto" type="button" data-id="recargar" style="margin-top:6px">Recargar la página</button>
-          <button class="boton texto ancho" type="button" data-id="secundario" style="margin-top:4px">Cancelar</button>
+          <button class="arriba-16 boton relleno ancho pequeno oculto" type="button" data-id="principal"></button>
+          <button class="arriba-6 boton contorno ancho pequeno oculto" type="button" data-id="recargar">Recargar la página</button>
+          <button class="arriba-4 boton texto ancho" type="button" data-id="secundario">Cancelar</button>
         </div>`);
       panel.scroll.append(contenido);
       const $ = (id) => contenido.querySelector(`[data-id="${id}"]`);

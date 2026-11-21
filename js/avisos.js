@@ -4,6 +4,7 @@ import { icono } from './iconos.js';
 import { esc } from './formato.js';
 import { activas, CORTA_MS, escalarSuave, haptica, latido, MEDIA_MS } from './movimiento.js';
 import { hayPanelAbierto } from './paneles.js';
+import { htmlConfiable } from './confianza.js';
 
 const TIPOS = {
   EXITO: { duracion: 2500, icono: 'check_circle', tono: 'verde' },
@@ -99,7 +100,7 @@ function crear(enPanel) {
   if (visible && !visible.cerrando) cerrar(visible);
   const el = document.createElement('div');
   el.className = `aviso${enPanel ? '' : ' flotante'}`;
-  el.innerHTML = `
+  el.innerHTML = htmlConfiable(`
     <div class="tarjeta-aviso">
       <div class="fila-aviso">
         <div class="franja-aviso"></div>
@@ -112,7 +113,7 @@ function crear(enPanel) {
         <button class="icono-toque cerrar-aviso" type="button" aria-label="Cerrar el aviso"><span class="icono">${icono('close')}</span></button>
       </div>
       <div class="barra-tiempo"></div>
-    </div>`;
+    </div>`);
   const aviso = {
     el,
     tarjeta: el.querySelector('.tarjeta-aviso'),
@@ -140,7 +141,7 @@ function pintar(aviso, titulo, detalle, t, accion, alPulsarAccion) {
   aviso.el.querySelector('.franja-aviso').style.background = color;
   aviso.barra.style.background = color;
   aviso.placa.className = `placa-aviso tono-${t.tono}`;
-  aviso.placa.querySelector('.icono').innerHTML = icono(t.icono);
+  aviso.placa.querySelector('.icono').innerHTML = htmlConfiable(icono(t.icono));
   aviso.el.querySelector('.titulo-aviso').textContent = titulo;
   // Los motivos de los errores pueden venir en minúscula.
   const textoDetalle = detalle ? detalle.charAt(0).toUpperCase() + detalle.slice(1) : '';
@@ -150,7 +151,7 @@ function pintar(aviso, titulo, detalle, t, accion, alPulsarAccion) {
   aviso.tarjeta.setAttribute('aria-label', [titulo, textoDetalle].filter(Boolean).join('. '));
   const boton = aviso.el.querySelector('.accion-aviso');
   boton.classList.toggle('oculto', !(accion && alPulsarAccion));
-  boton.innerHTML = esc(accion ?? '');
+  boton.innerHTML = htmlConfiable(esc(accion ?? ''));
   boton.onclick = accion && alPulsarAccion ? () => {
     // Primero se cierra este, así el aviso que traiga la acción sale aparte.
     cerrar(aviso);
