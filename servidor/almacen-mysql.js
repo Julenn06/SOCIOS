@@ -58,6 +58,17 @@ export async function crearAlmacenMysql(env) {
         s.tokenHash, s.usuarioId, s.dispositivo, s.creado, s.visto, s.caduca,
       ]),
     sesion: (hash) => uno('SELECT tokenHash, usuarioId, dispositivo, creado, visto, caduca FROM sesiones WHERE tokenHash = ?', [hash]),
+    sesionesDe: (usuarioId) =>
+      ejecutar('SELECT tokenHash, dispositivo, creado, visto FROM sesiones WHERE usuarioId = ? ORDER BY visto DESC', [usuarioId]),
+    /** Apunta algo en la actividad de la cuenta y deja solo las 100 últimas. */
+    async anotar(usuarioId, tipo, dispositivo, momento) {
+      await ejecutar('INSERT INTO actividad (usuarioId, momento, tipo, dispositivo) VALUES (?, ?, ?, ?)', [usuarioId, momento, tipo, dispositivo])
+      const corte = await uno('SELECT id FROM actividad WHERE usuarioId = ? ORDER BY id DESC LIMIT 1 OFFSET 100', [usuarioId])
+      if (corte) await ejecutar('DELETE FROM actividad WHERE usuarioId = ? AND id <= ?', [usuarioId, corte.id])
+    },
+    /** La actividad de la cuenta, de la más reciente a la más antigua. */
+    actividad: (usuarioId, limite) =>
+      ejecutar(`SELECT momento, tipo, dispositivo FROM actividad WHERE usuarioId = ? ORDER BY id DESC LIMIT ${Math.max(1, Math.min(100, limite | 0))}`, [usuarioId]),
     tocarSesion: (hash, visto, caduca) => ejecutar('UPDATE sesiones SET visto = ?, caduca = ? WHERE tokenHash = ?', [visto, caduca, hash]),
     borrarSesion: (hash) => ejecutar('DELETE FROM sesiones WHERE tokenHash = ?', [hash]),
     podar: (t) => ejecutar('DELETE FROM sesiones WHERE caduca < ?', [t]),

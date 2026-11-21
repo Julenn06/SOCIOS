@@ -16,7 +16,7 @@ before(async () => {
 })
 after(() => server.close())
 
-const pedir = async (metodo, ruta, cuerpo, { token, ip = '10.0.0.1', origen } = {}) => {
+const pedir = async (metodo, ruta, cuerpo, { token, ip = '10.0.0.1', origen, cookie } = {}) => {
   const r = await fetch(base + ruta, {
     method: metodo,
     headers: {
@@ -24,6 +24,7 @@ const pedir = async (metodo, ruta, cuerpo, { token, ip = '10.0.0.1', origen } = 
       'X-Forwarded-For': ip,
       ...(token ? { Authorization: `Bearer ${token}` } : {}),
       ...(origen ? { Origin: origen } : {}),
+      ...(cookie ? { Cookie: cookie } : {}),
     },
     body: cuerpo === undefined ? undefined : JSON.stringify(cuerpo),
   })
@@ -126,6 +127,92 @@ test('sin sesión no hay datos, y solo la web propia puede llamar desde el naveg
   assert.equal(ajena.cabeceras.get('access-control-allow-origin'), null)
   assert.equal((await pedir('GET', '/api/no-existe')).estado, 404)
   assert.equal((await pedir('POST', '/api/sesion', undefined)).estado, 401)
+})
+
+const WEB = 'https://socios.jfl06studio.com'
+/** "nombre=valor" de la cookie que pone la respuesta. */
+const cookieDe = (r) => r.cabeceras.get('set-cookie')?.split(';')[0]
+
+test('la web lleva la sesión en una cookie HttpOnly que su código no ve', async () => {
+  const reg = await pedir('POST', '/api/registro', { claveRegistro: 'clave de prueba', nombre: 'Leire', contrasena: 'de-leire-123', modo: 'cookie' }, { ip: '10.0.7.1', origen: WEB })
+  assert.equal(reg.estado, 201)
+  assert.equal(reg.cuerpo.token, undefined)
+  assert.equal(reg.cuerpo.nombre, 'Leire')
+  const puesta = reg.cabeceras.get('set-cookie')
+  assert.match(puesta, /^__Host-socios_sesion=[\w-]{43};/)
+  for (const atributo of ['HttpOnly', 'Secure', 'SameSite=Strict', 'Path=/']) assert.ok(puesta.includes(atributo), atributo)
+  assert.ok(!/Domain=/i.test(puesta))
+  assert.equal(reg.cabeceras.get('access-control-allow-credentials'), 'true')
+
+  const cookie = cookieDe(reg)
+  assert.equal((await pedir('GET', '/api/cuenta', undefined, { cookie, origen: WEB })).cuerpo.nombre, 'Leire')
+  const salir = await pedir('DELETE', '/api/sesion', undefined, { cookie, origen: WEB })
+  assert.equal(salir.estado, 204)
+  assert.match(salir.cabeceras.get('set-cookie'), /^__Host-socios_sesion=; Max-Age=0/)
+  assert.equal((await pedir('GET', '/api/cuenta', undefined, { cookie })).estado, 401)
+
+  // Una sesión de antes, con token, pasa a la cookie.
+  const entrar = await pedir('POST', '/api/sesion', { nombre: 'leire', contrasena: 'de-leire-123' }, { ip: '10.0.7.2' })
+  const paso = await pedir('POST', '/api/sesion/cookie', undefined, { token: entrar.cuerpo.token, origen: WEB })
+  assert.equal(paso.estado, 204)
+  assert.equal((await pedir('GET', '/api/cuenta', undefined, { cookie: cookieDe(paso) })).estado, 200)
+})
+
+test('lo que cambia algo solo se acepta desde la web, y las respuestas llevan cabeceras de seguridad', async () => {
+  const reg = await pedir('POST', '/api/registro', { claveRegistro: 'clave de prueba', nombre: 'Unai', contrasena: 'de-unai-1234', modo: 'cookie' }, { ip: '10.0.8.1' })
+  const cookie = cookieDe(reg)
+  const ajena = await pedir('POST', '/api/cuenta/nombre', { nombre: 'Robado' }, { cookie, origen: 'https://malvada.example' })
+  assert.equal(ajena.estado, 403)
+  assert.equal(ajena.cuerpo.error, 'origen')
+  assert.equal((await pedir('DELETE', '/api/sesion', undefined, { cookie, origen: 'https://jfl06studio.com' })).estado, 403)
+  assert.equal((await pedir('GET', '/api/cuenta', undefined, { cookie })).cuerpo.nombre, 'Unai')
+
+  const r = await pedir('GET', '/api/salud')
+  assert.match(r.cabeceras.get('strict-transport-security'), /max-age=31536000/)
+  assert.match(r.cabeceras.get('content-security-policy'), /frame-ancestors 'none'/)
+  assert.equal(r.cabeceras.get('x-frame-options'), 'DENY')
+  assert.equal(r.cabeceras.get('cross-origin-resource-policy'), 'same-origin')
+  assert.equal(r.cabeceras.get('referrer-policy'), 'no-referrer')
+})
+
+test('ver los dispositivos con sesión abierta y cerrarlos, y la actividad de la cuenta', async () => {
+  const reg = await pedir('POST', '/api/registro', { claveRegistro: 'clave de prueba', nombre: 'Nerea', contrasena: 'de-nerea-123', dispositivo: 'Chrome en Android' }, { ip: '10.0.9.1' })
+  const t = reg.cuerpo.token
+  // Dos fallos de alguien que no sabe la contraseña: al entrar después, se avisa.
+  await pedir('POST', '/api/sesion', { nombre: 'nerea', contrasena: 'no-es-esta', dispositivo: 'Firefox en Windows' }, { ip: '10.0.9.2' })
+  await pedir('POST', '/api/sesion', { nombre: 'nerea', contrasena: 'tampoco-es', dispositivo: 'Firefox en Windows' }, { ip: '10.0.9.2' })
+  const pc = await pedir('POST', '/api/sesion', { nombre: 'nerea', contrasena: 'de-nerea-123', dispositivo: 'Edge en Windows' }, { ip: '10.0.9.3' })
+  assert.equal(pc.cuerpo.fallos, 2)
+  const tablet = await pedir('POST', '/api/sesion', { nombre: 'nerea', contrasena: 'de-nerea-123', dispositivo: 'Safari en iPad' }, { ip: '10.0.9.4' })
+  assert.equal(tablet.cuerpo.fallos, 0)
+
+  const { sesiones } = (await pedir('GET', '/api/sesiones', undefined, { token: t })).cuerpo
+  assert.equal(sesiones.length, 3)
+  assert.equal(sesiones.filter((s) => s.actual).length, 1)
+  assert.equal(sesiones.find((s) => s.actual).dispositivo, 'Chrome en Android')
+  for (const s of sesiones) assert.match(s.id, /^[0-9a-f]{16}$/)
+
+  // Cerrar una: esa queda fuera y las demás siguen.
+  const delPc = sesiones.find((s) => s.dispositivo === 'Edge en Windows')
+  assert.equal((await pedir('POST', '/api/sesiones/cerrar', { id: delPc.id }, { token: t })).estado, 204)
+  assert.equal((await pedir('GET', '/api/cuenta', undefined, { token: pc.cuerpo.token })).estado, 401)
+  assert.equal((await pedir('GET', '/api/cuenta', undefined, { token: tablet.cuerpo.token })).estado, 200)
+  assert.equal((await pedir('POST', '/api/sesiones/cerrar', { id: delPc.id }, { token: t })).estado, 404)
+  assert.equal((await pedir('POST', '/api/sesiones/cerrar', { id: sesiones.find((s) => s.actual).id }, { token: t })).estado, 400)
+  // La de otra cuenta no se puede cerrar.
+  const ajena = await pedir('POST', '/api/registro', { claveRegistro: 'clave de prueba', nombre: 'Ajeno', contrasena: 'de-ajeno-123' }, { ip: '10.0.9.5' })
+  assert.equal((await pedir('POST', '/api/sesiones/cerrar', { id: sesiones.find((s) => s.dispositivo === 'Safari en iPad').id }, { token: ajena.cuerpo.token })).estado, 404)
+
+  // Todas las demás.
+  assert.equal((await pedir('POST', '/api/sesiones/cerrar', { otras: true }, { token: t })).estado, 204)
+  assert.equal((await pedir('GET', '/api/cuenta', undefined, { token: tablet.cuerpo.token })).estado, 401)
+  assert.equal((await pedir('GET', '/api/sesiones', undefined, { token: t })).cuerpo.sesiones.length, 1)
+
+  const { actividad } = (await pedir('GET', '/api/actividad', undefined, { token: t })).cuerpo
+  assert.deepEqual(actividad.map((a) => a.tipo), ['cierre_otras', 'cierre_remoto', 'entrada', 'entrada', 'fallo', 'fallo', 'registro'])
+  assert.equal(actividad[1].dispositivo, 'Edge en Windows')
+  assert.equal(actividad[4].dispositivo, 'Firefox en Windows')
+  assert.equal((await pedir('GET', '/api/actividad')).estado, 401)
 })
 
 // Hostinger (LiteSpeed lsnode) carga el punto de entrada con require(): un await de nivel superior lo tumbaría.

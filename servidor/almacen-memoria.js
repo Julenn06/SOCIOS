@@ -9,6 +9,7 @@ export function crearAlmacenMemoria() {
   const sesiones = new Map()
   const datos = new Map() // usuarioId → { tabla → Map(clave → fila) }
   const colas = new Map()
+  const actividades = new Map() // usuarioId → [{ momento, tipo, dispositivo }], la más reciente primero
 
   const datosDe = (id) => {
     if (!datos.has(id)) datos.set(id, Object.fromEntries(Object.keys(TABLAS).map((t) => [t, new Map()])))
@@ -41,10 +42,20 @@ export function crearAlmacenMemoria() {
     async borrarUsuario(id) {
       usuarios.delete(id)
       datos.delete(id)
+      actividades.delete(id)
       for (const [h, s] of sesiones) if (s.usuarioId === id) sesiones.delete(h)
     },
     crearSesion: async (s) => void sesiones.set(s.tokenHash, { ...s }),
     sesion: async (hash) => copia(sesiones.get(hash)),
+    sesionesDe: async (usuarioId) =>
+      [...sesiones.values()].filter((s) => s.usuarioId === usuarioId).sort((a, b) => b.visto - a.visto).map(copia),
+    async anotar(usuarioId, tipo, dispositivo, momento) {
+      if (!actividades.has(usuarioId)) actividades.set(usuarioId, [])
+      const lista = actividades.get(usuarioId)
+      lista.unshift({ momento, tipo, dispositivo })
+      lista.length = Math.min(lista.length, 100)
+    },
+    actividad: async (usuarioId, limite) => (actividades.get(usuarioId) ?? []).slice(0, limite).map(copia),
     async tocarSesion(hash, visto, caduca) {
       const s = sesiones.get(hash)
       if (s) Object.assign(s, { visto, caduca })

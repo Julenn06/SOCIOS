@@ -1,5 +1,6 @@
-# Avisos semanales de nuevas versiones de dependencias de Gradle y mensuales de las GitHub Actions.
-# Las actualizaciones menores y de parche se agrupan en un único pull request.
+# Avisos semanales de nuevas versiones de dependencias de Gradle, mensuales de las GitHub Actions y del servidor web.
+# Las actualizaciones menores y de parche se agrupan en un único pull request. Las de seguridad llegan además en
+# cuanto se publica el aviso (Dependabot security updates, activado en la configuración del repositorio).
 version: 2
 updates:
   - package-ecosystem: "gradle"
@@ -14,7 +15,20 @@ updates:
       # que KSP y Room siguen funcionando. Ver gradle/libs.versions.toml.
       - dependency-name: "org.jetbrains.kotlin.plugin.serialization"
 
+  # Las acciones van fijadas por SHA (con la versión en un comentario): Dependabot cambia el SHA y el comentario.
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
       interval: "monthly"
+    groups:
+      acciones:
+        update-types: ["minor", "patch"]
+
+  # El servidor de la web (servidor/): solo mysql2.
+  - package-ecosystem: "npm"
+    directory: "/servidor"
+    schedule:
+      interval: "monthly"
+    groups:
+      servidor:
+        update-types: ["minor", "patch"]
