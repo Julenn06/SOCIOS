@@ -166,6 +166,12 @@ function comprobarClaveRegistro(cuerpo, ip) {
 const rutas = {
   'GET /api/salud': async () => ({ ok: true }),
 
+  // TEMPORAL: qué cabeceras de IP llegan detrás de la CDN de Hostinger (solo devuelve las del propio cliente).
+  'GET /api/diagnostico-ip': async ({ req }) => ({
+    remota: req.socket.remoteAddress,
+    cabeceras: Object.fromEntries(Object.entries(req.headers).filter(([k]) => /forwarded|real-ip|client-ip|connecting-ip|hcdn|via|x-/i.test(k))),
+  }),
+
   'POST /api/registro/comprobar': async ({ req, ip }) => {
     comprobarClaveRegistro(await leerJson(req, MAX_CUERPO_CUENTA), ip)
     return [204]
