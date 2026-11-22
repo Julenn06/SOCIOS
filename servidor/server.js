@@ -14,6 +14,8 @@ import {
   validarNombre,
 } from './cuentas.js'
 import { sincronizar } from './sincronizacion.js'
+import { ALGORITMOS, comprobarCreacion, comprobarEntrada, idDeLlave, nuevoReto, RP_NOMBRE, usuarioDeLlave } from './passkeys.js'
+import { firmaError, limpiarErrores } from './errores.js'
 import { crearAlmacenMemoria } from './almacen-memoria.js'
 import { crearAlmacenMysql } from './almacen-mysql.js'
 
@@ -37,6 +39,14 @@ import { crearAlmacenMysql } from './almacen-mysql.js'
  *   GET    /api/sesiones                                                        → { sesiones: [{ id, dispositivo, creado, visto, actual }] }
  *   POST   /api/sesiones/cerrar      { id } | { otras: true }                   → 204
  *   GET    /api/actividad                                                       → { actividad: [{ tipo, momento, dispositivo }] }
+ *   POST   /api/llaves/opciones                                                 → { reto, usuario, nombre, rp, excluir, algoritmos }
+ *   POST   /api/llaves               { id, clientDataJSON, authenticatorData, publicKey, alg, transports, dispositivo } → { id, nombre, creada }
+ *   GET    /api/llaves                                                          → { llaves: [{ id, nombre, creada, usada }] }
+ *   POST   /api/llaves/borrar        { id }                                     → 204
+ *   POST   /api/sesion/llave/opciones                                           → { reto } (sin sesión)
+ *   POST   /api/sesion/llave         { id, clientDataJSON, authenticatorData, signature, userHandle, dispositivo } → { nombre }
+ *   POST   /api/errores              { errores: [{ tipo, mensaje, fuente, version, navegador }] } o informe CSP → 204
+ *   GET    /api/errores?desde=ms     (Authorization: Clave <CLAVE_ERRORES o CLAVE_REGISTRO>) → { errores: [...] }
  *
  * La sesión: la web la lleva en una cookie HttpOnly (__Host-socios_sesion, SameSite=Strict), que su código no puede
  * leer; para eso pide { modo: 'cookie' } al entrar o registrarse. Sin ese modo (tests, otros clientes) se devuelve un
@@ -46,6 +56,7 @@ import { crearAlmacenMysql } from './almacen-mysql.js'
  *   CLAVE_REGISTRO     contraseña que hay que saber para crear una cuenta (sin ella, el registro está cerrado)
  *   DB_HOST, DB_PORT, DB_NAME, DB_USER, DB_PASSWORD   los pone Hostinger al crear la base de datos del sitio
  *                      (también valen MYSQL_*; sin ninguna, todo va en memoria: solo para probar)
+ *   CLAVE_ERRORES      la que pide GET /api/errores (si no está, la de registro). Ver errores.js
  *   ALLOWED_ORIGIN     orígenes web permitidos, separados por comas (por defecto https://socios.jfl06studio.com)
  *   PORT               lo pone Hostinger
  *
@@ -114,6 +125,9 @@ const porIp = limitador(240, 60_000)
 // Intentos de entrar o de registrarse: por IP y, aparte, fallos por cuenta (aunque cambie la IP).
 const accesoPorIp = limitador(20, 15 * 60_000)
 const fallosPorCuenta = limitador(10, 15 * 60_000)
+// Informes de errores de la web: los que pasen de aquí se descartan sin avisar.
+const erroresPorIp = limitador(30, 10 * 60_000)
+const MAX_LLAVES = 20
 
 const demasiados = () => new ErrorPeticion(429, 'demasiados_intentos', 'Demasiados intentos. Espera unos minutos y vuelve a probar')
 
@@ -176,7 +190,7 @@ function leerCookie(req, nombre) {
 function fallosDesdeUltimaEntrada(actividad) {
   let fallos = 0
   for (const a of actividad) {
-    if (a.tipo === 'entrada' || a.tipo === 'registro') break
+    if (a.tipo === 'entrada' || a.tipo === 'llave' || a.tipo === 'registro') break
     if (a.tipo === 'fallo') fallos++
   }
   return fallos
@@ -190,7 +204,7 @@ async function abrirSesion({ almacen, ctx }, usuario, cuerpo, tipo) {
   const token = nuevoToken()
   const ahora = Date.now()
   const d = dispositivo(cuerpo.dispositivo)
-  const fallos = tipo === 'entrada' ? fallosDesdeUltimaEntrada(await almacen.actividad(usuario.id, 100)) : 0
+  const fallos = tipo === 'entrada' || tipo === 'llave' ? fallosDesdeUltimaEntrada(await almacen.actividad(usuario.id, 100)) : 0
   await almacen.crearSesion({ tokenHash: hashToken(token), usuarioId: usuario.id, dispositivo: d, creado: ahora, visto: ahora, caduca: ahora + SESION_MS })
   await almacen.tocarAcceso(usuario.id, ahora)
   await almacen.anotar(usuario.id, tipo, d, ahora)
@@ -381,6 +395,108 @@ const rutas = {
     return { actividad: actividad.map((a) => ({ tipo: a.tipo, momento: Number(a.momento), dispositivo: a.dispositivo })) }
   },
 
+  // --- llaves de acceso (passkeys.js) ---
+
+  'POST /api/llaves/opciones': async (c) => {
+    const s = await sesionDe(c)
+    const u = await c.almacen.usuario(s.usuarioId)
+    if (!u) throw new ErrorPeticion(401, 'sin_sesion', 'Inicia sesión')
+    const llaves = await c.almacen.llavesDe(u.id)
+    return {
+      reto: nuevoReto('crear', u.id),
+      usuario: usuarioDeLlave(u.id),
+      nombre: u.nombre,
+      rp: RP_NOMBRE,
+      // Las que ya tiene: el navegador no deja crear otra en el mismo autenticador.
+      excluir: llaves.map((l) => ({ id: l.id, transportes: l.transportes })),
+      algoritmos: ALGORITMOS,
+    }
+  },
+
+  'POST /api/llaves': async (c) => {
+    const s = await sesionDe(c)
+    const cuerpo = await leerJson(c.req, MAX_CUERPO_CUENTA)
+    const nueva = comprobarCreacion(cuerpo, s.usuarioId, ORIGENES)
+    const llaves = await c.almacen.llavesDe(s.usuarioId)
+    if (llaves.length >= MAX_LLAVES) throw new ErrorPeticion(409, 'demasiadas_llaves', `Como mucho ${MAX_LLAVES} llaves de acceso: borra alguna que ya no uses`)
+    if (llaves.some((l) => l.id === nueva.id)) throw new ErrorPeticion(409, 'llave_repetida', 'Esa llave de acceso ya está guardada')
+    const ahora = Date.now()
+    const llave = { ...nueva, usuarioId: s.usuarioId, nombre: dispositivo(cuerpo.dispositivo) || s.dispositivo, creada: ahora }
+    await c.almacen.guardarLlave(llave)
+    await c.almacen.anotar(s.usuarioId, 'llave_nueva', llave.nombre, ahora)
+    return [201, { id: llave.id, nombre: llave.nombre, creada: ahora }]
+  },
+
+  'GET /api/llaves': async (c) => {
+    const s = await sesionDe(c)
+    const llaves = await c.almacen.llavesDe(s.usuarioId)
+    return { llaves: llaves.map((l) => ({ id: l.id, nombre: l.nombre, creada: Number(l.creada), usada: Number(l.usada) })) }
+  },
+
+  'POST /api/llaves/borrar': async (c) => {
+    const s = await sesionDe(c)
+    const id = String((await leerJson(c.req, MAX_CUERPO_CUENTA)).id ?? '')
+    const llave = (await c.almacen.llavesDe(s.usuarioId)).find((l) => l.id === id)
+    if (!llave || !(await c.almacen.borrarLlave(s.usuarioId, id))) throw new ErrorPeticion(404, 'sin_llave', 'Esa llave de acceso ya no está')
+    await c.almacen.anotar(s.usuarioId, 'llave_borrada', llave.nombre, Date.now())
+    return [204]
+  },
+
+  // Entrar con una llave: el navegador ofrece las que tiene para esta web (no hace falta escribir el nombre).
+  'POST /api/sesion/llave/opciones': async (c) => {
+    if (accesoPorIp.pasado(c.ip)) throw demasiados()
+    return { reto: nuevoReto('entrar') }
+  },
+
+  'POST /api/sesion/llave': async (c) => {
+    const cuerpo = await leerJson(c.req, MAX_CUERPO_CUENTA)
+    if (accesoPorIp.pasado(c.ip)) throw demasiados()
+    const llave = await c.almacen.llave(idDeLlave(cuerpo))
+    const usuario = llave ? await c.almacen.usuario(llave.usuarioId) : null
+    if (!usuario) {
+      accesoPorIp.contar(c.ip)
+      throw new ErrorPeticion(401, 'llave_desconocida', 'Esta llave de acceso ya no vale: puede que se borrara o que fuera de una cuenta borrada. Entra con la contraseña')
+    }
+    let contador
+    try {
+      contador = comprobarEntrada(cuerpo, llave, ORIGENES)
+    } catch (e) {
+      accesoPorIp.contar(c.ip)
+      throw e
+    }
+    await c.almacen.tocarLlave(llave.id, contador, Date.now())
+    return abrirSesion(c, usuario, cuerpo, 'llave')
+  },
+
+  // --- errores de la web (errores.js) ---
+
+  'POST /api/errores': async (c) => {
+    const cuerpo = await leerJson(c.req, 2 * MAX_CUERPO_CUENTA)
+    if (erroresPorIp.pasado(c.ip)) return [204]
+    erroresPorIp.contar(c.ip)
+    const ahora = Date.now()
+    for (const e of limpiarErrores(cuerpo)) await c.almacen.anotarError({ ...e, firma: firmaError(e), momento: ahora })
+    return [204]
+  },
+
+  'GET /api/errores': async (c) => {
+    const clave = env.CLAVE_ERRORES || env.CLAVE_REGISTRO
+    if (!clave) throw new ErrorPeticion(503, 'sin_clave', 'No hay clave para ver los errores')
+    if (accesoPorIp.pasado(c.ip)) throw demasiados()
+    if (!esClaveRegistro(/^Clave (.+)$/.exec(c.req.headers.authorization ?? '')?.[1], clave)) {
+      accesoPorIp.contar(c.ip)
+      throw new ErrorPeticion(403, 'clave', 'La clave no es correcta')
+    }
+    const desde = Number(new URL(c.req.url, 'http://x').searchParams.get('desde') ?? 0)
+    const errores = await c.almacen.errores(Number.isSafeInteger(desde) && desde > 0 ? desde : 0, 200)
+    return {
+      errores: errores.map((e) => ({
+        tipo: e.tipo, mensaje: e.mensaje, fuente: e.fuente, version: e.version, navegador: e.navegador,
+        veces: Number(e.veces), primero: Number(e.primero), ultimo: Number(e.ultimo),
+      })),
+    }
+  },
+
   'POST /api/sincronizar': async (c) => {
     const s = await sesionDe(c)
     return sincronizar(c.almacen, s.usuarioId, await leerJson(c.req, MAX_CUERPO))
@@ -407,8 +523,9 @@ export const server = createServer(async (req, res) => {
     if (!manejar) return enviar(req, res, 404, { error: 'no_existe', mensaje: 'No existe' })
     // Contra peticiones falsificadas (CSRF): lo que cambia algo, si lo manda un navegador, tiene que salir de la web.
     // Los navegadores siempre ponen Origin en esas peticiones; sin él no es un navegador y no lleva la cookie de nadie.
+    // Los informes de errores no cambian nada de nadie: los del navegador (report-uri) pueden llegar con otro Origin.
     const origen = req.headers.origin
-    if (req.method !== 'GET' && origen && !ORIGENES.includes(origen)) {
+    if (req.method !== 'GET' && origen && !ORIGENES.includes(origen) && ruta !== '/api/errores') {
       throw new ErrorPeticion(403, 'origen', 'Esta petición no viene de la web de Gestión de Socios')
     }
     if (porIp.pasado(ip)) throw demasiados()

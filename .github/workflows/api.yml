@@ -23,6 +23,21 @@ permissions:
 jobs:
   publicar:
     runs-on: ubuntu-latest
+    # Una base de datos como la de Hostinger (MariaDB) para probar el almacén MySQL y sus migraciones
+    # (test/mysql.test.js) antes de que lleguen a la de verdad.
+    services:
+      mariadb:
+        image: mariadb:11.4
+        env:
+          MARIADB_DATABASE: socios_pruebas
+          MARIADB_USER: socios
+          MARIADB_PASSWORD: socios
+          MARIADB_ROOT_PASSWORD: raiz
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd "healthcheck.sh --connect --innodb_initialized"
+          --health-interval 5s --health-timeout 5s --health-retries 20
     steps:
       - name: Descargar el código
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -34,9 +49,21 @@ jobs:
       # Si fallan las cuentas o la sincronización, el servidor no se publica.
       - name: Tests del servidor
         working-directory: servidor
+        env:
+          MYSQL_PRUEBAS: '1'
+          MYSQL_HOST: 127.0.0.1
+          MYSQL_PORT: '3306'
+          MYSQL_DATABASE: socios_pruebas
+          MYSQL_USER: socios
+          MYSQL_PASSWORD: socios
         run: |
           npm ci
           npm test
+
+      # La web de verdad contra este servidor, en Chrome: registrarse, sincronizar entre dos dispositivos, llaves de
+      # acceso y errores (pwa/test/e2e/).
+      - name: Recorridos de la web en Chrome
+        run: node --test "pwa/test/e2e/*.test.mjs"
 
       - name: Actualizar la rama api
         env:
@@ -52,7 +79,7 @@ jobs:
           fi
           find api -mindepth 1 -maxdepth 1 ! -name .git -exec rm -rf {} +
           cd servidor
-          cp -r package.json package-lock.json server.js cuentas.js sincronizacion.js almacen-memoria.js almacen-mysql.js migraciones ../api/
+          cp -r package.json package-lock.json server.js cuentas.js sincronizacion.js passkeys.js errores.js almacen-memoria.js almacen-mysql.js migraciones ../api/
           cd ../api
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"

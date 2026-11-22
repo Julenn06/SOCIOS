@@ -105,3 +105,49 @@ test('si el dispositivo va por delante de la cuenta (cuenta nueva), empieza de c
   const r = await sincronizar(a, 'u1', { desde: 50 }, AHORA)
   assert.equal(r.reiniciar, true)
 })
+
+test('dos dispositivos cambian campos distintos del mismo socio: se conservan los dos cambios', async () => {
+  const a = await cuenta()
+  await sincronizar(a, 'u1', { desde: 0, cambios: { socios: [socio('s1')] } }, AHORA)
+  // El móvil cambia el nombre (más tarde) y el ordenador, sin conexión, lo cobrado (antes): antes ganaba el registro
+  // entero del móvil y se perdía lo cobrado.
+  await sincronizar(a, 'u1', { desde: 1, cambios: { socios: [socio('s1', { nombreSocio: 'Ana María', modificado: 30, campos: { nombreSocio: 30 } })] } }, AHORA)
+  const r = await sincronizar(a, 'u1', { desde: 2, cambios: { socios: [socio('s1', { colaboracionCentimos: 3500, modificado: 20, campos: { colaboracionCentimos: 20 } })] } }, AHORA)
+  assert.equal(r.cambios.socios.length, 1)
+  const s = r.cambios.socios[0]
+  assert.equal(s.nombreSocio, 'Ana María')
+  assert.equal(s.colaboracionCentimos, 3500)
+  assert.equal(s.modificado, 30)
+  assert.deepEqual({ n: s.campos.nombreSocio, c: s.campos.colaboracionCentimos, h: s.campos.hecho }, { n: 30, c: 20, h: 10 })
+})
+
+test('del mismo campo gana el cambio más reciente, aunque llegue antes', async () => {
+  const a = await cuenta()
+  await sincronizar(a, 'u1', { desde: 0, cambios: { socios: [socio('s1')] } }, AHORA)
+  await sincronizar(a, 'u1', { desde: 1, cambios: { socios: [socio('s1', { notas: 'nueva', modificado: 40, campos: { notas: 40 } })] } }, AHORA)
+  const r = await sincronizar(a, 'u1', { desde: 2, cambios: { socios: [socio('s1', { notas: 'vieja', modificado: 35, campos: { notas: 35 } })] } }, AHORA)
+  assert.equal(r.rev, 2)
+  assert.equal(r.cambios.socios.length, 0)
+})
+
+test('existir es un campo más: borrar y recuperar se juntan con lo demás', async () => {
+  const a = await cuenta()
+  await sincronizar(a, 'u1', { desde: 0, cambios: { socios: [socio('s1')] } }, AHORA)
+  // Se borra en un dispositivo; en otro se había cambiado el nombre antes: sigue borrado y no hay revisión nueva.
+  await sincronizar(a, 'u1', { desde: 1, cambios: { socios: [{ id: 's1', borrado: true, modificado: 50, campos: { borrado: 50 } }] } }, AHORA)
+  const antes = await sincronizar(a, 'u1', { desde: 2, cambios: { socios: [socio('s1', { nombreSocio: 'Otro', modificado: 45, campos: { nombreSocio: 45, borrado: 45 } })] } }, AHORA)
+  assert.equal(antes.rev, 2)
+  // Deshacer el borrado (después) lo recupera con todos sus campos.
+  const despues = await sincronizar(a, 'u1', { desde: 2, cambios: { socios: [socio('s1', { nombreSocio: 'Ana', modificado: 60, campos: Object.fromEntries(['colaboracionCentimos', 'hecho', 'diaSemanaId', 'semanaKey', 'nombreSocio', 'notas', 'timestamp', 'borrado'].map((c) => [c, 60])) })] } }, AHORA)
+  assert.equal(despues.cambios.socios[0].borrado, false)
+  assert.equal(despues.cambios.socios[0].nombreSocio, 'Ana')
+})
+
+test('las horas por campo se validan y no pasan de ahora', async () => {
+  const a = await cuenta()
+  await assert.rejects(sincronizar(a, 'u1', { desde: 0, cambios: { socios: [socio('s1', { campos: { notas: -1 } })] } }, AHORA), /campos\.notas/)
+  await assert.rejects(sincronizar(a, 'u1', { desde: 0, cambios: { socios: [socio('s1', { campos: [1] })] } }, AHORA), /campos/)
+  const r = await sincronizar(a, 'u1', { desde: 0, cambios: { socios: [socio('s1', { campos: { notas: AHORA + 1e9, inventado: 5 } })] } }, AHORA)
+  assert.equal(r.cambios.socios[0].campos.notas, AHORA)
+  assert.equal(r.cambios.socios[0].campos.inventado, undefined)
+})
