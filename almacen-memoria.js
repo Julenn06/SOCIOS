@@ -10,6 +10,8 @@ export function crearAlmacenMemoria() {
   const datos = new Map() // usuarioId → { tabla → Map(clave → fila) }
   const colas = new Map()
   const actividades = new Map() // usuarioId → [{ momento, tipo, dispositivo }], la más reciente primero
+  const llaves = new Map() // id → { id, usuarioId, clavePublica, alg, contador, transportes, nombre, creada, usada }
+  const errores = new Map() // firma → { firma, tipo, mensaje, fuente, version, navegador, veces, primero, ultimo }
 
   const datosDe = (id) => {
     if (!datos.has(id)) datos.set(id, Object.fromEntries(Object.keys(TABLAS).map((t) => [t, new Map()])))
@@ -43,6 +45,7 @@ export function crearAlmacenMemoria() {
       usuarios.delete(id)
       datos.delete(id)
       actividades.delete(id)
+      for (const [k, l] of llaves) if (l.usuarioId === id) llaves.delete(k)
       for (const [h, s] of sesiones) if (s.usuarioId === id) sesiones.delete(h)
     },
     crearSesion: async (s) => void sesiones.set(s.tokenHash, { ...s }),
@@ -56,6 +59,30 @@ export function crearAlmacenMemoria() {
       lista.length = Math.min(lista.length, 100)
     },
     actividad: async (usuarioId, limite) => (actividades.get(usuarioId) ?? []).slice(0, limite).map(copia),
+    guardarLlave: async (l) => void llaves.set(l.id, { ...l, transportes: [...l.transportes] }),
+    llave: async (id) => copia(llaves.get(id)),
+    llavesDe: async (usuarioId) => [...llaves.values()].filter((l) => l.usuarioId === usuarioId).sort((a, b) => b.creada - a.creada).map(copia),
+    async tocarLlave(id, contador, usada) {
+      const l = llaves.get(id)
+      if (l) Object.assign(l, { contador, usada })
+    },
+    /** Falso si esa llave no es de la cuenta. */
+    async borrarLlave(usuarioId, id) {
+      if (llaves.get(id)?.usuarioId !== usuarioId) return false
+      llaves.delete(id)
+      return true
+    },
+    async anotarError(e) {
+      const ya = errores.get(e.firma)
+      if (ya) Object.assign(ya, { veces: ya.veces + 1, ultimo: e.momento })
+      else errores.set(e.firma, { ...e, veces: 1, primero: e.momento, ultimo: e.momento })
+      if (errores.size > 500) {
+        const viejo = [...errores.values()].sort((a, b) => a.ultimo - b.ultimo)[0]
+        errores.delete(viejo.firma)
+      }
+    },
+    errores: async (desde, limite) =>
+      [...errores.values()].filter((e) => e.ultimo > desde).sort((a, b) => b.ultimo - a.ultimo).slice(0, limite).map(copia),
     async tocarSesion(hash, visto, caduca) {
       const s = sesiones.get(hash)
       if (s) Object.assign(s, { visto, caduca })
@@ -72,10 +99,10 @@ export function crearAlmacenMemoria() {
         const tablas = datosDe(usuarioId)
         return fn({
           rev: async () => u.rev,
-          modificados: async (tabla, claves) =>
-            new Map(claves.filter((c) => tablas[tabla].has(c)).map((c) => [c, tablas[tabla].get(c).modificado])),
+          actuales: async (tabla, claves) =>
+            new Map(claves.filter((c) => tablas[tabla].has(c)).map((c) => [c, structuredClone(tablas[tabla].get(c))])),
           async guardar(tabla, filas) {
-            for (const f of filas) tablas[tabla].set(f[TABLAS[tabla].clave], { ...f })
+            for (const f of filas) tablas[tabla].set(f[TABLAS[tabla].clave], structuredClone(f))
           },
           fijarRev: async (rev) => void (u.rev = rev),
           leer: async (tabla, desde, hasta) =>

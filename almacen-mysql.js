@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto'
 import { readdirSync, readFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -51,7 +52,7 @@ export async function crearAlmacenMysql(env) {
     cambiarContrasena: (id, contrasena) => ejecutar('UPDATE usuarios SET contrasena = ? WHERE id = ?', [contrasena, id]),
     cerrarOtrasSesiones: (usuarioId, hashActual) =>
       ejecutar('DELETE FROM sesiones WHERE usuarioId = ? AND tokenHash <> ?', [usuarioId, hashActual]),
-    // Las sesiones y los datos se borran con la cuenta (ON DELETE CASCADE).
+    // Las sesiones, los datos y las llaves se borran con la cuenta (ON DELETE CASCADE).
     borrarUsuario: (id) => ejecutar('DELETE FROM usuarios WHERE id = ?', [id]),
     crearSesion: (s) =>
       ejecutar('INSERT INTO sesiones (tokenHash, usuarioId, dispositivo, creado, visto, caduca) VALUES (?, ?, ?, ?, ?, ?)', [
@@ -69,6 +70,29 @@ export async function crearAlmacenMysql(env) {
     /** La actividad de la cuenta, de la más reciente a la más antigua. */
     actividad: (usuarioId, limite) =>
       ejecutar(`SELECT momento, tipo, dispositivo FROM actividad WHERE usuarioId = ? ORDER BY id DESC LIMIT ${Math.max(1, Math.min(100, limite | 0))}`, [usuarioId]),
+    // Las llaves se buscan por el SHA-256 de su id (los id pueden ser largos para un índice).
+    guardarLlave: (l) =>
+      ejecutar('INSERT INTO llaves (id, idHash, usuarioId, clavePublica, alg, contador, transportes, nombre, creada, usada) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 0)', [
+        l.id, sha(l.id), l.usuarioId, l.clavePublica, l.alg, l.contador, l.transportes.join(','), l.nombre, l.creada,
+      ]),
+    llave: async (id) => conTransportes(await uno(`SELECT ${llaveCampos} FROM llaves WHERE idHash = ?`, [sha(id)])),
+    llavesDe: async (usuarioId) =>
+      (await ejecutar(`SELECT ${llaveCampos} FROM llaves WHERE usuarioId = ? ORDER BY creada DESC`, [usuarioId])).map(conTransportes),
+    tocarLlave: (id, contador, usada) => ejecutar('UPDATE llaves SET contador = ?, usada = ? WHERE idHash = ?', [contador, usada, sha(id)]),
+    async borrarLlave(usuarioId, id) {
+      return (await ejecutar('DELETE FROM llaves WHERE idHash = ? AND usuarioId = ?', [sha(id), usuarioId])).affectedRows > 0
+    },
+    /** Un error de la web: si ya estaba (misma firma), se cuenta una vez más. Quedan los 500 más recientes. */
+    async anotarError(e) {
+      await ejecutar(
+        'INSERT INTO errores (firma, tipo, mensaje, fuente, version, navegador, veces, primero, ultimo) VALUES (?, ?, ?, ?, ?, ?, 1, ?, ?) ON DUPLICATE KEY UPDATE veces = veces + 1, ultimo = VALUES(ultimo)',
+        [e.firma, e.tipo, e.mensaje, e.fuente, e.version, e.navegador, e.momento, e.momento],
+      )
+      const corte = await uno('SELECT ultimo FROM errores ORDER BY ultimo DESC LIMIT 1 OFFSET 500', [])
+      if (corte) await ejecutar('DELETE FROM errores WHERE ultimo <= ?', [corte.ultimo])
+    },
+    errores: (desde, limite) =>
+      ejecutar(`SELECT firma, tipo, mensaje, fuente, version, navegador, veces, primero, ultimo FROM errores WHERE ultimo > ? ORDER BY ultimo DESC LIMIT ${Math.max(1, Math.min(500, limite | 0))}`, [desde]),
     tocarSesion: (hash, visto, caduca) => ejecutar('UPDATE sesiones SET visto = ?, caduca = ? WHERE tokenHash = ?', [visto, caduca, hash]),
     borrarSesion: (hash) => ejecutar('DELETE FROM sesiones WHERE tokenHash = ?', [hash]),
     podar: (t) => ejecutar('DELETE FROM sesiones WHERE caduca < ?', [t]),
@@ -109,22 +133,28 @@ export function datosConexion(env) {
   }
 }
 
+const sha = (texto) => createHash('sha256').update(texto).digest('hex')
+const llaveCampos = 'id, usuarioId, clavePublica, alg, contador, transportes, nombre, creada, usada'
+const conTransportes = (l) => (l ? { ...l, transportes: l.transportes ? l.transportes.split(',') : [] } : null)
 const id = (nombre) => `\`${nombre}\``
-const columnas = (tabla) => [TABLAS[tabla].clave, ...Object.keys(TABLAS[tabla].campos), 'modificado', 'borrado', 'rev']
+const columnas = (tabla) => [TABLAS[tabla].clave, ...Object.keys(TABLAS[tabla].campos), 'modificado', 'borrado', 'rev', 'campos']
+/** Cómo se guarda cada valor: los booleanos como 0/1 y las horas de cada campo como JSON. */
+const aColumna = (v) => (typeof v === 'boolean' ? Number(v) : v && typeof v === 'object' ? JSON.stringify(v) : v)
 
 function transaccion(con, usuarioId, revInicial) {
   return {
     rev: async () => revInicial,
-    async modificados(tabla, claves) {
+    /** Las filas guardadas de esas claves (para juntarlas campo a campo con lo que llega). */
+    async actuales(tabla, claves) {
       const clave = TABLAS[tabla].clave
       const mapa = new Map()
       for (let i = 0; i < claves.length; i += 500) {
         const trozo = claves.slice(i, i + 500)
         const [filas] = await con.query(
-          `SELECT ${id(clave)} AS clave, modificado FROM ${id(tabla)} WHERE usuarioId = ? AND ${id(clave)} IN (?)`,
+          `SELECT ${columnas(tabla).map(id).join(', ')} FROM ${id(tabla)} WHERE usuarioId = ? AND ${id(clave)} IN (?) FOR UPDATE`,
           [usuarioId, trozo],
         )
-        for (const f of filas) mapa.set(f.clave, Number(f.modificado))
+        for (const f of filas) mapa.set(f[clave], f)
       }
       return mapa
     },
@@ -132,7 +162,7 @@ function transaccion(con, usuarioId, revInicial) {
       const cols = columnas(tabla)
       const actualizar = cols.slice(1).map((c) => `${id(c)} = VALUES(${id(c)})`).join(', ')
       for (let i = 0; i < filas.length; i += 200) {
-        const valores = filas.slice(i, i + 200).map((f) => [usuarioId, ...cols.map((c) => (typeof f[c] === 'boolean' ? Number(f[c]) : f[c]))])
+        const valores = filas.slice(i, i + 200).map((f) => [usuarioId, ...cols.map((c) => aColumna(f[c]))])
         await con.query(
           `INSERT INTO ${id(tabla)} (usuarioId, ${cols.map(id).join(', ')}) VALUES ? ON DUPLICATE KEY UPDATE ${actualizar}`,
           [valores],
