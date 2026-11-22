@@ -22,8 +22,13 @@ const C = {
 const FUENTES = { normal: 'geist_regular', media: 'geist_medium', fuerte: 'geist_semibold', negrita: 'geist_bold' };
 let fuentesCargadas = null;
 
+// El generador y las fuentes no van en la instalación (sw.js, BAJO_DEMANDA): la primera vez se descargan.
+const SIN_CONEXION = 'Para el primer PDF hace falta conexión: se prepara el generador (unos 700 KB) y desde entonces funciona sin internet';
+
 async function base64(url) {
-  const bytes = new Uint8Array(await (await fetch(url)).arrayBuffer());
+  const respuesta = await fetch(url).catch(() => null);
+  if (!respuesta?.ok) throw new Error(SIN_CONEXION);
+  const bytes = new Uint8Array(await respuesta.arrayBuffer());
   let s = '';
   for (let i = 0; i < bytes.length; i += 0x8000) s += String.fromCharCode(...bytes.subarray(i, i + 0x8000));
   return btoa(s);
@@ -36,7 +41,10 @@ async function cargarJsPdf() {
       // Con Trusted Types, la URL de un script tiene que pasar por la política (confianza.js).
       s.src = urlScriptConfiable(new URL('../vendor/jspdf.umd.min.js', import.meta.url).href);
       s.onload = resolver;
-      s.onerror = () => rechazar(new Error('No se ha podido cargar el generador de PDF'));
+      s.onerror = () => {
+        s.remove();
+        rechazar(new Error(navigator.onLine ? 'No se ha podido cargar el generador de PDF' : SIN_CONEXION));
+      };
       document.head.append(s);
     });
   }

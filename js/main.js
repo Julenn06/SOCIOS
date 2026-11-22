@@ -1,4 +1,6 @@
 // SociosApp + MainActivity.onCreate: abre los datos, pinta la pantalla, el bloqueo y el aviso de versión nueva.
+// Lo primero, para ver también los fallos al cargar lo demás.
+import { anotarError } from './errores.js';
 import * as estado from './estado.js';
 import { aplicarTema, actualizaciones, bloqueo } from './ajustes.js';
 import { mostrarAviso } from './avisos.js';
@@ -113,7 +115,24 @@ function vigilarVersionNueva() {
 
 function registrarServiceWorker() {
   if (!('serviceWorker' in navigator) || location.protocol === 'file:') return;
-  navigator.serviceWorker.register(urlScriptConfiable('sw.js')).catch((e) => console.warn('Sin funcionamiento sin conexión:', e));
+  navigator.serviceWorker.register(urlScriptConfiable('sw.js')).then(prepararPdf, (e) => {
+    console.warn('Sin funcionamiento sin conexión:', e);
+    anotarError({ tipo: 'sw', mensaje: `No se ha podido registrar el service worker: ${e?.message ?? e}` });
+  });
+}
+
+/**
+ * El generador de PDF y sus fuentes no van en la instalación (sw.js, BAJO_DEMANDA): un minuto después de abrir la app,
+ * con conexión y sin ahorro de datos, se descargan en segundo plano para que el PDF funcione también sin conexión.
+ */
+function prepararPdf() {
+  setTimeout(() => {
+    if (!navigator.onLine || navigator.connection?.saveData || !navigator.serviceWorker.controller) return;
+    const archivos = ['vendor/jspdf.umd.min.js', 'fonts/geist_regular.ttf', 'fonts/geist_medium.ttf', 'fonts/geist_semibold.ttf', 'fonts/geist_bold.ttf'];
+    const pedir = () => archivos.forEach((a) => fetch(a, { priority: 'low' }).catch(() => {}));
+    if ('requestIdleCallback' in window) requestIdleCallback(pedir, { timeout: 10_000 });
+    else pedir();
+  }, 60_000);
 }
 
 arrancar();

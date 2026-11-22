@@ -1,6 +1,6 @@
 // Service worker: guarda la app entera para que funcione sin conexión. Una versión nueva se descarga entera antes de
 // usarse (contando lo que lleva, para la animación de "Actualizar") y solo se activa cuando la app lo pide.
-const VERSION = '1.0.16';
+const VERSION = '1.0.17';
 const CACHE = `socios-${VERSION}`;
 const ARCHIVOS = [
   './',
@@ -40,21 +40,17 @@ const ARCHIVOS = [
   'js/hojas/cuenta.js',
   'js/hojas/seguridad.js',
   'js/confianza.js',
+  'js/entorno.js',
+  'js/errores.js',
   'js/vistas/progreso-bonus.js',
   'js/vistas/franja-semana.js',
   'js/vistas/grafico-neto.js',
   'js/vistas/muestra-tema.js',
   'js/vistas/animacion-descarga.js',
-  'vendor/jspdf.umd.min.js',
   'fonts/geist_regular.woff2',
   'fonts/geist_medium.woff2',
   'fonts/geist_semibold.woff2',
   'fonts/geist_bold.woff2',
-  // Las TTF solo las usa el informe PDF (jsPDF no lee WOFF2): también se guardan, para exportar sin conexión.
-  'fonts/geist_regular.ttf',
-  'fonts/geist_medium.ttf',
-  'fonts/geist_semibold.ttf',
-  'fonts/geist_bold.ttf',
   'img/grano.png',
   'icons/icono-192.png',
   'icons/icono-512.png',
@@ -66,6 +62,18 @@ const ARCHIVOS = [
   'icons/redondo.png',
   'icons/atajo-nuevo-socio.png'
 ];
+// Lo que solo usa el informe PDF (el generador y las fuentes TTF, que jsPDF no lee WOFF2): unos 700 KB, casi la mitad
+// de la app. No va en la instalación: se guarda aparte la primera vez que se pide (al exportar un PDF, o en segundo plano
+// un rato después de abrir la app, ver main.js) y desde entonces funciona sin conexión.
+const BAJO_DEMANDA = [
+  'vendor/jspdf.umd.min.js',
+  'fonts/geist_regular.ttf',
+  'fonts/geist_medium.ttf',
+  'fonts/geist_semibold.ttf',
+  'fonts/geist_bold.ttf'
+];
+// No empieza por "socios-": actualizar la app no la borra.
+const CACHE_PDF = 'pdf-socios';
 
 async function avisar(mensaje) {
   const clientes = await self.clients.matchAll({ includeUncontrolled: true, type: 'window' });
@@ -75,6 +83,13 @@ async function avisar(mensaje) {
 self.addEventListener('install', (evento) => {
   evento.waitUntil((async () => {
     const cache = await caches.open(CACHE);
+    // Las versiones anteriores a la 1.0.17 los guardaban con todo lo demás: pasan a su sitio antes de que se borren.
+    const pdf = await caches.open(CACHE_PDF);
+    for (const archivo of BAJO_DEMANDA) {
+      if (await pdf.match(archivo)) continue;
+      const vieja = await caches.match(archivo);
+      if (vieja) await pdf.put(archivo, vieja);
+    }
     let hechos = 0;
     let bytes = 0;
     // Uno a uno, para que la animación vea cómo avanza. Con no-cache, cada archivo se le pregunta al servidor: si no ha
@@ -122,6 +137,20 @@ async function recibirCompartido(peticion) {
   return Response.redirect(destino, 303);
 }
 
+/** Lo del PDF: lo guardado al momento (y se mira en segundo plano si ha cambiado) o, la primera vez, del servidor. */
+async function bajoDemanda(evento, url) {
+  const cache = await caches.open(CACHE_PDF);
+  const clave = url.origin + url.pathname;
+  const guardada = await cache.match(clave);
+  const nueva = fetch(new Request(clave, { cache: 'no-cache' })).then(async (r) => {
+    if (r.ok) await cache.put(clave, r.clone());
+    return r;
+  });
+  if (!guardada) return nueva;
+  evento.waitUntil(nueva.catch(() => {}));
+  return guardada;
+}
+
 self.addEventListener('fetch', (evento) => {
   const peticion = evento.request;
   const url = new URL(peticion.url);
@@ -133,6 +162,10 @@ self.addEventListener('fetch', (evento) => {
   if (url.origin !== location.origin) return;
   // La versión publicada siempre se pregunta al servidor.
   if (url.pathname.endsWith('/version.json')) return;
+  if (BAJO_DEMANDA.includes(url.href.slice(self.registration.scope.length).split('?')[0])) {
+    evento.respondWith(bajoDemanda(evento, url));
+    return;
+  }
   evento.respondWith((async () => {
     const cache = await caches.open(CACHE);
     if (peticion.mode === 'navigate') {

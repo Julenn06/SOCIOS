@@ -4,7 +4,7 @@
 // Registrarse tiene dos pasos: primero la contraseña de registro (para que no pueda crear una cuenta cualquiera) y,
 // si es correcta, "¿Cómo te llamas?" y la contraseña de la cuenta. Para entrar, el nombre vale escrito de cualquier
 // forma: con mayúsculas, minúsculas o sin tildes.
-import { comprobarClaveRegistro, cuenta, entrar, ErrorCuenta, registrarse } from './nube.js';
+import { comprobarClaveRegistro, cuenta, entrar, entrarConLlave, ErrorCuenta, llavesDisponibles, registrarse } from './nube.js';
 import { crearCampo, grupoOpciones, html } from './componentes.js';
 import { haptica } from './movimiento.js';
 import { mostrarAviso } from './avisos.js';
@@ -101,26 +101,58 @@ function formulario(contenedor, { explicacion = null, campos, boton, enviar, ext
   return form;
 }
 
+/** Si alguien ha fallado la contraseña de la cuenta desde la última vez que se entró, que se sepa. */
+function avisarFallos(fallos) {
+  if (fallos > 0) {
+    mostrarAviso(
+      fallos === 1 ? 'Ha habido un intento fallido de entrar en tu cuenta' : `Ha habido ${fallos} intentos fallidos de entrar en tu cuenta`,
+      'ERROR',
+      'Si no has sido tú, cambia la contraseña en Más → Cuenta'
+    );
+  }
+}
+
+/** "Entrar con llave de acceso": sin nombre ni contraseña, con la huella, la cara o el PIN (Más → Cuenta → Seguridad). */
+function botonLlave(form) {
+  const caja = html(`
+    <div class="cuenta-llave">
+      <div class="cuenta-separador" aria-hidden="true"><span>o</span></div>
+      <button class="boton contorno ancho" type="button"><span class="icono" data-icono="huella"></span>Entrar con llave de acceso</button>
+    </div>`);
+  const boton = caja.querySelector('button');
+  const error = () => form.querySelector('.cuenta-error');
+  boton.addEventListener('click', async () => {
+    error().classList.add('oculto');
+    boton.disabled = true;
+    try {
+      avisarFallos((await entrarConLlave()).fallos);
+      haptica.confirmar();
+    } catch (e) {
+      if (e?.codigo !== 'cancelado') {
+        error().textContent = e?.message ?? 'No se ha podido entrar';
+        error().classList.remove('oculto');
+        haptica.rechazar();
+      }
+    } finally {
+      if (boton.isConnected) boton.disabled = false;
+    }
+  });
+  return caja;
+}
+
 function formularioEntrar(contenedor) {
   const nombre = crearCampo({ etiqueta: 'Tu nombre', iconoCampo: 'person', capitalizar: 'words', autocompletar: 'username', maxLength: 40, nombre: 'usuario', requerido: true });
   const contrasena = crearCampo({ etiqueta: 'Contraseña', iconoCampo: 'lock', tipo: 'contrasena', autocompletar: 'current-password', maxLength: 200, nombre: 'contrasena', requerido: true });
-  formulario(contenedor, {
+  const form = formulario(contenedor, {
     campos: [nombre, contrasena],
     boton: 'Entrar',
     async enviar({ enCampo }) {
       if (!nombre.valor().trim()) enCampo(nombre, 'Escribe tu nombre');
       if (!contrasena.valor()) enCampo(contrasena, 'Escribe tu contraseña');
-      const { fallos } = await entrar(nombre.valor(), contrasena.valor());
-      // Alguien ha probado contraseñas con esta cuenta desde la última vez: que se sepa.
-      if (fallos > 0) {
-        mostrarAviso(
-          fallos === 1 ? 'Ha habido un intento fallido de entrar en tu cuenta' : `Ha habido ${fallos} intentos fallidos de entrar en tu cuenta`,
-          'ERROR',
-          'Si no has sido tú, cambia la contraseña en Más → Cuenta'
-        );
-      }
+      avisarFallos((await entrar(nombre.valor(), contrasena.valor())).fallos);
     }
   });
+  if (llavesDisponibles()) form.append(botonLlave(form));
 }
 
 function formularioClaveRegistro(contenedor) {
