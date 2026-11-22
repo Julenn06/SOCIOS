@@ -31,8 +31,9 @@ AddDefaultCharset utf-8
   # Solo código y estilos de este sitio: aunque se colara un nombre o una nota con HTML (una copia manipulada, por
   # ejemplo), no podría ejecutar nada ni cambiar cómo se ve. Sin style="" en el HTML (clases o el.style) y, con Trusted
   # Types, todo HTML pasa por la política 'socios' (js/confianza.js). El hash es el del script del tema de index.html;
-  # si se cambia ese script, hay que cambiarlo aquí (herramientas/version.mjs --comprobar avisa).
-  Header always set Content-Security-Policy "default-src 'self'; script-src 'self' 'sha256-CZRMwOlLGhc53FnkXQBTxjJDGISaezVi1UbowIMmOxE='; style-src 'self'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self' https://socios-api.jfl06studio.com; manifest-src 'self'; worker-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; require-trusted-types-for 'script'; trusted-types socios; upgrade-insecure-requests"
+  # si se cambia ese script, hay que cambiarlo aquí (herramientas/version.mjs --comprobar avisa). Lo que bloquee se
+  # cuenta al servidor (report-uri; ver servidor/errores.js), también si la app no llega a arrancar.
+  Header always set Content-Security-Policy "default-src 'self'; script-src 'self' 'sha256-CZRMwOlLGhc53FnkXQBTxjJDGISaezVi1UbowIMmOxE='; style-src 'self'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self' https://socios-api.jfl06studio.com; manifest-src 'self'; worker-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; require-trusted-types-for 'script'; trusted-types socios; upgrade-insecure-requests; report-uri https://socios-api.jfl06studio.com/api/errores"
   Header always set Permissions-Policy "camera=(), microphone=(), geolocation=(), payment=(), usb=(), bluetooth=()"
   Header always set Cross-Origin-Opener-Policy "same-origin"
   Header always set Strict-Transport-Security "max-age=31536000"

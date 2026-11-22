@@ -22,9 +22,21 @@ node --test "pwa/test/*.test.mjs"
 ```
 
 Sin dependencias (el `node:test` de Node 22 o más). Comprueban las cuentas (céntimos, IRPF, tramos del bonus, neto
-cobrado), las semanas ISO, los textos de importes y fechas, y que las copias JSON y CSV tienen el formato de la app
-Android y se vuelven a leer igual, con los mismos casos que sus tests unitarios. El workflow que publica la web los pasa
-antes: si alguno falla, no se publica nada.
+cobrado), las semanas ISO, los textos de importes y fechas, que las copias JSON y CSV tienen el formato de la app
+Android y se vuelven a leer igual, con los mismos casos que sus tests unitarios, y cómo se juntan los cambios de dos
+dispositivos campo a campo. El workflow que publica la web los pasa antes: si alguno falla, no se publica nada.
+
+**Recorridos en Chrome** (`test/e2e/`): la web de verdad en un Chrome sin pantalla, con las cabeceras del `.htaccess`,
+contra el servidor de la cuenta en memoria. Se registra, guarda socios, abre todos los paneles, saca el PDF, sincroniza
+dos dispositivos que cambian el mismo socio sin conexión, crea una llave de acceso y entra con ella, se abre sin
+conexión y comprueba que los errores llegan al servidor sin datos. Falla si hay un error de JavaScript, si la CSP o
+Trusted Types bloquean algo y si un control no tiene nombre accesible o mide menos de 24×24 px. Lo pasan los workflows
+de la web y del servidor antes de publicar.
+
+```bash
+npm ci --prefix servidor
+node --test "pwa/test/e2e/*.test.mjs"     # Chrome en la ruta de siempre o en la variable CHROME
+```
 
 ## Cuenta y sincronización (solo la web)
 
@@ -35,11 +47,22 @@ los mismos en todos los dispositivos donde se abra la web.
 
 La web sigue funcionando sin conexión: cada cambio queda anotado como pendiente en IndexedDB (almacén `pendientes`, en
 la misma transacción que el dato) y se sube al volver la red. Se sincroniza al abrirla, al poco de cada cambio, al
-volver a ella y cada 30 s mientras se ve; si algo cambia en dos sitios, gana el cambio más reciente. Con los datos viajan
+volver a ella y cada 30 s mientras se ve. Si el mismo registro cambia en dos sitios, se juntan campo a campo (cada
+pendiente anota la hora de cada campo que cambia, `db.camposCambiados` y `db.juntar`): de cada campo gana el cambio
+más reciente, así que cambiar lo cobrado en un móvil y el nombre en otro conserva las dos cosas. Con los datos viajan
 el tema, la última cuota y los pendientes ocultos; el bloqueo con huella es de cada dispositivo. "Más → Cuenta" dice
 cuándo se sincronizó y permite cerrar sesión (los datos se quitan del dispositivo y siguen en la cuenta). En
 "Más → Cuenta → Nombre y contraseña" (`js/hojas/cuenta.js`) se cambian el nombre y la contraseña; si no se recuerda la
 actual, se restablece con la contraseña de registro. Al cambiarla, los demás dispositivos tienen que volver a entrar.
+
+**Llaves de acceso** (passkeys): en "Más → Cuenta → Seguridad" se crea una en el dispositivo (o en el móvil, con el QR
+que enseña el navegador) y desde entonces se entra con "Entrar con llave de acceso", con la huella, la cara o el PIN.
+Ahí mismo están las sesiones abiertas y la actividad de la cuenta.
+
+**Errores** (`js/errores.js`, lo primero que carga `main.js`): los fallos de JavaScript, las promesas sin atender, los
+archivos que no cargan y lo que bloquea la CSP se mandan al servidor sin datos de la persona; la CSP lleva además
+`report-uri` para cuando la app ni siquiera arranca. La vigilancia (`.github/workflows/vigilancia.yml`, cada 30 min)
+comprueba que la web y el servidor respondan con sus cabeceras y abre un issue si algo cae o hay errores nuevos.
 
 **La app Android no usa la cuenta**: para pasar sus datos a la web, las copias (abajo). Al entrar en la cuenta, lo que
 ya hubiera en ese navegador sube a ella.
@@ -106,6 +129,9 @@ importa para que todo vaya fluido:
 - **Listas largas por tandas**: la búsqueda pinta primero 24 filas y luego 30 por fotograma; solo las primeras 20
   animan su entrada. `content-visibility: auto` se probó y se quitó: con las 70 semanas del histórico, el trabajo pasaba
   a hacerse al desplazar y lo volvía a trompicones.
+- **Lo del PDF, bajo demanda** (`BAJO_DEMANDA` en `sw.js`): el generador y las fuentes TTF (unos 700 KB, casi la mitad)
+  no van en la instalación. Se guardan aparte (caché `pdf-socios`) al sacar el primer PDF o, con conexión y sin ahorro
+  de datos, un minuto después de abrir la app; desde entonces el PDF funciona sin conexión.
 - Los iconos se interpretan una vez y se clonan; los paneles cerrados se quitan del documento cuando el navegador está
   libre; lo que el servidor devuelve igual que se subió no relee ni repinta la pantalla.
 

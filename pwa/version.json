@@ -1,9 +1,10 @@
 {
-  "version": "1.0.16",
-  "tamano": 1804964,
+  "version": "1.0.17",
+  "tamano": 1099461,
   "novedades": [
-    "Tu sesión ya no se guarda en el navegador: va protegida en el servidor",
-    "Nuevo en Más → Cuenta: mira en qué dispositivos está abierta tu cuenta, ciérrala en los que quieras y revisa la actividad reciente",
-    "Si alguien falla la contraseña de tu cuenta, te avisa la próxima vez que entres"
+    "Entra con la huella, la cara o el PIN: crea una llave de acceso en Más → Cuenta → Seguridad",
+    "Si cambias el mismo socio en dos dispositivos a la vez, ya no se pierde ningún cambio: se juntan los dos",
+    "La app se instala más rápido: lo que solo usa el PDF se descarga cuando hace falta",
+    "Mejor con lector de pantalla y con teclado"
   ]
 }

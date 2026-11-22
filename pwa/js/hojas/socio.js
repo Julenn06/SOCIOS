@@ -76,9 +76,9 @@ function construirFormulario(panel, socioAEditar, semanaInicial, diaInicial) {
   const selector = html(`
     <div class="tarjeta selector-semana-form">
       <button class="boton-icono" type="button" data-id="anterior" aria-label="Semana anterior"><span class="icono" data-icono="chevron_left"></span></button>
-      <div class="centro" tabindex="0" data-id="contenedorSemana">
-        <span class="fecha" data-id="fecha" aria-hidden="true"></span>
-        <span class="relativa" data-id="relativa" aria-hidden="true"></span>
+      <div class="centro" role="status" data-id="contenedorSemana">
+        <span class="fecha" data-id="fecha"></span>
+        <span class="relativa" data-id="relativa"></span>
       </div>
       <button class="boton-icono" type="button" data-id="siguiente" aria-label="Semana siguiente"><span class="icono" data-icono="chevron_right"></span></button>
     </div>`);

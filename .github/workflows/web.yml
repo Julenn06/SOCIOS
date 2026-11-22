@@ -40,6 +40,14 @@ jobs:
       - name: Comprobar que el service worker guarda todos los archivos y la cabecera de seguridad
         run: node pwa/herramientas/version.mjs --comprobar
 
+      # La web en Chrome contra el servidor de la cuenta (en memoria): registrarse, todos los paneles, PDF, dos
+      # dispositivos sincronizando, llave de acceso, sin conexión y errores. Falla si hay un error de JavaScript, algo
+      # bloqueado por la política de seguridad o un control sin nombre o demasiado pequeño (pwa/test/e2e/).
+      - name: Recorridos en Chrome
+        run: |
+          npm ci --prefix servidor
+          node --test "pwa/test/e2e/*.test.mjs"
+
       - name: Actualizar la rama web
         env:
           TOKEN: ${{ secrets.GITHUB_TOKEN }}

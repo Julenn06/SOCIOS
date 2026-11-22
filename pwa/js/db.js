@@ -63,10 +63,33 @@ function terminar(tx, resolver, rechazar) {
   tx.onabort = () => rechazar(tx.error ?? new Error('Transacción cancelada'));
 }
 
+const igualValor = (a, b) => Object.is(a, b) || JSON.stringify(a) === JSON.stringify(b);
+
+/**
+ * Los campos que cambian de [antes] a [despues] (registros o undefined). Que exista es un campo más, `borrado`: crear,
+ * editar o recuperar un registro lo cambia (a "existe") y borrarlo también (a "no existe"), para que la cuenta junte
+ * los cambios de cada dispositivo campo a campo (ver servidor/sincronizacion.js).
+ */
+export function camposCambiados(antes, despues) {
+  if (!despues) return ['borrado'];
+  if (!antes) return [...Object.keys(despues), 'borrado'];
+  const cambiados = [...new Set([...Object.keys(antes), ...Object.keys(despues)])].filter((c) => !igualValor(antes[c], despues[c]));
+  return cambiados.length ? [...cambiados, 'borrado'] : [];
+}
+
+/** Las horas de cada campo de un pendiente; los de antes de la 1.0.17 no las tienen: todo cambió en `modificado`. */
+function tiemposDe(pendiente, ...registros) {
+  if (pendiente.campos) return pendiente.campos;
+  const campos = new Set(['borrado']);
+  for (const r of registros) if (r) Object.keys(r).forEach((c) => campos.add(c));
+  return Object.fromEntries([...campos].map((c) => [c, pendiente.modificado]));
+}
+
 /**
  * Aplica [cambios] en una sola transacción: o se guarda todo o nada. Cada cambio: { almacen, poner } o
  * { almacen, borrar: clave }. En la misma transacción queda anotado como pendiente de subir a la cuenta, con la hora
- * del cambio: así no se pierde aunque se cierre la app sin conexión.
+ * de cada campo que cambia: así no se pierde aunque se cierre la app sin conexión, y otro dispositivo puede cambiar
+ * otros campos del mismo registro sin pisarlo.
  */
 export function escribir(cambios) {
   return new Promise((resolver, rechazar) => {
@@ -74,12 +97,27 @@ export function escribir(cambios) {
     const tx = db.transaction(almacenes, 'readwrite');
     const pendientes = tx.objectStore('pendientes');
     const ahora = Date.now();
+    // Si en el mismo envío va dos veces el mismo registro, sus campos cambiados se suman.
+    const enEsteEnvio = new Map();
     for (const c of cambios) {
       const almacen = tx.objectStore(c.almacen);
-      const clave = 'borrar' in c ? c.borrar : c.poner[CLAVES[c.almacen]];
-      if ('borrar' in c) almacen.delete(c.borrar);
+      const borrar = 'borrar' in c;
+      const clave = borrar ? c.borrar : c.poner[CLAVES[c.almacen]];
+      const id = idPendiente(c.almacen, clave);
+      // Las lecturas van antes que la escritura en la misma transacción: ven lo que había.
+      const antes = almacen.get(clave);
+      const previo = pendientes.get(id);
+      previo.onsuccess = () => {
+        const cambiados = camposCambiados(antes.result, borrar ? undefined : c.poner);
+        if (!cambiados.length) return;
+        const base = enEsteEnvio.get(id) ?? (previo.result ? tiemposDe(previo.result, antes.result, c.poner) : {});
+        const campos = { ...base };
+        for (const campo of cambiados) campos[campo] = ahora;
+        enEsteEnvio.set(id, campos);
+        pendientes.put({ id, almacen: c.almacen, clave, modificado: ahora, campos });
+      };
+      if (borrar) almacen.delete(clave);
       else almacen.put(c.poner);
-      pendientes.put({ id: idPendiente(c.almacen, clave), almacen: c.almacen, clave, modificado: ahora });
     }
     terminar(tx, () => {
       resolver();
@@ -101,11 +139,31 @@ export function leer(almacen, clave) {
   });
 }
 
+const igualRegistro = (a, b) =>
+  !a || !b ? !a && !b : [...new Set([...Object.keys(a), ...Object.keys(b)])].every((c) => igualValor(a[c], b[c]));
+
 /**
- * Lo que llega de la cuenta, en una transacción: [registros] son { almacen, clave, poner | null, modificado } y
- * [enviados] los pendientes que se acaban de subir ({ id, modificado }). Un registro no se aplica si aquí hay un
- * cambio pendiente más reciente (se subirá y ganará); los pendientes subidos que no han vuelto a cambiar se quitan.
- * Devuelve cuántos registros se han aplicado.
+ * Junta un registro que llega de la cuenta ([remoto], o null si está borrado, con la hora de cada campo en
+ * [tiemposRemoto]) con el de aquí ([local]), que tiene cambios sin subir con sus horas en [tiemposLocal]: de cada
+ * campo, el más reciente. Devuelve { final, quedan }: el registro (o null) y si aún queda algo de aquí por subir.
+ */
+export function juntar(local, tiemposLocal, remoto, tiemposRemoto) {
+  const gana = (c) => (tiemposLocal[c] ?? 0) > (tiemposRemoto[c] ?? 0);
+  const existe = gana('borrado') ? !!local : !!remoto;
+  let final = null;
+  if (existe) {
+    final = { ...(remoto ?? local) };
+    if (local && remoto) for (const c of Object.keys(local)) if (gana(c)) final[c] = local[c];
+  }
+  // Si acaba borrado, lo de dentro ya no cuenta: solo queda por subir el borrado de aquí, si es el que gana.
+  return { final, quedan: final ? Object.keys(tiemposLocal).some(gana) : gana('borrado') };
+}
+
+/**
+ * Lo que llega de la cuenta, en una transacción: [registros] son { almacen, clave, poner | null, modificado, campos }
+ * y [enviados] los pendientes que se acaban de subir ({ id, modificado }). Si aquí hay cambios pendientes del mismo
+ * registro, se juntan campo a campo (juntar); los pendientes subidos que no han vuelto a cambiar se quitan.
+ * Devuelve cuántos registros han cambiado aquí.
  */
 export function aplicarRemoto(registros, enviados) {
   return new Promise((resolver, rechazar) => {
@@ -115,7 +173,6 @@ export function aplicarRemoto(registros, enviados) {
     const lectura = pendientes.getAll();
     lectura.onsuccess = () => {
       const actuales = new Map(lectura.result.map((p) => [p.id, p]));
-      const subidos = new Map(enviados.map((e) => [e.id, e.modificado]));
       for (const e of enviados) {
         if (actuales.get(e.id)?.modificado === e.modificado) {
           pendientes.delete(e.id);
@@ -124,16 +181,28 @@ export function aplicarRemoto(registros, enviados) {
       }
       for (const r of registros) {
         const id = idPendiente(r.almacen, r.clave);
-        // El servidor devuelve también lo que se le acaba de subir: es lo mismo que ya hay aquí. Sin escribirlo ni
-        // contarlo, para no releer los datos y repintar la pantalla después de cada cambio propio.
-        if (subidos.get(id) === r.modificado) continue;
-        const p = actuales.get(id);
-        if (p && p.modificado > r.modificado) continue;
-        if (p) pendientes.delete(id);
         const almacen = tx.objectStore(r.almacen);
-        if (r.poner) almacen.put(r.poner);
-        else almacen.delete(r.clave);
-        aplicados++;
+        const leido = almacen.get(r.clave);
+        leido.onsuccess = () => {
+          const local = leido.result;
+          let final = r.poner;
+          const p = actuales.get(id);
+          if (p) {
+            const tiemposRemoto = r.campos ?? tiemposDe({ modificado: r.modificado }, r.poner, local);
+            const junto = juntar(local, tiemposDe(p, local, r.poner), r.poner, tiemposRemoto);
+            final = junto.final;
+            if (!junto.quedan) {
+              pendientes.delete(id);
+              actuales.delete(id);
+            }
+          }
+          // El servidor devuelve también lo que se le acaba de subir: es lo mismo que ya hay aquí. Sin escribirlo ni
+          // contarlo, para no releer los datos y repintar la pantalla después de cada cambio propio.
+          if (igualRegistro(local, final)) return;
+          if (final) almacen.put(final);
+          else almacen.delete(r.clave);
+          aplicados++;
+        };
       }
     };
     terminar(tx, () => resolver(aplicados), rechazar);

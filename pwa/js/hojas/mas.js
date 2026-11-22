@@ -91,9 +91,9 @@ export function abrirMas() {
         }
       });
       tarjetaNombreContrasena.style.marginTop = '10px';
-      // Dónde está abierta la cuenta (cerrar la sesión de un dispositivo) y lo último que ha pasado con ella.
+      // Las llaves de acceso, dónde está abierta la cuenta (cerrar la sesión de un dispositivo) y lo último que ha pasado.
       const tarjetaSeguridad = filaFormato({
-        iconoPlaca: 'escudo', tono: 'verde', titulo: 'Dispositivos y actividad', detalle: 'Dónde está abierta tu cuenta y qué ha pasado con ella',
+        iconoPlaca: 'escudo', tono: 'verde', titulo: 'Seguridad', detalle: 'Llaves de acceso, dispositivos y actividad',
         alPulsar: () => {
           panel.cerrar();
           abrirSeguridad();

@@ -517,6 +517,7 @@ button.tarjeta:not(.fila-formato):not(.tarjeta-interruptor) { display: block; }
 .cabecera-dia .detalle { font-size: 12.5px; font-weight: 500; color: var(--text-sub); font-feature-settings: 'tnum'; }
 
 .socio {
+  position: relative;
   margin: 5px 0; border-radius: 22px; background: var(--surface-card); border: 1px solid var(--divider);
   display: flex; align-items: flex-start; padding: 12px 8px 12px 12px; cursor: pointer;
   transition: transform 260ms var(--curva); box-shadow: var(--sombra-tarjeta);
@@ -536,7 +537,10 @@ button.tarjeta:not(.fila-formato):not(.tarjeta-interruptor) { display: block; }
 .socio .separador { margin: 0 6px; color: var(--stroke); }
 .socio .estado { flex: 1 1 0; min-width: 0; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; transition: color 300ms linear; }
 .socio .notas { margin: 6px 0 4px; font-size: 13px; color: var(--text-sub); line-height: calc(1.3em + 2px); white-space: pre-line; }
-.socio .contenedor-interruptor { align-self: center; margin: 0 4px; }
+.socio .contenedor-interruptor { position: relative; z-index: 1; align-self: center; margin: 0 4px; }
+/* El botón de abrir el socio cubre la tarjeta (filas.js); el foco del teclado se ve en la tarjeta. */
+.tocar-socio { position: absolute; inset: 0; margin: 0; padding: 0; border: 0; border-radius: inherit; background: none; opacity: 0; cursor: pointer; }
+.socio:has(.tocar-socio:focus-visible) { outline: 2px solid var(--primary); outline-offset: 2px; }
 
 /* Entrada de las filas al cambiar de día (layout_animation_fall_down): suben un 24 %, aparecen y crecen del 98 %. */
 @keyframes caer {
@@ -962,7 +966,11 @@ dialog.dialogo[open]:where(:not([data-closing])) {
 .novedades { width: 100%; margin-top: 16px; padding: 14px; text-align: left; }
 .novedades .descripcion-fila { margin-top: 6px; line-height: calc(1.3em + 4px); white-space: pre-line; }
 
-/* ---------- Dispositivos y actividad (hojas/seguridad.js) ---------- */
+/* ---------- Seguridad: llaves de acceso, dispositivos y actividad (hojas/seguridad.js) ---------- */
+
+.explicacion-seguridad { margin: -2px 4px 10px; font-size: 13px; line-height: 1.4; color: var(--text-sub); }
+.lista-seguridad + .explicacion-seguridad { margin: 10px 4px 0; }
+.boton-crear-llave { margin-top: 12px; gap: 8px; }
 
 .lista-seguridad { padding: 4px 14px; }
 .fila-seguridad { display: flex; align-items: center; gap: 12px; padding: 12px 0; }
@@ -1064,6 +1072,11 @@ dialog.pantalla-cuenta::backdrop { background: var(--bg); }
 .cuenta-error { margin: 0; font-size: 13px; color: var(--red-text); }
 .cuenta-formulario .boton.relleno { margin-top: 6px; min-height: 52px; border-radius: 26px; font-size: 15px; }
 .cuenta-formulario .boton.texto { margin-top: -4px; }
+/* "o" y Entrar con llave de acceso (pantalla-cuenta.js). */
+.cuenta-llave { display: flex; flex-direction: column; gap: 14px; }
+.cuenta-separador { display: flex; align-items: center; gap: 12px; font-size: 13px; color: var(--text-sub); }
+.cuenta-separador::before, .cuenta-separador::after { content: ""; flex: 1; border-top: 1px solid var(--divider); }
+.cuenta-llave .boton.contorno { min-height: 52px; border-radius: 26px; font-size: 15px; gap: 8px; }
 /* El círculo de "un momento" toma el color del texto del botón, también en el tema oscuro. */
 .boton .girando { border-color: color-mix(in srgb, currentColor 25%, transparent); border-top-color: currentColor; }
 

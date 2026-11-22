@@ -108,7 +108,9 @@ export class ListaSocios {
   crearCabecera() {
     const el = document.createElement('div');
     el.className = 'cabecera-dia';
-    el.tabIndex = 0;
+    // Un encabezado: con el lector de pantalla se salta de día en día.
+    el.setAttribute('role', 'heading');
+    el.setAttribute('aria-level', '3');
     el.innerHTML = htmlConfiable('<span class="nombre" aria-hidden="true"></span><span class="detalle" aria-hidden="true"></span>');
     return el;
   }
@@ -124,9 +126,10 @@ export class ListaSocios {
   crearSocio() {
     const el = document.createElement('div');
     el.className = 'socio';
-    el.tabIndex = 0;
-    el.setAttribute('role', 'button');
+    // La tarjeta entera se toca para abrir el socio, pero dentro va el interruptor: un botón no puede llevar otro
+    // dentro (el lector de pantalla no llegaría al interruptor). El de abrir es un botón invisible que la cubre.
     el.innerHTML = htmlConfiable(`
+      <button class="tocar-socio" type="button"></button>
       <div class="placa-importe"><span class="cuota cifra"></span><span class="base"></span></div>
       <div class="datos">
         <div class="titulo-fila nombre una-linea"></div>
@@ -176,14 +179,6 @@ export class ListaSocios {
       haptica.click();
       (this.op.alAbrir ?? this.op.alEditar)(s);
     });
-    el.addEventListener('keydown', (e) => {
-      if (e.target !== el) return;
-      // Con el teclado, igual que un toque.
-      if (e.key === 'Enter' || e.key === ' ') {
-        e.preventDefault();
-        el.click();
-      }
-    });
     return el;
   }
 
@@ -205,7 +200,7 @@ export class ListaSocios {
     estado.textContent = s.hecho ? `Suma ${eurosCompacto(base)}` : 'Pendiente';
     estado.style.color = s.hecho ? 'var(--primary)' : 'var(--orange-pending)';
     const etiquetaAccion = this.op.alAbrir ? 'Abrir su semana' : 'Editar socio';
-    el.setAttribute('aria-label', `${nombreVisible(s)}, ${dia.completo}, ${estado.textContent}. ${etiquetaAccion}`);
+    el.querySelector('.tocar-socio').setAttribute('aria-label', `${nombreVisible(s)}, ${dia.completo}, ${estado.textContent}. ${etiquetaAccion}`);
     // Sin fundido al reutilizar la fila para otro socio; con fundido de 300 ms si solo cambia su estado.
     const cambiaEstado = !nuevo && previo && previo.id === s.id && previo.hecho !== s.hecho;
     this.pintarPlaca(el, s.hecho, cambiaEstado);

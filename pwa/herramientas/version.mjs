@@ -16,7 +16,10 @@ if (!soloComprobar && !/^\d+\.\d+\.\d+$/.test(primero ?? '')) {
 }
 
 const sw = readFileSync(join(pwa, 'sw.js'), 'utf8');
-const lista = [...sw.match(/const ARCHIVOS = \[([\s\S]*?)\];/)[1].matchAll(/'([^']+)'/g)].map((m) => m[1]);
+const listaDe = (nombre) => [...sw.match(new RegExp(`const ${nombre} = \\[([\\s\\S]*?)\\];`))[1].matchAll(/'([^']+)'/g)].map((m) => m[1]);
+const lista = listaDe('ARCHIVOS');
+// Lo del PDF se guarda aparte, la primera vez que se pide (ver sw.js).
+const bajoDemanda = listaDe('BAJO_DEMANDA');
 
 // Todo lo que usa la app tiene que estar en la lista: si no, sin conexión fallaría.
 const todos = (carpeta) => readdirSync(carpeta).flatMap((f) => {
@@ -25,8 +28,8 @@ const todos = (carpeta) => readdirSync(carpeta).flatMap((f) => {
 });
 const necesarios = ['js', 'css', 'fonts', 'img', 'icons', 'vendor'].flatMap((c) => todos(join(pwa, c)))
   .filter((f) => /\.(js|css|ttf|png|webmanifest)$/.test(f));
-const faltan = necesarios.filter((f) => !lista.includes(f));
-const sobran = lista.filter((f) => f !== './' && !existsSync(join(pwa, f)));
+const faltan = necesarios.filter((f) => !lista.includes(f) && !bajoDemanda.includes(f));
+const sobran = [...lista, ...bajoDemanda].filter((f) => f !== './' && !existsSync(join(pwa, f)));
 if (faltan.length || sobran.length) {
   if (faltan.length) console.error('Faltan en sw.js:', faltan.join(', '));
   if (sobran.length) console.error('No existen:', sobran.join(', '));

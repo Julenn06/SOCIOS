@@ -190,3 +190,29 @@ test('copia CSV: con BOM y versión, comillas en los campos y se vuelve a leer i
   const excel = csv.slice(1).replace('# COBROS\n', '# COBROS,,,,\n');
   assert.equal(B.leerCsv(excel).datos.cobros.length, 1);
 });
+
+// --- Sincronización campo a campo (db.js) ---
+import * as DB from '../js/db.js';
+
+test('se anotan solo los campos que cambian, y existir cuenta como un campo', () => {
+  const antes = { id: 's1', nombreSocio: 'Ana', colaboracion: 20, hecho: false };
+  assert.deepEqual(DB.camposCambiados(antes, { ...antes, colaboracion: 35 }), ['colaboracion', 'borrado']);
+  assert.deepEqual(DB.camposCambiados(antes, { ...antes }), []);
+  assert.deepEqual(DB.camposCambiados(antes, undefined), ['borrado']);
+  assert.deepEqual(DB.camposCambiados(undefined, antes), ['id', 'nombreSocio', 'colaboracion', 'hecho', 'borrado']);
+});
+
+test('al juntar con la cuenta, de cada campo gana el cambio más reciente', () => {
+  const local = { id: 's1', nombreSocio: 'Ana', colaboracion: 35 };
+  const remoto = { id: 's1', nombreSocio: 'Ana María', colaboracion: 20 };
+  // Aquí se cambió lo cobrado (t=20); en otro dispositivo, el nombre (t=30).
+  const r = DB.juntar(local, { colaboracion: 20, borrado: 20 }, remoto, { nombreSocio: 30, colaboracion: 10, borrado: 30 });
+  assert.deepEqual(r.final, { id: 's1', nombreSocio: 'Ana María', colaboracion: 35 });
+  assert.equal(r.quedan, true);
+  // Borrado en la cuenta después de editarlo aquí: queda borrado y no queda nada por subir.
+  const b = DB.juntar(local, { colaboracion: 20, borrado: 20 }, null, { borrado: 40 });
+  assert.deepEqual(b, { final: null, quedan: false });
+  // Recuperado aquí (deshacer) después de borrarlo en la cuenta: vuelve con lo de aquí.
+  const d = DB.juntar(local, { nombreSocio: 50, colaboracion: 50, borrado: 50 }, null, { borrado: 40 });
+  assert.deepEqual(d.final, local);
+});

@@ -3,12 +3,13 @@
 // anotado como pendiente (db.js) y se sube en cuanto se puede, y lo que cambia en los otros dispositivos se baja.
 //
 // Cada petición a /api/sincronizar sube lo pendiente y baja lo posterior a la última revisión que se tiene. Si un
-// registro ha cambiado en los dos sitios, gana el cambio más reciente (ver servidor/sincronizacion.js).
+// registro ha cambiado en los dos sitios, se juntan campo a campo: de cada campo gana el cambio más reciente (ver
+// servidor/sincronizacion.js y db.juntar).
 import * as db from './db.js';
 import { Centimos } from './calculos.js';
+import { API, dispositivo } from './entorno.js';
 
-/** El servidor. En local (probando con herramientas del repositorio) va en el puerto 3000. */
-export const API = location.hostname === 'localhost' ? 'http://localhost:3000' : 'https://socios-api.jfl06studio.com';
+export { API, dispositivo };
 
 const ESPERA_TRAS_CAMBIO_MS = 800;
 const CADA_MS = 30_000;
@@ -32,22 +33,33 @@ const TABLAS = {
     deServidor: (r) => ({
       id: r.id, colaboracion: r.colaboracionCentimos / 100, hecho: r.hecho, dia: r.diaSemanaId, semanaKey: r.semanaKey,
       nombreSocio: r.nombreSocio, notas: r.notas, timestamp: r.timestamp
-    })
+    }),
+    // Los campos que se llaman distinto aquí (para la hora de cada campo); los demás, igual.
+    nombres: { colaboracion: 'colaboracionCentimos', dia: 'diaSemanaId' }
   },
   bonosRegalo: {
     almacen: 'bonos',
     clave: 'semanaKey',
     aServidor: (b) => ({ semanaKey: b.semanaKey, activo: !!b.activo, esMontoFijo: !!b.esMontoFijo, montoCentimos: Centimos.de(b.monto), nota: b.nota ?? '' }),
-    deServidor: (r) => ({ semanaKey: r.semanaKey, activo: r.activo, esMontoFijo: r.esMontoFijo, monto: r.montoCentimos / 100, nota: r.nota })
+    deServidor: (r) => ({ semanaKey: r.semanaKey, activo: r.activo, esMontoFijo: r.esMontoFijo, monto: r.montoCentimos / 100, nota: r.nota }),
+    nombres: { monto: 'montoCentimos' }
   },
   cobros: {
     almacen: 'cobros',
     clave: 'semanaKey',
     aServidor: (c) => ({ semanaKey: c.semanaKey, netoCobradoCentimos: Centimos.de(c.netoCobrado), nota: c.nota ?? '' }),
-    deServidor: (r) => ({ semanaKey: r.semanaKey, netoCobrado: r.netoCobradoCentimos / 100, nota: r.nota })
+    deServidor: (r) => ({ semanaKey: r.semanaKey, netoCobrado: r.netoCobradoCentimos / 100, nota: r.nota }),
+    nombres: { netoCobrado: 'netoCobradoCentimos' }
   }
 };
 const TABLA_DE_ALMACEN = Object.fromEntries(Object.entries(TABLAS).map(([t, d]) => [d.almacen, t]));
+
+/** La hora de cada campo con los nombres del servidor ([haciaServidor]) o con los de aquí. */
+function traducirCampos(def, campos, haciaServidor) {
+  if (!campos) return undefined;
+  const mapa = haciaServidor ? def.nombres : Object.fromEntries(Object.entries(def.nombres).map(([a, b]) => [b, a]));
+  return Object.fromEntries(Object.entries(campos).map(([c, t]) => [mapa[c] ?? c, t]));
+}
 
 // Los ajustes viajan como texto.
 const AJUSTES = {
@@ -126,26 +138,6 @@ async function pedir(metodo, ruta, cuerpo, token = cuenta.sesion?.token) {
   return datos;
 }
 
-/** Cómo se ve este dispositivo en la lista de sesiones abiertas: "Chrome en Android (instalada)". */
-export function dispositivo() {
-  const ua = navigator.userAgent;
-  const navegador = /Edg(e|A|iOS)?\//.test(ua) ? 'Edge'
-    : /SamsungBrowser/.test(ua) ? 'Samsung Internet'
-      : /OPR\/|Opera/.test(ua) ? 'Opera'
-        : /Firefox|FxiOS/.test(ua) ? 'Firefox'
-          : /Chrome|CriOS/.test(ua) ? 'Chrome'
-            : /Safari/.test(ua) ? 'Safari' : 'Navegador';
-  const sistema = /Android/.test(ua) ? 'Android'
-    : /iPhone/.test(ua) ? 'iPhone'
-      : /iPad/.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1) ? 'iPad'
-        : /Windows/.test(ua) ? 'Windows'
-          : /CrOS/.test(ua) ? 'ChromeOS'
-            : /Macintosh|Mac OS X/.test(ua) ? 'Mac'
-              : /Linux/.test(ua) ? 'Linux' : '';
-  const instalada = matchMedia('(display-mode: standalone)').matches;
-  return `${navegador}${sistema ? ` en ${sistema}` : ''}${instalada ? ' (instalada)' : ''}`;
-}
-
 // --- Entrar, registrarse y salir ---
 
 /** Comprueba la contraseña de registro (el primer paso de "Registrarse"). */
@@ -178,6 +170,89 @@ export const cerrarSesionDe = (id) => pedir('POST', '/api/sesiones/cerrar', { id
 export const cerrarSesionesOtras = () => pedir('POST', '/api/sesiones/cerrar', { otras: true });
 /** [{ tipo, momento, dispositivo }], lo más reciente primero. */
 export const leerActividad = async () => (await pedir('GET', '/api/actividad')).actividad;
+
+// --- Llaves de acceso (passkeys): entrar con la huella, la cara o el PIN del dispositivo, ver servidor/passkeys.js ---
+
+const aB64u = (buf) => {
+  const bytes = new Uint8Array(buf instanceof ArrayBuffer ? buf : buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength));
+  let s = '';
+  for (const b of bytes) s += String.fromCharCode(b);
+  return btoa(s).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+};
+const deB64u = (texto) => Uint8Array.from(atob(texto.replace(/-/g, '+').replace(/_/g, '/')), (c) => c.charCodeAt(0));
+
+/** Si este navegador sabe usar llaves de acceso (y dar la clave pública, que es lo que guarda el servidor). */
+export const llavesDisponibles = () =>
+  typeof window.PublicKeyCredential === 'function' && typeof window.AuthenticatorAttestationResponse?.prototype?.getPublicKey === 'function';
+
+/** Lo que dice el navegador al cancelar o fallar, en palabras de la app. */
+function errorDeLlave(e) {
+  if (e instanceof ErrorCuenta) return e;
+  if (e?.name === 'NotAllowedError' || e?.name === 'AbortError') return new ErrorCuenta('Cancelado', 'cancelado');
+  if (e?.name === 'InvalidStateError') return new ErrorCuenta('Este dispositivo ya tiene una llave de acceso de tu cuenta', 'llave_repetida');
+  if (e?.name === 'SecurityError') return new ErrorCuenta('Las llaves de acceso solo funcionan en la web de Gestión de Socios', 'llave');
+  return new ErrorCuenta('No se ha podido usar la llave de acceso en este dispositivo', 'llave');
+}
+
+/** [{ id, nombre, creada, usada }], la más reciente primero. */
+export const listarLlaves = async () => (await pedir('GET', '/api/llaves')).llaves;
+export const borrarLlave = (id) => pedir('POST', '/api/llaves/borrar', { id });
+
+/** Crea una llave de acceso en este dispositivo (o en el móvil, con el QR que enseña el navegador) para esta cuenta. */
+export async function crearLlave() {
+  const op = await pedir('POST', '/api/llaves/opciones', {});
+  let credencial;
+  try {
+    credencial = await navigator.credentials.create({
+      publicKey: {
+        challenge: deB64u(op.reto),
+        rp: { name: op.rp },
+        user: { id: deB64u(op.usuario), name: op.nombre, displayName: op.nombre },
+        pubKeyCredParams: op.algoritmos.map((alg) => ({ type: 'public-key', alg })),
+        // Guardada en el dispositivo (así no hace falta escribir el nombre al entrar) y siempre con huella, cara o PIN.
+        authenticatorSelection: { residentKey: 'required', requireResidentKey: true, userVerification: 'required' },
+        excludeCredentials: op.excluir.map((l) => ({ type: 'public-key', id: deB64u(l.id), transports: l.transportes })),
+        attestation: 'none',
+        timeout: 120_000
+      }
+    });
+  } catch (e) {
+    throw errorDeLlave(e);
+  }
+  const r = credencial.response;
+  return pedir('POST', '/api/llaves', {
+    id: credencial.id,
+    clientDataJSON: aB64u(r.clientDataJSON),
+    authenticatorData: aB64u(r.getAuthenticatorData()),
+    publicKey: aB64u(r.getPublicKey()),
+    alg: r.getPublicKeyAlgorithm(),
+    transports: r.getTransports?.() ?? [],
+    dispositivo: dispositivo()
+  });
+}
+
+/** Entra con una llave de acceso (sin nombre ni contraseña). Devuelve { fallos }, como entrar(). */
+export async function entrarConLlave() {
+  const { reto } = await pedir('POST', '/api/sesion/llave/opciones', {}, null);
+  let credencial;
+  try {
+    credencial = await navigator.credentials.get({ publicKey: { challenge: deB64u(reto), userVerification: 'required', timeout: 120_000 } });
+  } catch (e) {
+    throw errorDeLlave(e);
+  }
+  const r = credencial.response;
+  const respuesta = await pedir('POST', '/api/sesion/llave', {
+    id: credencial.id,
+    clientDataJSON: aB64u(r.clientDataJSON),
+    authenticatorData: aB64u(r.authenticatorData),
+    signature: aB64u(r.signature),
+    userHandle: r.userHandle ? aB64u(r.userHandle) : null,
+    dispositivo: dispositivo(),
+    modo: 'cookie'
+  }, null);
+  await empezarSesion(respuesta);
+  return { fallos: respuesta.fallos ?? 0 };
+}
 
 let alCambiarSesion = () => {};
 /** main.js: qué hacer al entrar o salir (enseñar u ocultar la pantalla de la cuenta, recargar los datos). */
@@ -325,9 +400,11 @@ async function unaVuelta() {
     const tabla = TABLA_DE_ALMACEN[p.almacen];
     if (!tabla) continue;
     const registro = await leer(p.almacen, p.clave);
+    // Sin campos (pendientes de antes de la 1.0.17), el servidor lo cuenta todo como cambiado en `modificado`.
+    const campos = traducirCampos(TABLAS[tabla], p.campos, true);
     cambios[tabla].push(registro
-      ? { ...TABLAS[tabla].aServidor(registro), modificado: p.modificado }
-      : { [TABLAS[tabla].clave]: p.clave, borrado: true, modificado: p.modificado });
+      ? { ...TABLAS[tabla].aServidor(registro), modificado: p.modificado, ...(campos && { campos }) }
+      : { [TABLAS[tabla].clave]: p.clave, borrado: true, modificado: p.modificado, ...(campos && { campos }) });
   }
   const ajustesPendientes = db.prefs.leer('ajustesPendientes', {});
   for (const [clave, modificado] of Object.entries(ajustesPendientes)) {
@@ -345,7 +422,10 @@ async function unaVuelta() {
   const registros = [];
   for (const [tabla, def] of Object.entries(TABLAS)) {
     for (const r of respuesta.cambios?.[tabla] ?? []) {
-      registros.push({ almacen: def.almacen, clave: r[def.clave], poner: r.borrado ? null : def.deServidor(r), modificado: r.modificado });
+      registros.push({
+        almacen: def.almacen, clave: r[def.clave], poner: r.borrado ? null : def.deServidor(r), modificado: r.modificado,
+        campos: traducirCampos(def, r.campos, false)
+      });
     }
   }
   const enviados = pendientes.map((p) => ({ id: p.id, modificado: p.modificado }));
