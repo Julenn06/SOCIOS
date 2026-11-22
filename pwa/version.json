@@ -1,10 +1,7 @@
 {
-  "version": "1.0.17",
-  "tamano": 1099461,
+  "version": "1.0.18",
+  "tamano": 1099652,
   "novedades": [
-    "Entra con la huella, la cara o el PIN: crea una llave de acceso en Más → Cuenta → Seguridad",
-    "Si cambias el mismo socio en dos dispositivos a la vez, ya no se pierde ningún cambio: se juntan los dos",
-    "La app se instala más rápido: lo que solo usa el PDF se descarga cuando hace falta",
-    "Mejor con lector de pantalla y con teclado"
+    "En Nombre y contraseña, el teclado ya no se abre solo: sale al tocar el campo"
   ]
 }
