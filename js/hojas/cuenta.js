@@ -46,7 +46,9 @@ function formulario({ campos, boton, extra = [], enviar }) {
       await enviar({
         enCampo: (campo, texto) => {
           campo.error(texto);
-          campo.foco();
+          // Sin darle el foco: en el móvil abriría el teclado y taparía el aviso. Solo se lleva el campo a la vista;
+          // el teclado sale cuando se toca el campo.
+          campo.el.scrollIntoView({ block: 'center', behavior: 'smooth' });
           throw Object.assign(new Error(texto), { codigo: 'campo' });
         }
       });
@@ -113,7 +115,6 @@ function formularioContrasena() {
     haptica.click();
     restablecer = !restablecer;
     ponerModo();
-    (restablecer ? clave : actual).foco();
   });
   ponerModo();
 
